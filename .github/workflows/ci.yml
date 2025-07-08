@@ -39,3 +39,11 @@ jobs:
 
       - name: Gradle 빌드 + 테스트
         run: ./gradlew clean build --stacktrace
+
+      - name: PR에 코드 커버리지 측정 레포트 생성
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.7.2
+        with:
+          paths: |
+            ${{ github.workspace }}/**/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
