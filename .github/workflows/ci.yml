@@ -1,0 +1,41 @@
+name: Dapanda CI FOR MVP
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    paths-ignore:
+      - 'README.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # 실행환경 지정
+
+    # 실행 스텝 지정
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: JDK 17 시작
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: application-dev.properties 파일 주입
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.APPLICATION_DEV_PROPERTIES }}" > src/main/resources/application-dev.properties
+
+      - name: Gradle 권한 부여
+        run: chmod +x ./gradlew
+
+      - name: Gradle 빌드 + 테스트
+        run: ./gradlew clean build --stacktrace
