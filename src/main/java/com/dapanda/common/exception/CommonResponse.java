@@ -12,21 +12,21 @@ public class CommonResponse<T> {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private T data;
 
-    public CommonResponse(int code, String message) {
+    public CommonResponse(ResultCode resultcode) {
 
-        this.code = code;
-        this.message = message;
+        this.code = resultcode.getCode();
+        this.message = resultcode.getMessage();
     }
 
-    protected CommonResponse(int code, String message, T data) {
+    protected CommonResponse(ResultCode resultcode, T data) {
 
-        this.code = code;
-        this.message = message;
+        this.code = resultcode.getCode();
+        this.message = resultcode.getMessage();
         this.data = data;
     }
 
     public static <T> CommonResponse<T> success(T data) {
 
-        return new CommonResponse<>(200, "정상 처리 되었습니다.", data);
+        return new CommonResponse<>(ResultCode.SUCCESS, data);
     }
 }
