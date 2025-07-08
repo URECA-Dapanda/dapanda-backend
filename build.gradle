@@ -1,102 +1,106 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.5.3'
-	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.asciidoctor.jvm.convert' version '3.3.2'
-	id 'jacoco'
+    id 'java'
+    id 'org.springframework.boot' version '3.5.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.asciidoctor.jvm.convert' version '3.3.2'
+    id 'jacoco'
 }
 
 group = 'com.dapanda'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 ext {
-	set('snippetsDir', file("build/generated-snippets"))
+    set('snippetsDir', file("build/generated-snippets"))
 }
 
 dependencies {
 
-	// Spring Data JPA
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // Spring Data JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-	// Spring Web
-	implementation 'org.springframework.boot:spring-boot-starter-web'
+    // Spring Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
 
-	// Lombok
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
+    // Spring Security + OAuth2 Client
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
-	// MySQL
-	runtimeOnly 'com.mysql:mysql-connector-j'
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
-	// Rest Docs
-	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    // MySQL
+    runtimeOnly 'com.mysql:mysql-connector-j'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Rest Docs
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
-	finalizedBy jacocoTestReport
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
 }
 
 jacoco {
-	toolVersion = "0.8.11"
+    toolVersion = "0.8.11"
 }
 
 def jacocoExcludePatterns = [
-		'com/dapanda/Application.class',
-		'**/common/**',
-		'**/exception/**',
-		'**/dto/**',
-		'**/config/**',
-		'**/test/**'
+        'com/dapanda/Application.class',
+        '**/common/**',
+        '**/exception/**',
+        '**/dto/**',
+        '**/config/**',
+        '**/test/**'
 ]
 
 jacocoTestReport {
-	reports {
-		xml.required = true
-		csv.required = true
-		html.required = true
-	}
+    reports {
+        xml.required = true
+        csv.required = true
+        html.required = true
+    }
 
-	afterEvaluate {
-		classDirectories.setFrom(files(classDirectories.files.collect {
-			fileTree(dir: it, excludes: jacocoExcludePatterns)
-		}))
-	}
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, excludes: jacocoExcludePatterns)
+        }))
+    }
 }
 
 jacocoTestCoverageVerification {
-	violationRules {
+    violationRules {
 
-		rule {
-			enabled = true
-			element = 'CLASS'
+        rule {
+            enabled = true
+            element = 'CLASS'
 
-			// 커버리지 제외 범위
-			excludes = jacocoExcludePatterns
-		}
-	}
+            // 커버리지 제외 범위
+            excludes = jacocoExcludePatterns
+        }
+    }
 }
 
 tasks.named('asciidoctor') {
-	inputs.dir snippetsDir
-	dependsOn test
+    inputs.dir snippetsDir
+    dependsOn test
 }
