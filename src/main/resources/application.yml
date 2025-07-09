@@ -55,6 +55,9 @@ spring:
       ddl-auto: update
     show-sql: true
 
+toss:
+  secret-key: ${TOSS_PAYMENTS_SECRET}
+
 ---
 spring:
   config:
