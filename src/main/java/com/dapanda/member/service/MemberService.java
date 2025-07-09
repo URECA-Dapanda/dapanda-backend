@@ -79,13 +79,13 @@ public class MemberService {
             throw new GlobalException(ResultCode.WEAK_PASSWORD);
         }
 
-        Member member = Member.builder()
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .name(request.name())
-                .provider(OAuthProvider.LOCAL)
-                .role(MemberRole.ROLE_MEMBER)
-                .build();
+        Member member = Member.ofLocalMember(
+                request.email(),
+                passwordEncoder.encode(request.password()),
+                request.name(),
+                OAuthProvider.LOCAL,
+                MemberRole.ROLE_MEMBER
+        );
 
         memberRepository.save(member);
 

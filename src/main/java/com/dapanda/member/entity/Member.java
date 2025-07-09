@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Builder(toBuilder = true)
+@Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "member",
@@ -66,6 +66,18 @@ public class Member extends BaseEntity {
         return Member.builder()
                 .email(email)
                 .name(name)
+                .provider(provider)
+                .role(role)
+                .build();
+    }
+
+    public static Member ofLocalMember(String email, String name,
+            String password, OAuthProvider provider, MemberRole role
+    ) {
+        return Member.builder()
+                .email(email)
+                .name(name)
+                .password(password)
                 .provider(provider)
                 .role(role)
                 .build();

@@ -63,12 +63,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private Member registerUser(OAuth2UserInfo userInfo, OAuthProvider provider) {
 
-        Member member = Member.builder()
-                .email(userInfo.getEmail())
-                .name(userInfo.getName())
-                .provider(provider)
-                .role(MemberRole.ROLE_MEMBER)
-                .build();
+        Member member = Member.ofOAuthMember(
+                userInfo.getEmail(),
+                userInfo.getName(),
+                provider,
+                MemberRole.ROLE_MEMBER
+        );
 
         return memberRepository.save(member);
     }

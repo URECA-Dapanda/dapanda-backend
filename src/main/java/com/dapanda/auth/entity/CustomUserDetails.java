@@ -12,13 +12,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Getter
 public class CustomUserDetails implements UserDetails {
 
+    @Getter
+    private final Long id;
     private final String email;
     private final String password;
     private final String provider;
     private final MemberRole role;
 
-    public CustomUserDetails(String email, String password, String provider, MemberRole role) {
+    public CustomUserDetails(Long id, String email, String password, String provider,
+            MemberRole role) {
 
+        this.id = id;
         this.email = email;
         this.password = password;
         this.provider = provider;
@@ -28,6 +32,7 @@ public class CustomUserDetails implements UserDetails {
     public static CustomUserDetails from(Member member) {
 
         return new CustomUserDetails(
+                member.getId(),
                 member.getEmail(),
                 member.getPassword(),
                 member.getProvider().name(),
