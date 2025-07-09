@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/dpdtest
+    username: root
+    password: "0000"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+jwt:
+  secret: secretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecret
+  access-token-expiration: 3600000
+  refresh-token-expiration: 1209600000
