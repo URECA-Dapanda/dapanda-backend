@@ -2,6 +2,7 @@ package com.dapanda.product.entity;
 
 public enum ProductType {
 
+    HOTSPOT,
     WIFI,
-    DATA
+    MOBILE_DATA
 }
