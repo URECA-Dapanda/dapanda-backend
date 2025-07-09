@@ -60,4 +60,15 @@ public class Member extends BaseEntity {
 
     private int reportedCount;
 
+    public static Member ofOAuthMember(String email, String name,
+            OAuthProvider provider, MemberRole role) {
+
+        return Member.builder()
+                .email(email)
+                .name(name)
+                .provider(provider)
+                .role(role)
+                .build();
+    }
+
 }
