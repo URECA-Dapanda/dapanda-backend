@@ -81,8 +81,8 @@ public class MemberService {
 
         Member member = Member.ofLocalMember(
                 request.email(),
-                passwordEncoder.encode(request.password()),
                 request.name(),
+                passwordEncoder.encode(request.password()),
                 OAuthProvider.LOCAL,
                 MemberRole.ROLE_MEMBER
         );
