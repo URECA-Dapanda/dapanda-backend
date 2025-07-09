@@ -9,10 +9,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder(access = AccessLevel.PRIVATE)
 public class Payment {
 
     @Id
@@ -30,4 +37,15 @@ public class Payment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    public static Payment of(String paymentKey, int totalAmount, String method,
+            LocalDateTime approvedAt, Member member) {
+
+        return Payment.builder()
+                .paymentKey(paymentKey)
+                .totalAmount(totalAmount)
+                .method(method)
+                .approvedAt(approvedAt)
+                .member(member).build();
+    }
 }
