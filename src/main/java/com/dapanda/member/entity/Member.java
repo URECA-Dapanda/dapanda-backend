@@ -1,7 +1,12 @@
 package com.dapanda.member.entity;
 
 import com.dapanda.common.entity.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Getter;
 
 @Entity
@@ -29,4 +34,13 @@ public class Member extends BaseEntity {
 
     private int reportedCount;
 
+    public void addCash(int amount) {
+
+        this.cash += amount;
+    }
+
+    public void deductCash(int amount) {
+
+        this.cash -= amount;
+    }
 }
