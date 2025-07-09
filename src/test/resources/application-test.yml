@@ -1,35 +1,29 @@
 spring:
   datasource:
-    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
-    url: jdbc:tc:mysql:8.0.33:///tc_test?TC_INITSCRIPT=classpath:db/init.sql
-    username: root
-    password: 1234
+    # 드라이버 클래스는 실제 사용하는 MySQL 드라이버로 지정합니다.
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    # @DynamicPropertySource가 주입하는 값을 사용하기 위한 플레이스홀더
+    url: ${spring.datasource.url}
+    username: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+
   jpa:
     hibernate:
+      # 테스트마다 스키마를 새로 생성·삭제
       ddl-auto: create-drop
-    show-sql: true
     properties:
       hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
-
-  sql:
-    init:
-      mode: never  # Testcontainers에서 스키마 자동 생성
+        # MySQL 8 이상 버전에 맞춘 방언
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
 
 logging:
   level:
+    # Hibernate SQL 로깅
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.testcontainers: INFO
-    com.github.dockerjava: WARN
 
-# 테스트용 추가 설정
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
 
 jwt:
   secret: secretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecret
