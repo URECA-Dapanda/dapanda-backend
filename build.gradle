@@ -16,6 +16,7 @@ java {
 }
 
 configurations {
+	asciidoctorExt
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
@@ -26,16 +27,23 @@ repositories {
 }
 
 ext {
-	set('snippetsDir', file("build/generated-snippets"))
+	snippetsDir = file("build/generated-snippets")
 }
 
 dependencies {
-
 	// Spring Data JPA
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
 	// Spring Web
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// Bean Validation
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// Testcontainers
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+	testImplementation 'org.testcontainers:mysql'
 
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'
@@ -45,17 +53,35 @@ dependencies {
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
 	// Rest Docs
+	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-tasks.named('test') {
+// 테스트 실행 설정
+test {
 	useJUnitPlatform()
 	finalizedBy jacocoTestReport
+	outputs.dir snippetsDir
 }
 
+asciidoctor {
+	inputs.dir snippetsDir
+	configurations 'asciidoctorExt'
+	dependsOn test
+}
+
+bootJar {
+	dependsOn asciidoctor // jar 빌드 전에 asciidoctor(문서 생성) 실행
+	copy {
+		from("${asciidoctor.outputDir}")
+		into 'src/main/resources/static/'
+	}
+}
+
+// Jacoco 설정 (기존과 동일)
 jacoco {
 	toolVersion = "0.8.11"
 }
@@ -85,18 +111,28 @@ jacocoTestReport {
 
 jacocoTestCoverageVerification {
 	violationRules {
-
 		rule {
 			enabled = true
 			element = 'CLASS'
-
-			// 커버리지 제외 범위
 			excludes = jacocoExcludePatterns
 		}
 	}
 }
 
-tasks.named('asciidoctor') {
-	inputs.dir snippetsDir
-	dependsOn test
+// 불필요한 snippets 삭제
+tasks.register('cleanUnwantedSnippets') {
+	doLast {
+		delete fileTree("build/generated-snippets") {
+			include "**/*curl-request.adoc"
+			include "**/*httpie-request.adoc"
+			include "**/*request-body.adoc"
+			include "**/*response-body.adoc"
+		}
+	}
 }
+
+clean {
+	delete file('src/main/generated')
+}
+
+test.finalizedBy cleanUnwantedSnippets
