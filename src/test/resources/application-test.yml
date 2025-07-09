@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
-    url: jdbc:tc:mysql:8.4.1://localhost:3306/tc_test?TC_REUSABLE=true
+    url: jdbc:tc:mysql:8.0.33:///tc_test?TC_INITSCRIPT=classpath:db/init.sql
     username: root
     password: 1234
   jpa:
