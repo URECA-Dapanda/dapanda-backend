@@ -50,12 +50,12 @@ class AuthServiceTest {
         final String name = "testName";
         final OAuthProvider provider = OAuthProvider.GOOGLE;
         final MemberRole role = MemberRole.ROLE_MEMBER;
-        final Member member = Member.builder()
-                .email(email)
-                .name(name)
-                .provider(provider)
-                .role(role)
-                .build();
+        final Member member = Member.ofOAuthMember(
+                email,
+                name,
+                provider,
+                role
+        );
         final RefreshToken savedToken = RefreshToken.builder()
                 .token(refreshToken)
                 .member(member)
@@ -68,7 +68,8 @@ class AuthServiceTest {
 
             @Test
             @DisplayName("정상적으로 액세스 토큰을 재발급한다")
-            void 성공적으로_액세스_토큰_재발급() {
+            void shouldReissueAccessTokenSuccessfully() {
+
                 // given
                 when(jwtTokenProvider.validateToken(refreshToken)).thenReturn(true);
                 when(jwtTokenProvider.getUserEmailFromToken(refreshToken)).thenReturn(email);
@@ -93,8 +94,8 @@ class AuthServiceTest {
 
             @Test
             @DisplayName("refreshToken이 null이면 예외가 발생한다")
-            void 토큰_null이면_예외발생() {
-                // when & then
+            void shouldThrowIfTokenIsNull() {
+
                 GlobalException exception = assertThrows(GlobalException.class,
                         () -> authService.reissueAccessToken(null));
                 assertEquals(ResultCode.MISSING_TOKEN, exception.getResultCode());
@@ -102,7 +103,8 @@ class AuthServiceTest {
 
             @Test
             @DisplayName("refreshToken이 유효하지 않으면 예외가 발생한다")
-            void 토큰_유효하지않으면_예외발생() {
+            void shouldThrowIfTokenIsInvalid() {
+
                 when(jwtTokenProvider.validateToken(refreshToken)).thenReturn(false);
                 GlobalException exception = assertThrows(GlobalException.class,
                         () -> authService.reissueAccessToken(refreshToken));
@@ -111,7 +113,8 @@ class AuthServiceTest {
 
             @Test
             @DisplayName("DB에 저장된 refreshToken이 없으면 예외가 발생한다")
-            void 저장된_토큰_없으면_예외발생() {
+            void shouldThrowIfTokenNotFoundInDb() {
+
                 when(jwtTokenProvider.validateToken(refreshToken)).thenReturn(true);
                 when(jwtTokenProvider.getUserEmailFromToken(refreshToken)).thenReturn(email);
                 when(jwtTokenProvider.getProviderFromToken(refreshToken)).thenReturn(provider);
@@ -125,7 +128,8 @@ class AuthServiceTest {
 
             @Test
             @DisplayName("입력된 refreshToken과 DB의 refreshToken이 다르면 예외가 발생한다")
-            void 저장된_토큰과_입력값_다르면_예외발생() {
+            void shouldThrowIfTokenDoesNotMatch() {
+
                 String wrongToken = "wrongToken";
                 RefreshToken mismatchedToken = RefreshToken.builder()
                         .token(wrongToken)

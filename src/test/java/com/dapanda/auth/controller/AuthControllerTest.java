@@ -59,13 +59,13 @@ class AuthControllerTest {
         refreshTokenRepository.deleteAll();
         memberRepository.deleteAll();
         String encodedPassword = passwordEncoder.encode(BASE_PASSWORD);
-        savedMember = Member.builder()
-                .email(BASE_EMAIL)
-                .name(BASE_NAME)
-                .provider(BASE_PROVIDER)
-                .role(BASE_ROLE)
-                .password(encodedPassword) // 실서비스는 인코딩!
-                .build();
+        savedMember = Member.ofLocalMember(
+                BASE_EMAIL,
+                BASE_NAME,
+                encodedPassword,
+                BASE_PROVIDER,
+                BASE_ROLE
+        );
         memberRepository.save(savedMember);
     }
 
@@ -77,6 +77,7 @@ class AuthControllerTest {
         @WithMockUser(username = "홍길동", roles = "MEMBER")
         @DisplayName("성공적으로 회원가입된다")
         void signup_success() throws Exception {
+
             mockMvc.perform(post("/api/auth/signup")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
@@ -95,6 +96,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("중복 이메일이면 에러 반환")
         void signup_duplicateEmail() throws Exception {
+
             mockMvc.perform(post("/api/auth/signup")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
@@ -116,6 +118,7 @@ class AuthControllerTest {
         @WithMockUser(username = "홍길동", roles = "MEMBER")
         @DisplayName("정상적으로 로그인 된다")
         void login_success() throws Exception {
+
             mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
@@ -132,6 +135,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("회원정보가 없으면 404 에러")
         void login_memberNotFound() throws Exception {
+
             mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
@@ -146,6 +150,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("비밀번호 불일치시 401 에러")
         void login_invalidPassword() throws Exception {
+
             mockMvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
@@ -166,6 +171,7 @@ class AuthControllerTest {
 
         @BeforeEach
         void insertRefreshToken() {
+
             refreshToken = jwtTokenProvider.generateRefreshToken(savedMember);
             RefreshToken token = RefreshToken.builder()
                     .token(refreshToken)
@@ -179,6 +185,7 @@ class AuthControllerTest {
         @WithMockUser(username = "testuser", roles = "MEMBER")
         @DisplayName("정상적으로 액세스 토큰을 재발급한다")
         void 성공적으로_재발급() throws Exception {
+
             mockMvc.perform(post("/api/auth/reissue")
                             .header("Refresh-Token", refreshToken))
                     .andExpect(status().isOk())
@@ -188,6 +195,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("refreshToken 헤더가 없으면 401 에러 발생")
         void 헤더없음() throws Exception {
+
             mockMvc.perform(post("/api/auth/reissue"))
                     .andExpect(status().isUnauthorized());
         }
@@ -195,6 +203,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("refreshToken이 유효하지 않으면 401 에러 발생")
         void 토큰유효하지않음() throws Exception {
+
             mockMvc.perform(post("/api/auth/reissue")
                             .header("Refresh-Token", "invalidToken"))
                     .andExpect(status().isUnauthorized());
@@ -203,6 +212,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("저장된 refreshToken이 없으면 401 에러 발생")
         void 저장토큰없음() throws Exception {
+
             refreshTokenRepository.deleteAll();
 
             mockMvc.perform(post("/api/auth/reissue")
@@ -213,6 +223,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("저장된 refreshToken과 입력값 다르면 401 에러 발생")
         void 저장토큰다름() throws Exception {
+
             RefreshToken another = RefreshToken.builder()
                     .token("anotherToken")
                     .member(savedMember)
@@ -228,6 +239,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("refreshToken 상태가 VALID가 아니면 401 에러 발생")
         void 상태비정상() throws Exception {
+
             Optional<RefreshToken> opt = refreshTokenRepository.findByMember(savedMember);
             assertThat(opt).isPresent();
             RefreshToken token = opt.get();
@@ -272,6 +284,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("토큰이 없으면 401 에러 반환")
         void logout_tokenNull() throws Exception {
+
             mockMvc.perform(post("/api/auth/logout"))
                     .andExpect(status().isUnauthorized());
         }
@@ -279,6 +292,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("토큰이 유효하지 않으면 401 에러 반환")
         void logout_tokenInvalid() throws Exception {
+
             mockMvc.perform(post("/api/auth/logout")
                             .header("Authorization", "Bearer invalidToken"))
                     .andExpect(status().isUnauthorized());
