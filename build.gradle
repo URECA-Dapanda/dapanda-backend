@@ -87,17 +87,76 @@ test {
 	include '**/*Test.class'
 }
 
+// 스니펫 디렉토리 생성 태스크
+tasks.register('createSnippetsDir'){
+	doLast {
+		mkdir snippetsDir
+	}
+}
+
 asciidoctor {
+	dependsOn test
 	inputs.dir snippetsDir
 	configurations 'asciidoctorExt'
-	dependsOn test
+
+	// 스니펫이 없으면 태스크 건너뛰기
+	onlyIf {
+		file(snippetsDir).exists() && fileTree(snippetsDir).include('**/*.adoc').files.size()>0
+	}
+
+	// 스니펫 디렉토리가 없으면 생성
+	doFirst {
+		if(!file(snippetsDir).exists()){
+			mkdir snippetsDir
+		}
+	}
+}
+
+// 문서 없이 빌드하는 태스크 (개발용)
+tasks.register('buildWithoutDocs') {
+	group = 'build'
+	description = 'Build application without running tests and generating docs'
+
+	dependsOn 'clean', 'compileJava', 'processResources', 'classes'
+
+	finalizedBy 'bootJar'
+
+	doFirst {
+		// bootJar에서 asciidoctor 의존성 제거
+		bootJar.dependsOn = bootJar.dependsOn.findAll { it != asciidoctor }
+	}
 }
 
 bootJar {
-	dependsOn asciidoctor // jar 빌드 전에 asciidoctor(문서 생성) 실행
-	copy {
-		from("${asciidoctor.outputDir}")
-		into 'src/main/resources/static/'
+	// asciidoctor가 성공적으로 실행된 경우에만 의존
+	if (!project.hasProperty('skipDocs')) {
+		dependsOn asciidoctor
+	}
+
+	// 문서 복사 로직
+	doFirst {
+		def docsDir = file("${asciidoctor.outputDir}")
+		if (docsDir.exists() && docsDir.list().length > 0) {
+			copy {
+				from("${asciidoctor.outputDir}")
+				into 'src/main/resources/static/docs'
+			}
+			println "API documentation copied to static resources"
+		} else {
+			println "No API documentation found, skipping copy"
+		}
+	}
+}
+
+// 불필요한 snippets 삭제
+tasks.register('cleanUnwantedSnippets') {
+	doLast {
+		delete fileTree("build/generated-snippets") {
+			include "**/*curl-request.adoc"
+			include "**/*httpie-request.adoc"
+			include "**/*request-body.adoc"
+			include "**/*response-body.adoc"
+		}
 	}
 }
 
@@ -142,20 +201,9 @@ jacocoTestCoverageVerification {
 	}
 }
 
-// 불필요한 snippets 삭제
-tasks.register('cleanUnwantedSnippets') {
-	doLast {
-		delete fileTree("build/generated-snippets") {
-			include "**/*curl-request.adoc"
-			include "**/*httpie-request.adoc"
-			include "**/*request-body.adoc"
-			include "**/*response-body.adoc"
-		}
-	}
-}
-
 clean {
 	delete file('src/main/generated')
+	delete file('src/main/resources/static/docs')
 }
 
 test.finalizedBy cleanUnwantedSnippets
