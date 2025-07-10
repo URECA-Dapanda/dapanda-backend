@@ -1,6 +1,5 @@
 package com.dapanda.auth.info;
 
-
 import com.dapanda.auth.entity.OAuthProvider;
 import java.util.Map;
 

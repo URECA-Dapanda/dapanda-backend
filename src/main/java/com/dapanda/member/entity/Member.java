@@ -74,6 +74,7 @@ public class Member extends BaseEntity {
     public static Member ofLocalMember(String email, String name,
             String password, OAuthProvider provider, MemberRole role
     ) {
+
         return Member.builder()
                 .email(email)
                 .name(name)

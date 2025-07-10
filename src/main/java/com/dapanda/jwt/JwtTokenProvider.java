@@ -116,7 +116,6 @@ public class JwtTokenProvider {
                 userDetails.getAuthorities());
     }
 
-
     public String getUserEmailFromToken(String token) {
 
         return Jwts.parser()

@@ -8,7 +8,6 @@ public class KakaoOAuth2UserInfo extends OAuth2UserInfo {
         super(attributes);
     }
 
-
     @SuppressWarnings("unchecked")
     @Override
     public String getEmail() {

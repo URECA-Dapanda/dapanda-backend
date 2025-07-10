@@ -60,7 +60,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         );
     }
 
-
     private Member registerUser(OAuth2UserInfo userInfo, OAuthProvider provider) {
 
         Member member = Member.ofOAuthMember(
