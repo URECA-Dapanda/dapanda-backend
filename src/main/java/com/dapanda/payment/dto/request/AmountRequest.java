@@ -1,6 +1,6 @@
 package com.dapanda.payment.dto.request;
 
-public record SaveAmountRequest(
+public record AmountRequest(
         String orderId,
         int amount
 ) {
