@@ -1,102 +1,165 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.5.3'
-	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.asciidoctor.jvm.convert' version '3.3.2'
-	id 'jacoco'
+    id 'java'
+    id 'org.springframework.boot' version '3.5.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.asciidoctor.jvm.convert' version '3.3.2'
+    id 'jacoco'
 }
 
 group = 'com.dapanda'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    asciidoctorExt
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 ext {
-	set('snippetsDir', file("build/generated-snippets"))
+    snippetsDir = file("build/generated-snippets")
 }
 
 dependencies {
 
-	// Spring Data JPA
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // Spring Data JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-	// Spring Web
-	implementation 'org.springframework.boot:spring-boot-starter-web'
+    // Spring Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
 
-	// Lombok
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
+    // Spring Security + OAuth2 Client
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
-	// MySQL
-	runtimeOnly 'com.mysql:mysql-connector-j'
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-	// Rest Docs
-	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    // Bean Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // MySQL
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // Rest Docs
+    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+
+    // Test
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Testcontainers
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:mysql'
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
-	finalizedBy jacocoTestReport
+// 테스트 실행 설정
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+    outputs.dir snippetsDir
 }
 
+asciidoctor {
+    inputs.dir snippetsDir
+    configurations 'asciidoctorExt'
+    dependsOn test
+}
+
+bootJar {
+    dependsOn asciidoctor // jar 빌드 전에 asciidoctor(문서 생성) 실행
+    copy {
+        from("${asciidoctor.outputDir}")
+        into 'src/main/resources/static/'
+    }
+}
+
+// Jacoco 설정 (기존과 동일)
 jacoco {
-	toolVersion = "0.8.11"
+    toolVersion = "0.8.11"
 }
 
 def jacocoExcludePatterns = [
-		'com/dapanda/Application.class',
-		'**/common/**',
-		'**/exception/**',
-		'**/dto/**',
-		'**/config/**',
-		'**/test/**'
+        'com/dapanda/Application.class',
+        '**/common/**',
+        '**/exception/**',
+        '**/dto/**',
+        '**/config/**',
+        '**/test/**'
 ]
 
 jacocoTestReport {
-	reports {
-		xml.required = true
-		csv.required = true
-		html.required = true
-	}
+    reports {
+        xml.required = true
+        csv.required = true
+        html.required = true
+    }
 
-	afterEvaluate {
-		classDirectories.setFrom(files(classDirectories.files.collect {
-			fileTree(dir: it, excludes: jacocoExcludePatterns)
-		}))
-	}
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, excludes: jacocoExcludePatterns)
+        }))
+    }
 }
 
 jacocoTestCoverageVerification {
-	violationRules {
+    violationRules {
 
-		rule {
-			enabled = true
-			element = 'CLASS'
+        rule {
+            enabled = true
+            element = 'CLASS'
 
-			// 커버리지 제외 범위
-			excludes = jacocoExcludePatterns
-		}
-	}
+            // 커버리지 제외 범위
+            excludes = jacocoExcludePatterns
+        }
+    }
 }
 
-tasks.named('asciidoctor') {
-	inputs.dir snippetsDir
-	dependsOn test
+// 불필요한 snippets 삭제
+tasks.register('cleanUnwantedSnippets') {
+    doLast {
+        delete fileTree("build/generated-snippets") {
+            include "**/*curl-request.adoc"
+            include "**/*httpie-request.adoc"
+            include "**/*request-body.adoc"
+            include "**/*response-body.adoc"
+        }
+    }
+}
+
+clean {
+    delete file('src/main/generated')
+}
+
+test.finalizedBy cleanUnwantedSnippets
+
+sourceSets {
+    main {
+        java { srcDirs = ['src/main/java'] }
+    }
+    test {
+        java { srcDirs = ['src/test/java'] }
+    }
+}
+test {
+    include '**/*Test.class'
 }

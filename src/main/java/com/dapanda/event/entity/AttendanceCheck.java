@@ -13,8 +13,6 @@ public class AttendanceCheck extends UpdatedAtEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int point;
-
     private int continueAttendance;
 
     @OneToOne(fetch = FetchType.LAZY)
