@@ -9,11 +9,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
-    Optional<Member> findByEmail(String email);
+	Optional<Member> findByEmail(String email);
 
-    boolean existsByEmail(String email);
+	boolean existsByEmail(String email);
 
-    Optional<Member> findByEmailAndProvider(String email, OAuthProvider provider);
+	Optional<Member> findByEmailAndProvider(String email, OAuthProvider provider);
 
-    boolean existsByName(String name);
+	boolean existsByName(String name);
 }

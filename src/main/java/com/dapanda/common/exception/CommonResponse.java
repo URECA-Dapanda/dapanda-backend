@@ -6,27 +6,27 @@ import lombok.Getter;
 @Getter
 public class CommonResponse<T> {
 
-    private final int code;
-    private final String message;
+	private final int code;
+	private final String message;
 
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private T data;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private T data;
 
-    public CommonResponse(ResultCode resultcode) {
+	public CommonResponse(ResultCode resultcode) {
 
-        this.code = resultcode.getCode();
-        this.message = resultcode.getMessage();
-    }
+		this.code = resultcode.getCode();
+		this.message = resultcode.getMessage();
+	}
 
-    protected CommonResponse(ResultCode resultcode, T data) {
+	protected CommonResponse(ResultCode resultcode, T data) {
 
-        this.code = resultcode.getCode();
-        this.message = resultcode.getMessage();
-        this.data = data;
-    }
+		this.code = resultcode.getCode();
+		this.message = resultcode.getMessage();
+		this.data = data;
+	}
 
-    public static <T> CommonResponse<T> success(T data) {
+	public static <T> CommonResponse<T> success(T data) {
 
-        return new CommonResponse<>(ResultCode.SUCCESS, data);
-    }
+		return new CommonResponse<>(ResultCode.SUCCESS, data);
+	}
 }

@@ -31,94 +31,94 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class AuthController {
 
-    private final JwtTokenProvider jwtTokenProvider;
-    private final RefreshTokenService refreshTokenService;
-    private final MemberService memberService;
-    private final AuthService authService;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final RefreshTokenService refreshTokenService;
+	private final MemberService memberService;
+	private final AuthService authService;
 
-    @PostMapping("/auth/reissue")
-    public CommonResponse<TokenResponse> reissueAccessToken(
-            HttpServletRequest request) {
+	@PostMapping("/auth/reissue")
+	public CommonResponse<TokenResponse> reissueAccessToken(
+			HttpServletRequest request) {
 
-        String refreshToken = request.getHeader("Refresh-Token");
-        log.info("요청 {}", request.getRequestURI());
-        log.info("리프레시 토큰 : {}", refreshToken);
+		String refreshToken = request.getHeader("Refresh-Token");
+		log.info("요청 {}", request.getRequestURI());
+		log.info("리프레시 토큰 : {}", refreshToken);
 
-        // 유효성 검사
-        if (refreshToken == null) {
-            throw new GlobalException(ResultCode.MISSING_TOKEN);
-        }
-        if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new GlobalException(ResultCode.INVALID_TOKEN);
-        }
+		// 유효성 검사
+		if (refreshToken == null) {
+			throw new GlobalException(ResultCode.MISSING_TOKEN);
+		}
+		if (!jwtTokenProvider.validateToken(refreshToken)) {
+			throw new GlobalException(ResultCode.INVALID_TOKEN);
+		}
 
-        String email = jwtTokenProvider.getUserEmailFromToken(refreshToken);
-        OAuthProvider provider = jwtTokenProvider.getProviderFromToken(refreshToken);
-        Member member = memberService.findUserByEmailAndProvider(email, provider);
+		String email = jwtTokenProvider.getUserEmailFromToken(refreshToken);
+		OAuthProvider provider = jwtTokenProvider.getProviderFromToken(refreshToken);
+		Member member = memberService.findUserByEmailAndProvider(email, provider);
 
-        var savedToken = refreshTokenService.findByUser(member)
-                .orElseThrow(() -> new GlobalException(ResultCode.MISSING_TOKEN));
+		var savedToken = refreshTokenService.findByUser(member)
+				.orElseThrow(() -> new GlobalException(ResultCode.MISSING_TOKEN));
 
-        if (!savedToken.getToken().equals(refreshToken)) {
-            throw new GlobalException(ResultCode.TOKEN_REISSUE_FAILED);
-        }
-        if (savedToken.getState() != TokenState.VALID) {
-            throw new GlobalException(ResultCode.INVALID_TOKEN);
-        }
+		if (!savedToken.getToken().equals(refreshToken)) {
+			throw new GlobalException(ResultCode.TOKEN_REISSUE_FAILED);
+		}
+		if (savedToken.getState() != TokenState.VALID) {
+			throw new GlobalException(ResultCode.INVALID_TOKEN);
+		}
 
-        TokenResponse tokenResponse = authService.reissueAccessToken(refreshToken);
+		TokenResponse tokenResponse = authService.reissueAccessToken(refreshToken);
 
-        return CommonResponse.success(tokenResponse);
-    }
+		return CommonResponse.success(tokenResponse);
+	}
 
-    @PostMapping("/auth/signup")
-    public CommonResponse<SignupResponse> signup(
-            @RequestBody SignupRequest request) {
+	@PostMapping("/auth/signup")
+	public CommonResponse<SignupResponse> signup(
+			@RequestBody SignupRequest request) {
 
-        SignupResponse result = memberService.registerUser(request);
+		SignupResponse result = memberService.registerUser(request);
 
-        return CommonResponse.success(result);
-    }
+		return CommonResponse.success(result);
+	}
 
-    @PostMapping("/auth/login")
-    public CommonResponse<LoginResponse> login(
-            @RequestBody LoginRequest request,
-            HttpServletResponse response
-    ) {
+	@PostMapping("/auth/login")
+	public CommonResponse<LoginResponse> login(
+			@RequestBody LoginRequest request,
+			HttpServletResponse response
+	) {
 
-        LoginResponse result = memberService.login(request, response);
+		LoginResponse result = memberService.login(request, response);
 
-        return CommonResponse.success(result);
-    }
+		return CommonResponse.success(result);
+	}
 
-    @PostMapping("/auth/logout")
-    public CommonResponse<Void> logout(HttpServletRequest request,
-            HttpServletResponse response) {
+	@PostMapping("/auth/logout")
+	public CommonResponse<Void> logout(HttpServletRequest request,
+			HttpServletResponse response) {
 
-        String token = jwtTokenProvider.resolveToken(request);
+		String token = jwtTokenProvider.resolveToken(request);
 
-        if (token == null) {
-            throw new GlobalException(ResultCode.NOT_LOGGED_IN);
-        }
-        if (!jwtTokenProvider.validateToken(token)) {
-            throw new GlobalException(ResultCode.INVALID_TOKEN);
-        }
+		if (token == null) {
+			throw new GlobalException(ResultCode.NOT_LOGGED_IN);
+		}
+		if (!jwtTokenProvider.validateToken(token)) {
+			throw new GlobalException(ResultCode.INVALID_TOKEN);
+		}
 
-        String email = jwtTokenProvider.getUserEmailFromToken(token);
-        OAuthProvider provider = jwtTokenProvider.getProviderFromToken(token);
-        Member member = memberService.findUserByEmailAndProvider(email, provider);
+		String email = jwtTokenProvider.getUserEmailFromToken(token);
+		OAuthProvider provider = jwtTokenProvider.getProviderFromToken(token);
+		Member member = memberService.findUserByEmailAndProvider(email, provider);
 
-        refreshTokenService.invalidateRefreshToken(member);
+		refreshTokenService.invalidateRefreshToken(member);
 
-        Cookie cookie = new Cookie("accessToken", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+		Cookie cookie = new Cookie("accessToken", null);
+		cookie.setHttpOnly(true);
+		cookie.setSecure(true);
+		cookie.setPath("/");
+		cookie.setMaxAge(0);
+		response.addCookie(cookie);
 
-        request.getSession().invalidate();
+		request.getSession().invalidate();
 
-        return CommonResponse.success(null);
-    }
+		return CommonResponse.success(null);
+	}
 }

@@ -12,46 +12,46 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RefreshTokenService {
 
-    private final RefreshTokenRepository refreshTokenRepository;
+	private final RefreshTokenRepository refreshTokenRepository;
 
-    public void save(Member member, String refreshToken) {
+	public void save(Member member, String refreshToken) {
 
-        refreshTokenRepository.findByMember(member).ifPresentOrElse(
-                token -> refreshTokenRepository.save(token.toBuilder().token(refreshToken).build()),
-                () -> refreshTokenRepository.save(
-                        RefreshToken.builder()
-                                .member(member)
-                                .token(refreshToken)
-                                .build()
-                )
-        );
-    }
+		refreshTokenRepository.findByMember(member).ifPresentOrElse(
+				token -> refreshTokenRepository.save(token.toBuilder().token(refreshToken).build()),
+				() -> refreshTokenRepository.save(
+						RefreshToken.builder()
+								.member(member)
+								.token(refreshToken)
+								.build()
+				)
+		);
+	}
 
-    public void invalidateRefreshToken(Member member) {
-        
-        refreshTokenRepository.findByMemberAndState(member, TokenState.VALID)
-                .ifPresent(token -> {
-                    token.setState(TokenState.INVALID);
-                    refreshTokenRepository.save(token);
-                });
-    }
+	public void invalidateRefreshToken(Member member) {
 
-    public void issueRefreshToken(Member member, String newTokenValue) {
+		refreshTokenRepository.findByMemberAndState(member, TokenState.VALID)
+				.ifPresent(token -> {
+					token.setState(TokenState.INVALID);
+					refreshTokenRepository.save(token);
+				});
+	}
 
-        refreshTokenRepository.findByMemberAndState(member, TokenState.VALID)
-                .orElseGet(() -> {
-                    RefreshToken newToken = RefreshToken.builder()
-                            .member(member)
-                            .token(newTokenValue)
-                            .state(TokenState.VALID)
-                            .build();
+	public void issueRefreshToken(Member member, String newTokenValue) {
 
-                    return refreshTokenRepository.save(newToken);
-                });
-    }
+		refreshTokenRepository.findByMemberAndState(member, TokenState.VALID)
+				.orElseGet(() -> {
+					RefreshToken newToken = RefreshToken.builder()
+							.member(member)
+							.token(newTokenValue)
+							.state(TokenState.VALID)
+							.build();
 
-    public Optional<RefreshToken> findByUser(Member member) {
+					return refreshTokenRepository.save(newToken);
+				});
+	}
 
-        return refreshTokenRepository.findByMember(member);
-    }
+	public Optional<RefreshToken> findByUser(Member member) {
+
+		return refreshTokenRepository.findByMember(member);
+	}
 }

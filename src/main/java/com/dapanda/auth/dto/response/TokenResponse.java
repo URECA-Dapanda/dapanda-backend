@@ -12,11 +12,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class TokenResponse {
 
-    private String accessToken;
+	private String accessToken;
 
-    public static TokenResponse from(String accessToken) {
-        return TokenResponse.builder()
-                .accessToken(accessToken)
-                .build();
-    }
+	public static TokenResponse from(String accessToken) {
+		return TokenResponse.builder()
+				.accessToken(accessToken)
+				.build();
+	}
 }

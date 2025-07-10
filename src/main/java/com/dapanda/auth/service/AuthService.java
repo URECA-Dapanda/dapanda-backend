@@ -16,36 +16,36 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final JwtTokenProvider jwtTokenProvider;
-    private final MemberService memberService;
-    private final RefreshTokenRepository refreshTokenRepository;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final MemberService memberService;
+	private final RefreshTokenRepository refreshTokenRepository;
 
-    public TokenResponse reissueAccessToken(String refreshToken) {
+	public TokenResponse reissueAccessToken(String refreshToken) {
 
-        // 1. 토큰 유효성 검사
-        if (refreshToken == null) {
-            throw new GlobalException(ResultCode.MISSING_TOKEN);
-        }
-        if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new GlobalException(ResultCode.INVALID_TOKEN);
-        }
+		// 1. 토큰 유효성 검사
+		if (refreshToken == null) {
+			throw new GlobalException(ResultCode.MISSING_TOKEN);
+		}
+		if (!jwtTokenProvider.validateToken(refreshToken)) {
+			throw new GlobalException(ResultCode.INVALID_TOKEN);
+		}
 
-        // 2. 사용자 정보 추출 및 검증
-        String email = jwtTokenProvider.getUserEmailFromToken(refreshToken);
-        OAuthProvider provider = jwtTokenProvider.getProviderFromToken(refreshToken);
-        Member member = memberService.findUserByEmailAndProvider(email, provider);
+		// 2. 사용자 정보 추출 및 검증
+		String email = jwtTokenProvider.getUserEmailFromToken(refreshToken);
+		OAuthProvider provider = jwtTokenProvider.getProviderFromToken(refreshToken);
+		Member member = memberService.findUserByEmailAndProvider(email, provider);
 
-        // 3. 저장된 refresh token과 일치하는지 확인
-        RefreshToken savedToken = refreshTokenRepository.findByMember(member)
-                .orElseThrow(() -> new GlobalException(ResultCode.MISSING_TOKEN));
-        if (!savedToken.getToken().equals(refreshToken)) {
-            throw new GlobalException(ResultCode.TOKEN_REISSUE_FAILED);
-        }
+		// 3. 저장된 refresh token과 일치하는지 확인
+		RefreshToken savedToken = refreshTokenRepository.findByMember(member)
+				.orElseThrow(() -> new GlobalException(ResultCode.MISSING_TOKEN));
+		if (!savedToken.getToken().equals(refreshToken)) {
+			throw new GlobalException(ResultCode.TOKEN_REISSUE_FAILED);
+		}
 
-        // 4. 새 Access Token 발급
-        String newAccessToken = jwtTokenProvider.generateAccessToken(member);
+		// 4. 새 Access Token 발급
+		String newAccessToken = jwtTokenProvider.generateAccessToken(member);
 
-        return TokenResponse.from(newAccessToken);
-    }
+		return TokenResponse.from(newAccessToken);
+	}
 
 }
