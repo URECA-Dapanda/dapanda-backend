@@ -39,6 +39,15 @@ jobs:
 
       - name: Gradle 빌드 + 테스트
         run: ./gradlew clean build --stacktrace
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: true
+          DOCKER_HOST: "unix:///var/run/docker.sock"
+          TESTCONTAINERS_CHECKS_DISABLE: true
+
+      - name: Docker 상태 확인
+        run: |
+          docker info
+          docker ps -a
 
       - name: PR에 코드 커버리지 측정 레포트 생성
         id: jacoco
