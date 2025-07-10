@@ -16,6 +16,7 @@ java {
 }
 
 configurations {
+    asciidoctorExt
     compileOnly {
         extendsFrom annotationProcessor
     }
@@ -26,7 +27,7 @@ repositories {
 }
 
 ext {
-    set('snippetsDir', file("build/generated-snippets"))
+    snippetsDir = file("build/generated-snippets")
 }
 
 dependencies {
@@ -57,6 +58,7 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
 
     // Rest Docs
+    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 
     // Test
@@ -70,11 +72,28 @@ dependencies {
     testImplementation 'org.testcontainers:mysql'
 }
 
-tasks.named('test') {
+// 테스트 실행 설정
+test {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
+    outputs.dir snippetsDir
 }
 
+asciidoctor {
+    inputs.dir snippetsDir
+    configurations 'asciidoctorExt'
+    dependsOn test
+}
+
+bootJar {
+    dependsOn asciidoctor // jar 빌드 전에 asciidoctor(문서 생성) 실행
+    copy {
+        from("${asciidoctor.outputDir}")
+        into 'src/main/resources/static/'
+    }
+}
+
+// Jacoco 설정 (기존과 동일)
 jacoco {
     toolVersion = "0.8.11"
 }
@@ -115,10 +134,23 @@ jacocoTestCoverageVerification {
     }
 }
 
-tasks.named('asciidoctor') {
-    inputs.dir snippetsDir
-    dependsOn test
+// 불필요한 snippets 삭제
+tasks.register('cleanUnwantedSnippets') {
+    doLast {
+        delete fileTree("build/generated-snippets") {
+            include "**/*curl-request.adoc"
+            include "**/*httpie-request.adoc"
+            include "**/*request-body.adoc"
+            include "**/*response-body.adoc"
+        }
+    }
 }
+
+clean {
+    delete file('src/main/generated')
+}
+
+test.finalizedBy cleanUnwantedSnippets
 
 sourceSets {
     main {

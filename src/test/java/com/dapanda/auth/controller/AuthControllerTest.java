@@ -5,8 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.dapanda.RestDocsConfig;
 import com.dapanda.auth.entity.OAuthProvider;
-import com.dapanda.common.config.SecurityConfig;
 import com.dapanda.jwt.JwtTokenProvider;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberRole;
@@ -19,25 +19,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
+import org.springframework.web.context.WebApplicationContext;
 
-@AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import({RestDocsConfig.class})
 @ActiveProfiles("test")
+@ExtendWith(RestDocumentationExtension.class)
 @DisplayName("인증/인가 컨트롤러 통합 테스트")
-@Import(SecurityConfig.class)
 class AuthControllerTest {
 
     static final String BASE_EMAIL = "test@example.com";
@@ -45,14 +44,7 @@ class AuthControllerTest {
     static final String BASE_NAME = "홍길동";
     static final OAuthProvider BASE_PROVIDER = OAuthProvider.LOCAL;
     static final MemberRole BASE_ROLE = MemberRole.ROLE_MEMBER;
-
-    @Container
-    static MySQLContainer<?> mysql =
-            new MySQLContainer<>("mysql:8.0.33")
-                    .withDatabaseName("dpdtest")
-                    .withUsername("root")
-                    .withPassword("0000");
-    @Autowired
+    
     MockMvc mockMvc;
     @Autowired
     MemberRepository memberRepository;
@@ -63,13 +55,13 @@ class AuthControllerTest {
     @Autowired
     PasswordEncoder passwordEncoder;
     Member savedMember;
+    @Autowired
+    private WebApplicationContext context;
 
-    // 2) 컨테이너 준비 후 스프링 프로퍼티 주입
-    @DynamicPropertySource
-    static void overrideProps(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", mysql::getJdbcUrl);
-        registry.add("spring.datasource.username", mysql::getUsername);
-        registry.add("spring.datasource.password", mysql::getPassword);
+    @BeforeEach
+    void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
+
+        this.mockMvc = RestDocsConfig.createMockMvc(context, restDocumentation);
     }
 
     @BeforeEach
