@@ -10,11 +10,11 @@ import lombok.Getter;
 @Getter
 public class Panda {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    private String name;
+	private String name;
 
-    private String imageUrl;
+	private String imageUrl;
 }

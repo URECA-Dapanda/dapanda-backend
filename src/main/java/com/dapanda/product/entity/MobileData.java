@@ -10,11 +10,13 @@ import lombok.Getter;
 @Getter
 public class MobileData {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    private int dataAmount;
+	private int dataAmount;
 
-    private DataSellingUnit unit;
+    private int remainAmount;
+
+	private DataSellingUnit unit;
 }

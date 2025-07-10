@@ -9,23 +9,23 @@ import lombok.Getter;
 @Getter
 public class Plan extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    private String name;
+	private String name;
 
-    private int providingDataAmount;
+	private int providingDataAmount;
 
-    private int monthlyPrice;
+	private int monthlyPrice;
 
-    @Enumerated(EnumType.STRING)
-    private PlanCategory category;
+	@Enumerated(EnumType.STRING)
+	private PlanCategory category;
 
-    @Enumerated(EnumType.STRING)
-    private AgeGroup ageGroup;
+	@Enumerated(EnumType.STRING)
+	private AgeGroup ageGroup;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false, unique = true)
-    private Member member;
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id", nullable = false, unique = true)
+	private Member member;
 }

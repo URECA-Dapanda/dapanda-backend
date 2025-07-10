@@ -9,15 +9,15 @@ import lombok.Getter;
 @Getter
 public class MemberPanda extends CreatedAtEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id")
+	private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "panda_id")
-    private Panda panda;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "panda_id")
+	private Panda panda;
 }
