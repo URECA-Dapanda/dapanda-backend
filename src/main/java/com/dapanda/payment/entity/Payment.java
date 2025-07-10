@@ -30,21 +30,18 @@ public class Payment {
 
     private int totalAmount;
 
-    private String method;
-
     private LocalDateTime approvedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
-    public static Payment of(String paymentKey, int totalAmount, String method,
-            LocalDateTime approvedAt, Member member) {
+    public static Payment of(String paymentKey, int totalAmount, LocalDateTime approvedAt,
+            Member member) {
 
         return Payment.builder()
                 .paymentKey(paymentKey)
                 .totalAmount(totalAmount)
-                .method(method)
                 .approvedAt(approvedAt)
                 .member(member).build();
     }
