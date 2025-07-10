@@ -70,7 +70,7 @@ class MemberServiceTest {
             SignupResponse response = memberService.registerUser(request);
 
             assertThat(response).isNotNull();
-            assertThat(response.message()).contains("완료");
+            assertThat(response.getMessage()).contains("완료");
             assertThat(memberRepository.findByEmail(EMAIL)).isPresent();
         }
 
@@ -166,8 +166,8 @@ class MemberServiceTest {
             LoginResponse loginResponse = memberService.login(request, response);
 
             assertThat(loginResponse).isNotNull();
-            assertThat(loginResponse.name()).isEqualTo(NAME);
-            assertThat(loginResponse.message()).contains("성공");
+            assertThat(loginResponse.getName()).isEqualTo(NAME);
+            assertThat(loginResponse.getMessage()).contains("성공");
         }
 
         @Test

@@ -84,7 +84,7 @@ class AuthServiceTest {
 
                 // then
                 assertNotNull(response);
-                assertEquals(newAccessToken, response.accessToken());
+                assertEquals(newAccessToken, response.getAccessToken());
             }
         }
 

@@ -45,7 +45,7 @@ public class AuthService {
         // 4. 새 Access Token 발급
         String newAccessToken = jwtTokenProvider.generateAccessToken(member);
 
-        return new TokenResponse(newAccessToken);
+        return TokenResponse.from(newAccessToken);
     }
 
 }

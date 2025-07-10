@@ -54,7 +54,7 @@ public class MemberService {
         cookie.setMaxAge(60 * 60);
         response.addCookie(cookie);
 
-        return new LoginResponse(member.getName(), "로그인 성공");
+        return LoginResponse.from(member.getName(), "로그인 성공");
     }
 
     public SignupResponse registerUser(SignupRequest request) {
@@ -89,7 +89,7 @@ public class MemberService {
 
         memberRepository.save(member);
 
-        return new SignupResponse(member.getId(), "회원가입이 완료되었습니다.");
+        return SignupResponse.from(member.getId(), "회원가입이 완료되었습니다.");
     }
 
     private boolean isValidEmailFormat(String email) {
