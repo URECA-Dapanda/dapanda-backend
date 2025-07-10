@@ -13,6 +13,6 @@ import java.time.LocalDateTime;
 @Getter
 public class UpdatedAtEntity {
 
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
+	@LastModifiedDate
+	private LocalDateTime updatedAt;
 }

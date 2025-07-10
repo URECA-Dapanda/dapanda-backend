@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum PlanCategory {
 
-    _5G("5G"),
-    LTE("LTE"),
-    NUGET("NUGET");
+	_5G("5G"),
+	LTE("LTE"),
+	NUGET("NUGET");
 
-    private final String category;
+	private final String category;
 }

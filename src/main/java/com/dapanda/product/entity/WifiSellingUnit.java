@@ -2,6 +2,6 @@ package com.dapanda.product.entity;
 
 public enum WifiSellingUnit {
 
-    MIN,
-    HOUR,
+	MIN,
+	HOUR,
 }

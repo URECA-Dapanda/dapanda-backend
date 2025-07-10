@@ -25,60 +25,60 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtTokenProvider jwtTokenProvider;
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2SuccessHandler oAuth2SuccessHandler;
-    private final OAuth2FailureHandler oAuth2FailureHandler;
-    private final CustomUserDetailsService userDetailsService;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final CustomOAuth2UserService customOAuth2UserService;
+	private final OAuth2SuccessHandler oAuth2SuccessHandler;
+	private final OAuth2FailureHandler oAuth2FailureHandler;
+	private final CustomUserDetailsService userDetailsService;
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(
-                        sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index.html", "/api/**", "/oauth2/**",
-                                "/api/auth/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService)
-                        )
-                        .successHandler(oAuth2SuccessHandler)
-                        .failureHandler(oAuth2FailureHandler)
-                );
+		http
+				.csrf(AbstractHttpConfigurer::disable)
+				.sessionManagement(
+						sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/", "/index.html", "/api/**", "/oauth2/**",
+								"/api/auth/**").permitAll()
+						.anyRequest().authenticated()
+				)
+				.oauth2Login(oauth2 -> oauth2
+						.userInfoEndpoint(userInfo -> userInfo
+								.userService(customOAuth2UserService)
+						)
+						.successHandler(oAuth2SuccessHandler)
+						.failureHandler(oAuth2FailureHandler)
+				);
 
-        http.addFilterBefore(
-                new JwtAuthenticationFilter(jwtTokenProvider),
-                UsernamePasswordAuthenticationFilter.class
-        );
+		http.addFilterBefore(
+				new JwtAuthenticationFilter(jwtTokenProvider),
+				UsernamePasswordAuthenticationFilter.class
+		);
 
-        return http.build();
-    }
+		return http.build();
+	}
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
+	@Bean
+	public PasswordEncoder passwordEncoder() {
 
-        return new BCryptPasswordEncoder();
-    }
+		return new BCryptPasswordEncoder();
+	}
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
-            throws Exception {
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
+			throws Exception {
 
-        return configuration.getAuthenticationManager();
-    }
+		return configuration.getAuthenticationManager();
+	}
 
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
+	@Bean
+	public AuthenticationProvider authenticationProvider() {
 
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
+		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+		provider.setUserDetailsService(userDetailsService);
+		provider.setPasswordEncoder(passwordEncoder());
 
-        return provider;
-    }
+		return provider;
+	}
 }

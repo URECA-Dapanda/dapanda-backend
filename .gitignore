@@ -39,3 +39,6 @@ out/
 ### application.properties ###
 /src/main/resources/*.properties
 /src/test/resources/*.properties
+
+### REST Docs ###
+/src/main/resources/static/*
