@@ -274,7 +274,7 @@ class AuthControllerTest {
 		class Fail {
 
 			@Test
-			@DisplayName("회원정보가 없으면 404 에러")
+			@DisplayName("회원정보가 없으면 400 에러")
 			void login_memberNotFound() throws Exception {
 
 				mockMvc.perform(post("/api/auth/login")
@@ -285,7 +285,7 @@ class AuthControllerTest {
 										    "password": "P@ssword1"
 										}
 										"""))
-						.andExpect(status().isNotFound())
+						.andExpect(status().isBadRequest())
 						.andDo(document("auth-login-not-found"));
 			}
 

@@ -2,17 +2,10 @@ package com.dapanda.product.entity;
 
 import com.dapanda.common.entity.BaseEntity;
 import com.dapanda.member.entity.Member;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
 import lombok.Getter;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -29,10 +22,10 @@ public class Product extends BaseEntity {
 
 	private int price;
 
-	private Long productId;
+	private Long itemId;
 
 	@Enumerated(EnumType.STRING)
-	private ProductType type;
+	private ItemType itemType;
 
 	private LocalDateTime startTime;
 

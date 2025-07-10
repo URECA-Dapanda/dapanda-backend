@@ -1,0 +1,299 @@
+= DaPanda API 문서
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 3
+:sectlinks:
+:docinfo: shared-head
+
+[[overview]]
+== 개요
+
+DaPanda 서비스의 REST API 문서입니다.
+
+[[overview-http-verbs]]
+=== HTTP 동사
+
+본 REST API에서 사용하는 HTTP 동사(verbs)는 가능한한 표준 HTTP와 REST 규약을 따릅니다.
+
+|===
+| 동사 | 용례
+
+| `GET`
+| 리소스를 가져올 때 사용
+
+| `POST`
+| 새 리소스를 만들 때 사용
+
+| `PUT`
+| 기존 리소스를 수정할 때 사용
+
+| `PATCH`
+| 기존 리소스의 일부를 수정할 때 사용
+
+| `DELETE`
+| 기존 리소스를 삭제할 때 사용
+|===
+
+[[overview-http-status-codes]]
+=== HTTP 상태 코드
+
+본 REST API에서 사용하는 HTTP 상태 코드는 성공일 경우 200응답, 실패일 경우 내부 규약을 따릅니다.
+
+|===
+| 상태 코드 | 용례
+
+| `200 OK`
+| 요청을 성공적으로 처리함
+
+| `201 Created`
+| 새 리소스를 성공적으로 생성함. 응답의 `Location` 헤더에 해당 리소스의 URI가 담겨있다.
+
+| `204 No Content`
+| 기존 리소스를 성공적으로 수정함.
+
+| `400 Bad Request`
+| 잘못된 요청을 보낸 경우. 응답 본문에 더 오류에 대한 정보가 담겨있다.
+
+| `404 Not Found`
+| 요청한 리소스가 존재하지 않음.
+
+| `409 Conflict`
+| 서버의 규칙에 의해 해당 요청을 완료할 수 없음.
+|===
+
+[[overview-errors]]
+=== 오류
+
+에러 응답이 발생했을 때 (상태 코드 >= 400), 본문에 해당 문제를 기술한 JSON 객체가 담겨있다.
+
+==== 에러 응답 구조
+
+// include::{snippets}/error-example/response-fields.adoc[]
+
+==== 에러 응답 예시
+
+// include::{snippets}/error-example/http-response.adoc[]
+
+[[resources]]
+== API 목록
+
+[[resources-review]]
+=== 리뷰
+
+리뷰 리소스는 상품에 대한 사용자의 평가와 의견을 관리하는 데 사용됩니다.
+
+[[resources-review-save]]
+==== 리뷰 등록
+
+`POST` 요청을 사용하여 새로운 리뷰를 등록할 수 있습니다.
+
+===== 요청
+
+include::{snippets}/save-review/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/save-review/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/save-review/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/save-review/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 필수 필드 누락
+
+include::{snippets}/save-review-validation-error/http-request.adoc[]
+
+include::{snippets}/save-review-validation-error/http-response.adoc[]
+
+====== 존재하지 않는 회원
+
+include::{snippets}/save-review-member-id-error/http-request.adoc[]
+
+include::{snippets}/save-review-member-id-error/http-response.adoc[]
+
+[[resources-auth]]
+=== 인증/인가
+
+인증/인가(Auth) 리소스는 회원가입, 로그인, 토큰 재발급, 로그아웃 등의 인증 관련 기능을 제공합니다.
+
+[[resources-auth-signup]]
+==== 회원가입
+
+`POST /api/auth/signup`
+새로운 회원 정보를 등록합니다.
+
+===== 요청
+
+include::{snippets}/auth-signup-success/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/auth-signup-success/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/auth-signup-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/auth-signup-success/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 이메일 중복
+
+include::{snippets}/auth-signup-duplicate-email/http-request.adoc[]
+
+include::{snippets}/auth-signup-duplicate-email/http-response.adoc[]
+
+====== 사용자명 중복
+
+include::{snippets}/auth-signup-duplicate-username/http-request.adoc[]
+
+include::{snippets}/auth-signup-duplicate-username/http-response.adoc[]
+
+====== 약한 비밀번호
+
+include::{snippets}/auth-signup-weak-password/http-request.adoc[]
+
+include::{snippets}/auth-signup-weak-password/http-response.adoc[]
+
+====== 잘못된 이메일 형식
+
+include::{snippets}/auth-signup-invalid-email/http-request.adoc[]
+
+include::{snippets}/auth-signup-invalid-email/http-response.adoc[]
+
+====== 잘못된 이름 형식
+
+include::{snippets}/auth-signup-invalid-membername/http-request.adoc[]
+
+include::{snippets}/auth-signup-invalid-membername/http-response.adoc[]
+
+---
+
+[[resources-auth-login]]
+==== 로그인
+
+`POST /api/auth/login`
+이메일과 비밀번호로 로그인을 수행합니다.
+
+===== 요청
+
+include::{snippets}/auth-login-success/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/auth-login-success/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/auth-login-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/auth-login-success/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 회원 없음
+
+include::{snippets}/auth-login-not-found/http-request.adoc[]
+
+include::{snippets}/auth-login-not-found/http-response.adoc[]
+
+====== 비밀번호 불일치
+
+include::{snippets}/auth-login-invalid-password/http-request.adoc[]
+
+include::{snippets}/auth-login-invalid-password/http-response.adoc[]
+
+---
+
+[[resources-auth-reissue]]
+==== 액세스 토큰 재발급
+
+`POST /api/auth/reissue`
+Refresh Token을 이용해 새로운 Access Token을 발급받습니다.
+
+===== 요청
+
+include::{snippets}/auth-reissue-success/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/auth-reissue-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/auth-reissue-success/response-fields.adoc[]
+
+===== 실패 요청
+
+====== Refresh Token 헤더 없음
+
+include::{snippets}/auth-reissue-no-header/http-request.adoc[]
+
+include::{snippets}/auth-reissue-no-header/http-response.adoc[]
+
+====== Refresh Token 유효하지 않음
+
+include::{snippets}/auth-reissue-invalid-token/http-request.adoc[]
+
+include::{snippets}/auth-reissue-invalid-token/http-response.adoc[]
+
+====== 저장된 Refresh Token 없음
+
+include::{snippets}/auth-reissue-no-saved-token/http-request.adoc[]
+
+include::{snippets}/auth-reissue-no-saved-token/http-response.adoc[]
+
+====== 저장된 Refresh Token과 입력값 다름
+
+include::{snippets}/auth-reissue-token-mismatch/http-request.adoc[]
+
+include::{snippets}/auth-reissue-token-mismatch/http-response.adoc[]
+
+====== Refresh Token 상태가 INVALID 등일 때
+
+include::{snippets}/auth-reissue-invalid-state/http-request.adoc[]
+
+include::{snippets}/auth-reissue-invalid-state/http-response.adoc[]
+
+---
+
+[[resources-auth-logout]]
+==== 로그아웃
+
+`POST /api/auth/logout`
+로그아웃 및 토큰 무효화를 수행합니다.
+
+===== 요청
+
+include::{snippets}/auth-logout-success/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/auth-logout-success/http-response.adoc[]
+
+===== 실패 요청
+
+====== 토큰 없음
+
+include::{snippets}/auth-logout-no-token/http-request.adoc[]
+
+include::{snippets}/auth-logout-no-token/http-response.adoc[]
+
+====== 토큰 유효하지 않음
+
+include::{snippets}/auth-logout-invalid-token/http-request.adoc[]
+
+include::{snippets}/auth-logout-invalid-token/http-response.adoc[]

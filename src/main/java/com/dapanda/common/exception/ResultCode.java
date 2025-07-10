@@ -25,7 +25,7 @@ public enum ResultCode {
 	INVALID_EMAIL_FORMAT(HttpStatus.BAD_REQUEST, 2003, "이메일 형식이 올바르지 않습니다."),
 	INVALID_MEMBERNAME_FORMAT(HttpStatus.BAD_REQUEST, 2004, "아이디 형식이 올바르지 않습니다."),
 
-	MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, 2005, "존재하지 않는 사용자입니다."),
+	MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, 2005, "존재하지 않는 사용자입니다."),
 	INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, 2006, "비밀번호가 일치하지 않습니다."),
 	ACCOUNT_LOCKED(HttpStatus.FORBIDDEN, 2007, "잠긴 계정입니다. 관리자에게 문의하세요."),
 
@@ -37,7 +37,8 @@ public enum ResultCode {
 	MISSING_TOKEN(HttpStatus.UNAUTHORIZED, 2012, "토큰이 제공되지 않았습니다."),
 	TOKEN_REISSUE_FAILED(HttpStatus.UNAUTHORIZED, 2013, "토큰 재발급에 실패했습니다."),
 
-	;
+	// 리뷰 6000번대
+	SELF_REVIEW(HttpStatus.BAD_REQUEST, 6000, "자신에게 리뷰를 작성할 수 없습니다.");
 
 	private final HttpStatus status;
 	private final int code;
