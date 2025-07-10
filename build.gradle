@@ -31,6 +31,7 @@ ext {
 }
 
 dependencies {
+
 	// Spring Data JPA
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
@@ -49,15 +50,38 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 
-	// MySQL
-	runtimeOnly 'com.mysql:mysql-connector-j'
+    // Spring Security + OAuth2 Client
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    // Bean Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // MySQL
+    runtimeOnly 'com.mysql:mysql-connector-j'
 
 	// Rest Docs
 	asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Test
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Testcontainers
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:mysql'
 }
 
 // 테스트 실행 설정
@@ -65,6 +89,7 @@ test {
 	useJUnitPlatform()
 	finalizedBy jacocoTestReport
 	outputs.dir snippetsDir
+    include '**/*Test.class'
 }
 
 asciidoctor {
@@ -110,29 +135,41 @@ jacocoTestReport {
 }
 
 jacocoTestCoverageVerification {
-	violationRules {
-		rule {
-			enabled = true
-			element = 'CLASS'
-			excludes = jacocoExcludePatterns
-		}
-	}
+    violationRules {
+
+        rule {
+            enabled = true
+            element = 'CLASS'
+
+            // 커버리지 제외 범위
+            excludes = jacocoExcludePatterns
+        }
+    }
 }
 
 // 불필요한 snippets 삭제
 tasks.register('cleanUnwantedSnippets') {
-	doLast {
-		delete fileTree("build/generated-snippets") {
-			include "**/*curl-request.adoc"
-			include "**/*httpie-request.adoc"
-			include "**/*request-body.adoc"
-			include "**/*response-body.adoc"
-		}
-	}
+    doLast {
+        delete fileTree("build/generated-snippets") {
+            include "**/*curl-request.adoc"
+            include "**/*httpie-request.adoc"
+            include "**/*request-body.adoc"
+            include "**/*response-body.adoc"
+        }
+    }
 }
 
 clean {
-	delete file('src/main/generated')
+    delete file('src/main/generated')
 }
 
 test.finalizedBy cleanUnwantedSnippets
+
+sourceSets {
+    main {
+        java { srcDirs = ['src/main/java'] }
+    }
+    test {
+        java { srcDirs = ['src/test/java'] }
+    }
+}

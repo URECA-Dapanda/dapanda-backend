@@ -12,14 +12,14 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 @TestConfiguration
 public class RestDocsConfig {
 
-    public static MockMvc createMockMvc(WebApplicationContext context, RestDocumentationContextProvider restDocumentation) {
+	public static MockMvc createMockMvc(WebApplicationContext context, RestDocumentationContextProvider restDocumentation) {
 
-        return MockMvcBuilders.webAppContextSetup(context)
-                .apply(MockMvcRestDocumentation.documentationConfiguration(restDocumentation)
-                        .operationPreprocessors()
-                        .withRequestDefaults(prettyPrint())
-                        .withResponseDefaults(prettyPrint())
-                )
-                .build();
-    }
+		return MockMvcBuilders.webAppContextSetup(context)
+				.apply(MockMvcRestDocumentation.documentationConfiguration(restDocumentation)
+						.operationPreprocessors()
+						.withRequestDefaults(prettyPrint())
+						.withResponseDefaults(prettyPrint())
+				)
+				.build();
+	}
 }

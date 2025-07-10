@@ -30,3 +30,9 @@ management:
     web:
       exposure:
         include: health,info
+
+
+jwt:
+  secret: secretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecret
+  access-token-expiration: 3600000
+  refresh-token-expiration: 1209600000
