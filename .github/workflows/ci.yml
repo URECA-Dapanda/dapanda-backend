@@ -39,12 +39,6 @@ jobs:
           dockerd-entrypoint.sh &
           sleep 10  # docker 데몬이 뜰 때까지 대기
 
-      - name: JDK 17 시작
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
       - name: application-dev.properties 파일 주입
         run: |
           mkdir -p src/main/resources
