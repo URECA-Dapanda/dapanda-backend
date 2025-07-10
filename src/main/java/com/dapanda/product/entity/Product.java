@@ -11,27 +11,27 @@ import java.time.LocalDateTime;
 @Getter
 public class Product extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    private String title;
+	private String title;
 
-    @Enumerated(EnumType.STRING)
-    private ProductState state;
+	@Enumerated(EnumType.STRING)
+	private ProductState state;
 
-    private int price;
+	private int price;
 
-    private Long productId;
+	private Long itemId;
 
-    @Enumerated(EnumType.STRING)
-    private ProductType type;
+	@Enumerated(EnumType.STRING)
+	private ItemType itemType;
 
-    private LocalDateTime startTime;
+	private LocalDateTime startTime;
 
-    private LocalDateTime endTime;
+	private LocalDateTime endTime;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id")
+	private Member member;
 }

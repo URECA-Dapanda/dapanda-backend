@@ -17,37 +17,37 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ReviewService {
 
-    private final ReviewRepository reviewRepository;
-    private final MemberRepository memberRepository;
+	private final ReviewRepository reviewRepository;
+	private final MemberRepository memberRepository;
 
-    public SaveReviewResponse saveReview(SaveReviewRequest request, Long memberId) {
+	public SaveReviewResponse saveReview(SaveReviewRequest request, Long memberId) {
 
-        validateSelfReview(memberId, request.revieweeId());
-        validateRevieweeId(request.revieweeId());
+		validateSelfReview(memberId, request.revieweeId());
+		validateRevieweeId(request.revieweeId());
 
-        Member reviewer = memberRepository.getReferenceById(memberId);
-        Member reviewee = memberRepository.getReferenceById(request.revieweeId());
+		Member reviewer = memberRepository.getReferenceById(memberId);
+		Member reviewee = memberRepository.getReferenceById(request.revieweeId());
 
-        Review review = Review.of(request.rating(), request.comment(), request.productId(), request.type(), reviewer, reviewee);
+		Review review = Review.of(request.rating(), request.comment(), request.productId(), reviewer, reviewee);
 
-        Review savedReview = reviewRepository.save(review);
+		Review savedReview = reviewRepository.save(review);
 
-        return SaveReviewResponse.from(savedReview.getId());
-    }
+		return SaveReviewResponse.from(savedReview.getId());
+	}
 
-    private void validateSelfReview(Long reviewerId, Long revieweeId){
+	private void validateSelfReview(Long reviewerId, Long revieweeId){
 
-        if (reviewerId.equals(revieweeId)){
+		if (reviewerId.equals(revieweeId)){
 
-            throw new GlobalException(ResultCode.SELF_REVIEW);
-        }
-    }
+			throw new GlobalException(ResultCode.SELF_REVIEW);
+		}
+	}
 
-    private void validateRevieweeId(Long revieweeId){
+	private void validateRevieweeId(Long revieweeId){
 
-        if (!memberRepository.existsById(revieweeId)){
+		if (!memberRepository.existsById(revieweeId)){
 
-            throw new GlobalException(ResultCode.MEMBER_NOT_FOUND);
-        }
-    }
+			throw new GlobalException(ResultCode.MEMBER_NOT_FOUND);
+		}
+	}
 }

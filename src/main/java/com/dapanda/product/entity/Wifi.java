@@ -7,20 +7,20 @@ import lombok.Getter;
 @Getter
 public class Wifi {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    private String content;
+	private String content;
 
-    //위도
-    private double latitude;
+	//위도
+	private double latitude;
 
-    //경도
-    private double longitude;
+	//경도
+	private double longitude;
 
-    private String imageUrl;
+	private String imageUrl;
 
-    @Enumerated(EnumType.STRING)
-    private WifiSellingUnit unit;
+	@Enumerated(EnumType.STRING)
+	private WifiSellingUnit unit;
 }

@@ -2,7 +2,7 @@ package com.dapanda.review.entity;
 
 import com.dapanda.common.entity.BaseEntity;
 import com.dapanda.member.entity.Member;
-import com.dapanda.product.entity.ProductType;
+import com.dapanda.product.entity.ItemType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,35 +13,32 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    private float rating;
+	private float rating;
 
-    private String comment;
+	private String comment;
 
-    private Long productId;
+	private Long productId;
 
-    private ProductType type;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "reviewer_id")
+	private Member reviewer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reviewer_id")
-    private Member reviewer;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "reviewee_id")
+	private Member reviewee;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reviewee_id")
-    private Member reviewee;
+	public static Review of(float rating, String comment, Long productId, Member reviewer, Member reviewee) {
 
-    public static Review of(float rating, String comment, Long productId, ProductType type, Member reviewer, Member reviewee) {
-
-        return Review.builder()
-                .rating(rating)
-                .comment(comment)
-                .productId(productId)
-                .type(type)
-                .reviewer(reviewer)
-                .reviewee(reviewee)
-                .build();
-    }
+		return Review.builder()
+				.rating(rating)
+				.comment(comment)
+				.productId(productId)
+				.reviewer(reviewer)
+				.reviewee(reviewee)
+				.build();
+	}
 }

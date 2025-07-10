@@ -1,28 +1,20 @@
 package com.dapanda.member.entity;
 
+import com.dapanda.auth.entity.OAuthProvider;
+
 public class MemberFixture {
 
-    public static final Member MEMBER_REVIEWER = new Member(
-            null,
-            "더미 리뷰어1",
-            "010-1234-5678",
-            2000,
-            0,
-            MemberRole.ROLE_MEMBER,
-            2500,
-            false,
-            0
+    public static final Member MEMBER_REVIEWER = Member.ofOAuthMember(
+            "dummy1@email.com",
+            "dummy1Name",
+            OAuthProvider.KAKAO,
+            MemberRole.ROLE_MEMBER
     );
 
-    public static final Member MEMBER_REVIEWEE = new Member(
-            null,
-            "더미 리뷰이1",
-            "010-1234-1111",
-            300,
-            0,
-            MemberRole.ROLE_MEMBER,
-            2000,
-            false,
-            1
+    public static final Member MEMBER_REVIEWEE = Member.ofOAuthMember(
+            "dummy2@email.com",
+            "dummy2Name",
+            OAuthProvider.KAKAO,
+            MemberRole.ROLE_MEMBER
     );
 }

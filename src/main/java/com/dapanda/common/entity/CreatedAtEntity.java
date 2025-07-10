@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 public abstract class CreatedAtEntity {
 
-    @CreatedDate
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
+	@CreatedDate
+	@Column(updatable = false)
+	private LocalDateTime createdAt;
 }

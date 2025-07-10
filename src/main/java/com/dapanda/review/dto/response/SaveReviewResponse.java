@@ -8,12 +8,12 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class SaveReviewResponse {
 
-    private Long reviewId;
+	private Long reviewId;
 
-    public static SaveReviewResponse from(Long reviewId) {
+	public static SaveReviewResponse from(Long reviewId) {
 
-        return SaveReviewResponse.builder()
-                .reviewId(reviewId)
-                .build();
-    }
+		return SaveReviewResponse.builder()
+				.reviewId(reviewId)
+				.build();
+	}
 }

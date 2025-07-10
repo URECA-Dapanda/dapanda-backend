@@ -1,6 +1,6 @@
 package com.dapanda.product.entity;
 
-public enum ProductType {
+public enum ItemType {
 
     HOTSPOT,
     WIFI,

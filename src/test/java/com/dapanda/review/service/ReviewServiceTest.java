@@ -4,7 +4,6 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.product.entity.ProductType;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.response.SaveReviewResponse;
 import com.dapanda.review.entity.Review;
@@ -29,84 +28,82 @@ import static org.mockito.Mockito.verify;
 @DisplayName("리뷰 서비스 테스트")
 class ReviewServiceTest {
 
-    @Mock
-    MemberRepository memberRepository;
+	@Mock
+	MemberRepository memberRepository;
 
-    @Mock
-    ReviewRepository reviewRepository;
+	@Mock
+	ReviewRepository reviewRepository;
 
-    @InjectMocks
-    ReviewService reviewService;
+	@InjectMocks
+	ReviewService reviewService;
 
-    @Nested
-    @DisplayName("리뷰 등록")
-    class SaveReview {
+	@Nested
+	@DisplayName("리뷰 등록")
+	class SaveReview {
 
-        @DisplayName("성공 케이스")
-        @Nested
-        class Success {
+		@DisplayName("성공 케이스")
+		@Nested
+		class Success {
 
-            @Test
-            @DisplayName("리뷰 등록 성공후 등록된 리뷰 아이디를 반환한다")
-            public void saveReviewTest() {
+			@Test
+			@DisplayName("리뷰 등록 성공후 등록된 리뷰 아이디를 반환한다")
+			public void saveReviewTest() {
 
-                //given
-                Long reviewerId = 1L;
-                Long revieweeId = 2L;
-                Long productId = 3L;
-                ProductType type = ProductType.MOBILE_DATA;
-                Long expectedReviewId = 101L;
-                float rating = 3.5f;
-                String comment = "그저 그래요";
+				//given
+				Long reviewerId = 1L;
+				Long revieweeId = 2L;
+				Long productId = 3L;
+				Long expectedReviewId = 101L;
+				float rating = 3.5f;
+				String comment = "그저 그래요";
 
-                Member reviewer = MemberFixture.MEMBER_REVIEWER;
-                Member reviewee = MemberFixture.MEMBER_REVIEWEE;
+				Member reviewer = MemberFixture.MEMBER_REVIEWER;
+				Member reviewee = MemberFixture.MEMBER_REVIEWEE;
 
-                Review savedReview = Review.of(rating, comment, productId, type, reviewer, reviewee);
+				Review savedReview = Review.of(rating, comment, productId, reviewer, reviewee);
 
-                ReflectionTestUtils.setField(savedReview, "id", expectedReviewId);
+				ReflectionTestUtils.setField(savedReview, "id", expectedReviewId);
 
-                given(memberRepository.existsById(revieweeId)).willReturn(true);
-                given(memberRepository.getReferenceById(reviewerId)).willReturn(reviewer);
-                given(memberRepository.getReferenceById(revieweeId)).willReturn(reviewee);
-                given(reviewRepository.save(any(Review.class))).willReturn(savedReview);
+				given(memberRepository.existsById(revieweeId)).willReturn(true);
+				given(memberRepository.getReferenceById(reviewerId)).willReturn(reviewer);
+				given(memberRepository.getReferenceById(revieweeId)).willReturn(reviewee);
+				given(reviewRepository.save(any(Review.class))).willReturn(savedReview);
 
-                SaveReviewRequest request = new SaveReviewRequest(revieweeId, productId, type, rating, comment);
+				SaveReviewRequest request = new SaveReviewRequest(revieweeId, productId, rating, comment);
 
-                //when
-                SaveReviewResponse response = reviewService.saveReview(request, reviewerId);
+				//when
+				SaveReviewResponse response = reviewService.saveReview(request, reviewerId);
 
-                //then
-                assertThat(response.getReviewId()).isEqualTo(expectedReviewId);
-            }
-        }
+				//then
+				assertThat(response.getReviewId()).isEqualTo(expectedReviewId);
+			}
+		}
 
-        @DisplayName("실패 케이스")
-        @Nested
-        class Fail {
+		@DisplayName("실패 케이스")
+		@Nested
+		class Fail {
 
-            @Test
-            @DisplayName("자기 자신을 리뷰할 수 없습니다.")
-            public void selfReviewTest() {
+			@Test
+			@DisplayName("자기 자신을 리뷰할 수 없습니다.")
+			public void selfReviewTest() {
 
-                //given
-                Long reviewerId = 2L;
-                Long revieweeId = 2L;
-                Long productId = 3L;
-                ProductType type = ProductType.MOBILE_DATA;
-                float rating = 3.5f;
-                String comment = "그저 그래요";
+				//given
+				Long reviewerId = 2L;
+				Long revieweeId = 2L;
+				Long productId = 3L;
+				float rating = 3.5f;
+				String comment = "그저 그래요";
 
-                SaveReviewRequest request = new SaveReviewRequest(revieweeId, productId, type, rating, comment);
+				SaveReviewRequest request = new SaveReviewRequest(revieweeId, productId, rating, comment);
 
-                //when & then
-                assertThatThrownBy(() -> reviewService.saveReview(request, reviewerId))
-                        .isInstanceOf(GlobalException.class)
-                        .hasMessage("자신에게 리뷰를 작성할 수 없습니다.");
+				//when & then
+				assertThatThrownBy(() -> reviewService.saveReview(request, reviewerId))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage("자신에게 리뷰를 작성할 수 없습니다.");
 
-                verify(memberRepository, never()).getReferenceById(any());
-                verify(reviewRepository, never()).save(any());
-            }
-        }
-    }
+				verify(memberRepository, never()).getReferenceById(any());
+				verify(reviewRepository, never()).save(any());
+			}
+		}
+	}
 }

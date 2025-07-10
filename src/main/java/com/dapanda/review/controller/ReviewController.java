@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ReviewController {
 
-    private final ReviewService reviewService;
+	private final ReviewService reviewService;
 
-    @PostMapping("/reviews")
-    public CommonResponse<SaveReviewResponse> saveReview(@RequestBody @Valid SaveReviewRequest request,@RequestParam Long memberId) {
+	@PostMapping("/reviews")
+	public CommonResponse<SaveReviewResponse> saveReview(@RequestBody @Valid SaveReviewRequest request,@RequestParam Long memberId) {
 
-        return CommonResponse.success(reviewService.saveReview(request, memberId));
-    }
+		return CommonResponse.success(reviewService.saveReview(request, memberId));
+	}
 }
