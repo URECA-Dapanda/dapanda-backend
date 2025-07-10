@@ -17,11 +17,27 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest # 실행환경 지정
+    container:
+      image: docker:24-dind
+      options: --privileged
 
     # 실행 스텝 지정
     steps:
+      - name: Install git, bash, curl, openjdk, etc
+        run: |
+          apk add --no-cache bash git curl openjdk17
+
       - name: 코드 체크아웃
         uses: actions/checkout@v4
+
+      - name: Install Docker CLI
+        run: |
+          apk add --no-cache docker-cli
+
+      - name: Start Docker Daemon
+        run: |
+          dockerd-entrypoint.sh &
+          sleep 10  # docker 데몬이 뜰 때까지 대기
 
       - name: JDK 17 시작
         uses: actions/setup-java@v4
@@ -37,17 +53,17 @@ jobs:
       - name: Gradle 권한 부여
         run: chmod +x ./gradlew
 
+      - name: Docker 상태 확인
+        run: |
+          docker info
+          docker ps -a
+
       - name: Gradle 빌드 + 테스트
         run: ./gradlew clean build --stacktrace
         env:
           TESTCONTAINERS_RYUK_DISABLED: true
           DOCKER_HOST: "unix:///var/run/docker.sock"
           TESTCONTAINERS_CHECKS_DISABLE: true
-
-      - name: Docker 상태 확인
-        run: |
-          docker info
-          docker ps -a
 
       - name: PR에 코드 커버리지 측정 레포트 생성
         id: jacoco
