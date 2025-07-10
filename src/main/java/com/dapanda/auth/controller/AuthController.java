@@ -20,7 +20,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,7 +37,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/auth/reissue")
-    public ResponseEntity<CommonResponse<TokenResponse>> reissueAccessToken(
+    public CommonResponse<TokenResponse> reissueAccessToken(
             HttpServletRequest request) {
 
         String refreshToken = request.getHeader("Refresh-Token");
@@ -69,31 +68,31 @@ public class AuthController {
 
         TokenResponse tokenResponse = authService.reissueAccessToken(refreshToken);
 
-        return ResponseEntity.ok(CommonResponse.success(tokenResponse));
+        return CommonResponse.success(tokenResponse);
     }
 
     @PostMapping("/auth/signup")
-    public ResponseEntity<CommonResponse<SignupResponse>> signup(
+    public CommonResponse<SignupResponse> signup(
             @RequestBody SignupRequest request) {
 
         SignupResponse result = memberService.registerUser(request);
 
-        return ResponseEntity.ok(CommonResponse.success(result));
+        return CommonResponse.success(result);
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<CommonResponse<LoginResponse>> login(
+    public CommonResponse<LoginResponse> login(
             @RequestBody LoginRequest request,
             HttpServletResponse response
     ) {
 
         LoginResponse result = memberService.login(request, response);
 
-        return ResponseEntity.ok(CommonResponse.success(result));
+        return CommonResponse.success(result);
     }
 
     @PostMapping("/auth/logout")
-    public ResponseEntity<CommonResponse<Void>> logout(HttpServletRequest request,
+    public CommonResponse<Void> logout(HttpServletRequest request,
             HttpServletResponse response) {
 
         String token = jwtTokenProvider.resolveToken(request);
@@ -120,6 +119,6 @@ public class AuthController {
 
         request.getSession().invalidate();
 
-        return ResponseEntity.ok(CommonResponse.success(null));
+        return CommonResponse.success(null);
     }
 }
