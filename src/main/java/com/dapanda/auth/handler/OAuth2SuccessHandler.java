@@ -21,46 +21,46 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-    private final JwtTokenProvider jwtTokenProvider;
-    private final RefreshTokenService refreshTokenService;
-    private final MemberRepository memberRepository;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final RefreshTokenService refreshTokenService;
+	private final MemberRepository memberRepository;
 
-    @Override
-    public void onAuthenticationSuccess(HttpServletRequest request,
-            HttpServletResponse response,
-            Authentication authentication) throws IOException {
+	@Override
+	public void onAuthenticationSuccess(HttpServletRequest request,
+			HttpServletResponse response,
+			Authentication authentication) throws IOException {
 
-        DefaultOAuth2User oAuth2User = (DefaultOAuth2User) authentication.getPrincipal();
-        String email = (String) oAuth2User.getAttributes().get("email");
+		DefaultOAuth2User oAuth2User = (DefaultOAuth2User) authentication.getPrincipal();
+		String email = (String) oAuth2User.getAttributes().get("email");
 
-        String uri = request.getRequestURI();
-        String providerStr = null;
-        if (uri.contains("/login/oauth2/code/")) {
-            providerStr = uri.substring(uri.lastIndexOf("/") + 1);
-        } else {
-            providerStr = "unknown";
-        }
+		String uri = request.getRequestURI();
+		String providerStr = null;
+		if (uri.contains("/login/oauth2/code/")) {
+			providerStr = uri.substring(uri.lastIndexOf("/") + 1);
+		} else {
+			providerStr = "unknown";
+		}
 
-        OAuthProvider provider = OAuthProvider.valueOf(providerStr.toUpperCase());
+		OAuthProvider provider = OAuthProvider.valueOf(providerStr.toUpperCase());
 
-        log.info("email: {}, provider: {}", email, provider);
+		log.info("email: {}, provider: {}", email, provider);
 
-        Member member = memberRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new IllegalArgumentException("OAuth 로그인 유저 DB에 없음"));
+		Member member = memberRepository.findByEmailAndProvider(email, provider)
+				.orElseThrow(() -> new IllegalArgumentException("OAuth 로그인 유저 DB에 없음"));
 
-        String accessToken = jwtTokenProvider.generateAccessToken(member);
-        String refreshToken = jwtTokenProvider.generateRefreshToken(member);
+		String accessToken = jwtTokenProvider.generateAccessToken(member);
+		String refreshToken = jwtTokenProvider.generateRefreshToken(member);
 
-        refreshTokenService.issueRefreshToken(member, refreshToken);
+		refreshTokenService.issueRefreshToken(member, refreshToken);
 
-        Cookie cookie = new Cookie("accessToken", accessToken);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(60 * 60);
+		Cookie cookie = new Cookie("accessToken", accessToken);
+		cookie.setHttpOnly(true);
+		cookie.setSecure(true);
+		cookie.setPath("/");
+		cookie.setMaxAge(60 * 60);
 
-        response.addCookie(cookie);
+		response.addCookie(cookie);
 
-        response.sendRedirect("/"); // 클라이언트 페이지
-    }
+		response.sendRedirect("/"); // 클라이언트 페이지
+	}
 }

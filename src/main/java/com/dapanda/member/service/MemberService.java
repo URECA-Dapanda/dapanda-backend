@@ -72,7 +72,7 @@ public class MemberService {
 		}
 
 		if (request.name() == null || request.name().length() > 4) {
-			throw new GlobalException(ResultCode.INVALID_MEMBER_NAME_FORMAT);
+			throw new GlobalException(ResultCode.INVALID_MEMBERNAME_FORMAT);
 		}
 
 		if (!isValidPassword(request.password())) {

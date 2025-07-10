@@ -12,73 +12,73 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Getter
 public class CustomUserDetails implements UserDetails {
 
-    @Getter
-    private final Long id;
-    private final String email;
-    private final String password;
-    private final String provider;
-    private final MemberRole role;
+	@Getter
+	private final Long id;
+	private final String email;
+	private final String password;
+	private final String provider;
+	private final MemberRole role;
 
-    public CustomUserDetails(Long id, String email, String password, String provider,
-            MemberRole role) {
+	public CustomUserDetails(Long id, String email, String password, String provider,
+			MemberRole role) {
 
-        this.id = id;
-        this.email = email;
-        this.password = password;
-        this.provider = provider;
-        this.role = role;
-    }
+		this.id = id;
+		this.email = email;
+		this.password = password;
+		this.provider = provider;
+		this.role = role;
+	}
 
-    public static CustomUserDetails from(Member member) {
+	public static CustomUserDetails from(Member member) {
 
-        return new CustomUserDetails(
-                member.getId(),
-                member.getEmail(),
-                member.getPassword(),
-                member.getProvider().name(),
-                member.getRole()
-        );
-    }
+		return new CustomUserDetails(
+				member.getId(),
+				member.getEmail(),
+				member.getPassword(),
+				member.getProvider().name(),
+				member.getRole()
+		);
+	}
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
 
-        return List.of(new SimpleGrantedAuthority(role.name()));
-    }
+		return List.of(new SimpleGrantedAuthority(role.name()));
+	}
 
-    @Override
-    public String getUsername() {
+	@Override
+	public String getUsername() {
 
-        return email;
-    }
+		return email;
+	}
 
-    @Override
-    public String getPassword() {
+	@Override
+	public String getPassword() {
 
-        return password;
-    }
+		return password;
+	}
 
-    @Override
-    public boolean isAccountNonExpired() {
+	@Override
+	public boolean isAccountNonExpired() {
 
-        return true;
-    }
+		return true;
+	}
 
-    @Override
-    public boolean isAccountNonLocked() {
+	@Override
+	public boolean isAccountNonLocked() {
 
-        return true;
-    }
+		return true;
+	}
 
-    @Override
-    public boolean isCredentialsNonExpired() {
+	@Override
+	public boolean isCredentialsNonExpired() {
 
-        return true;
-    }
+		return true;
+	}
 
-    @Override
-    public boolean isEnabled() {
+	@Override
+	public boolean isEnabled() {
 
-        return true;
-    }
+		return true;
+	}
 }
