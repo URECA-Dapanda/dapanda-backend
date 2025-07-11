@@ -19,11 +19,9 @@ public class Wifi {
 
 	private String content;
 
-	//위도
-	private double latitude;
+	private double latitude; // 위도
 
-	//경도
-	private double longitude;
+	private double longitude; // 경도
 
 	private String imageUrl;
 
