@@ -10,6 +10,10 @@ permissions:
   id-token: write
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -48,7 +52,7 @@ jobs:
       - name: AWS 자격증명 설정
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_GITHUB_OIDC_ROLE }}
+          role-to-assume: ${{ secrets.AWS_GITHUB_OIDC_ROLE }}
           aws-region: ap-northeast-2
 
       - name: S3에 배포 패키지 업로드
