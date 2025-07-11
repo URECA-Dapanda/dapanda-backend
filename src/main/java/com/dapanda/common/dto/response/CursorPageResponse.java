@@ -29,11 +29,11 @@ public class CursorPageResponse<T> {
 	@AllArgsConstructor(access = AccessLevel.PROTECTED)
 	public static class PageInfo {
 
-		private final String nextCursorId;
+		private final Long nextCursorId;
 		private final boolean hasNext;
 		private final int size;
 
-		public static PageInfo of(String nextCursorId, boolean hasNext, int size) {
+		public static PageInfo of(Long nextCursorId, boolean hasNext, int size) {
 
 			return PageInfo.builder()
 					.nextCursorId(nextCursorId)
