@@ -21,4 +21,6 @@ public class MobileData {
 	private DataSellingUnit unit;
 
 	private int pricePer100MB;
+
+	private boolean isSplitType;
 }
