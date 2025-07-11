@@ -1,4 +1,4 @@
-package com.dapanda.tradeHistory.entity;
+package com.dapanda.trade.entity;
 
 import com.dapanda.common.entity.CreatedAtEntity;
 import com.dapanda.member.entity.Member;
@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Entity
 @Getter
-public class TradeHistory extends CreatedAtEntity {
+public class Trade extends CreatedAtEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

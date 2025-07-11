@@ -84,4 +84,13 @@ public class Member extends BaseEntity {
 				.build();
 	}
 
+    public void addCash(int amount) {
+
+        this.cash += amount;
+    }
+
+    public void deductCash(int amount) {
+
+        this.cash -= amount;
+    }
 }
