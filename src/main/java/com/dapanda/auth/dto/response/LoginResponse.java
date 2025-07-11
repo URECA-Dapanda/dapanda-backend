@@ -12,13 +12,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class LoginResponse {
 
-    private String name;
-    private String message;
+	private String name;
+	private String message;
 
-    public static LoginResponse from(String name, String message) {
-        return LoginResponse.builder()
-                .name(name)
-                .message(message)
-                .build();
-    }
+	public static LoginResponse from(String name, String message) {
+		return LoginResponse.builder()
+				.name(name)
+				.message(message)
+				.build();
+	}
 }

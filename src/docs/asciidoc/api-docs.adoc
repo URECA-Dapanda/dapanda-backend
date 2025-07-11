@@ -213,3 +213,182 @@ include::{snippets}/save-review-validation-error/http-response.adoc[]
 include::{snippets}/save-review-member-id-error/http-request.adoc[]
 
 include::{snippets}/save-review-member-id-error/http-response.adoc[]
+
+[[resources-auth]]
+=== 인증/인가
+
+인증/인가(Auth) 리소스는 회원가입, 로그인, 토큰 재발급, 로그아웃 등의 인증 관련 기능을 제공합니다.
+
+[[resources-auth-signup]]
+==== 회원가입
+
+`POST /api/auth/signup`
+새로운 회원 정보를 등록합니다.
+
+===== 요청
+
+include::{snippets}/auth-signup-success/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/auth-signup-success/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/auth-signup-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/auth-signup-success/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 이메일 중복
+
+include::{snippets}/auth-signup-duplicate-email/http-request.adoc[]
+
+include::{snippets}/auth-signup-duplicate-email/http-response.adoc[]
+
+====== 사용자명 중복
+
+include::{snippets}/auth-signup-duplicate-username/http-request.adoc[]
+
+include::{snippets}/auth-signup-duplicate-username/http-response.adoc[]
+
+====== 약한 비밀번호
+
+include::{snippets}/auth-signup-weak-password/http-request.adoc[]
+
+include::{snippets}/auth-signup-weak-password/http-response.adoc[]
+
+====== 잘못된 이메일 형식
+
+include::{snippets}/auth-signup-invalid-email/http-request.adoc[]
+
+include::{snippets}/auth-signup-invalid-email/http-response.adoc[]
+
+====== 잘못된 이름 형식
+
+include::{snippets}/auth-signup-invalid-membername/http-request.adoc[]
+
+include::{snippets}/auth-signup-invalid-membername/http-response.adoc[]
+
+---
+
+[[resources-auth-login]]
+==== 로그인
+
+`POST /api/auth/login`
+이메일과 비밀번호로 로그인을 수행합니다.
+
+===== 요청
+
+include::{snippets}/auth-login-success/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/auth-login-success/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/auth-login-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/auth-login-success/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 회원 없음
+
+include::{snippets}/auth-login-not-found/http-request.adoc[]
+
+include::{snippets}/auth-login-not-found/http-response.adoc[]
+
+====== 비밀번호 불일치
+
+include::{snippets}/auth-login-invalid-password/http-request.adoc[]
+
+include::{snippets}/auth-login-invalid-password/http-response.adoc[]
+
+---
+
+[[resources-auth-reissue]]
+==== 액세스 토큰 재발급
+
+`POST /api/auth/reissue`
+Refresh Token을 이용해 새로운 Access Token을 발급받습니다.
+
+===== 요청
+
+include::{snippets}/auth-reissue-success/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/auth-reissue-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/auth-reissue-success/response-fields.adoc[]
+
+===== 실패 요청
+
+====== Refresh Token 헤더 없음
+
+include::{snippets}/auth-reissue-no-header/http-request.adoc[]
+
+include::{snippets}/auth-reissue-no-header/http-response.adoc[]
+
+====== Refresh Token 유효하지 않음
+
+include::{snippets}/auth-reissue-invalid-token/http-request.adoc[]
+
+include::{snippets}/auth-reissue-invalid-token/http-response.adoc[]
+
+====== 저장된 Refresh Token 없음
+
+include::{snippets}/auth-reissue-no-saved-token/http-request.adoc[]
+
+include::{snippets}/auth-reissue-no-saved-token/http-response.adoc[]
+
+====== 저장된 Refresh Token과 입력값 다름
+
+include::{snippets}/auth-reissue-token-mismatch/http-request.adoc[]
+
+include::{snippets}/auth-reissue-token-mismatch/http-response.adoc[]
+
+====== Refresh Token 상태가 INVALID 등일 때
+
+include::{snippets}/auth-reissue-invalid-state/http-request.adoc[]
+
+include::{snippets}/auth-reissue-invalid-state/http-response.adoc[]
+
+---
+
+[[resources-auth-logout]]
+==== 로그아웃
+
+`POST /api/auth/logout`
+로그아웃 및 토큰 무효화를 수행합니다.
+
+===== 요청
+
+include::{snippets}/auth-logout-success/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/auth-logout-success/http-response.adoc[]
+
+===== 실패 요청
+
+====== 토큰 없음
+
+include::{snippets}/auth-logout-no-token/http-request.adoc[]
+
+include::{snippets}/auth-logout-no-token/http-response.adoc[]
+
+====== 토큰 유효하지 않음
+
+include::{snippets}/auth-logout-invalid-token/http-request.adoc[]
+
+include::{snippets}/auth-logout-invalid-token/http-response.adoc[]

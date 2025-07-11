@@ -16,28 +16,28 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final MemberRepository memberRepository;
+	private final MemberRepository memberRepository;
 
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+	@Override
+	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
+		Member member = memberRepository.findByEmail(email)
+				.orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
 
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(member.getEmail())
-                .password(member.getPassword())
-                .authorities(Collections.singletonList(
-                        new SimpleGrantedAuthority(member.getRole().name())))
-                .build();
-    }
+		return org.springframework.security.core.userdetails.User.builder()
+				.username(member.getEmail())
+				.password(member.getPassword())
+				.authorities(Collections.singletonList(
+						new SimpleGrantedAuthority(member.getRole().name())))
+				.build();
+	}
 
-    public UserDetails loadUserByEmailAndProvider(String email, OAuthProvider provider) {
+	public UserDetails loadUserByEmailAndProvider(String email, OAuthProvider provider) {
 
-        Member member = memberRepository.findByEmailAndProvider(email, provider)
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        "사용자를 찾을 수 없습니다: email = " + email + ", provider = " + provider));
+		Member member = memberRepository.findByEmailAndProvider(email, provider)
+				.orElseThrow(() -> new UsernameNotFoundException(
+						"사용자를 찾을 수 없습니다: email = " + email + ", provider = " + provider));
 
-        return CustomUserDetails.from(member);
-    }
+		return CustomUserDetails.from(member);
+	}
 }

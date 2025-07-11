@@ -2,8 +2,20 @@ package com.dapanda.member.entity;
 
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.common.entity.BaseEntity;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -49,7 +61,7 @@ public class Member extends BaseEntity {
 	private int reportedCount;
 
 	public static Member ofOAuthMember(String email, String name,
-									   OAuthProvider provider, MemberRole role) {
+			OAuthProvider provider, MemberRole role) {
 
 		return Member.builder()
 				.email(email)
@@ -60,7 +72,7 @@ public class Member extends BaseEntity {
 	}
 
 	public static Member ofLocalMember(String email, String name,
-									   String password, OAuthProvider provider, MemberRole role
+			String password, OAuthProvider provider, MemberRole role
 	) {
 
 		return Member.builder()

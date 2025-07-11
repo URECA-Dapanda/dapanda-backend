@@ -128,7 +128,7 @@ class MemberServiceTest {
 			SignupRequest request = new SignupRequest("ok@ok.com", PASSWORD, "긴이름123");
 			GlobalException ex = assertThrows(GlobalException.class,
 					() -> memberService.registerUser(request));
-			assertThat(ex.getResultCode()).isEqualTo(ResultCode.INVALID_MEMBER_NAME_FORMAT);
+			assertThat(ex.getResultCode()).isEqualTo(ResultCode.INVALID_MEMBERNAME_FORMAT);
 		}
 
 		@Test
