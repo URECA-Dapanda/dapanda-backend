@@ -50,7 +50,7 @@ jobs:
           zip -r app.zip app.jar appspec.yml scripts/
 
       - name: AWS 자격증명 설정
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_GITHUB_OIDC_ROLE }}
           aws-region: ap-northeast-2
