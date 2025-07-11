@@ -16,7 +16,9 @@ public class MobileData {
 
 	private int dataAmount;
 
-    private int remainAmount;
+	private int remainAmount;
 
 	private DataSellingUnit unit;
+
+	private int pricePer100MB;
 }

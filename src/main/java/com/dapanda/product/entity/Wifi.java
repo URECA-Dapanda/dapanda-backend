@@ -6,6 +6,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import java.time.LocalDateTime;
 import lombok.Getter;
 
 @Entity
@@ -15,6 +16,8 @@ public class Wifi {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+
+	private String title;
 
 	private String content;
 
@@ -28,4 +31,8 @@ public class Wifi {
 
 	@Enumerated(EnumType.STRING)
 	private WifiSellingUnit unit;
+
+	private LocalDateTime startTime;
+
+	private LocalDateTime endTime;
 }
