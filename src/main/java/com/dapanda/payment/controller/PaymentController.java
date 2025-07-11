@@ -3,9 +3,9 @@ package com.dapanda.payment.controller;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.CommonResponse;
 import com.dapanda.common.exception.ResultCode;
-import com.dapanda.payment.dto.request.SaveAmountRequest;
+import com.dapanda.payment.dto.ConfirmPaymentResponse;
+import com.dapanda.payment.dto.request.AmountRequest;
 import com.dapanda.payment.dto.request.TossConfirmRequest;
-import com.dapanda.payment.dto.response.TossConfirmResponse;
 import com.dapanda.payment.service.PaymentService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class PaymentController {
 
 	@PostMapping("/payments/save-amount")
 	public CommonResponse<Void> saveAmount(HttpSession session,
-			@RequestBody SaveAmountRequest request) {
+			@RequestBody AmountRequest request) {
 
 		session.setAttribute(request.orderId(), request.amount());
 
@@ -33,7 +33,7 @@ public class PaymentController {
 
 	@PostMapping("/payments/verify-amount")
 	public CommonResponse<Void> verifyAmount(HttpSession session,
-			@RequestBody SaveAmountRequest request) {
+			@RequestBody AmountRequest request) {
 
 		String amount = String.valueOf(session.getAttribute(request.orderId()));
 
@@ -48,15 +48,15 @@ public class PaymentController {
 	}
 
 	@PostMapping("/payments/confirm")
-	public CommonResponse<Void> confirm(
+	public CommonResponse<ConfirmPaymentResponse> confirm(
 			@AuthenticationPrincipal CustomUserDetails customUserDetails,
 			@RequestBody TossConfirmRequest request) {
 
 		Long memberId = customUserDetails.getId();
 
-		TossConfirmResponse response = paymentService.confirmPayment(memberId, request);
-		paymentService.updateCash(memberId, response.totalAmount());
+		ConfirmPaymentResponse response = paymentService.confirmPayment(memberId, request);
+		paymentService.updateCash(memberId, response.getTotalAmount());
 
-		return CommonResponse.success(null);
+		return CommonResponse.success(response);
 	}
 }
