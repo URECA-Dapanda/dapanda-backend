@@ -36,9 +36,33 @@ public enum ResultCode {
 	EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, 2011, "토큰이 만료되었습니다."),
 	MISSING_TOKEN(HttpStatus.UNAUTHORIZED, 2012, "토큰이 제공되지 않았습니다."),
 	TOKEN_REISSUE_FAILED(HttpStatus.UNAUTHORIZED, 2013, "토큰 재발급에 실패했습니다."),
+  
+  // 상품 3000번대
+  
+  // 거래 4000번대
 
-	// 리뷰 6000번대
-	SELF_REVIEW(HttpStatus.BAD_REQUEST, 6000, "자신에게 리뷰를 작성할 수 없습니다.");
+  // 결제 5000번대
+  FAIL_PAYMENT_PROCESSING(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "내부 오류로 결제 처리에 실패했습니다."),
+  FAIL_PAYMENT_APPROVAL(HttpStatus.BAD_REQUEST, 5001, "결제 승인에 실패했습니다."),
+  INVALID_PAYMENT_AMOUNT(HttpStatus.BAD_REQUEST, 5002, "결제 금액이 유효하지 않습니다."),
+  PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, 5003, "결제 요청 금액과 일치하지 않습니다."),
+  
+  // 리뷰 6000번대
+	SELF_REVIEW(HttpStatus.BAD_REQUEST, 6000, "자신에게 리뷰를 작성할 수 없습니다.")
+
+  // 신고 7000번대
+
+  // 채팅 8000번대
+
+  // 관리자 9000번대
+
+  // 이벤트 10000번대
+
+  // 알림 11000번대
+
+  // 요금제 추천 12000번대
+
+  ;
 
 	private final HttpStatus status;
 	private final int code;
