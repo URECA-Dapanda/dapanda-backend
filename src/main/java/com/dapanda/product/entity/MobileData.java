@@ -1,6 +1,8 @@
 package com.dapanda.product.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,6 +20,7 @@ public class MobileData {
 
 	private int remainAmount;
 
+	@Enumerated(EnumType.STRING)
 	private DataSellingUnit unit;
 
 	private int pricePer100MB;
