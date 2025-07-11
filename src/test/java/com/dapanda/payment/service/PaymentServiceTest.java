@@ -2,6 +2,7 @@ package com.dapanda.payment.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.dapanda.auth.entity.OAuthProvider;
@@ -10,9 +11,11 @@ import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberRole;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.payment.dto.ConfirmPaymentResponse;
 import com.dapanda.payment.dto.request.TossConfirmRequest;
-import com.dapanda.payment.dto.response.TossConfirmResponse;
+import com.dapanda.payment.entity.Payment;
 import com.dapanda.payment.repository.PaymentRepository;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -27,6 +30,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @ExtendWith(MockitoExtension.class)
@@ -76,32 +80,37 @@ class PaymentServiceTest {
 				// given
 				String responseJson = """
 						    {
-						      "orderId": "test_orderId",
-						      "paymentKey": "test_paymentKey",
+						      "orderId": "testOrderId",
+						      "paymentKey": "testPaymentKey",
 						      "totalAmount": 10000,
 						      "approvedAt": "2024-01-01T00:00:00Z"
 						    }
 						""";
 
-				TossConfirmRequest request = new TossConfirmRequest("test_paymentKey",
-						"test_orderId", 10000);
+				TossConfirmRequest request = new TossConfirmRequest("testPaymentKey", "testOrderId",
+						10000);
 
 				Member mockMember = Member.ofLocalMember("abc@gmail.com", "홍길동", "abc1234",
 						OAuthProvider.LOCAL, MemberRole.ROLE_MEMBER);
+				Payment mockedPayment = Payment.of("testPaymentKey", 10000,
+						OffsetDateTime.parse("2024-01-01T00:00:00Z").toLocalDateTime(),
+						mockMember);
+				ReflectionTestUtils.setField(mockedPayment, "id", 1L);
 
+				when(paymentRepository.save(any())).thenReturn(mockedPayment);
 				when(memberRepository.findById(1L)).thenReturn(Optional.of(mockMember));
 
-				// Mock 서버 설정
-				mockWebServer.enqueue(new okhttp3.mockwebserver.MockResponse()
+				mockWebServer.enqueue(new MockResponse()
 						.setResponseCode(200)
 						.setBody(responseJson)
 						.addHeader("Content-Type", "application/json"));
 
 				// when
-				TossConfirmResponse response = paymentService.confirmPayment(1L, request);
+				ConfirmPaymentResponse response = paymentService.confirmPayment(1L, request);
 
 				// then
-				assertEquals("test_paymentKey", response.paymentKey());
+				assertEquals(1L, response.getPaymentId());
+				assertEquals(10000, response.getTotalAmount());
 			}
 		}
 
