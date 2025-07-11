@@ -1,4 +1,4 @@
-package com.dapanda.payment.dto;
+package com.dapanda.payment.dto.response;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
