@@ -79,6 +79,101 @@ DaPanda 서비스의 REST API 문서입니다.
 [[resources]]
 == API 목록
 
+[[resources-payment]]
+=== 결제
+
+결제 리소스는 사용자가 캐시를 충전하는 데 사용됩니다.
+
+[[resources-payment-save-amount]]
+==== 결제 금액 임시 저장
+
+`POST /api/payments/save-amount`
+주문 아이디와 결제 금액을 세션에 임시 저장합니다.
+
+===== 요청
+
+include::{snippets}/save-amount/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/save-amount/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/save-amount/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/save-amount/response-fields.adoc[]
+
+[[resources-payment-verify-amount]]
+==== 결제 금액 검증
+
+`POST /api/payments/verify-amount`
+세션에 저장된 금액과 실제 결제 금액을 비교하여 검증합니다.
+
+===== 요청
+
+include::{snippets}/verify-amount/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/verify-amount/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/verify-amount/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/verify-amount/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 금액 불일치
+
+include::{snippets}/verify-amount-mismatch-error/http-request.adoc[]
+
+include::{snippets}/verify-amount-mismatch-error/http-response.adoc[]
+
+[[resources-payment-confirm]]
+==== 결제 승인
+
+`POST /api/payments/confirm`
+토스 결제 승인 요청을 수행하고, 승인 결과와 결제 정보를 반환합니다.
+
+===== 요청
+
+include::{snippets}/confirm-payment/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/confirm-payment/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/confirm-payment/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/confirm-payment/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 토스 결제 승인 실패
+
+include::{snippets}/confirm-payment-error/http-request.adoc[]
+
+include::{snippets}/confirm-payment-error/http-response.adoc[]
+
+====== 결제 금액이 0 이하
+
+include::{snippets}/confirm-payment-invalid-amount-error/http-request.adoc[]
+
+include::{snippets}/confirm-payment-invalid-amount-error/http-response.adoc[]
+
+---
+
 [[resources-review]]
 === 리뷰
 
