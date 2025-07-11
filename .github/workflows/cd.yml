@@ -50,7 +50,7 @@ jobs:
           zip -r app.zip app.jar appspec.yml scripts/
 
       - name: AWS 자격증명 설정
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: ${{ secrets.AWS_GITHUB_OIDC_ROLE }}
           aws-region: ap-northeast-2
@@ -74,19 +74,3 @@ jobs:
             --s3-location bucket=${{ secrets.BUCKET_NAME }},bundleType=zip,key=app.zip \
             --region ap-northeast-2 \
             --auto-rollback-configuration enabled=true,events=DEPLOYMENT_FAILURE
-
-  debug-assume:
-    needs: deploy
-    if: failure()        # deploy 잡이 실패했을 때만
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check AWS OIDC environment
-        run: |
-          echo "▶ AWS_ROLE_ARN: $AWS_ROLE_ARN"
-          echo "▶ AWS_WEB_IDENTITY_TOKEN_FILE: $AWS_WEB_IDENTITY_TOKEN_FILE"
-      - name: Manual sts AssumeRoleWithWebIdentity
-        run: |
-          aws sts assume-role-with-web-identity \
-            --role-arn "$AWS_ROLE_ARN" \
-            --role-session-name debug-session \
-            --web-identity-token file://$AWS_WEB_IDENTITY_TOKEN_FILE
