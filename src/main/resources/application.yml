@@ -1,3 +1,6 @@
+server:
+  port: 8080
+
 spring:
   profiles:
     active: dev
@@ -57,6 +60,16 @@ spring:
 
 toss:
   secret-key: ${TOSS_PAYMENTS_SECRET}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+
 
 ---
 spring:
