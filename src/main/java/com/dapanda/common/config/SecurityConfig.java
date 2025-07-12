@@ -36,10 +36,12 @@ public class SecurityConfig {
 
 		http
 				.csrf(AbstractHttpConfigurer::disable)
+				.formLogin(AbstractHttpConfigurer::disable)
 				.sessionManagement(
 						sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/", "/index.html", "/api/**", "/oauth2/**",
+								"/actuator/health",
 								"/api/auth/**").permitAll()
 						.anyRequest().authenticated()
 				)
