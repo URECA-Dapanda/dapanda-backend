@@ -1,12 +1,11 @@
 package com.dapanda.review.controller;
 
-import com.dapanda.RestDocsConfig;
-import com.dapanda.common.config.SecurityConfig;
+import com.dapanda.TestConfig;
+import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.product.entity.ItemType;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.repository.ReviewRepository;
@@ -22,21 +21,26 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.BDDMockito.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import({RestDocsConfig.class})
+@SpringBootTest
+@Import(TestConfig.class)
 @ActiveProfiles("test")
 @ExtendWith(RestDocumentationExtension.class)
 @DisplayName("리뷰 컨트롤러 테스트")
@@ -59,7 +63,7 @@ class ReviewControllerTest {
 	@BeforeEach
 	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
 
-		this.mockMvc = RestDocsConfig.createMockMvc(context, restDocumentation);
+		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
 	}
 
 	@Nested
@@ -78,7 +82,6 @@ class ReviewControllerTest {
 				Float rating = 1.5f;
 				String comment = "진짜 별로에요";
 				Long productId = 123L;
-				ItemType type = ItemType.MOBILE_DATA;
 
 				Member reviewer = MemberFixture.MEMBER_REVIEWER;
 				Member reviewee = MemberFixture.MEMBER_REVIEWEE;
@@ -88,11 +91,17 @@ class ReviewControllerTest {
 
 				SaveReviewRequest request = new SaveReviewRequest(savedReviewee.getId(), productId, rating, comment);
 
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(savedReviewer.getId());
+
 				//when & then
 				mockMvc.perform(post("/api/reviews")
-								.param("memberId", savedReviewer.getId().toString())
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails,null,Collections.emptyList()
+								)))
 						)
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
@@ -128,7 +137,7 @@ class ReviewControllerTest {
 		class Fail {
 
 			@Test
-			@DisplayName("필수 필드가 누락되면 BadRequest를 반환한다")
+			@DisplayName("필수 필드가 누락되면 BadRequest 를 반환한다")
 			public void validateRequiredFields() throws Exception {
 
 				// given
@@ -136,7 +145,6 @@ class ReviewControllerTest {
 
 				// when & then
 				mockMvc.perform(post("/api/reviews")
-								.param("memberId", "1")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 						)
@@ -155,11 +163,17 @@ class ReviewControllerTest {
 
 				SaveReviewRequest request = new SaveReviewRequest(505L, 123L,5.0f, "test");
 
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(savedReviewer.getId());
+
 				// when & then
 				mockMvc.perform(post("/api/reviews")
-								.param("memberId", savedReviewer.getId().toString())
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails,null, Collections.emptyList()
+								)))
 						)
 						.andExpect(status().isBadRequest())
 						.andDo(document("save-review-member-id-error"));
