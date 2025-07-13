@@ -109,7 +109,7 @@ class ReviewControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data.reviewId").exists())
-						.andDo(document("save-review",
+						.andDo(document("review/save-review",
 								requestFields(
 										fieldWithPath("revieweeId").description("리뷰 대상 회원의 아이디 (필수)"),
 										fieldWithPath("productId").description("리뷰 대상 상품의 아이디 (필수)"),
@@ -151,7 +151,7 @@ class ReviewControllerTest {
 								.content(objectMapper.writeValueAsString(request))
 						)
 						.andExpect(status().isBadRequest())
-						.andDo(document("save-review-validation-error"));
+						.andDo(document("review/save-review-validation-error"));
 			}
 
 			@Test
@@ -178,7 +178,7 @@ class ReviewControllerTest {
 								)))
 						)
 						.andExpect(status().isBadRequest())
-						.andDo(document("save-review-member-id-error"));
+						.andDo(document("review/save-review-member-id-error"));
 			}
 		}
 	}
@@ -228,7 +228,7 @@ class ReviewControllerTest {
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
-						.andDo(document("delete-review",
+						.andDo(document("review/delete-review",
 								requestFields(
 										fieldWithPath("reviewId").description("삭제할 리뷰 아이디 (필수)")
 								),
@@ -268,7 +268,7 @@ class ReviewControllerTest {
 								)))
 						)
 						.andExpect(status().isBadRequest())
-						.andDo(document("delete-review-validation-error"));
+						.andDo(document("review/delete-review-validation-error"));
 			}
 		}
 	}
