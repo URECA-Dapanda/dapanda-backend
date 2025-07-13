@@ -62,13 +62,18 @@ toss:
   secret-key: ${TOSS_PAYMENTS_SECRET}
 
 management:
+  endpoint:
+    health:
+      show-details: always     # 선택사항: 헬스 체크 세부 정보 노출
   endpoints:
     web:
       exposure:
-        include: health, info
-  endpoint:
-    health:
-      show-details: always
+        include: health,info
+  health:
+    status:
+      http-mapping:
+        DOWN: 200               # DOWN 상태여도 200으로 응답
+
 
 
 ---

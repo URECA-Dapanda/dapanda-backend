@@ -6,6 +6,7 @@ import com.dapanda.auth.service.CustomOAuth2UserService;
 import com.dapanda.auth.service.CustomUserDetailsService;
 import com.dapanda.jwt.JwtAuthenticationFilter;
 import com.dapanda.jwt.JwtTokenProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,6 +61,12 @@ public class SecurityConfig {
 
 		return http.build();
 	}
+
+	public boolean shouldNotFilter(HttpServletRequest request) {
+		String path = request.getRequestURI();
+		return path.equals("/actuator/health");
+	}
+
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
