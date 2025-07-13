@@ -1,6 +1,7 @@
 package com.dapanda.review.service;
 
 import com.dapanda.common.exception.GlobalException;
+import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
@@ -131,14 +132,77 @@ class ReviewServiceTest {
 				Review review = ReviewFixture.createReview1(reviewId, reviewerId, revieweeId);
 
 				given(memberRepository.existsById(reviewerId)).willReturn(true);
-				given(reviewRepository.getReferenceById(reviewId)).willReturn(review);
 				given(reviewRepository.existsById(reviewId)).willReturn(true);
+				given(reviewRepository.getReferenceById(reviewId)).willReturn(review);
 
 				//when
 				reviewService.deleteReview(request, reviewerId);
 
 				//then
 				verify(reviewRepository).deleteById(reviewId);
+			}
+		}
+
+		@DisplayName("실패 케이스")
+		@Nested
+		class Fail {
+
+			@Test
+			@DisplayName("존재하지 않는 회원이면 예외가 발생한다")
+			public void memberNotFoundTest() {
+
+				//given
+				Long reviewId = 10L;
+				Long reviewerId = 1L;
+
+				DeleteReviewRequest request = new DeleteReviewRequest(reviewId);
+
+				//when & then
+				assertThatThrownBy(() -> reviewService.deleteReview(request, reviewerId))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.MEMBER_NOT_FOUND.getMessage());
+			}
+
+			@Test
+			@DisplayName("존재하지 않는 리뷰면 예외가 발생한다")
+			public void reviewNotFoundTest() {
+
+				//given
+				Long reviewId = 10L;
+				Long reviewerId = 1L;
+
+				DeleteReviewRequest request = new DeleteReviewRequest(reviewId);
+
+				given(memberRepository.existsById(reviewerId)).willReturn(true);
+
+				//when & then
+				assertThatThrownBy(() -> reviewService.deleteReview(request, reviewerId))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.REVIEW_NOT_FOUND.getMessage());
+			}
+
+			@Test
+			@DisplayName("리뷰 작성자가 아닌 경우 예외가 발생한다")
+			public void reviewOwnerTest() {
+
+				//given
+				Long reviewId = 10L;
+				Long otherReviewerId = 10000L;
+				Long myReviewerId = 1L;
+				Long revieweeId = 2L;
+
+				DeleteReviewRequest request = new DeleteReviewRequest(reviewId);
+
+				Review review = ReviewFixture.createReview1(reviewId, otherReviewerId, revieweeId);
+
+				given(memberRepository.existsById(myReviewerId)).willReturn(true);
+				given(reviewRepository.existsById(reviewId)).willReturn(true);
+				given(reviewRepository.getReferenceById(reviewId)).willReturn(review);
+
+				//when & then
+				assertThatThrownBy(() -> reviewService.deleteReview(request, myReviewerId))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.OTHER_REVIEW.getMessage());
 			}
 		}
 	}
