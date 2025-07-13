@@ -23,7 +23,7 @@ public class ReviewService {
 	public SaveReviewResponse saveReview(SaveReviewRequest request, Long memberId) {
 
 		validateSelfReview(memberId, request.revieweeId());
-		validateRevieweeId(request.revieweeId());
+		validateMemberId(request.revieweeId());
 
 		Member reviewer = memberRepository.getReferenceById(memberId);
 		Member reviewee = memberRepository.getReferenceById(request.revieweeId());
@@ -37,11 +37,16 @@ public class ReviewService {
 
 	public void deleteReview(Long reviewId, Long memberId) {
 
+		validateMemberId(memberId);
 		validateReviewOwner(reviewId, memberId);
+		validateReviewId(reviewId);
 
 		reviewRepository.deleteById(reviewId);
 	}
 
+	/**
+	 *	리뷰 오너 검증
+	 */
 	private void validateReviewOwner(Long reviewId, Long memberId) {
 
 		Review review = reviewRepository.getReferenceById(reviewId);
@@ -54,6 +59,9 @@ public class ReviewService {
 		}
 	}
 
+	/**
+	 * 셀프 리뷰 검증
+	 */
 	private void validateSelfReview(Long reviewerId, Long revieweeId){
 
 		if (reviewerId.equals(revieweeId)){
@@ -62,11 +70,25 @@ public class ReviewService {
 		}
 	}
 
-	private void validateRevieweeId(Long revieweeId){
+	/**
+	 *	memberId 검증
+	 */
+	private void validateMemberId(Long memberId){
 
-		if (!memberRepository.existsById(revieweeId)){
+		if (!memberRepository.existsById(memberId)){
 
 			throw new GlobalException(ResultCode.MEMBER_NOT_FOUND);
+		}
+	}
+
+	/**
+	 * reviewId 검증
+	 */
+	private void validateReviewId(Long reviewId){
+
+		if (!reviewRepository.existsById(reviewId)){
+
+			throw new GlobalException(ResultCode.REVIEW_NOT_FOUND);
 		}
 	}
 }
