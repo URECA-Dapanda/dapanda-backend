@@ -4,12 +4,14 @@ os: linux
 files:
   - source: app.jar
     destination: /home/ubuntu/app
+  - source: scripts/
+    destination: /home/ubuntu/app/scripts
 
 hooks:
   BeforeInstall:
     - location: scripts/install.sh
       timeout: 120
-      runas: ubuntu
+      runas: root
 
   ApplicationStart:
     - location: scripts/start.sh

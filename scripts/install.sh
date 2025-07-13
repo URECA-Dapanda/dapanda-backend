@@ -14,5 +14,10 @@ else
   echo "No application to stop"
 fi
 
+echo "Fixing permissions on app directory"
+sudo mkdir -p /home/ubuntu/app
+sudo chown -R ubuntu:ubuntu /home/ubuntu/app
+sudo chmod -R 750 /home/ubuntu/app
+
 # 앱 디렉토리 생성
 mkdir -p $APP_DIR
