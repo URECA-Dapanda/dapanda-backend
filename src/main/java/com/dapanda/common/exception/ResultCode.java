@@ -49,7 +49,7 @@ public enum ResultCode {
 
 	// 리뷰 6000번대
 	SELF_REVIEW(HttpStatus.BAD_REQUEST, 6000, "자신에게 리뷰를 작성할 수 없습니다."),
-	OTHER_REVIEW(HttpStatus.BAD_REQUEST, 6001, "자신의 리뷰만 삭제할 수 있습니다."),
+	OTHER_REVIEW(HttpStatus.BAD_REQUEST, 6001, "자신의 리뷰가 아닙니다."),
 
 	// 신고 7000번대
 
