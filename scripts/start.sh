@@ -3,7 +3,7 @@
 echo "==== APPLICATION START ===="
 
 APP_NAME="app.jar"
-APP_DIR="/home/ghdtmdals/app"
+APP_DIR="/home/tmdals/app"
 LOG_DIR="/var/log/myapp"
 LOG_FILE="$LOG_DIR/app.log"
 CLOUDWATCH_AGENT_BIN="/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl"

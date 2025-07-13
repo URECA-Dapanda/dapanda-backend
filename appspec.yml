@@ -3,7 +3,7 @@ os: linux
 
 files:
   - source: app.jar
-    destination: /home/ghdtmdals/app
+    destination: /home/tmdals/app
 
 hooks:
   BeforeInstall:

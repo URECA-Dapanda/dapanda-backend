@@ -4,7 +4,7 @@ echo "install phase"
 
 # 앱 프로세스 종료
 APP_NAME="app.jar"
-APP_DIR="/home/ghdtmdals/app"
+APP_DIR="/home/tmdals/app"
 PID=$(pgrep -f $APP_NAME)
 
 if [ -n "$PID" ]; then
