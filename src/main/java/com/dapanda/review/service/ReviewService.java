@@ -39,8 +39,8 @@ public class ReviewService {
 	public void deleteReview(DeleteReviewRequest request, Long memberId) {
 
 		validateMemberId(memberId);
-		validateReviewOwner(request.reviewId(), memberId);
 		validateReviewId(request.reviewId());
+		validateReviewOwner(request.reviewId(), memberId);
 
 		reviewRepository.deleteById(request.reviewId());
 	}
