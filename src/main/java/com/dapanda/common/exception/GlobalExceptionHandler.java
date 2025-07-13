@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
 				.body(new CommonResponse<>(e.getResultCode()));
 	}
 
-	// Been Validation 예외 핸들러
+	// Bean Validation 예외 핸들러
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<CommonResponse<Void>> handleControllerValidationException(
 			MethodArgumentNotValidException e) {
@@ -27,6 +27,6 @@ public class GlobalExceptionHandler {
 				.orElse("잘못된 요청입니다.");
 
 		return ResponseEntity.badRequest()
-				.body(new CommonResponse<>(validationMessage));
+				.body(new CommonResponse<>(ResultCode.INVALID_PARAMETER, validationMessage));
 	}
 }
