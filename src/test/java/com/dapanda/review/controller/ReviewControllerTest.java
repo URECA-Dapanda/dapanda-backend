@@ -6,6 +6,7 @@ import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.repository.ReviewRepository;
@@ -30,6 +31,8 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -37,7 +40,6 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.mockito.BDDMockito.*;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -177,6 +179,96 @@ class ReviewControllerTest {
 						)
 						.andExpect(status().isBadRequest())
 						.andDo(document("save-review-member-id-error"));
+			}
+		}
+	}
+
+
+	@Nested
+	@DisplayName("리뷰 삭제 API")
+	class DeleteReview {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("삭제가 성공하면 200응답을 반환한다")
+			public void deleteReviewTest() throws Exception {
+
+				//given
+				Float rating = 1.5f;
+				String comment = "진짜 별로에요";
+				Long productId = 123L;
+
+				Member reviewer = MemberFixture.MEMBER_REVIEWER;
+				Member reviewee = MemberFixture.MEMBER_REVIEWEE;
+
+				Member savedReviewer = memberRepository.save(reviewer);
+				Member savedReviewee = memberRepository.save(reviewee);
+
+				Review review = Review.of(rating, comment, productId, savedReviewer, savedReviewee);
+
+				Review savedReview = reviewRepository.save(review);
+
+				DeleteReviewRequest request = new DeleteReviewRequest(savedReview.getId());
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(savedReviewer.getId());
+
+				//when & then
+				mockMvc.perform(delete("/api/reviews")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andDo(document("delete-review",
+								requestFields(
+										fieldWithPath("reviewId").description("삭제할 리뷰 아이디 (필수)")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("정상 처리 되었습니다.")
+								))
+						);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("필수 필드가 누락되면 BadRequest 를 반환한다")
+			public void validateRequiredFields() throws Exception {
+
+				// given
+				DeleteReviewRequest request = new DeleteReviewRequest(null);
+
+				Member reviewer = MemberFixture.MEMBER_REVIEWER;
+
+				Member savedReviewer = memberRepository.save(reviewer);
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(savedReviewer.getId());
+
+				// when & then
+				mockMvc.perform(delete("/api/reviews")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andDo(document("delete-review-validation-error"));
 			}
 		}
 	}
