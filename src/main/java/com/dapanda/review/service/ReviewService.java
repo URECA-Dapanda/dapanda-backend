@@ -35,6 +35,25 @@ public class ReviewService {
 		return SaveReviewResponse.from(savedReview.getId());
 	}
 
+	public void deleteReview(Long reviewId, Long memberId) {
+
+		validateReviewOwner(reviewId, memberId);
+
+		reviewRepository.deleteById(reviewId);
+	}
+
+	private void validateReviewOwner(Long reviewId, Long memberId) {
+
+		Review review = reviewRepository.getReferenceById(reviewId);
+
+		Member member = review.getReviewer();
+
+		if (!member.getId().equals(memberId)) {
+
+			throw new GlobalException(ResultCode.OTHER_REVIEW);
+		}
+	}
+
 	private void validateSelfReview(Long reviewerId, Long revieweeId){
 
 		if (reviewerId.equals(revieweeId)){
