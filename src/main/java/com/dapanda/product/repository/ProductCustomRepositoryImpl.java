@@ -5,7 +5,6 @@ import static com.dapanda.review.entity.QReview.review;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
-import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.product.entity.QMobileData;
 import com.dapanda.product.entity.QProduct;
@@ -26,23 +25,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public CursorPageResponse<?> findProductsByCursor(ItemType itemType, Long cursorId, int size,
-			ProductSortOption productSortOption, Integer dataAmount, Double latitude,
-			Double longitude) {
-
-		if (itemType == ItemType.MOBILE_DATA) {
-
-			return findMobileDataByCursor(cursorId, size, productSortOption, dataAmount);
-		} else if (itemType == ItemType.WIFI) {
-
-			return findWifiDataByCursor(cursorId, size, productSortOption, latitude, longitude);
-		} else {
-			throw new IllegalArgumentException("지원하지 않는 아이템 타입입니다: " + itemType);
-		}
-	}
-
-	private CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId,
-			int size, ProductSortOption productSortOption, Integer dataAmount) {
+	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, int size,
+			ProductSortOption productSortOption, Integer dataAmount) {
 
 		QProduct product = QProduct.product;
 		QMobileData mobileData = QMobileData.mobileData;
@@ -70,7 +54,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 										? mobileData.remainAmount.asc() :
 										productSortOption == ProductSortOption.AMOUNT_DESC
 												? mobileData.remainAmount.desc() :
-												product.updatedAt.desc() // default: RECENT
+												product.updatedAt.desc(), // default: RECENT
+						product.id.asc()
 				)
 				.limit(size + 1)
 				.fetch();
@@ -85,8 +70,10 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				CursorPageResponse.PageInfo.of(nextCursorId, hasNext, content.size()));
 	}
 
-	private CursorPageResponse<WifiSummary> findWifiDataByCursor(Long cursorId,
-			int size, ProductSortOption productSortOption, Double latitude, Double longitude) {
+	@Override
+	public CursorPageResponse<WifiSummary> findWifiByCursor(Long cursorId, int size,
+			ProductSortOption productSortOption, boolean isOpen, Double latitude,
+			Double longitude) {
 
 		QProduct product = QProduct.product;
 		QWifi wifi = QWifi.wifi;
@@ -108,21 +95,23 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						wifi.latitude,
 						wifi.longitude,
 						wifi.imageUrl,
-						review.rating.avg().coalesce(0.0)
+						review.rating.avg().coalesce(0.0),
+						distance.divide(1000.0)
 				))
 				.from(product)
+				.groupBy(product.id)
 				.join(wifi).on(wifi.id.eq(product.itemId))
-				.leftJoin(review).on(review.reviewer.id.eq(product.member.id))
+				.leftJoin(review).on(review.productId.eq(product.id))
 				.where(
-						product.id.lt(cursorId),
-						wifi.startTime.loe(now),
-						wifi.endTime.goe(now)
+						cursorId != null ? product.id.gt(cursorId) : null,
+						isOpen ? wifi.startTime.loe(now).and(wifi.endTime.goe(now)) : null
 				)
 				.orderBy(
 						productSortOption == ProductSortOption.PRICE_ASC ? product.price.asc() :
 								productSortOption == ProductSortOption.AVERAGE_RATE_DESC
 										? review.rating.avg().desc() :
-										distance.asc()
+										distance.asc(),
+						product.id.asc()
 				)
 				.limit(size + 1)
 				.fetch();
