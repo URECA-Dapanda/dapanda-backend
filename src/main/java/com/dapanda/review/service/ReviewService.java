@@ -4,6 +4,7 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.response.SaveReviewResponse;
 import com.dapanda.review.entity.Review;
@@ -35,13 +36,13 @@ public class ReviewService {
 		return SaveReviewResponse.from(savedReview.getId());
 	}
 
-	public void deleteReview(Long reviewId, Long memberId) {
+	public void deleteReview(DeleteReviewRequest request, Long memberId) {
 
 		validateMemberId(memberId);
-		validateReviewOwner(reviewId, memberId);
-		validateReviewId(reviewId);
+		validateReviewOwner(request.reviewId(), memberId);
+		validateReviewId(request.reviewId());
 
-		reviewRepository.deleteById(reviewId);
+		reviewRepository.deleteById(request.reviewId());
 	}
 
 	/**

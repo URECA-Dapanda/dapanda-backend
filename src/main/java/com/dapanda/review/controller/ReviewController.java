@@ -31,7 +31,7 @@ public class ReviewController {
 			@RequestBody @Valid DeleteReviewRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		reviewService.deleteReview(request.reviewId(), userDetails.getId());
+		reviewService.deleteReview(request, userDetails.getId());
 
 		return CommonResponse.success(null);
 	}
