@@ -4,9 +4,11 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.response.SaveReviewResponse;
 import com.dapanda.review.entity.Review;
+import com.dapanda.review.entity.ReviewFixture;
 import com.dapanda.review.repository.ReviewRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -103,6 +105,40 @@ class ReviewServiceTest {
 
 				verify(memberRepository, never()).getReferenceById(any());
 				verify(reviewRepository, never()).save(any());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("리뷰 삭제")
+	class DeleteReview {
+
+		@DisplayName("성공 케이스")
+		@Nested
+		class Success {
+
+			@Test
+			@DisplayName("리뷰 아이디와 회원 아이디가 유효하면 리뷰가 삭제된다")
+			public void deleteReviewTest() {
+
+				//given
+				Long reviewId = 10L;
+				Long reviewerId = 1L;
+				Long revieweeId = 2L;
+
+				DeleteReviewRequest request = new DeleteReviewRequest(reviewId);
+
+				Review review = ReviewFixture.createReview1(reviewId, reviewerId, revieweeId);
+
+				given(memberRepository.existsById(reviewerId)).willReturn(true);
+				given(reviewRepository.getReferenceById(reviewId)).willReturn(review);
+				given(reviewRepository.existsById(reviewId)).willReturn(true);
+
+				//when
+				reviewService.deleteReview(request, reviewerId);
+
+				//then
+				verify(reviewRepository).deleteById(reviewId);
 			}
 		}
 	}
