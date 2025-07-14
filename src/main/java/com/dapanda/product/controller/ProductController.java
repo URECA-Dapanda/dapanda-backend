@@ -9,7 +9,7 @@ import com.dapanda.product.dto.request.WifiCursorRequest;
 import com.dapanda.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,14 +21,14 @@ public class ProductController {
 
 	private final ProductService productService;
 
-	@GetMapping("/products/mobile-data")
+	@PostMapping("/products/mobile-data")
 	public CommonResponse<CursorPageResponse<MobileDataSummary>> getMobileDataByCursor(
 			@RequestBody @Valid MobileDataCursorRequest request) {
 
 		return CommonResponse.success(productService.findMobileDataByCursor(request));
 	}
 
-	@GetMapping("/products/wifi")
+	@PostMapping("/products/wifi")
 	public CommonResponse<CursorPageResponse<WifiSummary>> getWifiByCursor(
 			@RequestBody @Valid WifiCursorRequest request) {
 
