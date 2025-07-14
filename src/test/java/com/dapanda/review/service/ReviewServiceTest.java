@@ -7,7 +7,9 @@ import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
+import com.dapanda.review.dto.request.UpdateReviewRequest;
 import com.dapanda.review.dto.response.SaveReviewResponse;
+import com.dapanda.review.dto.response.UpdateReviewResponse;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.entity.ReviewFixture;
 import com.dapanda.review.repository.ReviewRepository;
@@ -26,8 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("리뷰 서비스 테스트")
@@ -181,6 +182,104 @@ class ReviewServiceTest {
 
 				//when & then
 				assertThatThrownBy(() -> reviewService.deleteReview(request, myReviewerId))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.OTHER_REVIEW.getMessage());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("리뷰 수정")
+	class UpdateReview {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("리뷰 수정이 성공하면 리뷰 아이디를 반환한다")
+			public void updateReviewTest() {
+
+				//given
+				Long savedReviewId = 1L;
+				Float newRating = 4.5f;
+				String newComment = "진짜 좋아용";
+
+				Long memberId = 5L;
+				Long reviewerId = 5L;
+				Long revieweeId = 6L;
+
+				UpdateReviewRequest request = new UpdateReviewRequest(savedReviewId, newRating, newComment);
+				Review savedReview = ReviewFixture.createReview1(savedReviewId, reviewerId, revieweeId);
+
+				Float originalRating = savedReview.getRating();
+				String originalComment = savedReview.getComment();
+
+				given(reviewRepository.findById(savedReviewId)).willReturn(Optional.of(savedReview));
+
+				//when
+				UpdateReviewResponse response = reviewService.updateReview(request, memberId);
+
+				//then
+				assertThat(response.getReviewId()).isEqualTo(savedReview.getId());
+
+				assertThat(savedReview.getRating()).isEqualTo(newRating);
+				assertThat(savedReview.getComment()).isEqualTo(newComment);
+
+				assertThat(savedReview.getRating()).isNotEqualTo(originalRating);
+				assertThat(savedReview.getComment()).isNotEqualTo(originalComment);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("리뷰가 존재하지 않으면 예외가 발생한다")
+			public void reviewNotFoundTest() {
+
+				//given
+				Long nonExistentReviewId = 999L;
+				Float newRating = 4.5f;
+				String newComment = "진짜 좋아용";
+
+				UpdateReviewRequest request = new UpdateReviewRequest(nonExistentReviewId, newRating, newComment);
+
+				Long memberId = 5L;
+
+				given(reviewRepository.findById(nonExistentReviewId)).willReturn(Optional.empty());
+
+				//when & then
+				assertThatThrownBy(() -> reviewService.updateReview(request, memberId))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.REVIEW_NOT_FOUND.getMessage());
+
+				verify(reviewRepository).findById(nonExistentReviewId);
+			}
+
+			@Test
+			@DisplayName("리뷰 오너가 아니면 예외가 발생한다")
+			public void reviewOwnerTest() {
+
+				//given
+				Long reviewId = 1L;
+				Float newRating = 4.5f;
+				String newComment = "진짜 좋아용";
+
+				Long reviewerId = 2L;
+				Long revieweeId = 3L;
+
+				Long memberId = 4L;
+
+				Review savedReview = ReviewFixture.createReview1(reviewId, reviewerId, revieweeId);
+
+				UpdateReviewRequest request = new UpdateReviewRequest(reviewId, newRating, newComment);
+
+				given(reviewRepository.findById(reviewId)).willReturn(Optional.of(savedReview));
+
+				//when & then
+				assertThatThrownBy(() -> reviewService.updateReview(request, memberId))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.OTHER_REVIEW.getMessage());
 			}
