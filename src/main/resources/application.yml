@@ -69,12 +69,6 @@ management:
     web:
       exposure:
         include: health,info
-  health:
-    status:
-      http-mapping:
-        DOWN: 200               # DOWN 상태여도 200으로 응답
-
-
 
 ---
 spring:
