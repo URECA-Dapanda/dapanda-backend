@@ -2,8 +2,8 @@ package com.dapanda.review.repository;
 
 import com.dapanda.member.entity.QMember;
 import com.dapanda.product.entity.QProduct;
-import com.dapanda.review.dto.request.ReadReviewRequest;
-import com.dapanda.review.dto.response.ReadReviewResponse;
+import com.dapanda.review.dto.request.ReadSellerReviewRequest;
+import com.dapanda.review.dto.response.ReadSellerReviewResponse;
 import com.dapanda.review.entity.QReview;
 import com.dapanda.review.entity.ReviewSortOption;
 import com.dapanda.trade.entity.QTrade;
@@ -23,7 +23,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public List<ReadReviewResponse> findSellerReviewWithCursor(ReadReviewRequest request) {
+	public List<ReadSellerReviewResponse> findSellerReviewWithCursor(ReadSellerReviewRequest request) {
 
 		QReview review = QReview.review;
 		QMember reviewer = QMember.member;
@@ -39,7 +39,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 		}
 
 		return queryFactory
-				.select(Projections.constructor(ReadReviewResponse.class,
+				.select(Projections.constructor(ReadSellerReviewResponse.class,
 						review.id,
 						reviewer.id,
 						reviewer.name,

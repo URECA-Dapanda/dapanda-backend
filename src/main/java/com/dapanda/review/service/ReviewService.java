@@ -6,10 +6,10 @@ import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.review.dto.request.DeleteReviewRequest;
-import com.dapanda.review.dto.request.ReadReviewRequest;
+import com.dapanda.review.dto.request.ReadSellerReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.dto.response.ReadReviewResponse;
+import com.dapanda.review.dto.response.ReadSellerReviewResponse;
 import com.dapanda.review.dto.response.SaveReviewResponse;
 import com.dapanda.review.dto.response.UpdateReviewResponse;
 import com.dapanda.review.entity.Review;
@@ -29,9 +29,9 @@ public class ReviewService {
 	private final ReviewRepository reviewRepository;
 	private final MemberRepository memberRepository;
 
-	public CursorPageResponse<ReadReviewResponse> readSellerReview(ReadReviewRequest request) {
+	public CursorPageResponse<ReadSellerReviewResponse> readSellerReview(ReadSellerReviewRequest request) {
 
-		List<ReadReviewResponse> reviews = reviewRepository.findSellerReviewWithCursor(request);
+		List<ReadSellerReviewResponse> reviews = reviewRepository.findSellerReviewWithCursor(request);
 
 		boolean hasNext = reviews.size() > request.size();
 

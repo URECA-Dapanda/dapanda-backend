@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReadReviewResponse {
+public class ReadSellerReviewResponse {
 
 	private Long reviewId;
 	private Long reviewerId;
@@ -21,7 +21,7 @@ public class ReadReviewResponse {
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 
-	public ReadReviewResponse(
+	public ReadSellerReviewResponse(
 			Long reviewId,
 			Long reviewerId,
 			String reviewerName,
@@ -42,7 +42,7 @@ public class ReadReviewResponse {
 		this.updatedAt = updatedAt;
 	}
 
-	public static ReadReviewResponse of(
+	public static ReadSellerReviewResponse of(
 			Long reviewId,
 			Long reviewerId,
 			String reviewerName,
@@ -53,7 +53,7 @@ public class ReadReviewResponse {
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt) {
 
-		return ReadReviewResponse.builder()
+		return ReadSellerReviewResponse.builder()
 				.reviewId(reviewId)
 				.reviewerId(reviewerId)
 				.reviewerName(reviewerName)

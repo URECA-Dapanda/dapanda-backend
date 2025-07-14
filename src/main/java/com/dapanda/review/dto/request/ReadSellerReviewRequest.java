@@ -1,6 +1,6 @@
 package com.dapanda.review.dto.request;
 
-public record ReadReviewRequest(
+public record ReadSellerReviewRequest(
 
 		Long cursorId,
 		Integer size,

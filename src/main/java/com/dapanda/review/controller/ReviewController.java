@@ -4,10 +4,10 @@ import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.CommonResponse;
 import com.dapanda.review.dto.request.DeleteReviewRequest;
-import com.dapanda.review.dto.request.ReadReviewRequest;
+import com.dapanda.review.dto.request.ReadSellerReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.dto.response.ReadReviewResponse;
+import com.dapanda.review.dto.response.ReadSellerReviewResponse;
 import com.dapanda.review.dto.response.SaveReviewResponse;
 import com.dapanda.review.dto.response.UpdateReviewResponse;
 import com.dapanda.review.service.ReviewService;
@@ -33,14 +33,17 @@ public class ReviewController {
 		return CommonResponse.success(reviewService.saveReview(request, userDetails.getId()));
 	}
 
+	/**
+	 * 판매자가 받은 리뷰 조회
+	 */
 	@GetMapping("/reviews/seller/{memberId}")
-	public CommonResponse<CursorPageResponse<ReadReviewResponse>> readReview(
+	public CommonResponse<CursorPageResponse<ReadSellerReviewResponse>> readSellerReview(
 			@PathVariable Long memberId,
 			@RequestParam(required = false) Long cursorId,
 			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size,
 			@RequestParam(defaultValue = "RECENT") String reviewSortOption){
 
-		ReadReviewRequest request = new ReadReviewRequest(cursorId, size, reviewSortOption, memberId);
+		ReadSellerReviewRequest request = new ReadSellerReviewRequest(cursorId, size, reviewSortOption, memberId);
 
 		return CommonResponse.success(reviewService.readSellerReview(request));
 	}
