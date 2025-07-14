@@ -1,5 +1,18 @@
 package com.dapanda.review.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
@@ -11,6 +24,8 @@ import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.repository.ReviewRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Collections;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -26,20 +41,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.Collections;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.mock;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -85,13 +86,14 @@ class ReviewControllerTest {
 				String comment = "진짜 별로에요";
 				Long productId = 123L;
 
-				Member reviewer = MemberFixture.MEMBER_REVIEWER;
-				Member reviewee = MemberFixture.MEMBER_REVIEWEE;
+				Member reviewer = MemberFixture.MEMBER1;
+				Member reviewee = MemberFixture.MEMBER2;
 
 				Member savedReviewer = memberRepository.save(reviewer);
 				Member savedReviewee = memberRepository.save(reviewee);
 
-				SaveReviewRequest request = new SaveReviewRequest(savedReviewee.getId(), productId, rating, comment);
+				SaveReviewRequest request = new SaveReviewRequest(savedReviewee.getId(), productId,
+						rating, comment);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
@@ -102,7 +104,7 @@ class ReviewControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails,null,Collections.emptyList()
+										userDetails, null, Collections.emptyList()
 								)))
 						)
 						.andExpect(status().isOk())
@@ -111,9 +113,12 @@ class ReviewControllerTest {
 						.andExpect(jsonPath("$.data.reviewId").exists())
 						.andDo(document("review/save-review",
 								requestFields(
-										fieldWithPath("revieweeId").description("리뷰 대상 회원의 아이디 (필수)"),
-										fieldWithPath("productId").description("리뷰 대상 상품의 아이디 (필수)"),
-										fieldWithPath("rating").description("리뷰 평점 (필수, 1.0 ~ 5.0)"),
+										fieldWithPath("revieweeId").description(
+												"리뷰 대상 회원의 아이디 (필수)"),
+										fieldWithPath("productId").description(
+												"리뷰 대상 상품의 아이디 (필수)"),
+										fieldWithPath("rating").description(
+												"리뷰 평점 (필수, 1.0 ~ 5.0)"),
 										fieldWithPath("comment").description("리뷰 코멘트 (필수, 최대 50자)")
 								),
 								responseFields(
@@ -143,7 +148,7 @@ class ReviewControllerTest {
 			public void validateRequiredFields() throws Exception {
 
 				// given
-				SaveReviewRequest request = new SaveReviewRequest(null, null, null,  null);
+				SaveReviewRequest request = new SaveReviewRequest(null, null, null, null);
 
 				// when & then
 				mockMvc.perform(post("/api/reviews")
@@ -159,11 +164,11 @@ class ReviewControllerTest {
 			public void validateMemberId() throws Exception {
 
 				// given
-				Member reviewer = MemberFixture.MEMBER_REVIEWER;
+				Member reviewer = MemberFixture.MEMBER1;
 
 				Member savedReviewer = memberRepository.save(reviewer);
 
-				SaveReviewRequest request = new SaveReviewRequest(505L, 123L,5.0f, "test");
+				SaveReviewRequest request = new SaveReviewRequest(505L, 123L, 5.0f, "test");
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
@@ -174,7 +179,7 @@ class ReviewControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails,null, Collections.emptyList()
+										userDetails, null, Collections.emptyList()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -201,8 +206,8 @@ class ReviewControllerTest {
 				String comment = "진짜 별로에요";
 				Long productId = 123L;
 
-				Member reviewer = MemberFixture.MEMBER_REVIEWER;
-				Member reviewee = MemberFixture.MEMBER_REVIEWEE;
+				Member reviewer = MemberFixture.MEMBER1;
+				Member reviewee = MemberFixture.MEMBER2;
 
 				Member savedReviewer = memberRepository.save(reviewer);
 				Member savedReviewee = memberRepository.save(reviewee);
@@ -251,7 +256,7 @@ class ReviewControllerTest {
 				// given
 				DeleteReviewRequest request = new DeleteReviewRequest(null);
 
-				Member reviewer = MemberFixture.MEMBER_REVIEWER;
+				Member reviewer = MemberFixture.MEMBER1;
 
 				Member savedReviewer = memberRepository.save(reviewer);
 
