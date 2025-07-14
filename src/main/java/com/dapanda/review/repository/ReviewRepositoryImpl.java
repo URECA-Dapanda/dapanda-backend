@@ -2,7 +2,10 @@ package com.dapanda.review.repository;
 
 import com.dapanda.member.entity.QMember;
 import com.dapanda.product.entity.QProduct;
+import com.dapanda.review.dto.request.ReadMyReviewRequest;
 import com.dapanda.review.dto.request.ReadSellerReviewRequest;
+import com.dapanda.review.dto.response.ReadMyReceivedReviewResponse;
+import com.dapanda.review.dto.response.ReadMyWrittenReviewResponse;
 import com.dapanda.review.dto.response.ReadSellerReviewResponse;
 import com.dapanda.review.entity.QReview;
 import com.dapanda.review.entity.ReviewSortOption;
@@ -26,7 +29,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 	public List<ReadSellerReviewResponse> findSellerReviewWithCursor(ReadSellerReviewRequest request) {
 
 		QReview review = QReview.review;
-		QMember reviewer = QMember.member;
+		QMember member = QMember.member;
 		QTrade trade = QTrade.trade;
 		QProduct product = QProduct.product;
 
@@ -41,8 +44,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 		return queryFactory
 				.select(Projections.constructor(ReadSellerReviewResponse.class,
 						review.id,
-						reviewer.id,
-						reviewer.name,
+						member.id,
+						member.name,
 						review.rating,
 						review.comment,
 						trade.tradingAmount,
@@ -51,7 +54,83 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 						review.updatedAt
 				))
 				.from(review)
-				.join(review.reviewer, reviewer)
+				.join(review.reviewer, member)
+				.join(product).on(review.productId.eq(product.id))
+				.join(trade).on(product.id.eq(trade.productId))
+				.where(whereClause)
+				.orderBy(getOrderSpecifier(ReviewSortOption.valueOf(request.reviewSortOption())))
+				.limit(request.size() + 1)
+				.fetch();
+	}
+
+	@Override
+	public List<ReadMyReceivedReviewResponse> findMyReceivedReviews(ReadMyReviewRequest request) {
+
+		QReview review = QReview.review;
+		QMember member = QMember.member;
+		QTrade trade = QTrade.trade;
+		QProduct product = QProduct.product;
+
+		BooleanBuilder whereClause = new BooleanBuilder();
+
+		whereClause.and(review.reviewee.id.eq(request.memberId()));
+
+		if (request.cursorId() != null) {
+			whereClause.and(buildCursorCondition(request.cursorId(), ReviewSortOption.valueOf(request.reviewSortOption())));
+		}
+
+		return queryFactory
+				.select(Projections.constructor(ReadMyReceivedReviewResponse.class,
+						review.id,
+						member.id,
+						member.name,
+						review.rating,
+						review.comment,
+						trade.tradingAmount,
+						product.itemType,
+						review.createdAt,
+						review.updatedAt
+				))
+				.from(review)
+				.join(review.reviewer, member)
+				.join(product).on(review.productId.eq(product.id))
+				.join(trade).on(product.id.eq(trade.productId))
+				.where(whereClause)
+				.orderBy(getOrderSpecifier(ReviewSortOption.valueOf(request.reviewSortOption())))
+				.limit(request.size() + 1)
+				.fetch();
+	}
+
+	@Override
+	public List<ReadMyWrittenReviewResponse> findMyWrittenReviews(ReadMyReviewRequest request) {
+
+		QReview review = QReview.review;
+		QMember member = QMember.member;
+		QTrade trade = QTrade.trade;
+		QProduct product = QProduct.product;
+
+		BooleanBuilder whereClause = new BooleanBuilder();
+
+		whereClause.and(review.reviewer.id.eq(request.memberId()));
+
+		if (request.cursorId() != null) {
+			whereClause.and(buildCursorCondition(request.cursorId(), ReviewSortOption.valueOf(request.reviewSortOption())));
+		}
+
+		return queryFactory
+				.select(Projections.constructor(ReadMyWrittenReviewResponse.class,
+						review.id,
+						member.id,
+						member.name,
+						review.rating,
+						review.comment,
+						trade.tradingAmount,
+						product.itemType,
+						review.createdAt,
+						review.updatedAt
+				))
+				.from(review)
+				.join(review.reviewee, member)
 				.join(product).on(review.productId.eq(product.id))
 				.join(trade).on(product.id.eq(trade.productId))
 				.where(whereClause)
