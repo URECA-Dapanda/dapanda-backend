@@ -1,22 +1,17 @@
 package com.dapanda.review.entity;
 
-import com.dapanda.member.entity.MemberFixture;
-import org.springframework.test.util.ReflectionTestUtils;
+import com.dapanda.member.entity.Member;
 
 public class ReviewFixture {
 
-	public static Review createReview1(Long reviewId, Long reviewerId, Long revieweeId) {
+	public static Review createReview1(Member reviewer, Member reviewee) {
 
-		Review review = Review.of(
+		return Review.of(
 				3.5f,
 				"comment",
 				123L,
-				MemberFixture.createMember1(reviewerId),
-				MemberFixture.createMember2(revieweeId)
+				reviewer,
+				reviewee
 		);
-
-		ReflectionTestUtils.setField(review, "id", reviewId);
-
-		return review;
 	}
 }

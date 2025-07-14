@@ -17,6 +17,7 @@ public enum ResultCode {
 	FORBIDDEN(HttpStatus.FORBIDDEN, 1003, "권한이 없습니다."),
 	RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, 1004, "요청한 리소스를 찾을 수 없습니다."),
 	INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 1005, "서버 내부 오류가 발생했습니다."),
+	INVALID_PARAMETER(HttpStatus.BAD_REQUEST, 1006, "유효하지 않은 파라미터입니다."),
 
 	// 회원 2000번대
 	DUPLICATE_EMAIL(HttpStatus.CONFLICT, 2000, "이미 가입된 이메일입니다."),
@@ -38,6 +39,8 @@ public enum ResultCode {
 	TOKEN_REISSUE_FAILED(HttpStatus.UNAUTHORIZED, 2013, "토큰 재발급에 실패했습니다."),
 
 	// 상품 3000번대
+	INVALID_PRODUCT_SORT_OPTION(HttpStatus.BAD_REQUEST, 3000, "유효하지 않은 상품 정렬 조건입니다"),
+	INVALID_ITEM_TYPE(HttpStatus.BAD_REQUEST, 3001, "유효하지 않은 상품 타입입니다."),
 
 	// 거래 4000번대
 
