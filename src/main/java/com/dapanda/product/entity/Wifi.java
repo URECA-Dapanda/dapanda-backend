@@ -30,21 +30,18 @@ public class Wifi {
 
 	private double longitude; // 경도
 
-	private String imageUrl;
-
 	private LocalDateTime startTime;
 
 	private LocalDateTime endTime;
 
 	public static Wifi of(String title, String content, double latitude, double longitude,
-			String imageUrl, LocalDateTime startTime, LocalDateTime endTime) {
+			LocalDateTime startTime, LocalDateTime endTime) {
 
 		return Wifi.builder()
 				.title(title)
 				.content(content)
 				.latitude(latitude)
 				.longitude(longitude)
-				.imageUrl(imageUrl)
 				.startTime(startTime)
 				.endTime(endTime)
 				.build();
