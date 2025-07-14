@@ -7,9 +7,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 public class WifiFixture {
 
 	public static Wifi createWifi1(String title, String content, double latitude, double longitude,
-			LocalDateTime startTime, LocalDateTime endTime, Long wifiId) {
+			LocalDateTime startTime, LocalDateTime endTime) {
 
-		Wifi wifi = Wifi.of(
+		return Wifi.of(
 				title,
 				content,
 				latitude,
@@ -18,10 +18,6 @@ public class WifiFixture {
 				startTime,
 				endTime
 		);
-
-		ReflectionTestUtils.setField(wifi, "id", wifiId);
-
-		return wifi;
 	}
 
 	public static Wifi createWifi2(Long wifiId) {
