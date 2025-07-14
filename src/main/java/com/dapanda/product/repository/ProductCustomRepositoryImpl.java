@@ -36,7 +36,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 	@Override
 	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, int size,
-			ProductSortOption productSortOption, Integer dataAmount) {
+			ProductSortOption productSortOption, Float dataAmount) {
 
 		QProduct product = QProduct.product;
 		QMobileData mobileData = QMobileData.mobileData;
@@ -48,7 +48,6 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.itemId,
 						product.member.name,
 						mobileData.remainAmount,
-						mobileData.unit,
 						mobileData.pricePer100MB,
 						mobileData.isSplitType
 				))
@@ -56,7 +55,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.join(mobileData).on(mobileData.id.eq(product.itemId))
 				.where(
 						gtCursorId(cursorId, product),
-						gteDataAmount(dataAmount, mobileData)
+						eqDataAmount(dataAmount, mobileData)
 				)
 				.orderBy(
 						productSortOption == ProductSortOption.PRICE_ASC ? product.price.asc() :
@@ -141,9 +140,9 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		return cursorId != null ? product.id.gt(cursorId) : null;
 	}
 
-	private BooleanExpression gteDataAmount(Integer dataAmount, QMobileData mobileData) {
+	private BooleanExpression eqDataAmount(Float dataAmount, QMobileData mobileData) {
 
-		return dataAmount != null ? mobileData.remainAmount.goe(dataAmount) : null;
+		return dataAmount != null ? mobileData.remainAmount.eq(dataAmount) : null;
 	}
 
 	private BooleanExpression isOpenNow(boolean isOpen, QWifi wifi, LocalDateTime now) {

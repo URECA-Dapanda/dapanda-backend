@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 public interface ProductCustomRepository {
 
 	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, int size,
-			ProductSortOption productSortOption, Integer dataAmount);
+			ProductSortOption productSortOption, Float dataAmount);
 
 	public CursorPageResponse<WifiSummary> findWifiByCursor(Long cursorId, int size,
 			ProductSortOption productSortOption, boolean isOpen, Double latitude, Double longitude);

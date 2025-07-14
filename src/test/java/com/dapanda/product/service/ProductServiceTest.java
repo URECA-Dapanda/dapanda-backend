@@ -12,7 +12,6 @@ import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.WifiCursorRequest;
-import com.dapanda.product.entity.DataSellingUnit;
 import com.dapanda.product.entity.MobileDataFixture;
 import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.product.entity.WifiFixture;
@@ -54,8 +53,7 @@ class ProductServiceTest {
 				for (int i = 1; i <= 3; i++) {
 					summaries.add(
 							MobileDataFixture.createMobileDataSummary((long) i, 1000, (long) i,
-									"회원" + i, 5,
-									DataSellingUnit.GB, 200, false));
+									"회원" + i, 5, 200, false));
 				}
 				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -81,8 +79,7 @@ class ProductServiceTest {
 				for (int i = 1; i <= 3; i++) {
 					summaries.add(
 							MobileDataFixture.createMobileDataSummary((long) i, 100 + i, (long) i,
-									"회원" + i, 5,
-									DataSellingUnit.GB, 200, false));
+									"회원" + i, 5, 200, false));
 				}
 				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -114,7 +111,6 @@ class ProductServiceTest {
 							(long) i,
 							"회원" + i,
 							1 + i,
-							DataSellingUnit.GB,
 							100 + 100 * i,
 							i % 2 == 0
 					));
@@ -126,12 +122,12 @@ class ProductServiceTest {
 				);
 
 				given(productRepository.findMobileDataByCursor(null, 2,
-						ProductSortOption.AMOUNT_ASC, 2)).willReturn(response);
+						ProductSortOption.AMOUNT_ASC, 2.0F)).willReturn(response);
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
 						new com.dapanda.product.dto.request.MobileDataCursorRequest(null, 2,
-								"AMOUNT_ASC", 2)
+								"AMOUNT_ASC", 2.0F)
 				);
 
 				// then
@@ -148,8 +144,7 @@ class ProductServiceTest {
 				for (int i = 3; i >= 1; i--) {
 					summaries.add(
 							MobileDataFixture.createMobileDataSummary((long) i, 1000, (long) i,
-									"회원" + i, i * 10,
-									DataSellingUnit.GB, 200, false));
+									"회원" + i, i * 10, 200, false));
 				}
 				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -173,21 +168,21 @@ class ProductServiceTest {
 
 				// given
 				List<MobileDataSummary> summaries = new ArrayList<>();
-				summaries.add(new MobileDataSummary(1L, 1000, 1L, "회원1", 5, DataSellingUnit.GB, 200,
+				summaries.add(new MobileDataSummary(1L, 1000, 1L, "회원1", 5.0F, 200,
 						false));
 				summaries.add(
-						new MobileDataSummary(2L, 2000, 2L, "회원2", 10, DataSellingUnit.GB, 200,
+						new MobileDataSummary(2L, 2000, 2L, "회원2", 10, 200,
 								false));
 				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(2L, false, 2));
 
 				given(productRepository.findMobileDataByCursor(null, 3,
-						ProductSortOption.AMOUNT_ASC, 5)).willReturn(response);
+						ProductSortOption.AMOUNT_ASC, 5.0F)).willReturn(response);
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
 						new com.dapanda.product.dto.request.MobileDataCursorRequest(null, 3,
-								"AMOUNT_ASC", 5));
+								"AMOUNT_ASC", 5.0F));
 
 				// then
 				assertThat(result.getData()).hasSize(2);
