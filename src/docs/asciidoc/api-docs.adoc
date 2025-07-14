@@ -242,13 +242,6 @@ include::{snippets}/review/delete-review-validation-error/http-request.adoc[]
 
 include::{snippets}/review/delete-review-validation-error/http-response.adoc[]
 
-====== 존재하지 않는 회원
-
-include::{snippets}/review/save-review-member-id-error/http-request.adoc[]
-
-include::{snippets}/review/save-review-member-id-error/http-response.adoc[]
-
-
 [[resources-auth]]
 === 인증/인가
 
