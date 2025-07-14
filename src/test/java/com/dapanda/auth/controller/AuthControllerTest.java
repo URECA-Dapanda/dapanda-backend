@@ -9,7 +9,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.dapanda.RestDocsConfig;
+import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.jwt.JwtTokenProvider;
 import com.dapanda.member.entity.Member;
@@ -36,7 +36,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import({RestDocsConfig.class})
+@Import({TestConfig.class})
 @ActiveProfiles("test")
 @ExtendWith(RestDocumentationExtension.class)
 @DisplayName("인증/인가 컨트롤러 통합 테스트")
@@ -64,7 +64,7 @@ class AuthControllerTest {
 	@BeforeEach
 	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
 
-		this.mockMvc = RestDocsConfig.createMockMvc(context, restDocumentation);
+		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
 	}
 
 	@BeforeEach

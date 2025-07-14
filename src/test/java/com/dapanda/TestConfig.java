@@ -8,9 +8,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
 @TestConfiguration
-public class RestDocsConfig {
+public class TestConfig {
 
 	public static MockMvc createMockMvc(WebApplicationContext context, RestDocumentationContextProvider restDocumentation) {
 
@@ -20,6 +21,7 @@ public class RestDocsConfig {
 						.withRequestDefaults(prettyPrint())
 						.withResponseDefaults(prettyPrint())
 				)
+				.apply(springSecurity())
 				.build();
 	}
 }
