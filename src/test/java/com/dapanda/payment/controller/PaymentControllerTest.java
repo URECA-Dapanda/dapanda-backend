@@ -13,7 +13,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.dapanda.RestDocsConfig;
+import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
@@ -44,7 +44,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @SpringBootTest
-@Import({RestDocsConfig.class})
+@Import({TestConfig.class})
 @ActiveProfiles("test")
 @ExtendWith(RestDocumentationExtension.class)
 @DisplayName("결제 컨트롤러 테스트")
@@ -67,7 +67,7 @@ class PaymentControllerTest {
 	@BeforeEach
 	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
 
-		this.mockMvc = RestDocsConfig.createMockMvc(context, restDocumentation);
+		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
 	}
 
 	@BeforeEach
