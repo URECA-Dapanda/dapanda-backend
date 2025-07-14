@@ -108,7 +108,6 @@ class ProductControllerTest {
 		class Success {
 
 			@Test
-			@Transactional
 			@DisplayName("데이터 상품 목록을 조회한다")
 			void getMobileDataByCursorTest() throws Exception {
 
