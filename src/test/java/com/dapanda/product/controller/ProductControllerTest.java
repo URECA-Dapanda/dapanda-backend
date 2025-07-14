@@ -1,5 +1,14 @@
 package com.dapanda.product.controller;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.dapanda.TestConfig;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
@@ -7,13 +16,22 @@ import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.WifiCursorRequest;
-import com.dapanda.product.entity.*;
+import com.dapanda.product.entity.MobileData;
+import com.dapanda.product.entity.MobileDataFixture;
+import com.dapanda.product.entity.Product;
+import com.dapanda.product.entity.ProductFixture;
+import com.dapanda.product.entity.ProductImage;
+import com.dapanda.product.entity.ProductImageFixture;
+import com.dapanda.product.entity.Wifi;
+import com.dapanda.product.entity.WifiFixture;
 import com.dapanda.product.repository.MobileDataRepository;
+import com.dapanda.product.repository.ProductImageRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
-import com.dapanda.product.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -29,18 +47,7 @@ import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -73,9 +80,10 @@ class ProductControllerTest {
 	@Autowired
 	private WifiRepository wifiRepository;
 
-	private MockMvc mockMvc;
 	@Autowired
-	private ProductService productService;
+	private ProductImageRepository productImageRepository;
+
+	private MockMvc mockMvc;
 
 	@BeforeEach
 	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
@@ -268,6 +276,12 @@ class ProductControllerTest {
 						LocalDateTime.of(2025, 7, 14, 18, 0));
 				wifiRepository.saveAll(List.of(wifi1, wifi2, wifi3));
 
+				ProductImage productImage1 = ProductImageFixture.createProductImage("imageUrl1", 1,
+						wifi1.getId());
+				ProductImage productImage2 = ProductImageFixture.createProductImage("imageUrl2", 2,
+						wifi2.getId());
+				productImageRepository.saveAll(List.of(productImage1, productImage2));
+
 				Product product1 = ProductFixture.createWifiProduct(3000, wifi1.getId(), member);
 				Product product2 = ProductFixture.createWifiProduct(4000, wifi2.getId(), member);
 				Product product3 = ProductFixture.createWifiProduct(5000, wifi3.getId(), member);
@@ -311,10 +325,11 @@ class ProductControllerTest {
 										fieldWithPath("data.data[].memberName").description(
 												"등록한 회원 이름"),
 										fieldWithPath("data.data[].title").description("게시물 제목"),
+										fieldWithPath("data.data[].imageUrl").description(
+												"대표 이미지 URL").optional(),
 										fieldWithPath("data.data[].latitude").description("위도"),
 										fieldWithPath("data.data[].longitude").description("경도"),
-										fieldWithPath("data.data[].imageUrl").description(
-												"이미지 URL"),
+
 										fieldWithPath("data.data[].averageRate").description(
 												"평균 평점"),
 										fieldWithPath("data.data[].distanceKm").description(

@@ -15,14 +15,14 @@ public class WifiSummary extends ProductSummary {
 	private double distanceKm;
 
 	public WifiSummary(Long id, int price, Long itemId, String memberName, String title,
-			double latitude, double longitude, String imageUrl, double averageRate,
+			String imageUrl, double latitude, double longitude, double averageRate,
 			double distanceKm) {
 
 		super(id, price, itemId, memberName);
 		this.title = title;
+		this.imageUrl = imageUrl;
 		this.latitude = latitude;
 		this.longitude = longitude;
-		this.imageUrl = imageUrl;
 		this.averageRate = averageRate;
 		this.distanceKm = distanceKm;
 	}

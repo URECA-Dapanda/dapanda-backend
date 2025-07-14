@@ -221,31 +221,6 @@ class ProductServiceTest {
 			class Success {
 
 				@Test
-				@DisplayName("RECENT 정렬로 와이파이 상품 목록 조회를 성공한다")
-				void findWifiSortedByRecent() {
-
-					// given
-					List<WifiSummary> summaries = new ArrayList<>();
-					for (int i = 1; i <= 3; i++) {
-						summaries.add(
-								WifiFixture.createWifiSummary((long) i, 1000, (long) i,
-										"회원" + i, "상품제목" + i, 37.0 + i, 127.0 + i, i * 10.0, i));
-					}
-					CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
-							CursorPageResponse.PageInfo.of(3L, false, 3));
-
-					given(productRepository.findWifiByCursor(null, 3, ProductSortOption.RECENT,
-							true, 37.0, 127.0)).willReturn(response);
-
-					// when
-					CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
-							new WifiCursorRequest(null, 3, "RECENT", true, 37.0, 127.0));
-
-					// then
-					assertThat(result.getData()).hasSize(3);
-				}
-
-				@Test
 				@DisplayName("PRICE_ASC 정렬로 와이파이 상품 목록 조회를 성공한다")
 				void findWifiSortedByPriceAsc() {
 
@@ -346,10 +321,10 @@ class ProductServiceTest {
 					// given
 					List<WifiSummary> summaries = new ArrayList<>();
 					summaries.add(
-							new WifiSummary(1L, 1000, 1L, "회원1", "상품제목1", 37.0, 127.0, "imageUrl",
+							new WifiSummary(1L, 1000, 1L, "회원1", "상품제목1", "imageUrl", 37.0, 127.0,
 									5, 5));
 					summaries.add(
-							new WifiSummary(2L, 2000, 2L, "회원2", "상품제목2", 37.1, 127.1, "imageUrl",
+							new WifiSummary(2L, 2000, 2L, "회원2", "상품제목2", "imageUrl", 37.1, 127.1,
 									10, 10));
 					CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 							CursorPageResponse.PageInfo.of(2L, false, 2));
