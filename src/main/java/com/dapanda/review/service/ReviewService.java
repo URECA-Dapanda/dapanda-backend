@@ -6,12 +6,15 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
+import com.dapanda.review.dto.request.UpdateReviewRequest;
 import com.dapanda.review.dto.response.SaveReviewResponse;
+import com.dapanda.review.dto.response.UpdateReviewResponse;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -24,7 +27,7 @@ public class ReviewService {
 	public SaveReviewResponse saveReview(SaveReviewRequest request, Long memberId) {
 
 		validateSelfReview(memberId, request.revieweeId());
-		validateMemberId(request.revieweeId());
+		validateRevieweeId(request.revieweeId());
 
 		Member reviewer = memberRepository.getReferenceById(memberId);
 		Member reviewee = memberRepository.getReferenceById(request.revieweeId());
@@ -36,25 +39,35 @@ public class ReviewService {
 		return SaveReviewResponse.from(savedReview.getId());
 	}
 
+	@Transactional
+	public UpdateReviewResponse updateReview(UpdateReviewRequest request, Long memberId){
+
+		Review savedReview = reviewRepository.findById(request.reviewId())
+				.orElseThrow(() -> new GlobalException(ResultCode.REVIEW_NOT_FOUND));
+
+		validateReviewOwner(savedReview, memberId);
+
+		savedReview.updateReview(request);
+
+		return UpdateReviewResponse.from(savedReview.getId());
+	}
+
 	public void deleteReview(DeleteReviewRequest request, Long memberId) {
 
-		validateMemberId(memberId);
-		validateReviewId(request.reviewId());
-		validateReviewOwner(request.reviewId(), memberId);
+		Review savedReview = reviewRepository.findById(request.reviewId())
+				.orElseThrow(() -> new GlobalException(ResultCode.REVIEW_NOT_FOUND));
 
-		reviewRepository.deleteById(request.reviewId());
+		validateReviewOwner(savedReview, memberId);
+
+		reviewRepository.delete(savedReview);
 	}
 
 	/**
 	 *	리뷰 오너 검증
 	 */
-	private void validateReviewOwner(Long reviewId, Long memberId) {
+	private void validateReviewOwner(Review savedReview, Long memberId) {
 
-		Review review = reviewRepository.getReferenceById(reviewId);
-
-		Member member = review.getReviewer();
-
-		if (!member.getId().equals(memberId)) {
+		if (!savedReview.getReviewer().getId().equals(memberId)) {
 
 			throw new GlobalException(ResultCode.OTHER_REVIEW);
 		}
@@ -72,24 +85,13 @@ public class ReviewService {
 	}
 
 	/**
-	 *	memberId 검증
+	 *	리뷰 받는 회원 아이디 검증
 	 */
-	private void validateMemberId(Long memberId){
+	private void validateRevieweeId(Long revieweeId) {
 
-		if (!memberRepository.existsById(memberId)){
+		if (!memberRepository.existsById(revieweeId)) {
 
 			throw new GlobalException(ResultCode.MEMBER_NOT_FOUND);
-		}
-	}
-
-	/**
-	 * reviewId 검증
-	 */
-	private void validateReviewId(Long reviewId){
-
-		if (!reviewRepository.existsById(reviewId)){
-
-			throw new GlobalException(ResultCode.REVIEW_NOT_FOUND);
 		}
 	}
 }

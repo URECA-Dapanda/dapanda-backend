@@ -1,14 +1,5 @@
 package com.dapanda.product.controller;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.dapanda.TestConfig;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
@@ -16,18 +7,13 @@ import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.WifiCursorRequest;
-import com.dapanda.product.entity.MobileData;
-import com.dapanda.product.entity.MobileDataFixture;
-import com.dapanda.product.entity.Product;
-import com.dapanda.product.entity.ProductFixture;
-import com.dapanda.product.entity.Wifi;
-import com.dapanda.product.entity.WifiFixture;
+import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
+import com.dapanda.product.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDateTime;
-import java.util.List;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -37,12 +23,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -58,6 +56,12 @@ class ProductControllerTest {
 	private ObjectMapper objectMapper;
 
 	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
+	@Autowired
+	private EntityManager entityManager;
+
+	@Autowired
 	private ProductRepository productRepository;
 
 	@Autowired
@@ -70,11 +74,29 @@ class ProductControllerTest {
 	private WifiRepository wifiRepository;
 
 	private MockMvc mockMvc;
+	@Autowired
+	private ProductService productService;
 
 	@BeforeEach
 	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
 
 		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
+
+		cleanupDatabase();
+	}
+
+	private void cleanupDatabase() {
+
+		entityManager.clear();
+
+		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
+
+		jdbcTemplate.execute("TRUNCATE TABLE wifi");
+		jdbcTemplate.execute("TRUNCATE TABLE mobile_data");
+		jdbcTemplate.execute("TRUNCATE TABLE product");
+		jdbcTemplate.execute("TRUNCATE TABLE member");
+
+		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
 
 	@Nested
@@ -94,7 +116,7 @@ class ProductControllerTest {
 				String productSortOption = "RECENT";
 				Float dataAmount = 2.0F;
 
-				Member member = memberRepository.save(MemberFixture.MEMBER1);
+				Member member = memberRepository.save(MemberFixture.createMember1());
 
 				MobileData mobileData1 = MobileDataFixture.createMobileData(2.0F, 2.0F, 500);
 				MobileData mobileData2 = MobileDataFixture.createMobileData(2.0F, 2.0F, 600);
@@ -108,8 +130,7 @@ class ProductControllerTest {
 				Product product3 = ProductFixture.createMobileDataProduct(5000,
 						mobileData3.getId(), member);
 				productRepository.saveAll(List.of(product1, product2, product3));
-
-				MobileDataCursorRequest request = new MobileDataCursorRequest(3L, size,
+				MobileDataCursorRequest request = new MobileDataCursorRequest(null, size,
 						productSortOption, dataAmount);
 
 				// when & then
@@ -234,7 +255,7 @@ class ProductControllerTest {
 				double latitude = 30.0;
 				double longitude = 127.0;
 
-				Member member = memberRepository.save(MemberFixture.MEMBER1);
+				Member member = memberRepository.save(MemberFixture.createMember1());
 
 				Wifi wifi1 = WifiFixture.createWifi1("제목1", "내용1", 30.0, 126.0,
 						LocalDateTime.of(2025, 7, 14, 10, 0),
