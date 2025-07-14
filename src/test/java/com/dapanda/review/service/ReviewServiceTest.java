@@ -46,6 +46,7 @@ class ReviewServiceTest {
 	private static final Long MEMBER_ID = 1L;
 	private static final Long REVIEWER_ID = 1L;
 	private static final Long REVIEWEE_ID = 2L;
+	private static final Long OTHER_REVIEWER_ID = 3L;
 	private static final Long NON_EXISTENT_REVIEW_ID = 999L;
 	private static final Long REVIEW_ID = 1L;
 	private static final Float TEST_RATING = 3.5F;
@@ -181,10 +182,10 @@ class ReviewServiceTest {
 				//given
 				DeleteReviewRequest request = new DeleteReviewRequest(REVIEW_ID);
 
-				Member savedReviewer = MemberFixture.createMember1WithId(REVIEWER_ID);
+				Member savedReviewer = MemberFixture.createMember1WithId(OTHER_REVIEWER_ID);
 				Member savedReviewee = MemberFixture.createMember2WithId(REVIEWEE_ID);
 
-				Review review = ReviewFixture.createReviewWithId(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee, REVIEWEE_ID);
+				Review review = ReviewFixture.createReviewWithId(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee, REVIEW_ID);
 
 				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
 
@@ -261,10 +262,10 @@ class ReviewServiceTest {
 			public void reviewOwnerTest() {
 
 				//given
-				Member savedReviewer = MemberFixture.createMember1WithId(REVIEWER_ID);
+				Member savedReviewer = MemberFixture.createMember1WithId(OTHER_REVIEWER_ID);
 				Member savedReviewee = MemberFixture.createMember2WithId(REVIEWEE_ID);
 
-				Review savedReview = ReviewFixture.createReviewWithId(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee, REVIEWEE_ID);
+				Review savedReview = ReviewFixture.createReviewWithId(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee, REVIEW_ID);
 
 				UpdateReviewRequest request = new UpdateReviewRequest(REVIEW_ID, NEW_RATING, NEW_COMMENT);
 
