@@ -20,6 +20,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -124,44 +126,26 @@ class ReviewServiceTest {
 
 				//given
 				Long reviewId = 10L;
-				Long reviewerId = 1L;
+				Long memberId = 1L;
 				Long revieweeId = 2L;
 
 				DeleteReviewRequest request = new DeleteReviewRequest(reviewId);
 
-				Review review = ReviewFixture.createReview1(reviewId, reviewerId, revieweeId);
+				Review review = ReviewFixture.createReview1(reviewId, memberId, revieweeId);
 
-				given(memberRepository.existsById(reviewerId)).willReturn(true);
-				given(reviewRepository.existsById(reviewId)).willReturn(true);
-				given(reviewRepository.getReferenceById(reviewId)).willReturn(review);
+				given(reviewRepository.findById(reviewId)).willReturn(Optional.of(review));
 
 				//when
-				reviewService.deleteReview(request, reviewerId);
+				reviewService.deleteReview(request, memberId);
 
 				//then
-				verify(reviewRepository).deleteById(reviewId);
+				verify(reviewRepository).delete(review);
 			}
 		}
 
 		@DisplayName("실패 케이스")
 		@Nested
 		class Fail {
-
-			@Test
-			@DisplayName("존재하지 않는 회원이면 예외가 발생한다")
-			public void memberNotFoundTest() {
-
-				//given
-				Long reviewId = 10L;
-				Long reviewerId = 1L;
-
-				DeleteReviewRequest request = new DeleteReviewRequest(reviewId);
-
-				//when & then
-				assertThatThrownBy(() -> reviewService.deleteReview(request, reviewerId))
-						.isInstanceOf(GlobalException.class)
-						.hasMessage(ResultCode.MEMBER_NOT_FOUND.getMessage());
-			}
 
 			@Test
 			@DisplayName("존재하지 않는 리뷰면 예외가 발생한다")
@@ -172,8 +156,6 @@ class ReviewServiceTest {
 				Long reviewerId = 1L;
 
 				DeleteReviewRequest request = new DeleteReviewRequest(reviewId);
-
-				given(memberRepository.existsById(reviewerId)).willReturn(true);
 
 				//when & then
 				assertThatThrownBy(() -> reviewService.deleteReview(request, reviewerId))
@@ -195,9 +177,7 @@ class ReviewServiceTest {
 
 				Review review = ReviewFixture.createReview1(reviewId, otherReviewerId, revieweeId);
 
-				given(memberRepository.existsById(myReviewerId)).willReturn(true);
-				given(reviewRepository.existsById(reviewId)).willReturn(true);
-				given(reviewRepository.getReferenceById(reviewId)).willReturn(review);
+				given(reviewRepository.findById(reviewId)).willReturn(Optional.of(review));
 
 				//when & then
 				assertThatThrownBy(() -> reviewService.deleteReview(request, myReviewerId))
