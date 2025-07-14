@@ -5,13 +5,8 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.review.dto.request.DeleteReviewRequest;
-import com.dapanda.review.dto.request.ReadSellerReviewRequest;
-import com.dapanda.review.dto.request.SaveReviewRequest;
-import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.dto.response.ReadSellerReviewResponse;
-import com.dapanda.review.dto.response.SaveReviewResponse;
-import com.dapanda.review.dto.response.UpdateReviewResponse;
+import com.dapanda.review.dto.request.*;
+import com.dapanda.review.dto.response.*;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +27,52 @@ public class ReviewService {
 	public CursorPageResponse<ReadSellerReviewResponse> readSellerReview(ReadSellerReviewRequest request) {
 
 		List<ReadSellerReviewResponse> reviews = reviewRepository.findSellerReviewWithCursor(request);
+
+		boolean hasNext = reviews.size() > request.size();
+
+		if (hasNext) {
+			reviews = reviews.subList(0, request.size());
+		}
+
+		Long nextCursorId = hasNext && !reviews.isEmpty()
+				? reviews.get(reviews.size() - 1).getReviewId()
+				: null;
+
+		CursorPageResponse.PageInfo pageInfo = CursorPageResponse.PageInfo.of(
+				nextCursorId,
+				hasNext,
+				request.size()
+		);
+
+		return CursorPageResponse.of(reviews, pageInfo);
+	}
+
+	public CursorPageResponse<ReadMyWrittenReviewResponse> readMyWrittenReview(ReadMyReviewRequest request) {
+
+		List<ReadMyWrittenReviewResponse> reviews = reviewRepository.findMyWrittenReviews(request);
+
+		boolean hasNext = reviews.size() > request.size();
+
+		if (hasNext) {
+			reviews = reviews.subList(0, request.size());
+		}
+
+		Long nextCursorId = hasNext && !reviews.isEmpty()
+				? reviews.get(reviews.size() - 1).getReviewId()
+				: null;
+
+		CursorPageResponse.PageInfo pageInfo = CursorPageResponse.PageInfo.of(
+				nextCursorId,
+				hasNext,
+				request.size()
+		);
+
+		return CursorPageResponse.of(reviews, pageInfo);
+	}
+
+	public CursorPageResponse<ReadMyReceivedReviewResponse> readMyReceivedReview(ReadMyReviewRequest request) {
+
+		List<ReadMyReceivedReviewResponse> reviews = reviewRepository.findMyReceivedReviews(request);
 
 		boolean hasNext = reviews.size() > request.size();
 
