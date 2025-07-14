@@ -18,9 +18,9 @@ import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.MemberRole;
-import com.dapanda.payment.dto.ConfirmPaymentResponse;
 import com.dapanda.payment.dto.request.AmountRequest;
 import com.dapanda.payment.dto.request.TossConfirmRequest;
+import com.dapanda.payment.dto.response.ConfirmPaymentResponse;
 import com.dapanda.payment.service.PaymentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -225,7 +225,7 @@ class PaymentControllerTest {
 
 				// given
 				TossConfirmRequest request = new TossConfirmRequest("payKey123", "order123", 10000);
-				ConfirmPaymentResponse response = ConfirmPaymentResponse.from(1L, 10000);
+				ConfirmPaymentResponse response = ConfirmPaymentResponse.of(1L, 10000);
 
 				given(paymentService.confirmPayment(eq(1L), any(TossConfirmRequest.class)))
 						.willReturn(response);
@@ -303,7 +303,7 @@ class PaymentControllerTest {
 				int amount = 0;
 
 				TossConfirmRequest request = new TossConfirmRequest(paymentKey, orderId, amount);
-				ConfirmPaymentResponse response = ConfirmPaymentResponse.from(1L, amount);
+				ConfirmPaymentResponse response = ConfirmPaymentResponse.of(1L, amount);
 
 				given(paymentService.confirmPayment(eq(memberId), any()))
 						.willReturn(response);

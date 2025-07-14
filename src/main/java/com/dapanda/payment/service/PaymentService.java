@@ -4,8 +4,8 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.payment.dto.ConfirmPaymentResponse;
 import com.dapanda.payment.dto.request.TossConfirmRequest;
+import com.dapanda.payment.dto.response.ConfirmPaymentResponse;
 import com.dapanda.payment.dto.response.TossConfirmResponse;
 import com.dapanda.payment.entity.Payment;
 import com.dapanda.payment.repository.PaymentRepository;
@@ -56,7 +56,7 @@ public class PaymentService {
 				Payment.of(response.paymentKey(), response.totalAmount(),
 						approvedAt, member));
 
-		return ConfirmPaymentResponse.from(payment.getId(), response.totalAmount());
+		return ConfirmPaymentResponse.of(payment.getId(), response.totalAmount());
 	}
 
 	// TODO: 성능 고도화 시 동시성 처리(락)
