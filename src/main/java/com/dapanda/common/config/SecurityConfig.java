@@ -1,5 +1,7 @@
 package com.dapanda.common.config;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 import com.dapanda.auth.handler.OAuth2FailureHandler;
 import com.dapanda.auth.handler.OAuth2SuccessHandler;
 import com.dapanda.auth.service.CustomOAuth2UserService;
@@ -15,11 +17,14 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @RequiredArgsConstructor
@@ -35,11 +40,19 @@ public class SecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
 		http
+				.cors(withDefaults())
 				.csrf(AbstractHttpConfigurer::disable)
+				.formLogin(AbstractHttpConfigurer::disable)
+				.logout(AbstractHttpConfigurer::disable)
+				.httpBasic(AbstractHttpConfigurer::disable)
+				.headers(headers -> headers.frameOptions(
+						FrameOptionsConfig::disable
+				))
 				.sessionManagement(
 						sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/", "/index.html", "/api/**", "/oauth2/**", "/error",
+						.requestMatchers("/", "/index.html", "/api/**", "/oauth2/**",
+								"error", "/actuator/health",
 								"/api/auth/**").permitAll()
 						.anyRequest().authenticated()
 				)
@@ -81,4 +94,22 @@ public class SecurityConfig {
 
 		return provider;
 	}
+
+	@Bean
+	public WebMvcConfigurer corsConfigurer() {
+
+		return new WebMvcConfigurer() {
+
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+
+				registry.addMapping("/api/**")
+						.allowedOrigins("http://localhost:3000", "https://dapanda.org",
+								"https://www.dapanda.org")
+						.allowedMethods("*")
+						.allowCredentials(true);
+			}
+		};
+	}
+
 }
