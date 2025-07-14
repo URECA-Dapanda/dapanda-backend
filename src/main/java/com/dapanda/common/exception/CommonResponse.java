@@ -2,7 +2,6 @@ package com.dapanda.common.exception;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 
 @Getter
 public class CommonResponse<T> {
@@ -19,9 +18,10 @@ public class CommonResponse<T> {
 		this.message = resultcode.getMessage();
 	}
 
-	public CommonResponse(String validationMessage){
-		this.code = HttpStatus.BAD_REQUEST.value();
-		this.message = validationMessage;
+	public CommonResponse(ResultCode resultCode, String validationMessage) {
+
+		this.code = resultCode.getCode();
+		this.message = resultCode.getMessage() + "(" + validationMessage + ")";
 	}
 
 	protected CommonResponse(ResultCode resultcode, T data) {

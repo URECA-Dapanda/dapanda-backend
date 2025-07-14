@@ -1,31 +1,52 @@
 package com.dapanda.product.entity;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import java.time.LocalDateTime;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class Wifi {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	private String title;
+
 	private String content;
 
-	//위도
-	private double latitude;
+	private double latitude; // 위도
 
-	//경도
-	private double longitude;
+	private double longitude; // 경도
 
 	private String imageUrl;
 
-	@Enumerated(EnumType.STRING)
-	private WifiSellingUnit unit;
+	private LocalDateTime startTime;
+
+	private LocalDateTime endTime;
+
+	public static Wifi of(String title, String content, double latitude, double longitude,
+			String imageUrl, LocalDateTime startTime, LocalDateTime endTime) {
+
+		return Wifi.builder()
+				.title(title)
+				.content(content)
+				.latitude(latitude)
+				.longitude(longitude)
+				.imageUrl(imageUrl)
+				.startTime(startTime)
+				.endTime(endTime)
+				.build();
+	}
 }

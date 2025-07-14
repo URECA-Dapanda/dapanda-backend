@@ -1,4 +1,4 @@
-package com.dapanda.payment.dto;
+package com.dapanda.payment.dto.response;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -15,7 +15,7 @@ public class ConfirmPaymentResponse {
 	private Long paymentId;
 	private int totalAmount;
 
-	public static ConfirmPaymentResponse from(Long paymentId, int totalAmount) {
+	public static ConfirmPaymentResponse of(Long paymentId, int totalAmount) {
 
 		return ConfirmPaymentResponse.builder()
 				.paymentId(paymentId)
