@@ -4,6 +4,7 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.response.SaveReviewResponse;
 import com.dapanda.review.entity.Review;
@@ -23,7 +24,7 @@ public class ReviewService {
 	public SaveReviewResponse saveReview(SaveReviewRequest request, Long memberId) {
 
 		validateSelfReview(memberId, request.revieweeId());
-		validateRevieweeId(request.revieweeId());
+		validateMemberId(request.revieweeId());
 
 		Member reviewer = memberRepository.getReferenceById(memberId);
 		Member reviewee = memberRepository.getReferenceById(request.revieweeId());
@@ -35,6 +36,33 @@ public class ReviewService {
 		return SaveReviewResponse.from(savedReview.getId());
 	}
 
+	public void deleteReview(DeleteReviewRequest request, Long memberId) {
+
+		validateMemberId(memberId);
+		validateReviewId(request.reviewId());
+		validateReviewOwner(request.reviewId(), memberId);
+
+		reviewRepository.deleteById(request.reviewId());
+	}
+
+	/**
+	 *	리뷰 오너 검증
+	 */
+	private void validateReviewOwner(Long reviewId, Long memberId) {
+
+		Review review = reviewRepository.getReferenceById(reviewId);
+
+		Member member = review.getReviewer();
+
+		if (!member.getId().equals(memberId)) {
+
+			throw new GlobalException(ResultCode.OTHER_REVIEW);
+		}
+	}
+
+	/**
+	 * 셀프 리뷰 검증
+	 */
 	private void validateSelfReview(Long reviewerId, Long revieweeId){
 
 		if (reviewerId.equals(revieweeId)){
@@ -43,11 +71,25 @@ public class ReviewService {
 		}
 	}
 
-	private void validateRevieweeId(Long revieweeId){
+	/**
+	 *	memberId 검증
+	 */
+	private void validateMemberId(Long memberId){
 
-		if (!memberRepository.existsById(revieweeId)){
+		if (!memberRepository.existsById(memberId)){
 
 			throw new GlobalException(ResultCode.MEMBER_NOT_FOUND);
+		}
+	}
+
+	/**
+	 * reviewId 검증
+	 */
+	private void validateReviewId(Long reviewId){
+
+		if (!reviewRepository.existsById(reviewId)){
+
+			throw new GlobalException(ResultCode.REVIEW_NOT_FOUND);
 		}
 	}
 }
