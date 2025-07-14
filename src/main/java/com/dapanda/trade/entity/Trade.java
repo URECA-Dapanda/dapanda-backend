@@ -20,6 +20,7 @@ public class Trade extends CreatedAtEntity {
 
 	private Long productId;
 
+	@Enumerated(EnumType.STRING)
 	private ItemType type;
 
 	@ManyToOne(fetch = FetchType.LAZY)
