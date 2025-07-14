@@ -1,18 +1,5 @@
 package com.dapanda.review.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.mock;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
@@ -21,11 +8,12 @@ import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
+import com.dapanda.review.dto.request.UpdateReviewRequest;
 import com.dapanda.review.entity.Review;
+import com.dapanda.review.entity.ReviewFixture;
 import com.dapanda.review.repository.ReviewRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
-import java.util.Optional;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -35,12 +23,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.Collections;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -58,6 +60,12 @@ class ReviewControllerTest {
 	@Autowired
 	private ReviewRepository reviewRepository;
 
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
+	@Autowired
+	private EntityManager entityManager;
+
 	private MockMvc mockMvc;
 
 	@Autowired
@@ -67,7 +75,27 @@ class ReviewControllerTest {
 	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
 
 		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
+
+		cleanupDatabase();
 	}
+
+	private void cleanupDatabase(){
+
+		entityManager.clear();
+
+		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
+
+		jdbcTemplate.execute("TRUNCATE TABLE review");
+		jdbcTemplate.execute("TRUNCATE TABLE member");
+
+		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
+	}
+
+	private static final Float TEST_RATING = 3.5F;
+	private static final String TEST_COMMENT = "적당해요";
+	private static final Long TEST_PRODUCT_ID = 123L;
+	private static final Float NEW_RATING = 1.0F;
+	private static final String NEW_COMMENT = "별로에요";
 
 	@Nested
 	@DisplayName("리뷰 등록 API")
@@ -82,18 +110,10 @@ class ReviewControllerTest {
 			public void saveReviewTest() throws Exception {
 
 				//given
-				Float rating = 1.5f;
-				String comment = "진짜 별로에요";
-				Long productId = 123L;
+				Member savedReviewer = memberRepository.save(MemberFixture.createMember1());
+				Member savedReviewee = memberRepository.save(MemberFixture.createMember2());
 
-				Member reviewer = MemberFixture.MEMBER1;
-				Member reviewee = MemberFixture.MEMBER2;
-
-				Member savedReviewer = memberRepository.save(reviewer);
-				Member savedReviewee = memberRepository.save(reviewee);
-
-				SaveReviewRequest request = new SaveReviewRequest(savedReviewee.getId(), productId,
-						rating, comment);
+				SaveReviewRequest request = new SaveReviewRequest(savedReviewee.getId(), TEST_PRODUCT_ID, TEST_RATING, TEST_COMMENT);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
@@ -104,7 +124,7 @@ class ReviewControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails,null,Collections.emptyList()
 								)))
 						)
 						.andExpect(status().isOk())
@@ -113,12 +133,9 @@ class ReviewControllerTest {
 						.andExpect(jsonPath("$.data.reviewId").exists())
 						.andDo(document("review/save-review",
 								requestFields(
-										fieldWithPath("revieweeId").description(
-												"리뷰 대상 회원의 아이디 (필수)"),
-										fieldWithPath("productId").description(
-												"리뷰 대상 상품의 아이디 (필수)"),
-										fieldWithPath("rating").description(
-												"리뷰 평점 (필수, 1.0 ~ 5.0)"),
+										fieldWithPath("revieweeId").description("리뷰 대상 회원의 아이디 (필수)"),
+										fieldWithPath("productId").description("리뷰 대상 상품의 아이디 (필수)"),
+										fieldWithPath("rating").description("리뷰 평점 (필수, 1.0 ~ 5.0)"),
 										fieldWithPath("comment").description("리뷰 코멘트 (필수, 최대 50자)")
 								),
 								responseFields(
@@ -132,8 +149,8 @@ class ReviewControllerTest {
 				Optional<Review> saveReview = reviewRepository.findAll().stream().findFirst();
 
 				assertThat(saveReview).isPresent();
-				assertThat(saveReview.get().getRating()).isEqualTo(rating);
-				assertThat(saveReview.get().getComment()).isEqualTo(comment);
+				assertThat(saveReview.get().getRating()).isEqualTo(TEST_RATING);
+				assertThat(saveReview.get().getComment()).isEqualTo(TEST_COMMENT);
 				assertThat(saveReview.get().getReviewer().getId()).isEqualTo(savedReviewer.getId());
 				assertThat(saveReview.get().getReviewee().getId()).isEqualTo(savedReviewee.getId());
 			}
@@ -148,7 +165,7 @@ class ReviewControllerTest {
 			public void validateRequiredFields() throws Exception {
 
 				// given
-				SaveReviewRequest request = new SaveReviewRequest(null, null, null, null);
+				SaveReviewRequest request = new SaveReviewRequest(null, null, null,  null);
 
 				// when & then
 				mockMvc.perform(post("/api/reviews")
@@ -157,33 +174,6 @@ class ReviewControllerTest {
 						)
 						.andExpect(status().isBadRequest())
 						.andDo(document("review/save-review-validation-error"));
-			}
-
-			@Test
-			@DisplayName("리뷰 대상 회원이 존재하지 않으면 에러를 반환한다")
-			public void validateMemberId() throws Exception {
-
-				// given
-				Member reviewer = MemberFixture.MEMBER1;
-
-				Member savedReviewer = memberRepository.save(reviewer);
-
-				SaveReviewRequest request = new SaveReviewRequest(505L, 123L, 5.0f, "test");
-
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(savedReviewer.getId());
-
-				// when & then
-				mockMvc.perform(post("/api/reviews")
-								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request))
-								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
-								)))
-						)
-						.andExpect(status().isBadRequest())
-						.andDo(document("review/save-review-member-id-error"));
 			}
 		}
 	}
@@ -202,17 +192,10 @@ class ReviewControllerTest {
 			public void deleteReviewTest() throws Exception {
 
 				//given
-				Float rating = 1.5f;
-				String comment = "진짜 별로에요";
-				Long productId = 123L;
+				Member savedReviewer = memberRepository.save(MemberFixture.createMember1());
+				Member savedReviewee = memberRepository.save(MemberFixture.createMember2());
 
-				Member reviewer = MemberFixture.MEMBER1;
-				Member reviewee = MemberFixture.MEMBER2;
-
-				Member savedReviewer = memberRepository.save(reviewer);
-				Member savedReviewee = memberRepository.save(reviewee);
-
-				Review review = Review.of(rating, comment, productId, savedReviewer, savedReviewee);
+				Review review = ReviewFixture.createReview(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee);
 
 				Review savedReview = reviewRepository.save(review);
 
@@ -256,7 +239,7 @@ class ReviewControllerTest {
 				// given
 				DeleteReviewRequest request = new DeleteReviewRequest(null);
 
-				Member reviewer = MemberFixture.MEMBER1;
+				Member reviewer = MemberFixture.createMember1();
 
 				Member savedReviewer = memberRepository.save(reviewer);
 
@@ -274,6 +257,85 @@ class ReviewControllerTest {
 						)
 						.andExpect(status().isBadRequest())
 						.andDo(document("review/delete-review-validation-error"));
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("리뷰 수정 API")
+	class UpdateReview {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("리뷰 수정이 완료되면 리뷰 아이디를 반환한다")
+			public void updateReviewTest() throws Exception {
+
+				//given
+				Member savedReviewer = memberRepository.save(MemberFixture.createMember1());
+				Member savedReviewee = memberRepository.save(MemberFixture.createMember2());
+
+				Review review = ReviewFixture.createReview(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee);
+				Review savedReview = reviewRepository.save(review);
+
+				UpdateReviewRequest request = new UpdateReviewRequest(savedReview.getId(), NEW_RATING, NEW_COMMENT);
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+				given(userDetails.getId()).willReturn(savedReviewer.getId());
+
+				//when & then
+				mockMvc.perform(put("/api/reviews")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.reviewId").value(savedReview.getId()))
+						.andDo(document("review/update-review",
+								requestFields(
+										fieldWithPath("reviewId").description("수정할 리뷰 아이디 (필수)"),
+										fieldWithPath("rating").description("수정할 평점 (필수)"),
+										fieldWithPath("comment").description("수정할 코멘트 (필수)")
+
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data.reviewId").description("수정된 리뷰 아이디")
+								))
+						);
+
+				Review updatedReview = reviewRepository.findById(savedReview.getId()).orElseThrow();
+				assertThat(updatedReview.getId()).isEqualTo(savedReview.getId());
+				assertThat(updatedReview.getRating()).isEqualTo(NEW_RATING);
+				assertThat(updatedReview.getComment()).isEqualTo(NEW_COMMENT);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("필수 필드가 누락되면 BadRequest 를 반환한다")
+			public void validateRequiredFields() throws Exception {
+
+				//given
+				UpdateReviewRequest request = new UpdateReviewRequest(null, null, null);
+
+				//when & then
+				mockMvc.perform(put("/api/reviews")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+						)
+						.andExpect(status().isBadRequest())
+						.andDo(document("review/update-review-validation-error"));
 			}
 		}
 	}

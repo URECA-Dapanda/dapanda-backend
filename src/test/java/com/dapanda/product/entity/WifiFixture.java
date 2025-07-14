@@ -14,7 +14,6 @@ public class WifiFixture {
 				content,
 				latitude,
 				longitude,
-				"imageUrl",
 				startTime,
 				endTime
 		);
@@ -27,7 +26,6 @@ public class WifiFixture {
 				"선릉역 2번출구 앞 카페 와이파이",
 				30.1,
 				126.3,
-				"imageUrl",
 				LocalDateTime.of(2025, 7, 13, 10, 0),
 				LocalDateTime.of(2025, 7, 13, 22, 0)
 		);
@@ -48,9 +46,9 @@ public class WifiFixture {
 				itemId,
 				memberName,
 				title,
+				"imageUrl",
 				latitude,
 				longitude,
-				"imageUrl",
 				averageRate,
 				distanceKm
 		);

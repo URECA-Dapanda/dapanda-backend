@@ -8,11 +8,13 @@ import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.product.entity.QMobileData;
 import com.dapanda.product.entity.QProduct;
+import com.dapanda.product.entity.QProductImage;
 import com.dapanda.product.entity.QWifi;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -86,6 +88,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 		QProduct product = QProduct.product;
 		QWifi wifi = QWifi.wifi;
+		QProductImage productImage = QProductImage.productImage;
+		QProductImage productImageSub = new QProductImage("productImageSub");
 
 		LocalDateTime now = LocalDateTime.now();
 
@@ -101,9 +105,9 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.itemId,
 						product.member.name,
 						wifi.title,
+						Expressions.stringTemplate("MIN({0})", productImage.imageUrl),
 						wifi.latitude,
 						wifi.longitude,
-						wifi.imageUrl,
 						review.rating.avg().coalesce(DEFAULT_RATING),
 						distance.divide(METER_TO_KILOMETER)
 				))
@@ -111,6 +115,15 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.groupBy(product.id)
 				.join(wifi).on(wifi.id.eq(product.itemId))
 				.leftJoin(review).on(review.productId.eq(product.id))
+				.leftJoin(productImage).on(
+						productImage.wifiId.eq(wifi.id)
+								.and(productImage.priority.eq(
+										JPAExpressions
+												.select(productImageSub.priority.min())
+												.from(productImageSub)
+												.where(productImageSub.wifiId.eq(wifi.id))
+								))
+				)
 				.where(
 						gtCursorId(cursorId, product),
 						isOpenNow(isOpen, wifi, now)

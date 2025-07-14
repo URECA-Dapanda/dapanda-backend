@@ -2,7 +2,7 @@ package com.dapanda.review.entity;
 
 import com.dapanda.common.entity.BaseEntity;
 import com.dapanda.member.entity.Member;
-import com.dapanda.product.entity.ItemType;
+import com.dapanda.review.dto.request.UpdateReviewRequest;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,6 +30,12 @@ public class Review extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "reviewee_id")
 	private Member reviewee;
+
+	public void updateReview(UpdateReviewRequest request) {
+
+		this.rating = request.rating();
+		this.comment = request.comment();
+	}
 
 	public static Review of(float rating, String comment, Long productId, Member reviewer, Member reviewee) {
 

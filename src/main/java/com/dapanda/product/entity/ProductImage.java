@@ -4,7 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,34 +15,24 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class Wifi {
+public class ProductImage {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	private String title;
+	private String imageUrl;
 
-	private String content;
+	private int priority;
 
-	private double latitude; // 위도
+	private Long wifiId;
 
-	private double longitude; // 경도
+	public static ProductImage of(String imageUrl, int priority, Long wifiId) {
 
-	private LocalDateTime startTime;
-
-	private LocalDateTime endTime;
-
-	public static Wifi of(String title, String content, double latitude, double longitude,
-			LocalDateTime startTime, LocalDateTime endTime) {
-
-		return Wifi.builder()
-				.title(title)
-				.content(content)
-				.latitude(latitude)
-				.longitude(longitude)
-				.startTime(startTime)
-				.endTime(endTime)
+		return ProductImage.builder()
+				.imageUrl(imageUrl)
+				.priority(priority)
+				.wifiId(wifiId)
 				.build();
 	}
 }

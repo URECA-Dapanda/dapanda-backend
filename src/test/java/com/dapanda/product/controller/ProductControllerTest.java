@@ -20,12 +20,16 @@ import com.dapanda.product.entity.MobileData;
 import com.dapanda.product.entity.MobileDataFixture;
 import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductFixture;
+import com.dapanda.product.entity.ProductImage;
+import com.dapanda.product.entity.ProductImageFixture;
 import com.dapanda.product.entity.Wifi;
 import com.dapanda.product.entity.WifiFixture;
 import com.dapanda.product.repository.MobileDataRepository;
+import com.dapanda.product.repository.ProductImageRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.context.ActiveProfiles;
@@ -58,6 +63,12 @@ class ProductControllerTest {
 	private ObjectMapper objectMapper;
 
 	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
+	@Autowired
+	private EntityManager entityManager;
+
+	@Autowired
 	private ProductRepository productRepository;
 
 	@Autowired
@@ -69,12 +80,31 @@ class ProductControllerTest {
 	@Autowired
 	private WifiRepository wifiRepository;
 
+	@Autowired
+	private ProductImageRepository productImageRepository;
+
 	private MockMvc mockMvc;
 
 	@BeforeEach
 	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
 
 		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
+
+		cleanupDatabase();
+	}
+
+	private void cleanupDatabase() {
+
+		entityManager.clear();
+
+		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
+
+		jdbcTemplate.execute("TRUNCATE TABLE wifi");
+		jdbcTemplate.execute("TRUNCATE TABLE mobile_data");
+		jdbcTemplate.execute("TRUNCATE TABLE product");
+		jdbcTemplate.execute("TRUNCATE TABLE member");
+
+		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
 
 	@Nested
@@ -94,7 +124,7 @@ class ProductControllerTest {
 				String productSortOption = "RECENT";
 				Float dataAmount = 2.0F;
 
-				Member member = memberRepository.save(MemberFixture.MEMBER1);
+				Member member = memberRepository.save(MemberFixture.createMember1());
 
 				MobileData mobileData1 = MobileDataFixture.createMobileData(2.0F, 2.0F, 500);
 				MobileData mobileData2 = MobileDataFixture.createMobileData(2.0F, 2.0F, 600);
@@ -108,8 +138,7 @@ class ProductControllerTest {
 				Product product3 = ProductFixture.createMobileDataProduct(5000,
 						mobileData3.getId(), member);
 				productRepository.saveAll(List.of(product1, product2, product3));
-
-				MobileDataCursorRequest request = new MobileDataCursorRequest(3L, size,
+				MobileDataCursorRequest request = new MobileDataCursorRequest(null, size,
 						productSortOption, dataAmount);
 
 				// when & then
@@ -234,7 +263,7 @@ class ProductControllerTest {
 				double latitude = 30.0;
 				double longitude = 127.0;
 
-				Member member = memberRepository.save(MemberFixture.MEMBER1);
+				Member member = memberRepository.save(MemberFixture.createMember1());
 
 				Wifi wifi1 = WifiFixture.createWifi1("제목1", "내용1", 30.0, 126.0,
 						LocalDateTime.of(2025, 7, 14, 10, 0),
@@ -246,6 +275,12 @@ class ProductControllerTest {
 						LocalDateTime.of(2025, 7, 14, 10, 0),
 						LocalDateTime.of(2025, 7, 14, 18, 0));
 				wifiRepository.saveAll(List.of(wifi1, wifi2, wifi3));
+
+				ProductImage productImage1 = ProductImageFixture.createProductImage("imageUrl1", 1,
+						wifi1.getId());
+				ProductImage productImage2 = ProductImageFixture.createProductImage("imageUrl2", 2,
+						wifi2.getId());
+				productImageRepository.saveAll(List.of(productImage1, productImage2));
 
 				Product product1 = ProductFixture.createWifiProduct(3000, wifi1.getId(), member);
 				Product product2 = ProductFixture.createWifiProduct(4000, wifi2.getId(), member);
@@ -290,10 +325,11 @@ class ProductControllerTest {
 										fieldWithPath("data.data[].memberName").description(
 												"등록한 회원 이름"),
 										fieldWithPath("data.data[].title").description("게시물 제목"),
+										fieldWithPath("data.data[].imageUrl").description(
+												"대표 이미지 URL").optional(),
 										fieldWithPath("data.data[].latitude").description("위도"),
 										fieldWithPath("data.data[].longitude").description("경도"),
-										fieldWithPath("data.data[].imageUrl").description(
-												"이미지 URL"),
+
 										fieldWithPath("data.data[].averageRate").description(
 												"평균 평점"),
 										fieldWithPath("data.data[].distanceKm").description(
