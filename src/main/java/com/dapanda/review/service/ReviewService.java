@@ -1,12 +1,15 @@
 package com.dapanda.review.service;
 
+import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.review.dto.request.DeleteReviewRequest;
+import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
+import com.dapanda.review.dto.response.ReadReviewResponse;
 import com.dapanda.review.dto.response.SaveReviewResponse;
 import com.dapanda.review.dto.response.UpdateReviewResponse;
 import com.dapanda.review.entity.Review;
@@ -16,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -23,6 +28,29 @@ public class ReviewService {
 
 	private final ReviewRepository reviewRepository;
 	private final MemberRepository memberRepository;
+
+	public CursorPageResponse<ReadReviewResponse> readSellerReview(ReadReviewRequest request) {
+
+		List<ReadReviewResponse> reviews = reviewRepository.findSellerReviewWithCursor(request);
+
+		boolean hasNext = reviews.size() > request.size();
+
+		if (hasNext) {
+			reviews = reviews.subList(0, request.size());
+		}
+
+		Long nextCursorId = hasNext && !reviews.isEmpty()
+				? reviews.get(reviews.size() - 1).getReviewId()
+				: null;
+
+		CursorPageResponse.PageInfo pageInfo = CursorPageResponse.PageInfo.of(
+				nextCursorId,
+				hasNext,
+				request.size()
+		);
+
+		return CursorPageResponse.of(reviews, pageInfo);
+	}
 
 	public SaveReviewResponse saveReview(SaveReviewRequest request, Long memberId) {
 
