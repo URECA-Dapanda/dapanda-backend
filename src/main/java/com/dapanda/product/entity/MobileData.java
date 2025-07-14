@@ -6,10 +6,17 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class MobileData {
 
 	@Id
@@ -26,4 +33,16 @@ public class MobileData {
 	private int pricePer100MB;
 
 	private boolean isSplitType;
+
+	public static MobileData of(int dataAmount, int remainAmount, DataSellingUnit unit,
+			int pricePer100MB, boolean isSplitType) {
+
+		return MobileData.builder()
+				.dataAmount(dataAmount)
+				.remainAmount(remainAmount)
+				.unit(unit)
+				.pricePer100MB(pricePer100MB)
+				.isSplitType(isSplitType)
+				.build();
+	}
 }

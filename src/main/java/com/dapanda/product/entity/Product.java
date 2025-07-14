@@ -11,10 +11,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 
 	@Id
@@ -34,4 +41,16 @@ public class Product extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id")
 	private Member member;
+
+	public static Product of(ProductState state, int price, Long itemId, ItemType itemType,
+			Member member) {
+
+		return Product.builder()
+				.state(state)
+				.price(price)
+				.itemId(itemId)
+				.itemType(itemType)
+				.member(member)
+				.build();
+	}
 }

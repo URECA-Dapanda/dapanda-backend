@@ -5,10 +5,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.time.LocalDateTime;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class Wifi {
 
 	@Id
@@ -28,4 +35,18 @@ public class Wifi {
 	private LocalDateTime startTime;
 
 	private LocalDateTime endTime;
+
+	public static Wifi of(String title, String content, double latitude, double longitude,
+			String imageUrl, LocalDateTime startTime, LocalDateTime endTime) {
+
+		return Wifi.builder()
+				.title(title)
+				.content(content)
+				.latitude(latitude)
+				.longitude(longitude)
+				.imageUrl(imageUrl)
+				.startTime(startTime)
+				.endTime(endTime)
+				.build();
+	}
 }
