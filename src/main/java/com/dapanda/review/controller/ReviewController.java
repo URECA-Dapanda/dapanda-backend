@@ -1,14 +1,19 @@
 package com.dapanda.review.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.CommonResponse;
 import com.dapanda.review.dto.request.DeleteReviewRequest;
+import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
+import com.dapanda.review.dto.response.ReadReviewResponse;
 import com.dapanda.review.dto.response.SaveReviewResponse;
 import com.dapanda.review.dto.response.UpdateReviewResponse;
 import com.dapanda.review.service.ReviewService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +31,18 @@ public class ReviewController {
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return CommonResponse.success(reviewService.saveReview(request, userDetails.getId()));
+	}
+
+	@GetMapping("/reviews/seller/{memberId}")
+	public CommonResponse<CursorPageResponse<ReadReviewResponse>> readReview(
+			@PathVariable Long memberId,
+			@RequestParam(required = false) Long cursorId,
+			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size,
+			@RequestParam(defaultValue = "RECENT") String reviewSortOption){
+
+		ReadReviewRequest request = new ReadReviewRequest(cursorId, size, reviewSortOption, memberId);
+
+		return CommonResponse.success(reviewService.readSellerReview(request));
 	}
 
 	@PutMapping("/reviews")
