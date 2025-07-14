@@ -10,6 +10,7 @@ import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
 import com.dapanda.review.entity.Review;
+import com.dapanda.review.entity.ReviewFixture;
 import com.dapanda.review.repository.ReviewRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
@@ -90,6 +91,12 @@ class ReviewControllerTest {
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
 
+	private static final Float TEST_RATING = 3.5F;
+	private static final String TEST_COMMENT = "적당해요";
+	private static final Long TEST_PRODUCT_ID = 123L;
+	private static final Float NEW_RATING = 1.0F;
+	private static final String NEW_COMMENT = "별로에요";
+
 	@Nested
 	@DisplayName("리뷰 등록 API")
 	class SaveReview {
@@ -103,17 +110,10 @@ class ReviewControllerTest {
 			public void saveReviewTest() throws Exception {
 
 				//given
-				Float rating = 1.5f;
-				String comment = "진짜 별로에요";
-				Long productId = 123L;
+				Member savedReviewer = memberRepository.save(MemberFixture.createMember1());
+				Member savedReviewee = memberRepository.save(MemberFixture.createMember2());
 
-				Member reviewer = MemberFixture.MEMBER_REVIEWER;
-				Member reviewee = MemberFixture.MEMBER_REVIEWEE;
-
-				Member savedReviewer = memberRepository.save(reviewer);
-				Member savedReviewee = memberRepository.save(reviewee);
-
-				SaveReviewRequest request = new SaveReviewRequest(savedReviewee.getId(), productId, rating, comment);
+				SaveReviewRequest request = new SaveReviewRequest(savedReviewee.getId(), TEST_PRODUCT_ID, TEST_RATING, TEST_COMMENT);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
@@ -149,8 +149,8 @@ class ReviewControllerTest {
 				Optional<Review> saveReview = reviewRepository.findAll().stream().findFirst();
 
 				assertThat(saveReview).isPresent();
-				assertThat(saveReview.get().getRating()).isEqualTo(rating);
-				assertThat(saveReview.get().getComment()).isEqualTo(comment);
+				assertThat(saveReview.get().getRating()).isEqualTo(TEST_RATING);
+				assertThat(saveReview.get().getComment()).isEqualTo(TEST_COMMENT);
 				assertThat(saveReview.get().getReviewer().getId()).isEqualTo(savedReviewer.getId());
 				assertThat(saveReview.get().getReviewee().getId()).isEqualTo(savedReviewee.getId());
 			}
@@ -192,17 +192,10 @@ class ReviewControllerTest {
 			public void deleteReviewTest() throws Exception {
 
 				//given
-				Float rating = 1.5f;
-				String comment = "진짜 별로에요";
-				Long productId = 123L;
+				Member savedReviewer = memberRepository.save(MemberFixture.createMember1());
+				Member savedReviewee = memberRepository.save(MemberFixture.createMember2());
 
-				Member reviewer = MemberFixture.MEMBER_REVIEWER;
-				Member reviewee = MemberFixture.MEMBER_REVIEWEE;
-
-				Member savedReviewer = memberRepository.save(reviewer);
-				Member savedReviewee = memberRepository.save(reviewee);
-
-				Review review = Review.of(rating, comment, productId, savedReviewer, savedReviewee);
+				Review review = ReviewFixture.createReview(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee);
 
 				Review savedReview = reviewRepository.save(review);
 
@@ -246,7 +239,7 @@ class ReviewControllerTest {
 				// given
 				DeleteReviewRequest request = new DeleteReviewRequest(null);
 
-				Member reviewer = MemberFixture.createMember();
+				Member reviewer = MemberFixture.createMember1();
 
 				Member savedReviewer = memberRepository.save(reviewer);
 
@@ -281,23 +274,13 @@ class ReviewControllerTest {
 			public void updateReviewTest() throws Exception {
 
 				//given
-				Member reviewer = MemberFixture.MEMBER_REVIEWER;
-				Member reviewee = MemberFixture.MEMBER_REVIEWEE;
+				Member savedReviewer = memberRepository.save(MemberFixture.createMember1());
+				Member savedReviewee = memberRepository.save(MemberFixture.createMember2());
 
-				Member savedReviewer = memberRepository.save(reviewer);
-				Member savedReviewee = memberRepository.save(reviewee);
-
-				Float newRating = 1.0f;
-				String newComment = "별로에요";
-
-				Float originalRating = 5.0f;
-				String originalComment = "너무 좋았어요";
-				Long productId = 15L;
-
-				Review review = Review.of(originalRating, originalComment, productId, savedReviewer, savedReviewee);
+				Review review = ReviewFixture.createReview(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee);
 				Review savedReview = reviewRepository.save(review);
 
-				UpdateReviewRequest request = new UpdateReviewRequest(savedReview.getId(), newRating, newComment);
+				UpdateReviewRequest request = new UpdateReviewRequest(savedReview.getId(), NEW_RATING, NEW_COMMENT);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(savedReviewer.getId());
@@ -330,8 +313,8 @@ class ReviewControllerTest {
 
 				Review updatedReview = reviewRepository.findById(savedReview.getId()).orElseThrow();
 				assertThat(updatedReview.getId()).isEqualTo(savedReview.getId());
-				assertThat(updatedReview.getRating()).isEqualTo(request.rating());
-				assertThat(updatedReview.getComment()).isEqualTo(request.comment());
+				assertThat(updatedReview.getRating()).isEqualTo(NEW_RATING);
+				assertThat(updatedReview.getComment()).isEqualTo(NEW_COMMENT);
 			}
 		}
 

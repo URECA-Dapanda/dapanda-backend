@@ -20,7 +20,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
@@ -28,7 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("리뷰 서비스 테스트")
@@ -43,6 +43,17 @@ class ReviewServiceTest {
 	@InjectMocks
 	ReviewService reviewService;
 
+	private static final Long MEMBER_ID = 1L;
+	private static final Long REVIEWER_ID = 1L;
+	private static final Long REVIEWEE_ID = 2L;
+	private static final Long NON_EXISTENT_REVIEW_ID = 999L;
+	private static final Long REVIEW_ID = 1L;
+	private static final Float TEST_RATING = 3.5F;
+	private static final String TEST_COMMENT = "적당해요";
+	private static final Long TEST_PRODUCT_ID = 123L;
+	private static final Float NEW_RATING = 1.0F;
+	private static final String NEW_COMMENT = "별로에요";
+
 	@Nested
 	@DisplayName("리뷰 등록")
 	class SaveReview {
@@ -56,32 +67,23 @@ class ReviewServiceTest {
 			public void saveReviewTest() {
 
 				//given
-				Long reviewerId = 1L;
-				Long revieweeId = 2L;
-				Long productId = 3L;
-				Long expectedReviewId = 101L;
-				float rating = 3.5f;
-				String comment = "그저 그래요";
+				Member savedReviewer = MemberFixture.createMember1WithId(REVIEWER_ID);
+				Member savedReviewee = MemberFixture.createMember2WithId(REVIEWEE_ID);
+				Review savedReview = ReviewFixture.createReviewWithId(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee, REVIEW_ID);
 
-				Member reviewer = MemberFixture.MEMBER_REVIEWER;
-				Member reviewee = MemberFixture.MEMBER_REVIEWEE;
 
-				Review savedReview = Review.of(rating, comment, productId, reviewer, reviewee);
-
-				ReflectionTestUtils.setField(savedReview, "id", expectedReviewId);
-
-				given(memberRepository.existsById(revieweeId)).willReturn(true);
-				given(memberRepository.getReferenceById(reviewerId)).willReturn(reviewer);
-				given(memberRepository.getReferenceById(revieweeId)).willReturn(reviewee);
+				given(memberRepository.existsById(REVIEWEE_ID)).willReturn(true);
+				given(memberRepository.getReferenceById(REVIEWER_ID)).willReturn(savedReviewer);
+				given(memberRepository.getReferenceById(REVIEWEE_ID)).willReturn(savedReviewee);
 				given(reviewRepository.save(any(Review.class))).willReturn(savedReview);
 
-				SaveReviewRequest request = new SaveReviewRequest(revieweeId, productId, rating, comment);
+				SaveReviewRequest request = new SaveReviewRequest(REVIEWEE_ID, TEST_PRODUCT_ID, TEST_RATING, TEST_COMMENT);
 
 				//when
-				SaveReviewResponse response = reviewService.saveReview(request, reviewerId);
+				SaveReviewResponse response = reviewService.saveReview(request, REVIEWER_ID);
 
 				//then
-				assertThat(response.getReviewId()).isEqualTo(expectedReviewId);
+				assertThat(response.getReviewId()).isEqualTo(REVIEW_ID);
 			}
 		}
 
@@ -94,17 +96,10 @@ class ReviewServiceTest {
 			public void selfReviewTest() {
 
 				//given
-				Long memberId = 2L;
-				Long revieweeId = 2L;
-
-				Long productId = 3L;
-				float rating = 3.5f;
-				String comment = "그저 그래요";
-
-				SaveReviewRequest request = new SaveReviewRequest(revieweeId, productId, rating, comment);
+				SaveReviewRequest request = new SaveReviewRequest(MEMBER_ID, TEST_PRODUCT_ID, TEST_RATING, TEST_COMMENT);
 
 				//when & then
-				assertThatThrownBy(() -> reviewService.saveReview(request, memberId))
+				assertThatThrownBy(() -> reviewService.saveReview(request, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.SELF_REVIEW.getMessage());
 
@@ -116,19 +111,12 @@ class ReviewServiceTest {
 			public void memberNotFoundTest() {
 
 				//given
-				Long revieweeId = 3L;
-				Long memberId = 2L;
+				SaveReviewRequest request = new SaveReviewRequest(REVIEWEE_ID, TEST_PRODUCT_ID, TEST_RATING, TEST_COMMENT);
 
-				Long productId = 3L;
-				float rating = 3.5f;
-				String comment = "그저 그래요";
-
-				SaveReviewRequest request = new SaveReviewRequest(revieweeId, productId, rating, comment);
-
-				given(memberRepository.existsById(revieweeId)).willReturn(false);
+				given(memberRepository.existsById(REVIEWEE_ID)).willReturn(false);
 
 				//when & then
-				assertThatThrownBy(() -> reviewService.saveReview(request, memberId))
+				assertThatThrownBy(() -> reviewService.saveReview(request, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.MEMBER_NOT_FOUND.getMessage());
 
@@ -150,18 +138,17 @@ class ReviewServiceTest {
 			public void deleteReviewTest() {
 
 				//given
-				Long reviewId = 10L;
-				Long memberId = 1L;
-				Long revieweeId = 2L;
+				DeleteReviewRequest request = new DeleteReviewRequest(REVIEW_ID);
 
-				DeleteReviewRequest request = new DeleteReviewRequest(reviewId);
+				Member savedReviewer = MemberFixture.createMember1WithId(REVIEWER_ID);
+				Member savedReviewee = MemberFixture.createMember2WithId(REVIEWEE_ID);
 
-				Review review = ReviewFixture.createReview1(reviewId, memberId, revieweeId);
+				Review review = ReviewFixture.createReviewWithId(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee, REVIEWEE_ID);
 
-				given(reviewRepository.findById(reviewId)).willReturn(Optional.of(review));
+				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
 
 				//when
-				reviewService.deleteReview(request, memberId);
+				reviewService.deleteReview(request, REVIEWER_ID);
 
 				//then
 				verify(reviewRepository).delete(review);
@@ -177,15 +164,12 @@ class ReviewServiceTest {
 			public void reviewNotFoundTest() {
 
 				//given
-				Long memberId = 1L;
-				Long reviewId = 10L;
+				DeleteReviewRequest request = new DeleteReviewRequest(REVIEW_ID);
 
-				DeleteReviewRequest request = new DeleteReviewRequest(reviewId);
-
-				given(reviewRepository.findById(reviewId)).willReturn(Optional.empty());
+				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.empty());
 
 				//when & then
-				assertThatThrownBy(() -> reviewService.deleteReview(request, memberId))
+				assertThatThrownBy(() -> reviewService.deleteReview(request, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.REVIEW_NOT_FOUND.getMessage());
 			}
@@ -195,19 +179,17 @@ class ReviewServiceTest {
 			public void reviewOwnerTest() {
 
 				//given
-				Long reviewId = 10L;
-				Long otherReviewerId = 10000L;
-				Long myReviewerId = 1L;
-				Long revieweeId = 2L;
+				DeleteReviewRequest request = new DeleteReviewRequest(REVIEW_ID);
 
-				DeleteReviewRequest request = new DeleteReviewRequest(reviewId);
+				Member savedReviewer = MemberFixture.createMember1WithId(REVIEWER_ID);
+				Member savedReviewee = MemberFixture.createMember2WithId(REVIEWEE_ID);
 
-				Review review = ReviewFixture.createReview1(reviewId, otherReviewerId, revieweeId);
+				Review review = ReviewFixture.createReviewWithId(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee, REVIEWEE_ID);
 
-				given(reviewRepository.findById(reviewId)).willReturn(Optional.of(review));
+				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
 
 				//when & then
-				assertThatThrownBy(() -> reviewService.deleteReview(request, myReviewerId))
+				assertThatThrownBy(() -> reviewService.deleteReview(request, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.OTHER_REVIEW.getMessage());
 			}
@@ -227,30 +209,26 @@ class ReviewServiceTest {
 			public void updateReviewTest() {
 
 				//given
-				Long savedReviewId = 1L;
-				Float newRating = 4.5f;
-				String newComment = "진짜 좋아용";
+				UpdateReviewRequest request = new UpdateReviewRequest(REVIEW_ID, NEW_RATING, NEW_COMMENT);
 
-				Long memberId = 5L;
-				Long reviewerId = 5L;
-				Long revieweeId = 6L;
+				Member savedReviewer = MemberFixture.createMember1WithId(REVIEWER_ID);
+				Member savedReviewee = MemberFixture.createMember2WithId(REVIEWEE_ID);
 
-				UpdateReviewRequest request = new UpdateReviewRequest(savedReviewId, newRating, newComment);
-				Review savedReview = ReviewFixture.createReview1(savedReviewId, reviewerId, revieweeId);
+				Review savedReview = ReviewFixture.createReviewWithId(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee, REVIEWEE_ID);
 
 				Float originalRating = savedReview.getRating();
 				String originalComment = savedReview.getComment();
 
-				given(reviewRepository.findById(savedReviewId)).willReturn(Optional.of(savedReview));
+				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(savedReview));
 
 				//when
-				UpdateReviewResponse response = reviewService.updateReview(request, memberId);
+				UpdateReviewResponse response = reviewService.updateReview(request, MEMBER_ID);
 
 				//then
 				assertThat(response.getReviewId()).isEqualTo(savedReview.getId());
 
-				assertThat(savedReview.getRating()).isEqualTo(newRating);
-				assertThat(savedReview.getComment()).isEqualTo(newComment);
+				assertThat(savedReview.getRating()).isEqualTo(NEW_RATING);
+				assertThat(savedReview.getComment()).isEqualTo(NEW_COMMENT);
 
 				assertThat(savedReview.getRating()).isNotEqualTo(originalRating);
 				assertThat(savedReview.getComment()).isNotEqualTo(originalComment);
@@ -266,46 +244,34 @@ class ReviewServiceTest {
 			public void reviewNotFoundTest() {
 
 				//given
-				Long nonExistentReviewId = 999L;
-				Float newRating = 4.5f;
-				String newComment = "진짜 좋아용";
+				UpdateReviewRequest request = new UpdateReviewRequest(NON_EXISTENT_REVIEW_ID, NEW_RATING, NEW_COMMENT);
 
-				UpdateReviewRequest request = new UpdateReviewRequest(nonExistentReviewId, newRating, newComment);
-
-				Long memberId = 5L;
-
-				given(reviewRepository.findById(nonExistentReviewId)).willReturn(Optional.empty());
+				given(reviewRepository.findById(NON_EXISTENT_REVIEW_ID)).willReturn(Optional.empty());
 
 				//when & then
-				assertThatThrownBy(() -> reviewService.updateReview(request, memberId))
+				assertThatThrownBy(() -> reviewService.updateReview(request, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.REVIEW_NOT_FOUND.getMessage());
 
-				verify(reviewRepository).findById(nonExistentReviewId);
+				verify(reviewRepository).findById(NON_EXISTENT_REVIEW_ID);
 			}
 
 			@Test
-			@DisplayName("리뷰 오너가 아니면 예외가 발생한다")
+			@DisplayName("리뷰 작성자가 아니면 예외가 발생한다")
 			public void reviewOwnerTest() {
 
 				//given
-				Long reviewId = 1L;
-				Float newRating = 4.5f;
-				String newComment = "진짜 좋아용";
+				Member savedReviewer = MemberFixture.createMember1WithId(REVIEWER_ID);
+				Member savedReviewee = MemberFixture.createMember2WithId(REVIEWEE_ID);
 
-				Long reviewerId = 2L;
-				Long revieweeId = 3L;
+				Review savedReview = ReviewFixture.createReviewWithId(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee, REVIEWEE_ID);
 
-				Long memberId = 4L;
+				UpdateReviewRequest request = new UpdateReviewRequest(REVIEW_ID, NEW_RATING, NEW_COMMENT);
 
-				Review savedReview = ReviewFixture.createReview1(reviewId, reviewerId, revieweeId);
-
-				UpdateReviewRequest request = new UpdateReviewRequest(reviewId, newRating, newComment);
-
-				given(reviewRepository.findById(reviewId)).willReturn(Optional.of(savedReview));
+				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(savedReview));
 
 				//when & then
-				assertThatThrownBy(() -> reviewService.updateReview(request, memberId))
+				assertThatThrownBy(() -> reviewService.updateReview(request, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.OTHER_REVIEW.getMessage());
 			}
