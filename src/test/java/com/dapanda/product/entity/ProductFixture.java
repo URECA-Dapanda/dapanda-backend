@@ -32,7 +32,7 @@ public class ProductFixture {
 		return product;
 	}
 
-	public final Product createWifiProduct(int price, Long wifiId, Member member) {
+	public static Product createWifiProduct(int price, Long wifiId, Member member) {
 
 		return Product.of(
 				ProductState.ACTIVE,
@@ -43,7 +43,7 @@ public class ProductFixture {
 		);
 	}
 
-	public final Product createWifiProductWithId(Long productId, Long wifiId) {
+	public static Product createWifiProductWithId(Long productId, Long wifiId) {
 
 		Product product = Product.of(
 				ProductState.ACTIVE,
