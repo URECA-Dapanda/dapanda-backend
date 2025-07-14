@@ -118,7 +118,7 @@ class ReviewControllerTest {
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
-										fieldWithPath("message").description("정상 처리 되었습니다."),
+										fieldWithPath("message").description("처리 결과 메시지"),
 										fieldWithPath("data").description("응답 데이터 (에러시 반환되지 않음)"),
 										fieldWithPath("data.reviewId").description("생성된 리뷰 아이디")
 								))
@@ -234,7 +234,7 @@ class ReviewControllerTest {
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
-										fieldWithPath("message").description("정상 처리 되었습니다.")
+										fieldWithPath("message").description("처리 결과 메시지")
 								))
 						);
 			}
