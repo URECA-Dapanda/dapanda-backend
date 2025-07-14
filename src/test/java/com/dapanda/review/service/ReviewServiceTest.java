@@ -1,5 +1,12 @@
 package com.dapanda.review.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
@@ -19,13 +26,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("리뷰 서비스 테스트")
@@ -60,8 +60,8 @@ class ReviewServiceTest {
 				float rating = 3.5f;
 				String comment = "그저 그래요";
 
-				Member reviewer = MemberFixture.MEMBER_REVIEWER;
-				Member reviewee = MemberFixture.MEMBER_REVIEWEE;
+				Member reviewer = MemberFixture.MEMBER1;
+				Member reviewee = MemberFixture.MEMBER2;
 
 				Review savedReview = Review.of(rating, comment, productId, reviewer, reviewee);
 
@@ -72,7 +72,8 @@ class ReviewServiceTest {
 				given(memberRepository.getReferenceById(revieweeId)).willReturn(reviewee);
 				given(reviewRepository.save(any(Review.class))).willReturn(savedReview);
 
-				SaveReviewRequest request = new SaveReviewRequest(revieweeId, productId, rating, comment);
+				SaveReviewRequest request = new SaveReviewRequest(revieweeId, productId, rating,
+						comment);
 
 				//when
 				SaveReviewResponse response = reviewService.saveReview(request, reviewerId);
@@ -97,7 +98,8 @@ class ReviewServiceTest {
 				float rating = 3.5f;
 				String comment = "그저 그래요";
 
-				SaveReviewRequest request = new SaveReviewRequest(revieweeId, productId, rating, comment);
+				SaveReviewRequest request = new SaveReviewRequest(revieweeId, productId, rating,
+						comment);
 
 				//when & then
 				assertThatThrownBy(() -> reviewService.saveReview(request, reviewerId))
@@ -129,7 +131,12 @@ class ReviewServiceTest {
 
 				DeleteReviewRequest request = new DeleteReviewRequest(reviewId);
 
-				Review review = ReviewFixture.createReview1(reviewId, reviewerId, revieweeId);
+				Member reviewer = MemberFixture.createMember1();
+				ReflectionTestUtils.setField(reviewer, "id", reviewerId);
+				Member reviewee = MemberFixture.createMember1();
+				ReflectionTestUtils.setField(reviewee, "id", revieweeId);
+
+				Review review = ReviewFixture.createReview1(reviewer, reviewee);
 
 				given(memberRepository.existsById(reviewerId)).willReturn(true);
 				given(reviewRepository.existsById(reviewId)).willReturn(true);
@@ -193,8 +200,12 @@ class ReviewServiceTest {
 
 				DeleteReviewRequest request = new DeleteReviewRequest(reviewId);
 
-				Review review = ReviewFixture.createReview1(reviewId, otherReviewerId, revieweeId);
+				Member reviewer = MemberFixture.createMember1();
+				ReflectionTestUtils.setField(reviewer, "id", otherReviewerId);
+				Member reviewee = MemberFixture.createMember1();
+				ReflectionTestUtils.setField(reviewee, "id", revieweeId);
 
+				Review review = ReviewFixture.createReview1(reviewer, reviewee);
 				given(memberRepository.existsById(myReviewerId)).willReturn(true);
 				given(reviewRepository.existsById(reviewId)).willReturn(true);
 				given(reviewRepository.getReferenceById(reviewId)).willReturn(review);
