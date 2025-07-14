@@ -90,12 +90,13 @@ class ReviewServiceTest {
 		class Fail {
 
 			@Test
-			@DisplayName("자기 자신을 리뷰할 수 없습니다.")
+			@DisplayName("셀프 리뷰를 할 경우 예외가 발생한다")
 			public void selfReviewTest() {
 
 				//given
-				Long reviewerId = 2L;
+				Long memberId = 2L;
 				Long revieweeId = 2L;
+
 				Long productId = 3L;
 				float rating = 3.5f;
 				String comment = "그저 그래요";
@@ -103,11 +104,34 @@ class ReviewServiceTest {
 				SaveReviewRequest request = new SaveReviewRequest(revieweeId, productId, rating, comment);
 
 				//when & then
-				assertThatThrownBy(() -> reviewService.saveReview(request, reviewerId))
+				assertThatThrownBy(() -> reviewService.saveReview(request, memberId))
 						.isInstanceOf(GlobalException.class)
-						.hasMessage("자신에게 리뷰를 작성할 수 없습니다.");
+						.hasMessage(ResultCode.SELF_REVIEW.getMessage());
 
-				verify(memberRepository, never()).getReferenceById(any());
+				verify(reviewRepository, never()).save(any());
+			}
+
+			@Test
+			@DisplayName("리뷰 대상 회원 아이디가 존재하지 않을 경우 예외가 발생한다")
+			public void memberNotFoundTest() {
+
+				//given
+				Long revieweeId = 3L;
+				Long memberId = 2L;
+
+				Long productId = 3L;
+				float rating = 3.5f;
+				String comment = "그저 그래요";
+
+				SaveReviewRequest request = new SaveReviewRequest(revieweeId, productId, rating, comment);
+
+				given(memberRepository.existsById(revieweeId)).willReturn(false);
+
+				//when & then
+				assertThatThrownBy(() -> reviewService.saveReview(request, memberId))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.MEMBER_NOT_FOUND.getMessage());
+
 				verify(reviewRepository, never()).save(any());
 			}
 		}
@@ -153,13 +177,15 @@ class ReviewServiceTest {
 			public void reviewNotFoundTest() {
 
 				//given
+				Long memberId = 1L;
 				Long reviewId = 10L;
-				Long reviewerId = 1L;
 
 				DeleteReviewRequest request = new DeleteReviewRequest(reviewId);
 
+				given(reviewRepository.findById(reviewId)).willReturn(Optional.empty());
+
 				//when & then
-				assertThatThrownBy(() -> reviewService.deleteReview(request, reviewerId))
+				assertThatThrownBy(() -> reviewService.deleteReview(request, memberId))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.REVIEW_NOT_FOUND.getMessage());
 			}
