@@ -6,8 +6,8 @@ import lombok.Getter;
 @Getter
 public class WifiCursorRequest extends ProductCursorRequest {
 
-	@NotNull(message = "isOpen은 null일 수 없습니다.")
-	private final boolean isOpen;
+	@NotNull(message = "open은 null일 수 없습니다.")
+	private final boolean open;
 
 	@NotNull(message = "latitude는 null일 수 없습니다.")
 	private final Double latitude;
@@ -16,10 +16,10 @@ public class WifiCursorRequest extends ProductCursorRequest {
 	private final Double longitude;
 
 	public WifiCursorRequest(Long cursorId, Integer size,
-			String productSortOption, boolean isOpen, Double latitude, Double longitude) {
+			String productSortOption, boolean open, Double latitude, Double longitude) {
 
 		super(cursorId, size, productSortOption);
-		this.isOpen = isOpen;
+		this.open = open;
 		this.latitude = latitude;
 		this.longitude = longitude;
 	}
