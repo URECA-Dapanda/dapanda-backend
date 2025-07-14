@@ -3,13 +3,8 @@ package com.dapanda.review.controller;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.CommonResponse;
-import com.dapanda.review.dto.request.DeleteReviewRequest;
-import com.dapanda.review.dto.request.ReadSellerReviewRequest;
-import com.dapanda.review.dto.request.SaveReviewRequest;
-import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.dto.response.ReadSellerReviewResponse;
-import com.dapanda.review.dto.response.SaveReviewResponse;
-import com.dapanda.review.dto.response.UpdateReviewResponse;
+import com.dapanda.review.dto.request.*;
+import com.dapanda.review.dto.response.*;
 import com.dapanda.review.service.ReviewService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -46,6 +41,30 @@ public class ReviewController {
 		ReadSellerReviewRequest request = new ReadSellerReviewRequest(cursorId, size, reviewSortOption, memberId);
 
 		return CommonResponse.success(reviewService.readSellerReview(request));
+	}
+
+	@GetMapping("/reviews/rc")
+	public CommonResponse<CursorPageResponse<ReadMyReceivedReviewResponse>> readMyReceivedReview(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
+			@RequestParam(required = false) Long cursorId,
+			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size,
+			@RequestParam(defaultValue = "RECENT") String reviewSortOption) {
+
+		ReadMyReviewRequest request = new ReadMyReviewRequest(cursorId, size, reviewSortOption, userDetails.getId());
+
+		return CommonResponse.success(reviewService.readMyReceivedReview(request));
+	}
+
+	@GetMapping("/reviews/wt")
+	public CommonResponse<CursorPageResponse<ReadMyWrittenReviewResponse>> readMyWrittenReview(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
+			@RequestParam(required = false) Long cursorId,
+			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size,
+			@RequestParam(defaultValue = "RECENT") String reviewSortOption) {
+
+		ReadMyReviewRequest request = new ReadMyReviewRequest(cursorId, size, reviewSortOption, userDetails.getId());
+
+		return CommonResponse.success(reviewService.readMyWrittenReview(request));
 	}
 
 	@PutMapping("/reviews")
