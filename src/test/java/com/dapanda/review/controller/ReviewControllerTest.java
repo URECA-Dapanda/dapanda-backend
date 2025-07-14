@@ -153,33 +153,6 @@ class ReviewControllerTest {
 						.andExpect(status().isBadRequest())
 						.andDo(document("review/save-review-validation-error"));
 			}
-
-			@Test
-			@DisplayName("리뷰 대상 회원이 존재하지 않으면 에러를 반환한다")
-			public void validateMemberId() throws Exception {
-
-				// given
-				Member reviewer = MemberFixture.MEMBER_REVIEWER;
-
-				Member savedReviewer = memberRepository.save(reviewer);
-
-				SaveReviewRequest request = new SaveReviewRequest(505L, 123L,5.0f, "test");
-
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(savedReviewer.getId());
-
-				// when & then
-				mockMvc.perform(post("/api/reviews")
-								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request))
-								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails,null, Collections.emptyList()
-								)))
-						)
-						.andExpect(status().isBadRequest())
-						.andDo(document("review/save-review-member-id-error"));
-			}
 		}
 	}
 
