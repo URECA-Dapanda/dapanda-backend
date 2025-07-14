@@ -6,7 +6,9 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
+import com.dapanda.review.dto.request.UpdateReviewRequest;
 import com.dapanda.review.dto.response.SaveReviewResponse;
+import com.dapanda.review.dto.response.UpdateReviewResponse;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,18 @@ public class ReviewService {
 		Review savedReview = reviewRepository.save(review);
 
 		return SaveReviewResponse.from(savedReview.getId());
+	}
+
+	public UpdateReviewResponse updateReview(UpdateReviewRequest request, Long memberId){
+
+		Review savedReview = reviewRepository.findById(request.reviewId())
+						.orElseThrow(()->new GlobalException(ResultCode.REVIEW_NOT_FOUND));
+
+		validateReviewOwner(request.reviewId(), memberId);
+
+		savedReview.updateReview(request);
+
+		return UpdateReviewResponse.from(savedReview.getId());
 	}
 
 	public void deleteReview(DeleteReviewRequest request, Long memberId) {
