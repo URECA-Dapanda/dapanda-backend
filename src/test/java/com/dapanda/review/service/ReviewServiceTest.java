@@ -12,10 +12,7 @@ import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
-import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
-import com.dapanda.review.dto.response.SaveReviewResponse;
-import com.dapanda.review.dto.response.UpdateReviewResponse;
+import com.dapanda.review.dto.response.*;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.entity.ReviewFixture;
 import com.dapanda.review.repository.ReviewRepository;
@@ -84,7 +81,6 @@ class ReviewServiceTest {
 
 				SaveReviewRequest request = new SaveReviewRequest(savedTrade.getId(), RATING, COMMENT);
 
-//				Review review = ReviewFixture.createReview1(savedTrade);
 				Review savedReview = ReviewFixture.createReview1WithId(savedTrade, REVIEW_ID);
 
 				given(tradeRepository.findById(request.tradeId())).willReturn(Optional.of(savedTrade));
@@ -485,6 +481,90 @@ class ReviewServiceTest {
 				assertThat(pageResponse.getData()).hasSize(0);
 				assertThat(pageResponse.getPageInfo().isHasNext()).isFalse();
 				assertThat(pageResponse.getPageInfo().getNextCursorId()).isNull();
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("리뷰 단건 조회")
+	class ReadReview {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("요청이 유효하면 리뷰 단건을 반환한다")
+			public void readReviewTest() {
+
+				//given
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				Member seller = MemberFixture.createMember2WithId(SELLER_MEMBER_ID);
+
+				Product savedProduct = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
+
+				Trade savedTrade = TradeFixture.createTrade1WithId(savedProduct, buyer, TRADE_ID);
+
+				Review review = ReviewFixture.createReview1WithId(savedTrade, REVIEW_ID);
+
+				given(reviewRepository.findById(review.getId())).willReturn(Optional.of(review));
+
+				//when
+				ReadReviewResponse response = reviewService.readReview(review.getId(), buyer.getId());
+
+				//then
+				assertThat(response.getReviewId()).isEqualTo(review.getId());
+				assertThat(response.getRating()).isEqualTo(review.getRating());
+				assertThat(response.getComment()).isEqualTo(review.getComment());
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("리뷰를 찾을 수 없으면 예외가 발생한다")
+			public void reviewNotFoundTest() {
+
+				//given
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				Member seller = MemberFixture.createMember2WithId(SELLER_MEMBER_ID);
+
+				Product savedProduct = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
+
+				Trade savedTrade = TradeFixture.createTrade1WithId(savedProduct, buyer, TRADE_ID);
+
+				Review review = ReviewFixture.createReview1WithId(savedTrade, REVIEW_ID);
+
+				given(reviewRepository.findById(review.getId())).willReturn(Optional.empty());
+
+				//when & then
+				assertThatThrownBy(() -> reviewService.readReview(review.getId(), buyer.getId()))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.REVIEW_NOT_FOUND.getMessage());
+			}
+
+			@Test
+			@DisplayName("리뷰 작성자가 아니면 예외가 발생한다")
+			public void reviewOwnerTest() {
+
+				//given
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				Member seller = MemberFixture.createMember2WithId(SELLER_MEMBER_ID);
+
+				Product savedProduct = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
+
+				Trade savedTrade = TradeFixture.createTrade1WithId(savedProduct, buyer, TRADE_ID);
+
+				Review review = ReviewFixture.createReview1WithId(savedTrade, REVIEW_ID);
+
+				given(reviewRepository.findById(review.getId())).willReturn(Optional.of(review));
+
+				//when & then
+				assertThatThrownBy(() -> reviewService.readReview(review.getId(), USER_DETAILS_MEMBER_ID))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.OTHER_REVIEW.getMessage());
 			}
 		}
 	}
