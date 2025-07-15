@@ -3,12 +3,18 @@ package com.dapanda.review.service;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
-import com.dapanda.member.entity.Member;
-import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.review.dto.request.*;
-import com.dapanda.review.dto.response.*;
+import com.dapanda.review.dto.request.DeleteReviewRequest;
+import com.dapanda.review.dto.request.ReadReviewRequest;
+import com.dapanda.review.dto.request.SaveReviewRequest;
+import com.dapanda.review.dto.request.UpdateReviewRequest;
+import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
+import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
+import com.dapanda.review.dto.response.SaveReviewResponse;
+import com.dapanda.review.dto.response.UpdateReviewResponse;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.repository.ReviewRepository;
+import com.dapanda.trade.entity.Trade;
+import com.dapanda.trade.repository.TradeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,34 +28,11 @@ import java.util.List;
 public class ReviewService {
 
 	private final ReviewRepository reviewRepository;
-	private final MemberRepository memberRepository;
+	private final TradeRepository tradeRepository;
 
-	public CursorPageResponse<ReadSellerReviewResponse> readSellerReview(ReadSellerReviewRequest request) {
+	public CursorPageResponse<ReadWrittenReviewResponse> readWrittenReview(ReadReviewRequest request) {
 
-		List<ReadSellerReviewResponse> reviews = reviewRepository.findSellerReviewWithCursor(request);
-
-		boolean hasNext = reviews.size() > request.size();
-
-		if (hasNext) {
-			reviews = reviews.subList(0, request.size());
-		}
-
-		Long nextCursorId = hasNext && !reviews.isEmpty()
-				? reviews.get(reviews.size() - 1).getReviewId()
-				: null;
-
-		CursorPageResponse.PageInfo pageInfo = CursorPageResponse.PageInfo.of(
-				nextCursorId,
-				hasNext,
-				request.size()
-		);
-
-		return CursorPageResponse.of(reviews, pageInfo);
-	}
-
-	public CursorPageResponse<ReadMyWrittenReviewResponse> readMyWrittenReview(ReadMyReviewRequest request) {
-
-		List<ReadMyWrittenReviewResponse> reviews = reviewRepository.findMyWrittenReviews(request);
+		List<ReadWrittenReviewResponse> reviews = reviewRepository.findWrittenReviews(request);
 
 		boolean hasNext = reviews.size() > request.size();
 
@@ -70,9 +53,9 @@ public class ReviewService {
 		return CursorPageResponse.of(reviews, pageInfo);
 	}
 
-	public CursorPageResponse<ReadMyReceivedReviewResponse> readMyReceivedReview(ReadMyReviewRequest request) {
+	public CursorPageResponse<ReadReceivedReviewResponse> readReceivedReview(ReadReviewRequest request) {
 
-		List<ReadMyReceivedReviewResponse> reviews = reviewRepository.findMyReceivedReviews(request);
+		List<ReadReceivedReviewResponse> reviews = reviewRepository.findReceivedReviews(request);
 
 		boolean hasNext = reviews.size() > request.size();
 
@@ -95,13 +78,12 @@ public class ReviewService {
 
 	public SaveReviewResponse saveReview(SaveReviewRequest request, Long memberId) {
 
-		validateSelfReview(memberId, request.revieweeId());
-		validateRevieweeId(request.revieweeId());
+		Trade trade = tradeRepository.findById(request.tradeId())
+				.orElseThrow(() -> new GlobalException(ResultCode.TRADE_NOT_FOUND));
 
-		Member reviewer = memberRepository.getReferenceById(memberId);
-		Member reviewee = memberRepository.getReferenceById(request.revieweeId());
+		validateTradeOwner(trade, memberId);
 
-		Review review = Review.of(request.rating(), request.comment(), request.productId(), reviewer, reviewee);
+		Review review = Review.of(request.rating(), request.comment(), trade);
 
 		Review savedReview = reviewRepository.save(review);
 
@@ -136,31 +118,20 @@ public class ReviewService {
 	 */
 	private void validateReviewOwner(Review savedReview, Long memberId) {
 
-		if (!savedReview.getReviewer().getId().equals(memberId)) {
+		if (!savedReview.getTrade().getMember().getId().equals(memberId)) {
 
 			throw new GlobalException(ResultCode.OTHER_REVIEW);
 		}
 	}
 
 	/**
-	 * 셀프 리뷰 검증
+	 * 거래 내역 회원 아이디 검증
 	 */
-	private void validateSelfReview(Long reviewerId, Long revieweeId){
+	private void validateTradeOwner(Trade trade, Long memberId) {
 
-		if (reviewerId.equals(revieweeId)){
+		if (!trade.getMember().getId().equals(memberId)) {
 
-			throw new GlobalException(ResultCode.SELF_REVIEW);
-		}
-	}
-
-	/**
-	 *	리뷰 받는 회원 아이디 검증
-	 */
-	private void validateRevieweeId(Long revieweeId) {
-
-		if (!memberRepository.existsById(revieweeId)) {
-
-			throw new GlobalException(ResultCode.MEMBER_NOT_FOUND);
+			throw new GlobalException(ResultCode.OTHER_TRADE);
 		}
 	}
 }
