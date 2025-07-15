@@ -4,49 +4,24 @@ import com.dapanda.product.entity.ItemType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 public class ReadSellerReviewResponse {
 
 	private Long reviewId;
 	private Long reviewerId;
 	private String reviewerName;
 	private Float rating;
+	private String comment;
 	private Float dataAmount;
 	private Integer timeAmount;
 	private ItemType itemType;
-	private String comment;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
-
-	public ReadSellerReviewResponse(
-			Long reviewId,
-			Long reviewerId,
-			String reviewerName,
-			Float rating,
-			String comment,
-			Float dataAmount,
-			Integer timeAmount,
-			ItemType itemType,
-			LocalDateTime createdAt,
-			LocalDateTime updatedAt) {
-		this.reviewId = reviewId;
-		this.reviewerId = reviewerId;
-		this.reviewerName = reviewerName;
-		this.rating = rating;
-		this.comment = comment;
-		this.dataAmount = dataAmount;
-		this.timeAmount = timeAmount;
-		this.itemType = itemType;
-		this.createdAt = createdAt;
-		this.updatedAt = updatedAt;
-	}
 
 	public static ReadSellerReviewResponse of(
 			Long reviewId,

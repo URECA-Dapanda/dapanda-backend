@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -15,44 +14,20 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 public class ReadMyWrittenReviewResponse {
 
 	private Long reviewId;
 	private Long revieweeId;
 	private String revieweeName;
 	private Float rating;
+	private String comment;
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private Float dataAmount;
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private Integer timeAmount;
 	private ItemType itemType;
-	private String comment;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
-
-	public ReadMyWrittenReviewResponse(
-			Long reviewId,
-			Long revieweeId,
-			String revieweeName,
-			Float rating,
-			String comment,
-			Float dataAmount,
-			Integer timeAmount,
-			ItemType itemType,
-			LocalDateTime createdAt,
-			LocalDateTime updatedAt) {
-		this.reviewId = reviewId;
-		this.revieweeId = revieweeId;
-		this.revieweeName = revieweeName;
-		this.rating = rating;
-		this.comment = comment;
-		this.dataAmount = dataAmount;
-		this.timeAmount = timeAmount;
-		this.itemType = itemType;
-		this.createdAt = createdAt;
-		this.updatedAt = updatedAt;
-	}
 
 	public static ReadMyWrittenReviewResponse of(
 			Long reviewId,
