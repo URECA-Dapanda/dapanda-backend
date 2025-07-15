@@ -393,6 +393,59 @@ class ReviewControllerTest {
 	}
 
 	@Nested
+	@DisplayName("리뷰 단건 조회 API")
+	class ReadReview {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("리뷰 단건을 조회한다")
+			public void readReviewTest() throws Exception {
+
+				//given
+				Member seller = memberRepository.save(MemberFixture.createMember1());
+				Member buyer = memberRepository.save(MemberFixture.createMember2());
+
+				Product product = productRepository.save(ProductFixture.createProduct1(seller));
+
+				Trade trade = tradeRepository.save(TradeFixture.createTrade1(product, buyer));
+
+				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(buyer.getId());
+
+				//when & then
+				mockMvc.perform(get("/api/reviews/{reviewId}", review.getId())
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								))))
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.reviewId").value(review.getId()))
+						.andExpect(jsonPath("$.data.rating").value(review.getRating()))
+						.andExpect(jsonPath("$.data.comment").value(review.getComment()))
+						.andDo(document("review/read-review",
+								pathParameters(
+										parameterWithName("reviewId").description("단건 조회할 리뷰 아이디 (필수)")
+								),
+								responseFields(
+										fieldWithPath("code").description("응답 코드"),
+										fieldWithPath("message").description("응답 메시지"),
+										fieldWithPath("data.reviewId").description("리뷰 아이디"),
+										fieldWithPath("data.rating").description("리뷰 평점"),
+										fieldWithPath("data.comment").description("리뷰 코멘트")
+								)
+						));
+			}
+		}
+	}
+
+	@Nested
 	@DisplayName("리뷰 삭제 API")
 	class DeleteReview {
 
