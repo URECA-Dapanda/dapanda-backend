@@ -43,6 +43,10 @@ public enum ResultCode {
 	INVALID_ITEM_TYPE(HttpStatus.BAD_REQUEST, 3001, "유효하지 않은 상품 타입입니다."),
 	PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, 3002, "존재하지 않는 상품입니다."),
 	INVALID_PRODUCT(HttpStatus.BAD_REQUEST, 3003, "유효하지 않은 상품입니다."),
+	OTHER_PRODUCT(HttpStatus.BAD_REQUEST, 3004, "자신이 등록한 상품이 아닙니다."),
+	EXCEEDED_TRANSFER_LIMIT(HttpStatus.BAD_REQUEST, 3005, "전송 가능한 데이터양을 초과했습니다."),
+	INVALID_DATA_TRANSFER_AMOUNT(HttpStatus.BAD_REQUEST, 3006, "유효하지 않은 데이터 전송양입니다."),
+	INVALID_TIME(HttpStatus.BAD_REQUEST, 3007, "시작 시간은 종료 시간보다 늦을 수 없습니다."),
 
 	// 거래 4000번대
 
