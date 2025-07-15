@@ -27,13 +27,14 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 	public List<ReadReceivedReviewResponse> findReceivedReviews(ReadReviewRequest request) {
 
 		QReview review = QReview.review;
-		QMember member = QMember.member;
+		QMember buyer = new QMember("buyer");
+		QMember seller = new QMember("seller");
 		QTrade trade = QTrade.trade;
 		QProduct product = QProduct.product;
 
 		BooleanBuilder whereClause = new BooleanBuilder();
 
-		whereClause.and(review.trade.product.member.id.eq(request.memberId()));
+		whereClause.and(seller.id.eq(request.memberId()));
 
 		if (request.cursorId() != null) {
 			whereClause.and(buildCursorCondition(request.cursorId(), ReviewSortOption.valueOf(request.reviewSortOption())));
@@ -46,8 +47,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 						review.comment,
 						review.createdAt,
 						review.updatedAt,
-						member.id,
-						member.name,
+						buyer.id,
+						buyer.name,
 						trade.id,
 						trade.dataAmount,
 						trade.timeAmount,
@@ -56,7 +57,9 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 				))
 				.from(review)
 				.join(review.trade, trade)
+				.join(trade.member, buyer)
 				.join(trade.product, product)
+				.join(product.member, seller)
 				.where(whereClause)
 				.orderBy(getOrderSpecifier(ReviewSortOption.valueOf(request.reviewSortOption())))
 				.limit(request.size() + 1)
@@ -67,13 +70,14 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 	public List<ReadWrittenReviewResponse> findWrittenReviews(ReadReviewRequest request) {
 
 		QReview review = QReview.review;
-		QMember member = QMember.member;
+		QMember buyer = new QMember("buyer");
+		QMember seller = new QMember("seller");
 		QTrade trade = QTrade.trade;
 		QProduct product = QProduct.product;
 
 		BooleanBuilder whereClause = new BooleanBuilder();
 
-		whereClause.and(review.trade.member.id.eq(request.memberId()));
+		whereClause.and(buyer.id.eq(request.memberId()));
 
 		if (request.cursorId() != null) {
 			whereClause.and(buildCursorCondition(request.cursorId(), ReviewSortOption.valueOf(request.reviewSortOption())));
@@ -86,8 +90,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 						review.comment,
 						review.createdAt,
 						review.updatedAt,
-						member.id,
-						member.name,
+						seller.id,
+						seller.name,
 						trade.id,
 						trade.dataAmount,
 						trade.timeAmount,
@@ -97,6 +101,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 				.from(review)
 				.join(review.trade, trade)
 				.join(trade.product, product)
+				.join(trade.member, buyer)
+				.join(product.member, seller)
 				.where(whereClause)
 				.orderBy(getOrderSpecifier(ReviewSortOption.valueOf(request.reviewSortOption())))
 				.limit(request.size() + 1)
