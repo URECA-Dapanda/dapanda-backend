@@ -440,7 +440,7 @@ class ProductServiceTest {
 					// when & then
 					assertThatThrownBy(() -> productService.findMobileDataInfo(PRODUCT_ID))
 							.isInstanceOf(GlobalException.class)
-							.hasMessage(ResultCode.NOT_EXIST_PRODUCT.getMessage());
+							.hasMessage(ResultCode.PRODUCT_NOT_FOUND.getMessage());
 				}
 
 				@Test
@@ -510,7 +510,7 @@ class ProductServiceTest {
 				// when & then
 				assertThatThrownBy(() -> productService.findWifiInfo(PRODUCT_ID))
 						.isInstanceOf(GlobalException.class)
-						.hasMessage(ResultCode.NOT_EXIST_PRODUCT.getMessage());
+						.hasMessage(ResultCode.PRODUCT_NOT_FOUND.getMessage());
 			}
 
 			@Test

@@ -38,7 +38,7 @@ public class ProductService {
 	public MobileDataInfoResponse findMobileDataInfo(Long productId) {
 
 		if (!productRepository.existsById(productId)) {
-			throw new GlobalException(ResultCode.NOT_EXIST_PRODUCT);
+			throw new GlobalException(ResultCode.PRODUCT_NOT_FOUND);
 		}
 
 		MobileDataInfoResponse response = productRepository.findMobileDataInfo(productId);
@@ -53,7 +53,7 @@ public class ProductService {
 	public WifiInfoResponse findWifiInfo(Long productId) {
 
 		if (!productRepository.existsById(productId)) {
-			throw new GlobalException(ResultCode.NOT_EXIST_PRODUCT);
+			throw new GlobalException(ResultCode.PRODUCT_NOT_FOUND);
 		}
 
 		WifiInfoResponse response = productRepository.findWifiInfo(productId);
