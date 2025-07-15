@@ -2,7 +2,6 @@ package com.dapanda.trade.entity;
 
 import com.dapanda.common.entity.CreatedAtEntity;
 import com.dapanda.member.entity.Member;
-import com.dapanda.product.entity.ItemType;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -14,14 +13,13 @@ public class Trade extends CreatedAtEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	private int tradingAmount;
+	private Float dataAmount;
+
+	private Integer timeAmount;
 
 	private int tradingPrice;
 
 	private Long productId;
-
-	@Enumerated(EnumType.STRING)
-	private ItemType type;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id")
