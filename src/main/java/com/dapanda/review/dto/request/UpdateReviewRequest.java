@@ -7,8 +7,8 @@ import jakarta.validation.constraints.Size;
 
 public record UpdateReviewRequest(
 
-		@NotNull(message = "거래 아이디는 필수입니다.")
-		Long tradeId,
+		@NotNull(message = "리뷰 아이디는 필수입니다.")
+		Long reviewId,
 
 		@NotNull(message = "평점은 필수입니다.")
 		@DecimalMin(value = "1.0", message = "평점은 1.0 이상이어야 합니다.")

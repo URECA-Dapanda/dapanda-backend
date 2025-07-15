@@ -1,9 +1,9 @@
 package com.dapanda.review.dto.request;
 
-public record ReadSellerReviewRequest(
+public record ReadReviewRequest(
 
 		Long cursorId,
 		Integer size,
 		String reviewSortOption,
-		Long sellerId) {
+		Long memberId) {
 }

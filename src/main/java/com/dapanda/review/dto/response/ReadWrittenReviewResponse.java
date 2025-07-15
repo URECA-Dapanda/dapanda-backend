@@ -9,22 +9,22 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 /**
- * 내가 받은 리뷰 DTO
+ * 내가 작성한 리뷰 조회 DTO
  */
 @Getter
 @Builder
 @AllArgsConstructor
-public class ReadMyReceivedReviewResponse {
+public class ReadWrittenReviewResponse {
 
 	//Review
 	private Long reviewId;
-	private Long reviewerId;
 	private Float rating;
 	private String comment;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	//Member
-	private String reviewerName;
+	private Long revieweeId;
+	private String revieweeName;
 	//Trade
 	private Long tradeId;
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -35,14 +35,14 @@ public class ReadMyReceivedReviewResponse {
 	private Long productId;
 	private ItemType itemType;
 
-	public static ReadMyReceivedReviewResponse of(
+	public static ReadWrittenReviewResponse of(
 			Long reviewId,
-			Long reviewerId,
 			Float rating,
 			String comment,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt,
-			String reviewerName,
+			Long revieweeId,
+			String revieweeName,
 			Long tradeId,
 			Float dataAmount,
 			Integer timeAmount,
@@ -50,14 +50,14 @@ public class ReadMyReceivedReviewResponse {
 			ItemType itemType
 	) {
 
-		return ReadMyReceivedReviewResponse.builder()
+		return ReadWrittenReviewResponse.builder()
 				.reviewId(reviewId)
-				.reviewerId(reviewerId)
 				.rating(rating)
 				.comment(comment)
 				.createdAt(createdAt)
 				.updatedAt(updatedAt)
-				.reviewerName(reviewerName)
+				.revieweeId(revieweeId)
+				.revieweeName(revieweeName)
 				.tradeId(tradeId)
 				.dataAmount(dataAmount)
 				.timeAmount(timeAmount)
