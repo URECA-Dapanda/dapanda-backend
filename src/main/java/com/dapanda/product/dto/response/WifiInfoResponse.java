@@ -1,6 +1,5 @@
 package com.dapanda.product.dto.response;
 
-import com.dapanda.member.entity.Member;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AccessLevel;
@@ -18,7 +17,8 @@ public class WifiInfoResponse {
 	private Long productId;
 	private Long itemId;
 	private int price;
-	private Member member;
+	private Long memberId;
+	private String memberName;
 	private String title;
 	private String content;
 	private double latitude;
