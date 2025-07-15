@@ -9,7 +9,10 @@ import static com.dapanda.review.entity.QReview.review;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
+import com.dapanda.product.dto.response.MobileDataInfoResponse;
+import com.dapanda.product.dto.response.WifiInfoResponse;
 import com.dapanda.product.entity.ProductSortOption;
+import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.entity.QProductImage;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -53,7 +56,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				))
 				.from(product)
 				.join(mobileData).on(mobileData.id.eq(product.itemId))
-				.where(
+				.where(isActiveProduct(),
 						gtCursorId(cursorId),
 						eqDataAmount(dataAmount)
 				)
@@ -119,7 +122,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 												.where(productImageSub.wifiId.eq(wifi.id))
 								))
 				)
-				.where(
+				.where(isActiveProduct(),
 						gtCursorId(cursorId),
 						isOpenNow(isOpen, now)
 				)
@@ -141,6 +144,45 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 		return CursorPageResponse.of(content,
 				CursorPageResponse.PageInfo.of(nextCursorId, hasNext, content.size()));
+	}
+
+	@Override
+	public MobileDataInfoResponse findMobileDataInfo(Long productId) {
+
+		MobileDataInfoResponse response = queryFactory
+				.select(Projections.constructor(MobileDataInfoResponse.class,
+						product.id,
+						mobileData.id,
+						product.price,
+						product.member,
+						mobileData.remainAmount,
+						mobileData.pricePer100MB,
+						review.rating.avg().coalesce(DEFAULT_RATING),
+						review.rating.count().intValue(),
+						product.updatedAt
+				))
+				.from(product)
+				.join(mobileData).on(product.itemId.eq(mobileData.id))
+				.leftJoin(review).on(review.productId.eq(product.id))
+				.where(isActiveProduct(),
+						product.itemId.eq(mobileData.id),
+						product.id.eq(productId)
+				)
+				.groupBy(product.id, mobileData.id, product.price, product.member,
+						mobileData.remainAmount, mobileData.pricePer100MB, product.updatedAt)
+				.fetchOne();
+
+		return response;
+	}
+
+	@Override
+	public WifiInfoResponse findWifiInfo(Long productId) {
+		return null;
+	}
+
+	private BooleanExpression isActiveProduct() {
+
+		return product.state.eq(ProductState.ACTIVE);
 	}
 
 	private BooleanExpression gtCursorId(Long cursorId) {
