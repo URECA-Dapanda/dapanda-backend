@@ -41,7 +41,7 @@ public enum ResultCode {
 	// 상품 3000번대
 	INVALID_PRODUCT_SORT_OPTION(HttpStatus.BAD_REQUEST, 3000, "유효하지 않은 상품 정렬 조건입니다"),
 	INVALID_ITEM_TYPE(HttpStatus.BAD_REQUEST, 3001, "유효하지 않은 상품 타입입니다."),
-	NOT_EXIST_PRODUCT(HttpStatus.BAD_REQUEST, 3002, "존재하지 않는 상품입니다."),
+	PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST, 3002, "존재하지 않는 상품입니다."),
 	INVALID_PRODUCT(HttpStatus.BAD_REQUEST, 3003, "유효하지 않은 상품입니다."),
 
 	// 거래 4000번대
