@@ -7,10 +7,7 @@ import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
-import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
-import com.dapanda.review.dto.response.SaveReviewResponse;
-import com.dapanda.review.dto.response.UpdateReviewResponse;
+import com.dapanda.review.dto.response.*;
 import com.dapanda.review.service.ReviewService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -32,6 +29,17 @@ public class ReviewController {
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return CommonResponse.success(reviewService.saveReview(request, userDetails.getId()));
+	}
+
+	/**
+	 * 리뷰 단건 조회
+	 */
+	@GetMapping("/reviews/{reviewId}")
+	public CommonResponse<ReadReviewResponse> readReview(
+			@PathVariable Long reviewId,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		return CommonResponse.success(reviewService.readReview(reviewId, userDetails.getId()));
 	}
 
 	/**
