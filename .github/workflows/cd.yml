@@ -1,7 +1,7 @@
 name: Dapanda CD
 
 on:
-  pull_request:
+  push:
     branches: [ main, dev ]
     paths-ignore:
       - 'README.md'
