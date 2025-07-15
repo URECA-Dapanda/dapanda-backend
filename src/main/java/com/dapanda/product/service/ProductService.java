@@ -132,7 +132,6 @@ public class ProductService {
 	private void validateTime(LocalDateTime startTime, LocalDateTime endTime) {
 
 		if (startTime.isAfter(endTime)) {
-
 			throw new GlobalException(ResultCode.INVALID_TIME);
 		}
 	}
@@ -145,22 +144,18 @@ public class ProductService {
 
 		float resultDataAmount = savedMobileData.getDataAmount() + changedDataAmount;
 
-		if (member.getSellingData() + changedDataAmount > MobileData.MAX_TRANSFERABLE_DATA_AMOUNT) {
-
-			throw new GlobalException(ResultCode.EXCEEDED_TRANSFER_LIMIT);
-		}
-
 		if (resultDataAmount <= 0 || resultDataAmount > MobileData.MAX_TRANSFERABLE_DATA_AMOUNT) {
-
 			throw new GlobalException(ResultCode.INVALID_DATA_TRANSFER_AMOUNT);
 		}
-	}
 
+		if (member.getSellingData() + changedDataAmount > MobileData.MAX_TRANSFERABLE_DATA_AMOUNT) {
+			throw new GlobalException(ResultCode.EXCEEDED_TRANSFER_LIMIT);
+		}
+	}
 
 	private void validateProductOwner(Product savedProduct, Long memberId) {
 
 		if (!savedProduct.getMember().getId().equals(memberId)) {
-
 			throw new GlobalException(ResultCode.OTHER_PRODUCT);
 		}
 	}
