@@ -7,10 +7,7 @@ import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
-import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
-import com.dapanda.review.dto.response.SaveReviewResponse;
-import com.dapanda.review.dto.response.UpdateReviewResponse;
+import com.dapanda.review.dto.response.*;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.repository.ReviewRepository;
 import com.dapanda.trade.entity.Trade;
@@ -29,6 +26,16 @@ public class ReviewService {
 
 	private final ReviewRepository reviewRepository;
 	private final TradeRepository tradeRepository;
+
+	public ReadReviewResponse readReview(Long reviewId, Long memberId) {
+
+		Review review = reviewRepository.findById(reviewId)
+				.orElseThrow(() -> new GlobalException(ResultCode.REVIEW_NOT_FOUND));
+
+		validateReviewOwner(review, memberId);
+
+		return ReadReviewResponse.of(review.getId(), review.getRating(), review.getComment());
+	}
 
 	public CursorPageResponse<ReadWrittenReviewResponse> readWrittenReview(ReadReviewRequest request) {
 
