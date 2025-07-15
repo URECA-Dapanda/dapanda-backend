@@ -1,7 +1,10 @@
 package com.dapanda.review.dto.response;
 
 import com.dapanda.product.entity.ItemType;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -15,7 +18,8 @@ public class ReadSellerReviewResponse {
 	private Long reviewerId;
 	private String reviewerName;
 	private Float rating;
-	private Integer tradingAmount;
+	private Float dataAmount;
+	private Integer timeAmount;
 	private ItemType itemType;
 	private String comment;
 	private LocalDateTime createdAt;
@@ -27,7 +31,8 @@ public class ReadSellerReviewResponse {
 			String reviewerName,
 			Float rating,
 			String comment,
-			Integer tradingAmount,
+			Float dataAmount,
+			Integer timeAmount,
 			ItemType itemType,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt) {
@@ -36,7 +41,8 @@ public class ReadSellerReviewResponse {
 		this.reviewerName = reviewerName;
 		this.rating = rating;
 		this.comment = comment;
-		this.tradingAmount = tradingAmount;
+		this.dataAmount = dataAmount;
+		this.timeAmount = timeAmount;
 		this.itemType = itemType;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
@@ -48,7 +54,8 @@ public class ReadSellerReviewResponse {
 			String reviewerName,
 			Float rating,
 			String comment,
-			Integer tradingAmount,
+			Float dataAmount,
+			Integer timeAmount,
 			ItemType itemType,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt) {
@@ -59,7 +66,8 @@ public class ReadSellerReviewResponse {
 				.reviewerName(reviewerName)
 				.rating(rating)
 				.comment(comment)
-				.tradingAmount(tradingAmount)
+				.dataAmount(dataAmount)
+				.timeAmount(timeAmount)
 				.itemType(itemType)
 				.createdAt(createdAt)
 				.updatedAt(updatedAt)

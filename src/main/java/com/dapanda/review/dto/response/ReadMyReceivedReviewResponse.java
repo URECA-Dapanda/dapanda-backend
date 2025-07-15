@@ -21,7 +21,8 @@ public class ReadMyReceivedReviewResponse {
 	private Long reviewerId;
 	private String reviewerName;
 	private Float rating;
-	private Integer tradingAmount;
+	private Float dataAmount;
+	private Integer timeAmount;
 	private ItemType itemType;
 	private String comment;
 	private LocalDateTime createdAt;
@@ -33,7 +34,8 @@ public class ReadMyReceivedReviewResponse {
 			String reviewerName,
 			Float rating,
 			String comment,
-			Integer tradingAmount,
+			Float dataAmount,
+			Integer timeAmount,
 			ItemType itemType,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt) {
@@ -42,7 +44,8 @@ public class ReadMyReceivedReviewResponse {
 		this.reviewerName = reviewerName;
 		this.rating = rating;
 		this.comment = comment;
-		this.tradingAmount = tradingAmount;
+		this.dataAmount = dataAmount;
+		this.timeAmount = timeAmount;
 		this.itemType = itemType;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
@@ -54,7 +57,8 @@ public class ReadMyReceivedReviewResponse {
 			String reviewerName,
 			Float rating,
 			String comment,
-			Integer tradingAmount,
+			Float dataAmount,
+			Integer timeAmount,
 			ItemType itemType,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt) {
@@ -65,7 +69,8 @@ public class ReadMyReceivedReviewResponse {
 				.reviewerName(reviewerName)
 				.rating(rating)
 				.comment(comment)
-				.tradingAmount(tradingAmount)
+				.dataAmount(dataAmount)
+				.timeAmount(timeAmount)
 				.itemType(itemType)
 				.createdAt(createdAt)
 				.updatedAt(updatedAt)

@@ -1,6 +1,7 @@
 package com.dapanda.review.dto.response;
 
 import com.dapanda.product.entity.ItemType;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +22,10 @@ public class ReadMyWrittenReviewResponse {
 	private Long revieweeId;
 	private String revieweeName;
 	private Float rating;
-	private Integer tradingAmount;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private Float dataAmount;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private Integer timeAmount;
 	private ItemType itemType;
 	private String comment;
 	private LocalDateTime createdAt;
@@ -33,7 +37,8 @@ public class ReadMyWrittenReviewResponse {
 			String revieweeName,
 			Float rating,
 			String comment,
-			Integer tradingAmount,
+			Float dataAmount,
+			Integer timeAmount,
 			ItemType itemType,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt) {
@@ -42,7 +47,8 @@ public class ReadMyWrittenReviewResponse {
 		this.revieweeName = revieweeName;
 		this.rating = rating;
 		this.comment = comment;
-		this.tradingAmount = tradingAmount;
+		this.dataAmount = dataAmount;
+		this.timeAmount = timeAmount;
 		this.itemType = itemType;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
@@ -54,7 +60,8 @@ public class ReadMyWrittenReviewResponse {
 			String revieweeName,
 			Float rating,
 			String comment,
-			Integer tradingAmount,
+			Float dataAmount,
+			Integer timeAmount,
 			ItemType itemType,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt) {
@@ -65,7 +72,8 @@ public class ReadMyWrittenReviewResponse {
 				.revieweeName(revieweeName)
 				.rating(rating)
 				.comment(comment)
-				.tradingAmount(tradingAmount)
+				.dataAmount(dataAmount)
+				.timeAmount(timeAmount)
 				.itemType(itemType)
 				.createdAt(createdAt)
 				.updatedAt(updatedAt)
