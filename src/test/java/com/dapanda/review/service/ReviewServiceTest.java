@@ -1,15 +1,13 @@
 package com.dapanda.review.service;
 
+import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.review.dto.request.DeleteReviewRequest;
-import com.dapanda.review.dto.request.SaveReviewRequest;
-import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.dto.response.SaveReviewResponse;
-import com.dapanda.review.dto.response.UpdateReviewResponse;
+import com.dapanda.review.dto.request.*;
+import com.dapanda.review.dto.response.*;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.entity.ReviewFixture;
 import com.dapanda.review.repository.ReviewRepository;
@@ -21,6 +19,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -278,4 +278,231 @@ class ReviewServiceTest {
 			}
 		}
 	}
+
+	@Nested
+	@DisplayName("판매자 리뷰 조회")
+	class ReadSellerReview {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("페이징조건 없이 보내면 기본 값으로 조회된다")
+			public void readDefaultPagingConditionTest() {
+
+				//given
+				ReadSellerReviewRequest request = ReviewFixture.createDefaultSellerReviewRequest();
+				List<ReadSellerReviewResponse> response = ReviewFixture.create3SellerReviewResponses();
+
+				given(reviewRepository.findSellerReviewWithCursor(request)).willReturn(response);
+
+				//when
+				CursorPageResponse<ReadSellerReviewResponse> pageResponse = reviewService.readSellerReview(request);
+
+				//then
+				assertThat(pageResponse.getPageInfo().getSize()).isEqualTo(request.size());
+				assertThat(pageResponse.getPageInfo().isHasNext()).isTrue();
+				assertThat(pageResponse.getPageInfo().getNextCursorId()).isEqualTo(response.get(request.size() - 1).getReviewId());
+
+				assertThat(pageResponse.getData()).hasSize(request.size());
+				assertThat(pageResponse.getData().get(0).getReviewId()).isEqualTo(response.get(0).getReviewId());
+				assertThat(pageResponse.getData().get(1).getReviewId()).isEqualTo(response.get(1).getReviewId());
+			}
+
+			@Test
+			@DisplayName("마지막 페이지면 hasNext 가 false 이다")
+			public void lastPageHasNextFalseTest() {
+
+				//given
+				ReadSellerReviewRequest request = ReviewFixture.createFinalPageSellerReviewRequest();
+				List<ReadSellerReviewResponse> response = ReviewFixture.create4SellerReviewResponses();
+
+				given(reviewRepository.findSellerReviewWithCursor(request)).willReturn(response);
+
+				//when
+				CursorPageResponse<ReadSellerReviewResponse> pageResponse = reviewService.readSellerReview(request);
+
+				//then
+				assertThat(pageResponse.getPageInfo().getSize()).isEqualTo(request.size());
+				assertThat(pageResponse.getPageInfo().isHasNext()).isFalse();
+				assertThat(pageResponse.getPageInfo().getNextCursorId()).isNull();
+
+				assertThat(pageResponse.getData()).hasSize(request.size());
+				assertThat(pageResponse.getData().get(0).getReviewId()).isEqualTo(response.get(0).getReviewId());
+				assertThat(pageResponse.getData().get(1).getReviewId()).isEqualTo(response.get(1).getReviewId());
+				assertThat(pageResponse.getData().get(2).getReviewId()).isEqualTo(response.get(2).getReviewId());
+			}
+
+			@Test
+			@DisplayName("존재하지 않는 판매자 조회시 빈 결과를 반환한다")
+			public void nonExistentSellerReturnsEmptyTest() {
+
+				//given
+				ReadSellerReviewRequest request = ReviewFixture.createPagingSellerReviewRequest();
+				List<ReadSellerReviewResponse> response = Collections.emptyList();
+
+				given(reviewRepository.findSellerReviewWithCursor(request)).willReturn(response);
+
+				//when
+				CursorPageResponse<ReadSellerReviewResponse> pageResponse = reviewService.readSellerReview(request);
+
+				//then
+				assertThat(pageResponse.getData()).hasSize(0);
+				assertThat(pageResponse.getPageInfo().isHasNext()).isFalse();
+				assertThat(pageResponse.getPageInfo().getNextCursorId()).isNull();
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("내가 받은 리뷰 조회")
+	class ReadMyReceivedReview {
+
+		@Test
+		@DisplayName("페이징조건 없이 보내면 기본 값으로 조회된다")
+		public void readDefaultPagingConditionTest() {
+
+			//given
+			ReadMyReviewRequest request = ReviewFixture.createDefaultMyReviewRequest();
+			List<ReadMyReceivedReviewResponse> response = ReviewFixture.create3MyReceivedReviewResponses();
+
+			given(reviewRepository.findMyReceivedReviews(request)).willReturn(response);
+
+			//when
+			CursorPageResponse<ReadMyReceivedReviewResponse> pageResponse = reviewService.readMyReceivedReview(request);
+
+			//then
+			assertThat(pageResponse.getPageInfo().getSize()).isEqualTo(request.size());
+			assertThat(pageResponse.getPageInfo().isHasNext()).isTrue();
+			assertThat(pageResponse.getPageInfo().getNextCursorId()).isEqualTo(response.get(request.size() - 1).getReviewId());
+
+			assertThat(pageResponse.getData()).hasSize(request.size());
+			assertThat(pageResponse.getData().get(0).getReviewId()).isEqualTo(response.get(0).getReviewId());
+			assertThat(pageResponse.getData().get(1).getReviewId()).isEqualTo(response.get(1).getReviewId());
+		}
+
+		@Test
+		@DisplayName("마지막 페이지면 hasNext 가 false 이다")
+		public void lastPageHasNextFalseTest() {
+
+			//given
+			ReadMyReviewRequest request = ReviewFixture.createFinalPageMyReviewRequest();
+			List<ReadMyReceivedReviewResponse> response = ReviewFixture.create4MyReceivedReviewResponses();
+
+			given(reviewRepository.findMyReceivedReviews(request)).willReturn(response);
+
+			//when
+			CursorPageResponse<ReadMyReceivedReviewResponse> pageResponse = reviewService.readMyReceivedReview(request);
+
+			//then
+			assertThat(pageResponse.getPageInfo().getSize()).isEqualTo(request.size());
+			assertThat(pageResponse.getPageInfo().isHasNext()).isFalse();
+			assertThat(pageResponse.getPageInfo().getNextCursorId()).isNull();
+
+			assertThat(pageResponse.getData()).hasSize(request.size());
+			assertThat(pageResponse.getData().get(0).getReviewId()).isEqualTo(response.get(0).getReviewId());
+			assertThat(pageResponse.getData().get(1).getReviewId()).isEqualTo(response.get(1).getReviewId());
+			assertThat(pageResponse.getData().get(2).getReviewId()).isEqualTo(response.get(2).getReviewId());
+		}
+
+		@Test
+		@DisplayName("존재하지 않는 판매자 조회시 빈 결과를 반환한다")
+		public void nonExistentSellerReturnsEmptyTest() {
+
+			//given
+			ReadMyReviewRequest request = ReviewFixture.createPagingMyReviewRequest();
+			List<ReadMyReceivedReviewResponse> response = Collections.emptyList();
+
+			given(reviewRepository.findMyReceivedReviews(request)).willReturn(response);
+
+			//when
+			CursorPageResponse<ReadMyReceivedReviewResponse> pageResponse = reviewService.readMyReceivedReview(request);
+
+
+			//then
+			assertThat(pageResponse.getData()).hasSize(0);
+			assertThat(pageResponse.getPageInfo().isHasNext()).isFalse();
+			assertThat(pageResponse.getPageInfo().getNextCursorId()).isNull();
+		}
+	}
+
+	@Nested
+	@DisplayName("내가 받은 리뷰 조회")
+	class ReadMyWrittenReview {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("페이징조건 없이 보내면 기본 값으로 조회된다")
+			public void readDefaultPagingConditionTest() {
+
+				//given
+				ReadMyReviewRequest request = ReviewFixture.createDefaultMyReviewRequest();
+				List<ReadMyWrittenReviewResponse> response = ReviewFixture.create3MyWrittenReviewResponses();
+
+				given(reviewRepository.findMyWrittenReviews(request)).willReturn(response);
+
+				//when
+				CursorPageResponse<ReadMyWrittenReviewResponse> pageResponse = reviewService.readMyWrittenReview(request);
+
+				//then
+				assertThat(pageResponse.getPageInfo().getSize()).isEqualTo(request.size());
+				assertThat(pageResponse.getPageInfo().isHasNext()).isTrue();
+				assertThat(pageResponse.getPageInfo().getNextCursorId()).isEqualTo(response.get(request.size() - 1).getReviewId());
+
+				assertThat(pageResponse.getData()).hasSize(request.size());
+				assertThat(pageResponse.getData().get(0).getReviewId()).isEqualTo(response.get(0).getReviewId());
+				assertThat(pageResponse.getData().get(1).getReviewId()).isEqualTo(response.get(1).getReviewId());
+			}
+
+			@Test
+			@DisplayName("마지막 페이지면 hasNext 가 false 이다")
+			public void lastPageHasNextFalseTest() {
+
+				//given
+				ReadMyReviewRequest request = ReviewFixture.createFinalPageMyReviewRequest();
+				List<ReadMyWrittenReviewResponse> response = ReviewFixture.create4MyWrittenReviewResponses();
+
+				given(reviewRepository.findMyWrittenReviews(request)).willReturn(response);
+
+				//when
+				CursorPageResponse<ReadMyWrittenReviewResponse> pageResponse = reviewService.readMyWrittenReview(request);
+
+				//then
+				assertThat(pageResponse.getPageInfo().getSize()).isEqualTo(request.size());
+				assertThat(pageResponse.getPageInfo().isHasNext()).isFalse();
+				assertThat(pageResponse.getPageInfo().getNextCursorId()).isNull();
+
+				assertThat(pageResponse.getData()).hasSize(request.size());
+				assertThat(pageResponse.getData().get(0).getReviewId()).isEqualTo(response.get(0).getReviewId());
+				assertThat(pageResponse.getData().get(1).getReviewId()).isEqualTo(response.get(1).getReviewId());
+				assertThat(pageResponse.getData().get(2).getReviewId()).isEqualTo(response.get(2).getReviewId());
+			}
+
+			@Test
+			@DisplayName("존재하지 않는 판매자 조회시 빈 결과를 반환한다")
+			public void nonExistentSellerReturnsEmptyTest() {
+
+				//given
+				ReadMyReviewRequest request = ReviewFixture.createPagingMyReviewRequest();
+				List<ReadMyWrittenReviewResponse> response = Collections.emptyList();
+
+				given(reviewRepository.findMyWrittenReviews(request)).willReturn(response);
+
+				//when
+				CursorPageResponse<ReadMyWrittenReviewResponse> pageResponse = reviewService.readMyWrittenReview(request);
+
+
+				//then
+				assertThat(pageResponse.getData()).hasSize(0);
+				assertThat(pageResponse.getPageInfo().isHasNext()).isFalse();
+				assertThat(pageResponse.getPageInfo().getNextCursorId()).isNull();
+			}
+		}
+	}
+
+
 }
