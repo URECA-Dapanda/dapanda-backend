@@ -25,6 +25,36 @@ public class MemberFixture {
 		);
 	}
 
+	public static Member createMember3() {
+
+		return Member.ofOAuthMember(
+				"dummy3@email.com",
+				"dummy3Name",
+				OAuthProvider.KAKAO,
+				MemberRole.ROLE_MEMBER
+		);
+	}
+
+	public static Member createMember4() {
+
+		return Member.ofOAuthMember(
+				"dummy4@email.com",
+				"dummy4Name",
+				OAuthProvider.KAKAO,
+				MemberRole.ROLE_MEMBER
+		);
+	}
+
+	public static Member createMember5() {
+
+		return Member.ofOAuthMember(
+				"dummy5@email.com",
+				"dummy5Name",
+				OAuthProvider.KAKAO,
+				MemberRole.ROLE_MEMBER
+		);
+	}
+
 	public static Member createMember1WithId(Long memberId) {
 
 		Member member = createMember1();
