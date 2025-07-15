@@ -2,6 +2,7 @@ package com.dapanda.trade.entity;
 
 import com.dapanda.common.entity.CreatedAtEntity;
 import com.dapanda.member.entity.Member;
+import com.dapanda.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,19 +26,21 @@ public class Trade extends CreatedAtEntity {
 	@Enumerated(EnumType.STRING)
 	private TradeState state;
 
-	private Long productId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "product_id")
+	private Product product;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id")
 	private Member member;
 
-	public static Trade of(Float dataAmount, Integer timeAmount, int tradingPrice, Long productId, Member member) {
+	public static Trade of(Float dataAmount, Integer timeAmount, int tradingPrice, Product product, Member member) {
 
 		return Trade.builder()
 				.dataAmount(dataAmount)
 				.timeAmount(timeAmount)
 				.tradingPrice(tradingPrice)
-				.productId(productId)
+				.product(product)
 				.member(member)
 				.build();
 	}
