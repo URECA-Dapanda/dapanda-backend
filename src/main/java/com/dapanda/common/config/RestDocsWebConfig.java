@@ -9,6 +9,7 @@ public class RestDocsWebConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+
 		registry.addResourceHandler("/docs/**")
 				.addResourceLocations("classpath:/static/docs/")
 				.setCachePeriod(3600);
