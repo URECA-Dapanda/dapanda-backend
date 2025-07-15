@@ -111,7 +111,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.from(product)
 				.groupBy(product.id)
 				.join(wifi).on(wifi.id.eq(product.itemId))
-				.leftJoin(review).on(review.productId.eq(product.id))
+				.leftJoin(review).on(review.trade.product.id.eq(product.id))
 				.where(
 						gtCursorId(cursorId, product),
 						isOpenNow(isOpen, wifi, now)
