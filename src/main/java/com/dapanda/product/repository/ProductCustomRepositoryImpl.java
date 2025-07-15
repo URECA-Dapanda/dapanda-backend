@@ -1,15 +1,19 @@
 package com.dapanda.product.repository;
 
+import static com.dapanda.product.entity.QMobileData.mobileData;
+import static com.dapanda.product.entity.QProduct.product;
+import static com.dapanda.product.entity.QProductImage.productImage;
+import static com.dapanda.product.entity.QWifi.wifi;
 import static com.dapanda.review.entity.QReview.review;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
+import com.dapanda.product.dto.response.MobileDataInfoResponse;
+import com.dapanda.product.dto.response.WifiInfoResponse;
 import com.dapanda.product.entity.ProductSortOption;
-import com.dapanda.product.entity.QMobileData;
-import com.dapanda.product.entity.QProduct;
+import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.entity.QProductImage;
-import com.dapanda.product.entity.QWifi;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -40,9 +44,6 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, int size,
 			ProductSortOption productSortOption, Float dataAmount) {
 
-		QProduct product = QProduct.product;
-		QMobileData mobileData = QMobileData.mobileData;
-
 		List<MobileDataSummary> content = queryFactory
 				.select(Projections.constructor(MobileDataSummary.class,
 						product.id,
@@ -55,9 +56,9 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				))
 				.from(product)
 				.join(mobileData).on(mobileData.id.eq(product.itemId))
-				.where(
-						gtCursorId(cursorId, product),
-						eqDataAmount(dataAmount, mobileData)
+				.where(isActiveProduct(),
+						gtCursorId(cursorId),
+						eqDataAmount(dataAmount)
 				)
 				.orderBy(
 						productSortOption == ProductSortOption.PRICE_ASC ? product.price.asc() :
@@ -86,9 +87,6 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 			ProductSortOption productSortOption, boolean isOpen, Double latitude,
 			Double longitude) {
 
-		QProduct product = QProduct.product;
-		QWifi wifi = QWifi.wifi;
-		QProductImage productImage = QProductImage.productImage;
 		QProductImage productImageSub = new QProductImage("productImageSub");
 
 		LocalDateTime now = LocalDateTime.now();
@@ -124,9 +122,9 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 												.where(productImageSub.wifiId.eq(wifi.id))
 								))
 				)
-				.where(
-						gtCursorId(cursorId, product),
-						isOpenNow(isOpen, wifi, now)
+				.where(isActiveProduct(),
+						gtCursorId(cursorId),
+						isOpenNow(isOpen, now)
 				)
 				.orderBy(
 						productSortOption == ProductSortOption.PRICE_ASC ? product.price.asc() :
@@ -148,17 +146,94 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				CursorPageResponse.PageInfo.of(nextCursorId, hasNext, content.size()));
 	}
 
-	private BooleanExpression gtCursorId(Long cursorId, QProduct product) {
+	@Override
+	public MobileDataInfoResponse findMobileDataInfo(Long productId) {
+
+		return queryFactory
+				.select(Projections.constructor(MobileDataInfoResponse.class,
+						product.id,
+						mobileData.id,
+						product.price,
+						product.member.id,
+						product.member.name,
+						mobileData.remainAmount,
+						mobileData.pricePer100MB,
+						review.rating.avg().coalesce(DEFAULT_RATING),
+						review.rating.count().intValue(),
+						product.updatedAt
+				))
+				.from(product)
+				.join(mobileData).on(product.itemId.eq(mobileData.id))
+				.leftJoin(review).on(review.productId.eq(product.id))
+				.where(isActiveProduct(),
+						product.itemId.eq(mobileData.id),
+						product.id.eq(productId)
+				)
+				.groupBy(product.id, mobileData.id, product.price, product.member,
+						mobileData.remainAmount, mobileData.pricePer100MB, product.updatedAt)
+				.fetchOne();
+	}
+
+	@Override
+	public WifiInfoResponse findWifiInfo(Long productId) {
+
+		return queryFactory
+				.select(Projections.constructor(WifiInfoResponse.class,
+						product.id,
+						wifi.id,
+						product.price,
+						product.member.id,
+						product.member.name,
+						wifi.title,
+						wifi.content,
+						wifi.latitude,
+						wifi.longitude,
+						review.rating.avg().coalesce(DEFAULT_RATING),
+						review.rating.count().intValue(),
+						Expressions.nullExpression(List.class),
+						wifi.startTime,
+						wifi.endTime,
+						product.updatedAt
+				))
+				.from(product)
+				.join(wifi).on(product.itemId.eq(wifi.id))
+				.leftJoin(review).on(review.productId.eq(product.id))
+				.where(isActiveProduct(),
+						product.itemId.eq(wifi.id),
+						product.id.eq(productId)
+				)
+				.groupBy(product.id, wifi.id, product.price, product.member, wifi.title,
+						wifi.content, wifi.latitude, wifi.longitude, wifi.startTime, wifi.endTime,
+						product.updatedAt)
+				.fetchOne();
+	}
+
+	public List<String> findWifiImages(Long wifiId) {
+
+		return queryFactory
+				.select(productImage.imageUrl)
+				.from(productImage)
+				.where(productImage.wifiId.eq(wifiId))
+				.orderBy(productImage.priority.asc())
+				.fetch();
+	}
+
+	private BooleanExpression isActiveProduct() {
+
+		return product.state.eq(ProductState.ACTIVE);
+	}
+
+	private BooleanExpression gtCursorId(Long cursorId) {
 
 		return cursorId != null ? product.id.gt(cursorId) : null;
 	}
 
-	private BooleanExpression eqDataAmount(Float dataAmount, QMobileData mobileData) {
+	private BooleanExpression eqDataAmount(Float dataAmount) {
 
 		return dataAmount != null ? mobileData.remainAmount.eq(dataAmount) : null;
 	}
 
-	private BooleanExpression isOpenNow(boolean isOpen, QWifi wifi, LocalDateTime now) {
+	private BooleanExpression isOpenNow(boolean isOpen, LocalDateTime now) {
 
 		return isOpen ? wifi.startTime.loe(now).and(wifi.endTime.goe(now)) : null;
 	}

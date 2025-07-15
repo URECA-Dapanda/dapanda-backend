@@ -1,6 +1,7 @@
 package com.dapanda.product.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
@@ -8,14 +9,21 @@ import static org.mockito.BDDMockito.given;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.member.entity.Member;
+import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.WifiCursorRequest;
+import com.dapanda.product.dto.response.MobileDataInfoResponse;
+import com.dapanda.product.dto.response.WifiInfoResponse;
+import com.dapanda.product.entity.MobileData;
 import com.dapanda.product.entity.MobileDataFixture;
 import com.dapanda.product.entity.ProductSortOption;
+import com.dapanda.product.entity.Wifi;
 import com.dapanda.product.entity.WifiFixture;
 import com.dapanda.product.repository.ProductRepository;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -29,6 +37,22 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("상품 서비스 테스트")
 class ProductServiceTest {
+
+	private static final Long MEMBER_ID = 1L;
+	private static final Long PRODUCT_ID = 1L;
+	private static final float DATA_AMOUNT = 2.0F;
+	private static final float REMAIN_AMOUNT = 1.0F;
+	private static final int PRICE_PER_100MB = 300;
+	private static final int PRICE = 3000;
+	private static final String TITLE = "와이파이 팔아요";
+	private static final String CONTENT = "서울시 강남구 할리스입니다";
+	private static final double LATITUDE = 30F;
+	private static final double LONGITUDE = 126F;
+	private static final double AVERAGE_RATE = 3.5;
+	private static final int REVIEW_COUNT = 3;
+	private static final LocalDateTime START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0);
+	private static final LocalDateTime END_TIME = LocalDateTime.of(2025, 3, 4, 21, 0);
+	private static final LocalDateTime UPDATED_AT = LocalDateTime.of(2025, 3, 3, 21, 0);
 
 	@Mock
 	private ProductRepository productRepository;
@@ -46,7 +70,7 @@ class ProductServiceTest {
 
 			@Test
 			@DisplayName("RECENT 정렬로 데이터 상품 목록 조회를 성공한다")
-			void findMobileDataSortedByRecent() {
+			void findMobileDataSortedByRecentTest() {
 
 				// given
 				List<MobileDataSummary> summaries = new ArrayList<>();
@@ -72,7 +96,7 @@ class ProductServiceTest {
 
 			@Test
 			@DisplayName("PRICE_ASC 정렬로 데이터 상품 목록 조회를 성공한다")
-			void findMobileDataSortedByPriceAsc() {
+			void findMobileDataSortedByPriceAscTest() {
 
 				// given
 				List<MobileDataSummary> summaries = new ArrayList<>();
@@ -100,7 +124,7 @@ class ProductServiceTest {
 
 			@Test
 			@DisplayName("AMOUNT_ASC 정렬로 데이터 상품 목록 조회를 성공한다")
-			void findMobileDataSortedByAmountAsc() {
+			void findMobileDataSortedByAmountAscTest() {
 
 				// given
 				List<MobileDataSummary> summaries = new ArrayList<>();
@@ -137,7 +161,7 @@ class ProductServiceTest {
 
 			@Test
 			@DisplayName("AMOUNT_DESC 정렬로 데이터 상품 목록 조회를 성공한다")
-			void findMobileDataSortedByAmountDesc() {
+			void findMobileDataSortedByAmountDescTest() {
 
 				// given
 				List<MobileDataSummary> summaries = new ArrayList<>();
@@ -164,7 +188,7 @@ class ProductServiceTest {
 
 			@Test
 			@DisplayName("dataAmount 기준으로 필터링된 데이터 상품 목록 조회를 성공한다")
-			void findMobileDataFilteredByAmount() {
+			void findMobileDataFilteredByAmountTest() {
 
 				// given
 				List<MobileDataSummary> summaries = new ArrayList<>();
@@ -196,7 +220,7 @@ class ProductServiceTest {
 
 			@Test
 			@DisplayName("정렬 옵션이 유효하지 않으면 예외를 던진다")
-			void failWhenInvalidSize() {
+			void failWhenInvalidSizeTest() {
 
 				// given
 				MobileDataCursorRequest request = new MobileDataCursorRequest(null, 1, "RECENT123",
@@ -211,136 +235,195 @@ class ProductServiceTest {
 				assertEquals(ResultCode.INVALID_PRODUCT_SORT_OPTION, exception.getResultCode());
 			}
 		}
+	}
+
+	@Nested
+	@DisplayName("와이파이 상품 목록 조회")
+	class FindWifi {
 
 		@Nested
-		@DisplayName("와이파이 상품 목록 조회")
-		class FindWifi {
+		@DisplayName("성공 케이스")
+		class Success {
 
-			@Nested
-			@DisplayName("성공 케이스")
-			class Success {
+			@Test
+			@DisplayName("PRICE_ASC 정렬로 와이파이 상품 목록 조회를 성공한다")
+			void findWifiSortedByPriceAscTest() {
 
-				@Test
-				@DisplayName("PRICE_ASC 정렬로 와이파이 상품 목록 조회를 성공한다")
-				void findWifiSortedByPriceAsc() {
-
-					// given
-					List<WifiSummary> summaries = new ArrayList<>();
-					for (int i = 1; i <= 3; i++) {
-						summaries.add(
-								WifiFixture.createWifiSummary((long) i, 100 + i, (long) i,
-										"회원" + i, "상품제목" + i, 37.0 + i, 127.0 + i, i * 10.0, i));
-					}
-					CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
-							CursorPageResponse.PageInfo.of(3L, false, 3));
-
-					given(productRepository.findWifiByCursor(null, 3, ProductSortOption.PRICE_ASC,
-							true, 37.0, 127.0)).willReturn(response);
-
-					// when
-					CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
-							new WifiCursorRequest(null, 3, "PRICE_ASC", true, 37.0, 127.0));
-
-					// then
-					assertThat(result.getData()).hasSize(3);
-					assertThat(result.getData().get(0).getPrice()).isEqualTo(101);
-				}
-
-
-				@Test
-				@DisplayName("DISTANCE_ASC 정렬로 와이파이 상품 목록 조회를 성공한다")
-				void findWifiSortedByDistanceAsc() {
-
-					// given
-					List<WifiSummary> summaries = new ArrayList<>();
-					for (int i = 1; i <= 3; i++) {
-						summaries.add(WifiFixture.createWifiSummary(
-								(long) i,
-								(100 + 100 * i) * 10 * i,
-								(long) i,
-								"회원" + i,
-								"상품제목" + i,
-								37.0 + i,
-								127.0 + i,
-								i * 10.0,
-								i % 2 == 0 ? 2 : 1
-						));
-					}
-
-					CursorPageResponse<WifiSummary> response = CursorPageResponse.of(
-							summaries,
-							CursorPageResponse.PageInfo.of(3L, false, 3)
-					);
-
-					given(productRepository.findWifiByCursor(null, 2,
-							ProductSortOption.DISTANCE_ASC, true, 37.0, 127.0)).willReturn(
-							response);
-
-					// when
-					CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
-							new WifiCursorRequest(null, 2, "DISTANCE_ASC", true, 37.0, 127.0));
-
-					// then
-					assertThat(result.getData()).hasSize(3);
-					assertThat(result.getData().get(0).getDistanceKm()).isEqualTo(1.0);
-				}
-
-				@Test
-				@DisplayName("AVERAGE_RATE_DESC 정렬로 와이파이 상품 목록 조회를 성공한다")
-				void findWifiSortedByAverageRateDesc() {
-
-					// given
-					List<WifiSummary> summaries = new ArrayList<>();
-					for (int i = 3; i >= 1; i--) {
-						int idx = 4 - i;
-						summaries.add(
-								WifiFixture.createWifiSummary((long) i, 1000, (long) i,
-										"회원" + i, "상품제목" + idx, 37.0 + idx, 127.0 + idx, 5.0 - idx,
-										idx));
-					}
-					CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
-							CursorPageResponse.PageInfo.of(3L, false, 3));
-
-					given(productRepository.findWifiByCursor(null, 3,
-							ProductSortOption.AVERAGE_RATE_DESC, true, 37.0, 127.0)).willReturn(
-							response);
-
-					// when
-					CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
-							new WifiCursorRequest(null, 3, "AVERAGE_RATE_DESC", true, 37.0, 127.0));
-
-					// then
-					assertThat(result.getData()).hasSize(3);
-					assertThat(result.getData().get(0).getAverageRate()).isEqualTo(4.0);
-				}
-
-				@Test
-				@DisplayName("distanceKm 기준으로 필터링된 와이파이 상품 목록 조회를 성공한다")
-				void findWifiFilteredByDistance() {
-
-					// given
-					List<WifiSummary> summaries = new ArrayList<>();
+				// given
+				List<WifiSummary> summaries = new ArrayList<>();
+				for (int i = 1; i <= 3; i++) {
 					summaries.add(
-							new WifiSummary(1L, 1000, 1L, "회원1", "상품제목1", "imageUrl", 37.0, 127.0,
-									5, 5));
-					summaries.add(
-							new WifiSummary(2L, 2000, 2L, "회원2", "상품제목2", "imageUrl", 37.1, 127.1,
-									10, 10));
-					CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
-							CursorPageResponse.PageInfo.of(2L, false, 2));
-
-					given(productRepository.findWifiByCursor(null, 3,
-							ProductSortOption.DISTANCE_ASC, true, 37.0, 127.0)).willReturn(
-							response);
-
-					// when
-					CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
-							new WifiCursorRequest(null, 3, "DISTANCE_ASC", true, 37.0, 127.0));
-
-					// then
-					assertThat(result.getData()).hasSize(2);
-					assertThat(result.getData().get(0).getDistanceKm()).isGreaterThanOrEqualTo(5);
+							WifiFixture.createWifiSummary((long) i, 100 + i, (long) i,
+									"회원" + i, "상품제목" + i, 37.0 + i, 127.0 + i, i * 10.0, i));
 				}
+				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
+						CursorPageResponse.PageInfo.of(3L, false, 3));
+
+				given(productRepository.findWifiByCursor(null, 3, ProductSortOption.PRICE_ASC,
+						true, 37.0, 127.0)).willReturn(response);
+
+				// when
+				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
+						new WifiCursorRequest(null, 3, "PRICE_ASC", true, 37.0, 127.0));
+
+				// then
+				assertThat(result.getData()).hasSize(3);
+				assertThat(result.getData().get(0).getPrice()).isEqualTo(101);
+			}
+
+
+			@Test
+			@DisplayName("DISTANCE_ASC 정렬로 와이파이 상품 목록 조회를 성공한다")
+			void findWifiSortedByDistanceAscTest() {
+
+				// given
+				List<WifiSummary> summaries = new ArrayList<>();
+				for (int i = 1; i <= 3; i++) {
+					summaries.add(WifiFixture.createWifiSummary(
+							(long) i,
+							(100 + 100 * i) * 10 * i,
+							(long) i,
+							"회원" + i,
+							"상품제목" + i,
+							37.0 + i,
+							127.0 + i,
+							i * 10.0,
+							i % 2 == 0 ? 2 : 1
+					));
+				}
+
+				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(
+						summaries,
+						CursorPageResponse.PageInfo.of(3L, false, 3)
+				);
+
+				given(productRepository.findWifiByCursor(null, 2,
+						ProductSortOption.DISTANCE_ASC, true, 37.0, 127.0)).willReturn(
+						response);
+
+				// when
+				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
+						new WifiCursorRequest(null, 2, "DISTANCE_ASC", true, 37.0, 127.0));
+
+				// then
+				assertThat(result.getData()).hasSize(3);
+				assertThat(result.getData().get(0).getDistanceKm()).isEqualTo(1.0);
+			}
+
+			@Test
+			@DisplayName("AVERAGE_RATE_DESC 정렬로 와이파이 상품 목록 조회를 성공한다")
+			void findWifiSortedByAverageRateDescTest() {
+
+				// given
+				List<WifiSummary> summaries = new ArrayList<>();
+				for (int i = 3; i >= 1; i--) {
+					int idx = 4 - i;
+					summaries.add(
+							WifiFixture.createWifiSummary((long) i, 1000, (long) i,
+									"회원" + i, "상품제목" + idx, 37.0 + idx, 127.0 + idx, 5.0 - idx,
+									idx));
+				}
+				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
+						CursorPageResponse.PageInfo.of(3L, false, 3));
+
+				given(productRepository.findWifiByCursor(null, 3,
+						ProductSortOption.AVERAGE_RATE_DESC, true, 37.0, 127.0)).willReturn(
+						response);
+
+				// when
+				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
+						new WifiCursorRequest(null, 3, "AVERAGE_RATE_DESC", true, 37.0, 127.0));
+
+				// then
+				assertThat(result.getData()).hasSize(3);
+				assertThat(result.getData().get(0).getAverageRate()).isEqualTo(4.0);
+			}
+
+			@Test
+			@DisplayName("distanceKm 기준으로 필터링된 와이파이 상품 목록 조회를 성공한다")
+			void findWifiFilteredByDistanceTest() {
+
+				// given
+				List<WifiSummary> summaries = new ArrayList<>();
+				summaries.add(
+						new WifiSummary(1L, 1000, 1L, "회원1", "상품제목1", "imageUrl", 37.0, 127.0,
+								5, 5));
+				summaries.add(
+						new WifiSummary(2L, 2000, 2L, "회원2", "상품제목2", "imageUrl", 37.1, 127.1,
+								10, 10));
+				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
+						CursorPageResponse.PageInfo.of(2L, false, 2));
+
+				given(productRepository.findWifiByCursor(null, 3,
+						ProductSortOption.DISTANCE_ASC, true, 37.0, 127.0)).willReturn(
+						response);
+
+				// when
+				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
+						new WifiCursorRequest(null, 3, "DISTANCE_ASC", true, 37.0, 127.0));
+
+				// then
+				assertThat(result.getData()).hasSize(2);
+				assertThat(result.getData().get(0).getDistanceKm()).isGreaterThanOrEqualTo(5);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("정렬 옵션이 유효하지 않으면 예외를 던진다")
+			void failWhenInvalidSortOptionTest() {
+
+				// given
+				WifiCursorRequest request = new WifiCursorRequest(null, 1, "RECENT123",
+						true, 37.0, 127.0);
+
+				// when
+				GlobalException exception = assertThrows(GlobalException.class, () -> {
+					productService.findWifiByCursor(request);
+				});
+
+				// then
+				assertEquals(ResultCode.INVALID_PRODUCT_SORT_OPTION, exception.getResultCode());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("데이터 상품 상세 조회")
+	class FindMobileDataInfo {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("데이터 상품 상세 조회를 성공한다")
+			void findMobileDataInfoTest() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
+						REMAIN_AMOUNT, PRICE_PER_100MB);
+				MobileDataInfoResponse expectedResponse = new MobileDataInfoResponse(PRODUCT_ID,
+						mobileData.getId(), PRICE, member.getId(), member.getName(), REMAIN_AMOUNT,
+						PRICE_PER_100MB, AVERAGE_RATE, REVIEW_COUNT, UPDATED_AT);
+
+				given(productRepository.existsById(PRODUCT_ID))
+						.willReturn(true);
+				given(productRepository.findMobileDataInfo(PRODUCT_ID)).willReturn(
+						expectedResponse);
+
+				// when
+				MobileDataInfoResponse actualResponse = productService.findMobileDataInfo(
+						PRODUCT_ID);
+
+				// then
+				assertThat(actualResponse.getItemId()).isEqualTo(mobileData.getId());
+				assertThat(actualResponse.getRemainAmount()).isEqualTo(REMAIN_AMOUNT);
+				assertThat(actualResponse.getPricePer100MB()).isEqualTo(PRICE_PER_100MB);
 			}
 
 			@Nested
@@ -348,21 +431,100 @@ class ProductServiceTest {
 			class Fail {
 
 				@Test
-				@DisplayName("정렬 옵션이 유효하지 않으면 예외를 던진다")
-				void failWhenInvalidSortOption() {
+				@DisplayName("데이터 상품 상세 조회 시 상품 아이디가 존재하지 않으면 예외를 던진다")
+				void throwsExceptionWhenProductIdNotExist() {
 
 					// given
-					WifiCursorRequest request = new WifiCursorRequest(null, 1, "RECENT123",
-							true, 37.0, 127.0);
+					given(productRepository.existsById(PRODUCT_ID)).willReturn(false);
 
-					// when
-					GlobalException exception = assertThrows(GlobalException.class, () -> {
-						productService.findWifiByCursor(request);
-					});
-
-					// then
-					assertEquals(ResultCode.INVALID_PRODUCT_SORT_OPTION, exception.getResultCode());
+					// when & then
+					assertThatThrownBy(() -> productService.findMobileDataInfo(PRODUCT_ID))
+							.isInstanceOf(GlobalException.class)
+							.hasMessage(ResultCode.PRODUCT_NOT_FOUND.getMessage());
 				}
+
+				@Test
+				@DisplayName("데이터 상품 상세 조회 시 상품이 유효하지 않으면 예외를 던진다")
+				void throwsExceptionWhenProductInvalid() {
+
+					// given
+					given(productRepository.existsById(PRODUCT_ID)).willReturn(true);
+					given(productRepository.findMobileDataInfo(PRODUCT_ID)).willReturn(null);
+
+					// when & then
+					assertThatThrownBy(() -> productService.findMobileDataInfo(PRODUCT_ID))
+							.isInstanceOf(GlobalException.class)
+							.hasMessage(ResultCode.INVALID_PRODUCT.getMessage());
+				}
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("와이파이 상품 상세 조회")
+	class FindWifiInfo {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("와이파이 상품 상세 조회를 성공한다")
+			void findWifiInfoTest() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE,
+						START_TIME, END_TIME);
+				WifiInfoResponse expectedResponse = new WifiInfoResponse(PRODUCT_ID,
+						wifi.getId(), PRICE, member.getId(), member.getName(), TITLE, CONTENT,
+						LATITUDE, LONGITUDE, AVERAGE_RATE, REVIEW_COUNT, null, START_TIME, END_TIME,
+						UPDATED_AT);
+
+				given(productRepository.existsById(PRODUCT_ID))
+						.willReturn(true);
+				given(productRepository.findWifiInfo(PRODUCT_ID)).willReturn(
+						expectedResponse);
+
+				// when
+				WifiInfoResponse actualResponse = productService.findWifiInfo(PRODUCT_ID);
+
+				// then
+				assertThat(actualResponse.getItemId()).isEqualTo(wifi.getId());
+				assertThat(actualResponse.getTitle()).isEqualTo(TITLE);
+				assertThat(actualResponse.getContent()).isEqualTo(CONTENT);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("와이파이 상품 상세 조회 시 상품 아이디가 존재하지 않으면 예외를 던진다")
+			void throwsExceptionWhenProductIdNotExist() {
+
+				// given
+				given(productRepository.existsById(PRODUCT_ID)).willReturn(false);
+
+				// when & then
+				assertThatThrownBy(() -> productService.findWifiInfo(PRODUCT_ID))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.PRODUCT_NOT_FOUND.getMessage());
+			}
+
+			@Test
+			@DisplayName("데이터 상품 상세 조회 시 상품이 유효하지 않으면 예외를 던진다")
+			void throwsExceptionWhenProductInvalid() {
+
+				// given
+				given(productRepository.existsById(PRODUCT_ID)).willReturn(true);
+				given(productRepository.findWifiInfo(PRODUCT_ID)).willReturn(null);
+
+				// when & then
+				assertThatThrownBy(() -> productService.findWifiInfo(PRODUCT_ID))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.INVALID_PRODUCT.getMessage());
 			}
 		}
 	}
