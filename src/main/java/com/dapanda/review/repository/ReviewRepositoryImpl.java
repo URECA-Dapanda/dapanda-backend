@@ -48,7 +48,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 						member.name,
 						review.rating,
 						review.comment,
-						trade.tradingAmount,
+						trade.dataAmount,
+						trade.timeAmount,
 						product.itemType,
 						review.createdAt,
 						review.updatedAt
@@ -86,7 +87,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 						member.name,
 						review.rating,
 						review.comment,
-						trade.tradingAmount,
+						trade.dataAmount,
+						trade.timeAmount,
 						product.itemType,
 						review.createdAt,
 						review.updatedAt
@@ -124,7 +126,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 						member.name,
 						review.rating,
 						review.comment,
-						trade.tradingAmount,
+						trade.dataAmount,
+						trade.timeAmount,
 						product.itemType,
 						review.createdAt,
 						review.updatedAt
