@@ -44,15 +44,17 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 		return queryFactory
 				.select(Projections.constructor(ReadSellerReviewResponse.class,
 						review.id,
-						member.id,
-						member.name,
+						review.reviewer.id,
 						review.rating,
 						review.comment,
+						review.createdAt,
+						review.updatedAt,
+						member.name,
+						trade.id,
 						trade.dataAmount,
 						trade.timeAmount,
-						product.itemType,
-						review.createdAt,
-						review.updatedAt
+						product.id,
+						product.itemType
 				))
 				.from(review)
 				.join(review.reviewer, member)
@@ -83,15 +85,17 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 		return queryFactory
 				.select(Projections.constructor(ReadMyReceivedReviewResponse.class,
 						review.id,
-						member.id,
-						member.name,
+						review.reviewer.id,
 						review.rating,
 						review.comment,
+						review.createdAt,
+						review.updatedAt,
+						member.name,
+						trade.id,
 						trade.dataAmount,
 						trade.timeAmount,
-						product.itemType,
-						review.createdAt,
-						review.updatedAt
+						product.id,
+						product.itemType
 				))
 				.from(review)
 				.join(review.reviewer, member)
@@ -122,15 +126,17 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 		return queryFactory
 				.select(Projections.constructor(ReadMyWrittenReviewResponse.class,
 						review.id,
-						member.id,
-						member.name,
+						review.reviewee.id,
 						review.rating,
 						review.comment,
+						review.createdAt,
+						review.updatedAt,
+						member.name,
+						trade.id,
 						trade.dataAmount,
 						trade.timeAmount,
-						product.itemType,
-						review.createdAt,
-						review.updatedAt
+						product.id,
+						product.itemType
 				))
 				.from(review)
 				.join(review.reviewee, member)
