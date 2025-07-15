@@ -27,12 +27,7 @@ public class MemberFixture {
 
 	public static Member createMember1WithId(Long memberId) {
 
-		Member member = Member.ofOAuthMember(
-				"dummy1@email.com",
-				"dummy1Name",
-				OAuthProvider.KAKAO,
-				MemberRole.ROLE_MEMBER
-		);
+		Member member = createMember1();
 
 		ReflectionTestUtils.setField(member, "id", memberId);
 
@@ -41,12 +36,7 @@ public class MemberFixture {
 
 	public static Member createMember2WithId(Long memberId) {
 
-		Member member = Member.ofOAuthMember(
-				"dummy2@email.com",
-				"dummy2Name",
-				OAuthProvider.KAKAO,
-				MemberRole.ROLE_MEMBER
-		);
+		Member member = createMember2();
 
 		ReflectionTestUtils.setField(member, "id", memberId);
 
