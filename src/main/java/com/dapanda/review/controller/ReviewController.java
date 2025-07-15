@@ -3,8 +3,14 @@ package com.dapanda.review.controller;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.CommonResponse;
-import com.dapanda.review.dto.request.*;
-import com.dapanda.review.dto.response.*;
+import com.dapanda.review.dto.request.DeleteReviewRequest;
+import com.dapanda.review.dto.request.ReadReviewRequest;
+import com.dapanda.review.dto.request.SaveReviewRequest;
+import com.dapanda.review.dto.request.UpdateReviewRequest;
+import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
+import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
+import com.dapanda.review.dto.response.SaveReviewResponse;
+import com.dapanda.review.dto.response.UpdateReviewResponse;
 import com.dapanda.review.service.ReviewService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -29,42 +35,33 @@ public class ReviewController {
 	}
 
 	/**
-	 * 판매자가 받은 리뷰 조회
+	 * 회원이 받은 리뷰 조회
 	 */
-	@GetMapping("/reviews/seller/{memberId}")
-	public CommonResponse<CursorPageResponse<ReadSellerReviewResponse>> readSellerReview(
-			@PathVariable Long memberId,
-			@RequestParam(required = false) Long cursorId,
-			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size,
-			@RequestParam(defaultValue = "RECENT") String reviewSortOption){
-
-		ReadSellerReviewRequest request = new ReadSellerReviewRequest(cursorId, size, reviewSortOption, memberId);
-
-		return CommonResponse.success(reviewService.readSellerReview(request));
-	}
-
-	@GetMapping("/reviews/rc")
-	public CommonResponse<CursorPageResponse<ReadMyReceivedReviewResponse>> readMyReceivedReview(
-			@AuthenticationPrincipal CustomUserDetails userDetails,
+	@GetMapping("/reviews/rc/{memberId}")
+	public CommonResponse<CursorPageResponse<ReadReceivedReviewResponse>> readMyReceivedReview(
+			@PathVariable(name = "memberId") Long memberId,
 			@RequestParam(required = false) Long cursorId,
 			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size,
 			@RequestParam(defaultValue = "RECENT") String reviewSortOption) {
 
-		ReadMyReviewRequest request = new ReadMyReviewRequest(cursorId, size, reviewSortOption, userDetails.getId());
+		ReadReviewRequest request = new ReadReviewRequest(cursorId, size, reviewSortOption, memberId);
 
-		return CommonResponse.success(reviewService.readMyReceivedReview(request));
+		return CommonResponse.success(reviewService.readReceivedReview(request));
 	}
 
+	/**
+	 * 회원이 작성한 리뷰 조회
+	 */
 	@GetMapping("/reviews/wt")
-	public CommonResponse<CursorPageResponse<ReadMyWrittenReviewResponse>> readMyWrittenReview(
+	public CommonResponse<CursorPageResponse<ReadWrittenReviewResponse>> readMyWrittenReview(
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@RequestParam(required = false) Long cursorId,
 			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size,
 			@RequestParam(defaultValue = "RECENT") String reviewSortOption) {
 
-		ReadMyReviewRequest request = new ReadMyReviewRequest(cursorId, size, reviewSortOption, userDetails.getId());
+		ReadReviewRequest request = new ReadReviewRequest(cursorId, size, reviewSortOption, userDetails.getId());
 
-		return CommonResponse.success(reviewService.readMyWrittenReview(request));
+		return CommonResponse.success(reviewService.readWrittenReview(request));
 	}
 
 	@PutMapping("/reviews")
