@@ -43,6 +43,8 @@ public enum ResultCode {
 	INVALID_ITEM_TYPE(HttpStatus.BAD_REQUEST, 3001, "유효하지 않은 상품 타입입니다."),
 
 	// 거래 4000번대
+	TRADE_NOT_FOUND(HttpStatus.BAD_REQUEST, 4000, "거래 이력을 찾을 수 없습니다."),
+	OTHER_TRADE(HttpStatus.BAD_REQUEST, 4001, "다른 회원의 거래 이력입니다."),
 
 	// 결제 5000번대
 	FAIL_PAYMENT_PROCESSING(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "내부 오류로 결제 처리에 실패했습니다."),
