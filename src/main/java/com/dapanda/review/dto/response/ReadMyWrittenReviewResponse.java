@@ -16,42 +16,53 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ReadMyWrittenReviewResponse {
 
+	//Review
 	private Long reviewId;
-	private Long revieweeId;
-	private String revieweeName;
+	private Long reviewerId;
 	private Float rating;
 	private String comment;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
+	//Member
+	private String reviewerName;
+	//Trade
+	private Long tradeId;
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private Float dataAmount;
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private Integer timeAmount;
+	//Product
+	private Long productId;
 	private ItemType itemType;
-	private LocalDateTime createdAt;
-	private LocalDateTime updatedAt;
 
 	public static ReadMyWrittenReviewResponse of(
 			Long reviewId,
-			Long revieweeId,
-			String revieweeName,
+			Long reviewerId,
 			Float rating,
 			String comment,
+			LocalDateTime createdAt,
+			LocalDateTime updatedAt,
+			String reviewerName,
+			Long tradeId,
 			Float dataAmount,
 			Integer timeAmount,
-			ItemType itemType,
-			LocalDateTime createdAt,
-			LocalDateTime updatedAt) {
+			Long productId,
+			ItemType itemType
+	) {
 
 		return ReadMyWrittenReviewResponse.builder()
 				.reviewId(reviewId)
-				.revieweeId(revieweeId)
-				.revieweeName(revieweeName)
+				.reviewerId(reviewerId)
 				.rating(rating)
 				.comment(comment)
-				.dataAmount(dataAmount)
-				.timeAmount(timeAmount)
-				.itemType(itemType)
 				.createdAt(createdAt)
 				.updatedAt(updatedAt)
+				.reviewerName(reviewerName)
+				.tradeId(tradeId)
+				.dataAmount(dataAmount)
+				.timeAmount(timeAmount)
+				.productId(productId)
+				.itemType(itemType)
 				.build();
 	}
 }
