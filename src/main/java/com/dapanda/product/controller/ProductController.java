@@ -7,6 +7,7 @@ import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.WifiCursorRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
+import com.dapanda.product.dto.response.WifiInfoResponse;
 import com.dapanda.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,5 +44,12 @@ public class ProductController {
 			@PathVariable("productId") Long productId) {
 
 		return CommonResponse.success(productService.findMobileDataInfo(productId));
+	}
+
+	@GetMapping("/products/wifi/{productId}")
+	public CommonResponse<WifiInfoResponse> getWifiInfo(
+			@PathVariable("productId") Long productId) {
+
+		return CommonResponse.success(productService.findWifiInfo(productId));
 	}
 }

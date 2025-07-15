@@ -8,8 +8,10 @@ import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.WifiCursorRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
+import com.dapanda.product.dto.response.WifiInfoResponse;
 import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.product.repository.ProductRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -35,11 +37,12 @@ public class ProductService {
 
 	public MobileDataInfoResponse findMobileDataInfo(Long productId) {
 
-		MobileDataInfoResponse response = productRepository.findMobileDataInfo(productId);
-
 		if (!productRepository.existsById(productId)) {
 			throw new GlobalException(ResultCode.NOT_EXIST_PRODUCT);
 		}
+
+		MobileDataInfoResponse response = productRepository.findMobileDataInfo(productId);
+
 		if (response == null) {
 			throw new GlobalException(ResultCode.INVALID_PRODUCT);
 		}
@@ -47,5 +50,20 @@ public class ProductService {
 		return response;
 	}
 
+	public WifiInfoResponse findWifiInfo(Long productId) {
 
+		if (!productRepository.existsById(productId)) {
+			throw new GlobalException(ResultCode.NOT_EXIST_PRODUCT);
+		}
+
+		WifiInfoResponse response = productRepository.findWifiInfo(productId);
+
+		if (response == null) {
+			throw new GlobalException(ResultCode.INVALID_PRODUCT);
+		}
+
+		List<String> wifiImages = productRepository.findWifiImages(response.getItemId());
+
+		return response.withImageUrls(wifiImages);
+	}
 }

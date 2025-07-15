@@ -149,7 +149,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	@Override
 	public MobileDataInfoResponse findMobileDataInfo(Long productId) {
 
-		MobileDataInfoResponse response = queryFactory
+		return queryFactory
 				.select(Projections.constructor(MobileDataInfoResponse.class,
 						product.id,
 						mobileData.id,
@@ -171,13 +171,49 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.groupBy(product.id, mobileData.id, product.price, product.member,
 						mobileData.remainAmount, mobileData.pricePer100MB, product.updatedAt)
 				.fetchOne();
-
-		return response;
 	}
 
 	@Override
 	public WifiInfoResponse findWifiInfo(Long productId) {
-		return null;
+
+		return queryFactory
+				.select(Projections.constructor(WifiInfoResponse.class,
+						product.id,
+						wifi.id,
+						product.price,
+						product.member,
+						wifi.title,
+						wifi.content,
+						wifi.latitude,
+						wifi.longitude,
+						review.rating.avg().coalesce(DEFAULT_RATING),
+						review.rating.count().intValue(),
+						Expressions.nullExpression(List.class),
+						wifi.startTime,
+						wifi.endTime,
+						product.updatedAt
+				))
+				.from(product)
+				.join(wifi).on(product.itemId.eq(wifi.id))
+				.leftJoin(review).on(review.productId.eq(product.id))
+				.where(isActiveProduct(),
+						product.itemId.eq(wifi.id),
+						product.id.eq(productId)
+				)
+				.groupBy(product.id, wifi.id, product.price, product.member, wifi.title,
+						wifi.content, wifi.latitude, wifi.longitude, wifi.startTime, wifi.endTime,
+						product.updatedAt)
+				.fetchOne();
+	}
+
+	public List<String> findWifiImages(Long wifiId) {
+
+		return queryFactory
+				.select(productImage.imageUrl)
+				.from(productImage)
+				.where(productImage.wifiId.eq(wifiId))
+				.orderBy(productImage.priority.asc())
+				.fetch();
 	}
 
 	private BooleanExpression isActiveProduct() {
