@@ -519,3 +519,70 @@ include::{snippets}/product/get-products-wifi-size-validation-error/http-respons
 include::{snippets}/product/get-products-wifi-plan-sort-option-validation-error/http-request.adoc[]
 
 include::{snippets}/product/get-products-wifi-plan-sort-option-validation-error/http-response.adoc[]
+
+[[resources-product-get-mobile-data]]
+==== 데이터 상품 상세 조회
+
+`GET /api/products/mobile-data/{productId}`
+
+데이터 상품을 상세 조회합니다.
+
+===== 요청
+
+include::{snippets}/product/get-mobile-data-info/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/product/get-mobile-data-info/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/product/get-mobile-data-info/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 존재하지 않는 상품 아이디
+
+include::{snippets}/product/get-mobile-data-info-not-exist-product-id-error/http-request.adoc[]
+
+include::{snippets}/product/get-mobile-data-info-not-exist-product-id-error/http-response.adoc[]
+
+====== 조회 결과 없음
+
+include::{snippets}/product/get-mobile-data-info-invalid-product-error/http-request.adoc[]
+
+include::{snippets}/product/get-mobile-data-info-invalid-product-error/http-response.adoc[]
+
+[[resources-product-get-wifi]]
+==== 와이파이 상품 상세 조회
+
+`GET /api/products/wifi/{productId}`
+
+와이파이 상품을 상세 조회합니다.
+
+===== 요청
+
+include::{snippets}/product/get-wifi-info/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/product/get-wifi-info/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/product/get-wifi-info/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 존재하지 않는 상품 아이디
+
+include::{snippets}/product/get-wifi-info-not-exist-product-id-error/http-request.adoc[]
+
+include::{snippets}/product/get-wifi-info-not-exist-product-id-error/http-response.adoc[]
+
+====== 조회 결과 없음
+
+include::{snippets}/product/get-wifi-info-invalid-product-error/http-request.adoc[]
+
+include::{snippets}/product/get-wifi-info-invalid-product-error/http-response.adoc[]
+
