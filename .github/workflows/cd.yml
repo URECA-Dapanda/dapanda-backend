@@ -2,7 +2,7 @@ name: Dapanda CD
 
 on:
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: [ main, dev ]
     paths-ignore:
       - 'README.md'
 
@@ -56,8 +56,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: S3에 배포 패키지 업로드
-        run: |
-          aws s3 cp app.zip s3://${{ secrets.BUCKET_NAME }}/app.zip
+        run: aws s3 cp app.zip s3://${{ secrets.BUCKET_NAME }}/app.zip
 
       - name: 어플리케이션 리비전 등록
         run: |

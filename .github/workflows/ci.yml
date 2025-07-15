@@ -65,6 +65,6 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Gradle 빌드 only
-        run: ./gradlew clean build -x test --stacktrace
+        run: ./gradlew clean test asciidoctor bootJar --stacktrace
 
 
