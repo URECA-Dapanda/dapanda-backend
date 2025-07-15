@@ -11,21 +11,31 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
+import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
+import com.dapanda.product.dto.request.UpdateMobileDataRequest;
+import com.dapanda.product.dto.request.UpdateWifiRequest;
 import com.dapanda.product.dto.request.WifiCursorRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
+import com.dapanda.product.dto.response.UpdateMobileDataResponse;
+import com.dapanda.product.dto.response.UpdateWifiResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
 import com.dapanda.product.entity.MobileData;
 import com.dapanda.product.entity.MobileDataFixture;
+import com.dapanda.product.entity.Product;
+import com.dapanda.product.entity.ProductFixture;
 import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.product.entity.Wifi;
 import com.dapanda.product.entity.WifiFixture;
+import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
+import com.dapanda.product.repository.WifiRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -39,23 +49,46 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ProductServiceTest {
 
 	private static final Long MEMBER_ID = 1L;
+	private static final Long OTHER_MEMBER_ID = 2L;
 	private static final Long PRODUCT_ID = 1L;
+	private static final int NEW_PRICE = 9000;
+	private static final float BEFORE_DATA_AMOUNT = 1.0F;
+	private static final float BEFORE_REMAIN_AMOUNT = 1.0F;
+	private static final float CHANGED_AMOUNT = 1.0F;
+	private static final float EXCEED_CHANGED_AMOUNT = 3.0F;
+	private static final float SELLING_DATA = 1.5F;
+	private static final boolean SPLIT_TYPE = true;
 	private static final float DATA_AMOUNT = 2.0F;
 	private static final float REMAIN_AMOUNT = 1.0F;
 	private static final int PRICE_PER_100MB = 300;
 	private static final int PRICE = 3000;
 	private static final String TITLE = "와이파이 팔아요";
+	private static final String CHANGED_TITLE = "와이파이 팝니당";
 	private static final String CONTENT = "서울시 강남구 할리스입니다";
+	private static final String CHANGED_CONTENT = "서울시 강남구 할리스입니다람쥐";
 	private static final double LATITUDE = 30F;
+	private static final double CHANGED_LATITUDE = 35F;
 	private static final double LONGITUDE = 126F;
+	private static final double CHANGED_LONGITUDE = 150;
 	private static final double AVERAGE_RATE = 3.5;
 	private static final int REVIEW_COUNT = 3;
 	private static final LocalDateTime START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0);
+	private static final LocalDateTime WRONG_START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0);
 	private static final LocalDateTime END_TIME = LocalDateTime.of(2025, 3, 4, 21, 0);
+	private static final LocalDateTime WRONG_END_TIME = LocalDateTime.of(2024, 3, 4, 21, 0);
 	private static final LocalDateTime UPDATED_AT = LocalDateTime.of(2025, 3, 3, 21, 0);
 
 	@Mock
 	private ProductRepository productRepository;
+
+	@Mock
+	private MobileDataRepository mobileDataRepository;
+
+	@Mock
+	private WifiRepository wifiRepository;
+
+	@Mock
+	private MemberRepository memberRepository;
 
 	@InjectMocks
 	private ProductService productService;
@@ -525,6 +558,224 @@ class ProductServiceTest {
 				assertThatThrownBy(() -> productService.findWifiInfo(PRODUCT_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.INVALID_PRODUCT.getMessage());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("데이터 상품 수정")
+	class UpdateMobileData {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("데이터 상품 수정이 성공하면 상품 아이디를 반환한다")
+			public void updateMobileDataTest() {
+
+				// given
+				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID, NEW_PRICE,
+						CHANGED_AMOUNT, SPLIT_TYPE);
+
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
+						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB);
+				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
+						mobileData.getId(), PRICE, member);
+
+				given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
+				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+				given(mobileDataRepository.findById(mobileData.getId())).willReturn(
+						Optional.of(mobileData));
+
+				// when
+				UpdateMobileDataResponse response = productService.updateMobileData(request,
+						MEMBER_ID);
+
+				// then
+				assertThat(response.getProductId()).isEqualTo(PRODUCT_ID);
+				assertThat(product.getPrice()).isEqualTo(NEW_PRICE);
+				assertThat(mobileData.getDataAmount()).isEqualTo(
+						BEFORE_DATA_AMOUNT + CHANGED_AMOUNT);
+				assertThat(mobileData.getRemainAmount()).isEqualTo(
+						BEFORE_REMAIN_AMOUNT + CHANGED_AMOUNT);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("상품 등록자가 아닌 회원이 상품을 수정하면 예외를 던진다")
+			public void failUpdateMobileDataIfMemberIsWrongTest() throws Exception {
+
+				// given
+				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID, NEW_PRICE,
+						CHANGED_AMOUNT, SPLIT_TYPE);
+
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
+						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB);
+				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
+						mobileData.getId(), PRICE, member);
+
+				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+				given(mobileDataRepository.findById(mobileData.getId())).willReturn(
+						Optional.of(mobileData));
+
+				// when & then
+				assertThatThrownBy(() -> productService.updateMobileData(request, OTHER_MEMBER_ID))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.OTHER_PRODUCT.getMessage());
+			}
+
+			@Test
+			@DisplayName("데이터 전송량과 판매한 데이터의 합이 데이터 전송 정책을 초과할 때 예외를 던진다")
+			public void failUpdateMobileDataIfDataTransferPolicyTest() throws Exception {
+
+				// given
+				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID, NEW_PRICE,
+						EXCEED_CHANGED_AMOUNT, SPLIT_TYPE);
+
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
+						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB);
+				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
+						mobileData.getId(), PRICE, member);
+
+				given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
+				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+				given(mobileDataRepository.findById(mobileData.getId())).willReturn(
+						Optional.of(mobileData));
+
+				// when & then
+				assertThatThrownBy(() -> productService.updateMobileData(request, MEMBER_ID))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.INVALID_DATA_TRANSFER_AMOUNT.getMessage());
+			}
+
+			@Test
+			@DisplayName("데이터 전송량이 유효하지 않을 때 예외를 던진다")
+			public void failUpdateMobileDataIfDataInvalidTest() throws Exception {
+
+				// given
+				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID, NEW_PRICE,
+						CHANGED_AMOUNT, SPLIT_TYPE);
+
+				Member member = MemberFixture.createMemberWithSellingData(MEMBER_ID, SELLING_DATA);
+				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
+						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB);
+				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
+						mobileData.getId(), PRICE, member);
+
+				given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
+				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+				given(mobileDataRepository.findById(mobileData.getId())).willReturn(
+						Optional.of(mobileData));
+
+				// when & then
+				assertThatThrownBy(() -> productService.updateMobileData(request, MEMBER_ID))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.EXCEEDED_TRANSFER_LIMIT.getMessage());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("와이파이 상품 수정")
+	class UpdateWifi {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("와이파이 상품 수정이 성공하면 상품 아이디를 반환한다")
+			public void updateWifiTest() {
+
+				// given
+				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE,
+						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
+						START_TIME, END_TIME);
+
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
+						END_TIME);
+				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
+						wifi.getId(), PRICE, member);
+
+				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+				given(wifiRepository.findById(wifi.getId())).willReturn(
+						Optional.of(wifi));
+
+				// when
+				UpdateWifiResponse response = productService.updateWifi(request,
+						MEMBER_ID);
+
+				// then
+				assertThat(response.getProductId()).isEqualTo(PRODUCT_ID);
+				assertThat(product.getPrice()).isEqualTo(NEW_PRICE);
+				assertThat(wifi.getTitle()).isEqualTo(CHANGED_TITLE);
+				assertThat(wifi.getContent()).isEqualTo(CHANGED_CONTENT);
+				assertThat(wifi.getLatitude()).isEqualTo(CHANGED_LATITUDE);
+				assertThat(wifi.getLongitude()).isEqualTo(CHANGED_LONGITUDE);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("상품 등록자가 아닌 회원이 상품을 수정하면 예외를 던진다")
+			public void failUpdateWifiIfMemberIsWrongTest() throws Exception {
+
+				// given
+				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE,
+						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
+						START_TIME, END_TIME);
+
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
+						END_TIME);
+				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
+						wifi.getId(), PRICE, member);
+
+				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+				given(wifiRepository.findById(wifi.getId())).willReturn(
+						Optional.of(wifi));
+
+				// when & then
+				assertThatThrownBy(() -> productService.updateWifi(request, OTHER_MEMBER_ID))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.OTHER_PRODUCT.getMessage());
+			}
+
+			@Test
+			@DisplayName("종료 시간이 시작 시간보다 늦으면 예외를 던진다")
+			public void failUpdateWifiIfTimeIsInvalidTest() throws Exception {
+
+				// given
+				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE,
+						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
+						WRONG_START_TIME, WRONG_END_TIME);
+
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
+						END_TIME);
+				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
+						wifi.getId(), PRICE, member);
+
+				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+				given(wifiRepository.findById(wifi.getId())).willReturn(
+						Optional.of(wifi));
+
+				// when & then
+				assertThatThrownBy(() -> productService.updateWifi(request, MEMBER_ID))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.INVALID_TIME.getMessage());
 			}
 		}
 	}
