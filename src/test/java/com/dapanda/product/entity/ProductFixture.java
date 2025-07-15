@@ -37,14 +37,27 @@ public class ProductFixture {
 		);
 	}
 
-	public static Product createMobileDataProductWithId(Long productId, Long mobileDataId) {
+	public static Product createMobileDataProductInactive(int price, Long mobileDataId,
+			Member member) {
+
+		return Product.of(
+				ProductState.SOLD_OUT,
+				price,
+				mobileDataId,
+				ItemType.MOBILE_DATA,
+				member
+		);
+	}
+
+	public static Product createMobileDataProductWithId(Long productId, Long mobileDataId,
+			int price, Member member) {
 
 		Product product = Product.of(
 				ProductState.ACTIVE,
-				4000,
+				price,
 				mobileDataId,
 				ItemType.MOBILE_DATA,
-				MemberFixture.createMember1()
+				member
 		);
 
 		ReflectionTestUtils.setField(product, "id", productId);
@@ -56,6 +69,17 @@ public class ProductFixture {
 
 		return Product.of(
 				ProductState.ACTIVE,
+				price,
+				wifiId,
+				ItemType.WIFI,
+				member
+		);
+	}
+
+	public static Product createWifiProductInactive(int price, Long wifiId, Member member) {
+
+		return Product.of(
+				ProductState.SOLD_OUT,
 				price,
 				wifiId,
 				ItemType.WIFI,

@@ -6,9 +6,13 @@ import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.WifiCursorRequest;
+import com.dapanda.product.dto.response.MobileDataInfoResponse;
+import com.dapanda.product.dto.response.WifiInfoResponse;
 import com.dapanda.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,5 +37,19 @@ public class ProductController {
 			@RequestBody @Valid WifiCursorRequest request) {
 
 		return CommonResponse.success(productService.findWifiByCursor(request));
+	}
+
+	@GetMapping("/products/mobile-data/{productId}")
+	public CommonResponse<MobileDataInfoResponse> getMobileDataInfo(
+			@PathVariable("productId") Long productId) {
+
+		return CommonResponse.success(productService.findMobileDataInfo(productId));
+	}
+
+	@GetMapping("/products/wifi/{productId}")
+	public CommonResponse<WifiInfoResponse> getWifiInfo(
+			@PathVariable("productId") Long productId) {
+
+		return CommonResponse.success(productService.findWifiInfo(productId));
 	}
 }
