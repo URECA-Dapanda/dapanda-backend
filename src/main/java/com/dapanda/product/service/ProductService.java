@@ -141,8 +141,6 @@ public class ProductService {
 		validateProductState(savedProduct);
 
 		savedProduct.changeState(ProductState.DELETED);
-
-		productRepository.delete(savedProduct);
 	}
 
 	private void validateProductState(Product savedProduct) {
