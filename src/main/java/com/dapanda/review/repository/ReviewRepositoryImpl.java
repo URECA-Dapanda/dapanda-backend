@@ -1,13 +1,10 @@
 package com.dapanda.review.repository;
 
 import com.dapanda.member.entity.QMember;
-import com.dapanda.product.entity.QProduct;
 import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
 import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
-import com.dapanda.review.entity.QReview;
 import com.dapanda.review.entity.ReviewSortOption;
-import com.dapanda.trade.entity.QTrade;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -17,28 +14,24 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+import static com.dapanda.product.entity.QProduct.product;
+import static com.dapanda.review.entity.QReview.review;
+import static com.dapanda.trade.entity.QTrade.trade;
+
 @Repository
 @RequiredArgsConstructor
 public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
+
+	private final static String BUYER = "buyer";
+	private final static String SELLER = "seller";
 
 	private final JPAQueryFactory queryFactory;
 
 	@Override
 	public List<ReadReceivedReviewResponse> findReceivedReviews(ReadReviewRequest request) {
 
-		QReview review = QReview.review;
-		QMember buyer = new QMember("buyer");
-		QMember seller = new QMember("seller");
-		QTrade trade = QTrade.trade;
-		QProduct product = QProduct.product;
-
-		BooleanBuilder whereClause = new BooleanBuilder();
-
-		whereClause.and(seller.id.eq(request.memberId()));
-
-		if (request.cursorId() != null) {
-			whereClause.and(buildCursorCondition(request.cursorId(), ReviewSortOption.valueOf(request.reviewSortOption())));
-		}
+		QMember buyer = new QMember(BUYER);
+		QMember seller = new QMember(SELLER);
 
 		return queryFactory
 				.select(Projections.constructor(ReadReceivedReviewResponse.class,
@@ -57,10 +50,10 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 				))
 				.from(review)
 				.join(review.trade, trade)
-				.join(trade.member, buyer)
 				.join(trade.product, product)
+				.join(trade.member, buyer)
 				.join(product.member, seller)
-				.where(whereClause)
+				.where(buildWhereClause(request, seller))
 				.orderBy(getOrderSpecifier(ReviewSortOption.valueOf(request.reviewSortOption())))
 				.limit(request.size() + 1)
 				.fetch();
@@ -69,19 +62,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 	@Override
 	public List<ReadWrittenReviewResponse> findWrittenReviews(ReadReviewRequest request) {
 
-		QReview review = QReview.review;
-		QMember buyer = new QMember("buyer");
-		QMember seller = new QMember("seller");
-		QTrade trade = QTrade.trade;
-		QProduct product = QProduct.product;
-
-		BooleanBuilder whereClause = new BooleanBuilder();
-
-		whereClause.and(buyer.id.eq(request.memberId()));
-
-		if (request.cursorId() != null) {
-			whereClause.and(buildCursorCondition(request.cursorId(), ReviewSortOption.valueOf(request.reviewSortOption())));
-		}
+		QMember buyer = new QMember(BUYER);
+		QMember seller = new QMember(SELLER);
 
 		return queryFactory
 				.select(Projections.constructor(ReadWrittenReviewResponse.class,
@@ -103,35 +85,35 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 				.join(trade.product, product)
 				.join(trade.member, buyer)
 				.join(product.member, seller)
-				.where(whereClause)
+				.where(buildWhereClause(request, buyer))
 				.orderBy(getOrderSpecifier(ReviewSortOption.valueOf(request.reviewSortOption())))
 				.limit(request.size() + 1)
 				.fetch();
 	}
 
+	private BooleanBuilder buildWhereClause(ReadReviewRequest request, QMember member) {
+		BooleanBuilder whereClause = new BooleanBuilder();
+
+		whereClause.and(member.id.eq(request.memberId()));
+
+		if (request.cursorId() != null) {
+			whereClause.and(buildCursorCondition(request.cursorId(), ReviewSortOption.valueOf(request.reviewSortOption())));
+		}
+		return whereClause;
+	}
+
 	private BooleanBuilder buildCursorCondition(Long cursorId, ReviewSortOption sortOption) {
 
-		QReview review = QReview.review;
 		BooleanBuilder condition = new BooleanBuilder();
 
 		switch (sortOption) {
-			case RECENT:
+			case RECENT -> condition.and(review.id.lt(cursorId));
 
-				condition.and(review.id.lt(cursorId));
-				break;
+			case OLDEST -> condition.and(review.id.gt(cursorId));
 
-			case OLDEST:
+			case RATING_DESC -> {
 
-				condition.and(review.id.gt(cursorId));
-				break;
-
-			case RATING_DESC:
-
-				Float cursorRating = queryFactory
-						.select(review.rating)
-						.from(review)
-						.where(review.id.eq(cursorId))
-						.fetchOne();
+				Float cursorRating = getCursorRating(cursorId);
 
 				if (cursorRating != null) {
 					condition.and(
@@ -139,31 +121,33 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 									.or(review.rating.eq(cursorRating).and(review.id.lt(cursorId)))
 					);
 				}
-				break;
+			}
 
-			case RATING_ASC:
+			case RATING_ASC -> {
 
-				Float cursorRatingAsc = queryFactory
-						.select(review.rating)
-						.from(review)
-						.where(review.id.eq(cursorId))
-						.fetchOne();
+				Float cursorRating = getCursorRating(cursorId);
 
-				if (cursorRatingAsc != null) {
+				if (cursorRating != null) {
 					condition.and(
-							review.rating.gt(cursorRatingAsc)
-									.or(review.rating.eq(cursorRatingAsc).and(review.id.gt(cursorId)))
+							review.rating.gt(cursorRating)
+									.or(review.rating.eq(cursorRating).and(review.id.gt(cursorId)))
 					);
 				}
-				break;
+			}
 		}
 
 		return condition;
 	}
 
-	private OrderSpecifier<?>[] getOrderSpecifier(ReviewSortOption sortOption) {
+	private Float getCursorRating(Long cursorId) {
+		return queryFactory
+				.select(review.rating)
+				.from(review)
+				.where(review.id.eq(cursorId))
+				.fetchOne();
+	}
 
-		QReview review = QReview.review;
+	private OrderSpecifier<?>[] getOrderSpecifier(ReviewSortOption sortOption) {
 
 		return switch (sortOption) {
 			case RECENT -> new OrderSpecifier[]{review.createdAt.desc(), review.id.desc()};
