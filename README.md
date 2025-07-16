@@ -93,7 +93,7 @@
 
 ## 🛠️ 시스템 아키텍처
 
-<img width="1334" height="3840" alt="시스템 아키텍처" src="https://github.com/user-attachments/assets/8044193d-3a7f-48a4-afcd-c0dc214611f8" />
+<img width="1209" height="812" alt="Image" src="https://github.com/user-attachments/assets/8551c240-48dc-4fdb-a310-62ca25a16103" />
 
 ## 🧱 ERD
 
