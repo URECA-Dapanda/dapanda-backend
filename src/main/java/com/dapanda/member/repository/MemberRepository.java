@@ -21,5 +21,5 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
 	boolean existsByName(String name);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	Optional<Member> findByIdWithLock(Long id);
+	Optional<Member> findByIdForUpdate(Long id);
 }
