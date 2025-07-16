@@ -4,7 +4,7 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.report.dto.CreateReportRequest;
+import com.dapanda.report.dto.request.CreateReportRequest;
 import com.dapanda.report.entity.Report;
 import com.dapanda.report.entity.ReportTargetCategory;
 import com.dapanda.report.repository.ReportRepository;

@@ -1,4 +1,4 @@
-package com.dapanda.report.dto;
+package com.dapanda.report.dto.request;
 
 import com.dapanda.report.entity.ReportTargetCategory;
 import jakarta.validation.constraints.Max;

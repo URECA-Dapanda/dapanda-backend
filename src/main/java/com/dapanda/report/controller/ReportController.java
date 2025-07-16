@@ -2,7 +2,7 @@ package com.dapanda.report.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.CommonResponse;
-import com.dapanda.report.dto.CreateReportRequest;
+import com.dapanda.report.dto.request.CreateReportRequest;
 import com.dapanda.report.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
