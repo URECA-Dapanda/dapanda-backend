@@ -5,7 +5,6 @@ import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.CommonResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
-import com.dapanda.product.dto.request.DeleteProductRequest;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
@@ -80,12 +79,12 @@ public class ProductController {
 				productService.updateWifi(request, userDetails.getId()));
 	}
 
-	@DeleteMapping("/products")
+	@DeleteMapping("/products/{productId}")
 	public CommonResponse<Void> deleteProduct(
-			@RequestBody @Valid DeleteProductRequest request,
+			@PathVariable("productId") Long productId,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		productService.deleteProduct(request, userDetails.getId());
+		productService.deleteProduct(productId, userDetails.getId());
 
 		return CommonResponse.success(null);
 	}

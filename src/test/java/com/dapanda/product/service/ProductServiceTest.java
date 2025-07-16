@@ -12,7 +12,6 @@ import static com.dapanda.TestConstants.Product.CONTENT;
 import static com.dapanda.TestConstants.Product.DATA_AMOUNT;
 import static com.dapanda.TestConstants.Product.END_TIME;
 import static com.dapanda.TestConstants.Product.EXCEED_CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.Product.INVALID_PRODUCT_ID;
 import static com.dapanda.TestConstants.Product.LATITUDE;
 import static com.dapanda.TestConstants.Product.LONGITUDE;
 import static com.dapanda.TestConstants.Product.MEMBER_ID;
@@ -45,7 +44,6 @@ import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
-import com.dapanda.product.dto.request.DeleteProductRequest;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
@@ -802,12 +800,10 @@ class ProductServiceTest {
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						mobileData.getId(), PRICE, member);
 
-				DeleteProductRequest request = new DeleteProductRequest(PRODUCT_ID);
-
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
 
 				// when
-				productService.deleteProduct(request, MEMBER_ID);
+				productService.deleteProduct(PRODUCT_ID, MEMBER_ID);
 
 				// then
 				assertThat(product.getState()).isEqualTo(ProductState.DELETED);
@@ -829,10 +825,8 @@ class ProductServiceTest {
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						mobileData.getId(), PRICE, member);
 
-				DeleteProductRequest request = new DeleteProductRequest(INVALID_PRODUCT_ID);
-
 				// when & then
-				assertThatThrownBy(() -> productService.deleteProduct(request, MEMBER_ID))
+				assertThatThrownBy(() -> productService.deleteProduct(PRODUCT_ID, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.PRODUCT_NOT_FOUND.getMessage());
 			}
@@ -848,12 +842,10 @@ class ProductServiceTest {
 				Product product = ProductFixture.createMobileDataProductWithIdWithState(PRODUCT_ID,
 						mobileData.getId(), ProductState.DELETED, member);
 
-				DeleteProductRequest request = new DeleteProductRequest(PRODUCT_ID);
-
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
 
 				// when & then
-				assertThatThrownBy(() -> productService.deleteProduct(request, MEMBER_ID))
+				assertThatThrownBy(() -> productService.deleteProduct(PRODUCT_ID, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.ALREADY_DELETED_PRODUCT.getMessage());
 			}

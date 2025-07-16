@@ -7,7 +7,6 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
-import com.dapanda.product.dto.request.DeleteProductRequest;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
@@ -132,9 +131,9 @@ public class ProductService {
 	}
 
 	@Transactional
-	public void deleteProduct(DeleteProductRequest request, Long memberId) {
+	public void deleteProduct(Long productId, Long memberId) {
 
-		Product savedProduct = productRepository.findById(request.productId())
+		Product savedProduct = productRepository.findById(productId)
 				.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
 
 		validateProductOwner(savedProduct, memberId);

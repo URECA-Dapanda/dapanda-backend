@@ -36,6 +36,8 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -49,7 +51,6 @@ import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.product.dto.request.DeleteProductRequest;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
@@ -1066,20 +1067,18 @@ class ProductControllerTest {
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
 
-				DeleteProductRequest request = new DeleteProductRequest(product.getId());
-
 				// when & then
-				mockMvc.perform(delete("/api/products")
+				mockMvc.perform(delete("/api/products/{productId}", PRODUCT_ID)
 								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, Collections.emptyList()
 								)))
 						)
 						.andExpect(status().isOk())
 						.andDo(document("product/delete-product",
-								requestFields(
-										fieldWithPath("productId").description("상품 아이디 (필수)")
+								pathParameters(
+										parameterWithName("productId").description(
+												"삭제할 상품 아이디 (필수)")
 								)
 						));
 
@@ -1108,20 +1107,18 @@ class ProductControllerTest {
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
 
-				DeleteProductRequest request = new DeleteProductRequest(INVALID_PRODUCT_ID);
-
 				// when & then
-				mockMvc.perform(delete("/api/products")
+				mockMvc.perform(delete("/api/products/{productId}", INVALID_PRODUCT_ID)
 								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, Collections.emptyList()
 								)))
 						)
 						.andExpect(status().isBadRequest())
 						.andDo(document("product/delete-product-not-found-error",
-								requestFields(
-										fieldWithPath("productId").description("상품 아이디 (필수)")
+								pathParameters(
+										parameterWithName("productId").description(
+												"삭제할 상품 아이디 (필수)")
 								)
 						));
 			}
@@ -1142,20 +1139,18 @@ class ProductControllerTest {
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
 
-				DeleteProductRequest request = new DeleteProductRequest(product.getId());
-
 				// when & then
-				mockMvc.perform(delete("/api/products")
+				mockMvc.perform(delete("/api/products/{productId}", PRODUCT_ID)
 								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, Collections.emptyList()
 								)))
 						)
 						.andExpect(status().isBadRequest())
 						.andDo(document("product/delete-product-already-deleted-error",
-								requestFields(
-										fieldWithPath("productId").description("상품 아이디 (필수)")
+								pathParameters(
+										parameterWithName("productId").description(
+												"삭제할 상품 아이디 (필수)")
 								)
 						));
 			}
