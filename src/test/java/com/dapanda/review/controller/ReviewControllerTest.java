@@ -6,12 +6,19 @@ import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.product.entity.Product;
+import com.dapanda.product.entity.ProductFixture;
+import com.dapanda.product.repository.MobileDataRepository;
+import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.entity.ReviewFixture;
 import com.dapanda.review.repository.ReviewRepository;
+import com.dapanda.trade.entity.Trade;
+import com.dapanda.trade.entity.TradeFixture;
+import com.dapanda.trade.repository.TradeRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,20 +33,28 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
+import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_REVIEW_SORT_OPTION;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE;
+import static com.dapanda.TestConstants.Review.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -70,6 +85,12 @@ class ReviewControllerTest {
 
 	@Autowired
 	private MemberRepository memberRepository;
+	@Autowired
+	private TradeRepository tradeRepository;
+	@Autowired
+	private ProductRepository productRepository;
+	@Autowired
+	private MobileDataRepository mobileDataRepository;
 
 	@BeforeEach
 	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
@@ -91,12 +112,6 @@ class ReviewControllerTest {
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
 
-	private static final Float TEST_RATING = 3.5F;
-	private static final String TEST_COMMENT = "적당해요";
-	private static final Long TEST_PRODUCT_ID = 123L;
-	private static final Float NEW_RATING = 1.0F;
-	private static final String NEW_COMMENT = "별로에요";
-
 	@Nested
 	@DisplayName("리뷰 등록 API")
 	class SaveReview {
@@ -110,14 +125,18 @@ class ReviewControllerTest {
 			public void saveReviewTest() throws Exception {
 
 				//given
-				Member savedReviewer = memberRepository.save(MemberFixture.createMember1());
-				Member savedReviewee = memberRepository.save(MemberFixture.createMember2());
+				Member seller = memberRepository.save(MemberFixture.createMember1());
+				Member buyer = memberRepository.save(MemberFixture.createMember2());
 
-				SaveReviewRequest request = new SaveReviewRequest(savedReviewee.getId(), TEST_PRODUCT_ID, TEST_RATING, TEST_COMMENT);
+				Product product = productRepository.save(ProductFixture.createProduct1(seller));
+
+				Trade trade = tradeRepository.save(TradeFixture.createTrade1(product, buyer));
+
+				SaveReviewRequest request = new SaveReviewRequest(trade.getId(), RATING, COMMENT);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
-				given(userDetails.getId()).willReturn(savedReviewer.getId());
+				given(userDetails.getId()).willReturn(buyer.getId());
 
 				//when & then
 				mockMvc.perform(post("/api/reviews")
@@ -133,8 +152,7 @@ class ReviewControllerTest {
 						.andExpect(jsonPath("$.data.reviewId").exists())
 						.andDo(document("review/save-review",
 								requestFields(
-										fieldWithPath("revieweeId").description("리뷰 대상 회원의 아이디 (필수)"),
-										fieldWithPath("productId").description("리뷰 대상 상품의 아이디 (필수)"),
+										fieldWithPath("tradeId").description("리뷰할 판매자의 상품의 거래 아이디 (필수)"),
 										fieldWithPath("rating").description("리뷰 평점 (필수, 1.0 ~ 5.0)"),
 										fieldWithPath("comment").description("리뷰 코멘트 (필수, 최대 50자)")
 								),
@@ -149,10 +167,8 @@ class ReviewControllerTest {
 				Optional<Review> saveReview = reviewRepository.findAll().stream().findFirst();
 
 				assertThat(saveReview).isPresent();
-				assertThat(saveReview.get().getRating()).isEqualTo(TEST_RATING);
-				assertThat(saveReview.get().getComment()).isEqualTo(TEST_COMMENT);
-				assertThat(saveReview.get().getReviewer().getId()).isEqualTo(savedReviewer.getId());
-				assertThat(saveReview.get().getReviewee().getId()).isEqualTo(savedReviewee.getId());
+				assertThat(saveReview.get().getRating()).isEqualTo(request.rating());
+				assertThat(saveReview.get().getComment()).isEqualTo(request.comment());
 			}
 		}
 
@@ -165,7 +181,7 @@ class ReviewControllerTest {
 			public void validateRequiredFields() throws Exception {
 
 				// given
-				SaveReviewRequest request = new SaveReviewRequest(null, null, null,  null);
+				SaveReviewRequest request = new SaveReviewRequest(null, null, null);
 
 				// when & then
 				mockMvc.perform(post("/api/reviews")
@@ -178,6 +194,256 @@ class ReviewControllerTest {
 		}
 	}
 
+	@Nested
+	@DisplayName("회원이 받은 리뷰 조회 API")
+	class ReadSellerReview {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("기본 페이징 조건으로 회원이 받은 리뷰를 조회한다")
+			public void readReceivedReviewTest() throws Exception {
+
+				//given
+				Member seller = memberRepository.save(MemberFixture.createMember1());
+
+				List<Member> members = memberRepository.saveAll(List.of(
+						MemberFixture.createMember2(),
+						MemberFixture.createMember3(),
+						MemberFixture.createMember4(),
+						MemberFixture.createMember5()
+				));
+
+				Product product = productRepository.save(ProductFixture.createMobileDataProduct(10000, 1L, seller));
+
+				List<Trade> tradeFixtures = new ArrayList<>();
+
+				for (Member member : members) {
+					tradeFixtures.add(TradeFixture.createTrade1(product, member));
+				}
+
+				List<Trade> trades = tradeRepository.saveAll(tradeFixtures);
+
+				List<Review> reviewFixtures = new ArrayList<>();
+
+				for (Trade trade : trades) {
+					reviewFixtures.add(ReviewFixture.createReview1(trade));
+				}
+
+				List<Review> reviews = reviewRepository.saveAll(reviewFixtures);
+
+				//when & then
+				mockMvc.perform(get("/api/reviews/rc/{memberId}", seller.getId())
+								.param("size", String.valueOf(DEFAULT_SIZE))
+								.param("reviewSortOption", DEFAULT_REVIEW_SORT_OPTION))
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.data").exists())
+						.andExpect(jsonPath("$.data.data.length()").value(Math.min(DEFAULT_SIZE, reviews.size())))
+						.andExpect(jsonPath("$.data.pageInfo").exists())
+						.andExpect(jsonPath("$.data.pageInfo.hasNext").isBoolean())
+						.andExpect(jsonPath("$.data.pageInfo.size").isNumber())
+						.andExpect(jsonPath("$.data.pageInfo.nextCursorId").isNumber())
+						.andDo(document("review/read-received-review",
+								pathParameters(
+										parameterWithName("memberId").description("받은 리뷰를 조회할 회원의 아이디 (필수)")
+								),
+								queryParameters(
+										parameterWithName("cursorId").description("커서 아이디 (선택)").optional(),
+										parameterWithName("size").description("페이지 크기 (선택, 기본값 = 2, 최대 = 100)").optional(),
+										parameterWithName("reviewSortOption").description("리뷰 정렬 옵션 (선택, 기본값 = RECENT: 최신순, OLDEST: 오래된순)").optional()
+								),
+								responseFields(
+										fieldWithPath("code").description("응답 코드"),
+										fieldWithPath("message").description("응답 메시지"),
+										fieldWithPath("data").description("페이징 처리된 리뷰 데이터"),
+										// data.data[] 배열 내의 각 리뷰 객체 필드
+										fieldWithPath("data.data[]").description("조회된 리뷰 목록"),
+										fieldWithPath("data.data[].reviewId").description("리뷰 아이디"),
+										fieldWithPath("data.data[].rating").description("리뷰 평점"),
+										fieldWithPath("data.data[].comment").description("리뷰 코멘트"),
+										fieldWithPath("data.data[].createdAt").description("리뷰 생성 시간"),
+										fieldWithPath("data.data[].updatedAt").description("리뷰 최종 수정 시간"),
+										// Member 정보
+										fieldWithPath("data.data[].reviewerId").description("리뷰 작성자의 아이디"),
+										fieldWithPath("data.data[].reviewerName").description("리뷰 작성자의 이름"),
+										// Trade 정보
+										fieldWithPath("data.data[].tradeId").description("해당 리뷰가 연결된 거래 아이디"),
+										fieldWithPath("data.data[].dataAmount").description("거래된 데이터 양 (데이터 상품인 경우에만 존재)").type(JsonFieldType.NUMBER).optional(),
+										fieldWithPath("data.data[].timeAmount").description("거래된 시간 양 (시간 상품인 경우에만 존재)").type(JsonFieldType.NUMBER).optional(),
+										// Product 정보
+										fieldWithPath("data.data[].productId").description("리뷰가 작성된 상품 아이디"),
+										fieldWithPath("data.data[].itemType").description("상품 유형 (예: MOBILE_DATA, TIME 등)"),
+										// data.pageInfo 필드
+										fieldWithPath("data.pageInfo").description("페이지 정보"),
+										fieldWithPath("data.pageInfo.size").description("현재 페이지 크기"),
+										fieldWithPath("data.pageInfo.hasNext").description("다음 페이지 존재 여부"),
+										fieldWithPath("data.pageInfo.nextCursorId").description("다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)")
+								)
+						));
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("내가 받은 리뷰 조회 API")
+	class ReadMyWrittenReview {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("기본 페이징 조건으로 회원이 작성한 리뷰를 조회한다")
+			public void readWrittenReviewTest() throws Exception {
+
+				Member buyer = memberRepository.save(MemberFixture.createMember1());
+
+				List<Member> members = memberRepository.saveAll(List.of(
+						MemberFixture.createMember2(),
+						MemberFixture.createMember3(),
+						MemberFixture.createMember4(),
+						MemberFixture.createMember5()
+				));
+
+				List<Product> productFixtures = new ArrayList<>();
+
+				for (Member member : members) {
+
+					productFixtures.add(ProductFixture.createProduct1(member));
+				}
+
+				List<Product> products = productRepository.saveAll(productFixtures);
+
+				List<Trade> tradesFixture = new ArrayList<>();
+				for (Product product : products) {
+
+					tradesFixture.add(TradeFixture.createTrade1(product, buyer));
+				}
+
+				List<Trade> trades = tradeRepository.saveAll(tradesFixture);
+
+				List<Review> reviewFixtures = new ArrayList<>();
+
+				for (Trade trade : trades) {
+					reviewFixtures.add(ReviewFixture.createReview1(trade));
+				}
+
+				List<Review> reviews = reviewRepository.saveAll(reviewFixtures);
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(buyer.getId());
+
+				//when & then
+				mockMvc.perform(get("/api/reviews/wt")
+								.param("size", String.valueOf(DEFAULT_SIZE))
+								.param("reviewSortOption", DEFAULT_REVIEW_SORT_OPTION)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								))))
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.data").exists())
+						.andExpect(jsonPath("$.data.data.length()").value(Math.min(DEFAULT_SIZE, reviews.size())))
+						.andExpect(jsonPath("$.data.pageInfo").exists())
+						.andExpect(jsonPath("$.data.pageInfo.hasNext").isBoolean())
+						.andExpect(jsonPath("$.data.pageInfo.size").isNumber())
+						.andExpect(jsonPath("$.data.pageInfo.nextCursorId").isNumber())
+						.andDo(document("review/read-written-review",
+								queryParameters(
+										parameterWithName("cursorId").description("커서 아이디 (선택)").optional(),
+										parameterWithName("size").description("페이지 크기 (선택, 기본값 = 2, 최대 = 100)").optional(),
+										parameterWithName("reviewSortOption").description("리뷰 정렬 옵션 (선택, 기본값 = RECENT: 최신순, OLDEST: 오래된순)").optional()
+								),
+								responseFields(
+										fieldWithPath("code").description("응답 코드"),
+										fieldWithPath("message").description("응답 메시지"),
+										fieldWithPath("data").description("페이징 처리된 리뷰 데이터"),
+										// data.data[] 배열 내의 각 리뷰 객체 필드
+										fieldWithPath("data.data[]").description("조회된 리뷰 목록"),
+										fieldWithPath("data.data[].reviewId").description("리뷰 아이디"),
+										fieldWithPath("data.data[].rating").description("리뷰 평점"),
+										fieldWithPath("data.data[].comment").description("리뷰 코멘트"),
+										fieldWithPath("data.data[].createdAt").description("리뷰 생성 시간"),
+										fieldWithPath("data.data[].updatedAt").description("리뷰 최종 수정 시간"),
+										// Member 정보
+										fieldWithPath("data.data[].revieweeId").description("리뷰 받은 회원 아이디"),
+										fieldWithPath("data.data[].revieweeName").description("리뷰 받은 회원 이름"),
+										// Trade 정보
+										fieldWithPath("data.data[].tradeId").description("해당 리뷰가 연결된 거래 아이디"),
+										fieldWithPath("data.data[].dataAmount").description("거래된 데이터 양 (데이터 상품인 경우에만 존재)").type(JsonFieldType.NUMBER).optional(),
+										fieldWithPath("data.data[].timeAmount").description("거래된 시간 양 (시간 상품인 경우에만 존재)").type(JsonFieldType.NUMBER).optional(),
+										// Product 정보
+										fieldWithPath("data.data[].productId").description("리뷰가 작성된 상품 아이디"),
+										fieldWithPath("data.data[].itemType").description("상품 유형 (예: MOBILE_DATA, TIME 등)"),
+										// data.pageInfo 필드
+										fieldWithPath("data.pageInfo").description("페이지 정보"),
+										fieldWithPath("data.pageInfo.size").description("현재 페이지 크기"),
+										fieldWithPath("data.pageInfo.hasNext").description("다음 페이지 존재 여부"),
+										fieldWithPath("data.pageInfo.nextCursorId").description("다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)")
+								)
+						));
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("리뷰 단건 조회 API")
+	class ReadReview {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("리뷰 단건을 조회한다")
+			public void readReviewTest() throws Exception {
+
+				//given
+				Member seller = memberRepository.save(MemberFixture.createMember1());
+				Member buyer = memberRepository.save(MemberFixture.createMember2());
+
+				Product product = productRepository.save(ProductFixture.createProduct1(seller));
+
+				Trade trade = tradeRepository.save(TradeFixture.createTrade1(product, buyer));
+
+				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(buyer.getId());
+
+				//when & then
+				mockMvc.perform(get("/api/reviews/{reviewId}", review.getId())
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								))))
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.reviewId").value(review.getId()))
+						.andExpect(jsonPath("$.data.rating").value(review.getRating()))
+						.andExpect(jsonPath("$.data.comment").value(review.getComment()))
+						.andDo(document("review/read-review",
+								pathParameters(
+										parameterWithName("reviewId").description("단건 조회할 리뷰 아이디 (필수)")
+								),
+								responseFields(
+										fieldWithPath("code").description("응답 코드"),
+										fieldWithPath("message").description("응답 메시지"),
+										fieldWithPath("data.reviewId").description("리뷰 아이디"),
+										fieldWithPath("data.rating").description("리뷰 평점"),
+										fieldWithPath("data.comment").description("리뷰 코멘트")
+								)
+						));
+			}
+		}
+	}
 
 	@Nested
 	@DisplayName("리뷰 삭제 API")
@@ -192,18 +458,20 @@ class ReviewControllerTest {
 			public void deleteReviewTest() throws Exception {
 
 				//given
-				Member savedReviewer = memberRepository.save(MemberFixture.createMember1());
-				Member savedReviewee = memberRepository.save(MemberFixture.createMember2());
+				Member seller = memberRepository.save(MemberFixture.createMember1());
+				Member buyer = memberRepository.save(MemberFixture.createMember2());
 
-				Review review = ReviewFixture.createReview(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee);
+				Product product = productRepository.save(ProductFixture.createProduct1(seller));
 
-				Review savedReview = reviewRepository.save(review);
+				Trade trade = tradeRepository.save(TradeFixture.createTrade1(product, buyer));
 
-				DeleteReviewRequest request = new DeleteReviewRequest(savedReview.getId());
+				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
+
+				DeleteReviewRequest request = new DeleteReviewRequest(review.getId());
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
-				given(userDetails.getId()).willReturn(savedReviewer.getId());
+				given(userDetails.getId()).willReturn(buyer.getId());
 
 				//when & then
 				mockMvc.perform(delete("/api/reviews")
@@ -239,13 +507,9 @@ class ReviewControllerTest {
 				// given
 				DeleteReviewRequest request = new DeleteReviewRequest(null);
 
-				Member reviewer = MemberFixture.createMember1();
-
-				Member savedReviewer = memberRepository.save(reviewer);
-
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
-				given(userDetails.getId()).willReturn(savedReviewer.getId());
+				given(userDetails.getId()).willReturn(USER_DETAILS_MEMBER_ID);
 
 				// when & then
 				mockMvc.perform(delete("/api/reviews")
@@ -274,16 +538,20 @@ class ReviewControllerTest {
 			public void updateReviewTest() throws Exception {
 
 				//given
-				Member savedReviewer = memberRepository.save(MemberFixture.createMember1());
-				Member savedReviewee = memberRepository.save(MemberFixture.createMember2());
+				Member seller = memberRepository.save(MemberFixture.createMember1());
+				Member buyer = memberRepository.save(MemberFixture.createMember2());
 
-				Review review = ReviewFixture.createReview(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee);
-				Review savedReview = reviewRepository.save(review);
+				Product product = productRepository.save(ProductFixture.createProduct1(seller));
 
-				UpdateReviewRequest request = new UpdateReviewRequest(savedReview.getId(), NEW_RATING, NEW_COMMENT);
+				Trade trade = tradeRepository.save(TradeFixture.createTrade1(product, buyer));
+
+				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
+
+				UpdateReviewRequest request = new UpdateReviewRequest(review.getId(), NEW_RATING, NEW_COMMENT);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-				given(userDetails.getId()).willReturn(savedReviewer.getId());
+
+				given(userDetails.getId()).willReturn(buyer.getId());
 
 				//when & then
 				mockMvc.perform(put("/api/reviews")
@@ -296,7 +564,7 @@ class ReviewControllerTest {
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
-						.andExpect(jsonPath("$.data.reviewId").value(savedReview.getId()))
+						.andExpect(jsonPath("$.data.reviewId").value(review.getId()))
 						.andDo(document("review/update-review",
 								requestFields(
 										fieldWithPath("reviewId").description("수정할 리뷰 아이디 (필수)"),
@@ -311,10 +579,10 @@ class ReviewControllerTest {
 								))
 						);
 
-				Review updatedReview = reviewRepository.findById(savedReview.getId()).orElseThrow();
-				assertThat(updatedReview.getId()).isEqualTo(savedReview.getId());
-				assertThat(updatedReview.getRating()).isEqualTo(NEW_RATING);
-				assertThat(updatedReview.getComment()).isEqualTo(NEW_COMMENT);
+				Review updatedReview = reviewRepository.findById(review.getId()).orElseThrow();
+				assertThat(updatedReview.getId()).isEqualTo(review.getId());
+				assertThat(updatedReview.getRating()).isEqualTo(request.rating());
+				assertThat(updatedReview.getComment()).isEqualTo(request.comment());
 			}
 		}
 

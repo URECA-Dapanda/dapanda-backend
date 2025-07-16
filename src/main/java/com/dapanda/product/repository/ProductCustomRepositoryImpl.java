@@ -1,11 +1,5 @@
 package com.dapanda.product.repository;
 
-import static com.dapanda.product.entity.QMobileData.mobileData;
-import static com.dapanda.product.entity.QProduct.product;
-import static com.dapanda.product.entity.QProductImage.productImage;
-import static com.dapanda.product.entity.QWifi.wifi;
-import static com.dapanda.review.entity.QReview.review;
-
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
@@ -20,10 +14,17 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static com.dapanda.product.entity.QMobileData.mobileData;
+import static com.dapanda.product.entity.QProduct.product;
+import static com.dapanda.product.entity.QProductImage.productImage;
+import static com.dapanda.product.entity.QWifi.wifi;
+import static com.dapanda.review.entity.QReview.review;
 
 @Repository
 @RequiredArgsConstructor
@@ -112,7 +113,11 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.from(product)
 				.groupBy(product.id)
 				.join(wifi).on(wifi.id.eq(product.itemId))
-				.leftJoin(review).on(review.productId.eq(product.id))
+				.leftJoin(review).on(review.trade.product.id.eq(product.id))
+				.where(
+						gtCursorId(cursorId),
+						isOpenNow(isOpen, now)
+				)
 				.leftJoin(productImage).on(
 						productImage.wifiId.eq(wifi.id)
 								.and(productImage.priority.eq(
@@ -164,7 +169,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				))
 				.from(product)
 				.join(mobileData).on(product.itemId.eq(mobileData.id))
-				.leftJoin(review).on(review.productId.eq(product.id))
+				.leftJoin(review).on(review.trade.product.id.eq(product.id))
 				.where(isActiveProduct(),
 						product.itemId.eq(mobileData.id),
 						product.id.eq(productId)
@@ -197,7 +202,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				))
 				.from(product)
 				.join(wifi).on(product.itemId.eq(wifi.id))
-				.leftJoin(review).on(review.productId.eq(product.id))
+				.leftJoin(review).on(review.trade.product.id.eq(product.id))
 				.where(isActiveProduct(),
 						product.itemId.eq(wifi.id),
 						product.id.eq(productId)
