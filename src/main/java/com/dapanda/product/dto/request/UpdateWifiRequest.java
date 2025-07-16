@@ -9,10 +9,9 @@ public record UpdateWifiRequest(
 		@NotNull(message = "상품 아이디는 필수입니다.")
 		Long productId,
 
-		@NotNull(message = "상품 가격은 필수입니다.")
 		@Min(0)
 		int price,
-		
+
 		@NotNull(message = "상품 제목은 필수입니다.")
 		String title,
 
