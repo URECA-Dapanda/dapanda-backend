@@ -1,7 +1,6 @@
 package com.dapanda.review.controller;
 
 import com.dapanda.TestConfig;
-import com.dapanda.TestConstants;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
@@ -47,7 +46,7 @@ import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_REVIEW_SORT_OPTION;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE;
 import static com.dapanda.TestConstants.Review.*;
-import static com.dapanda.TestConstants.Trade.*;
+import static com.dapanda.TestConstants.Trade.TRADE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
