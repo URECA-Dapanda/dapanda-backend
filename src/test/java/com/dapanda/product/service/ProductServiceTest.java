@@ -120,7 +120,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new com.dapanda.product.dto.request.MobileDataCursorRequest(null, 3,
+						new MobileDataCursorRequest(null, 3,
 								"RECENT", null));
 
 				// then
@@ -146,7 +146,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new com.dapanda.product.dto.request.MobileDataCursorRequest(null, 3,
+						new MobileDataCursorRequest(null, 3,
 								"PRICE_ASC", null));
 
 				// then
@@ -183,7 +183,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new com.dapanda.product.dto.request.MobileDataCursorRequest(null, 2,
+						new MobileDataCursorRequest(null, 2,
 								"AMOUNT_ASC", 2.0F)
 				);
 
@@ -211,7 +211,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new com.dapanda.product.dto.request.MobileDataCursorRequest(null, 3,
+						new MobileDataCursorRequest(null, 3,
 								"AMOUNT_DESC", null));
 
 				// then
@@ -238,7 +238,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new com.dapanda.product.dto.request.MobileDataCursorRequest(null, 3,
+						new MobileDataCursorRequest(null, 3,
 								"AMOUNT_ASC", 5.0F));
 
 				// then
@@ -632,7 +632,7 @@ class ProductServiceTest {
 			}
 
 			@Test
-			@DisplayName("데이터 전송량과 판매한 데이터의 합이 데이터 전송 정책을 초과할 때 예외를 던진다")
+			@DisplayName("데이터 전송량과 판매한 데이터의 합이 데이터 전송 정책을 초과하면 예외를 던진다")
 			public void failUpdateMobileDataIfDataTransferPolicyTest() throws Exception {
 
 				// given
@@ -664,7 +664,8 @@ class ProductServiceTest {
 				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID, NEW_PRICE,
 						CHANGED_AMOUNT, SPLIT_TYPE);
 
-				Member member = MemberFixture.createMemberWithSellingData(MEMBER_ID, SELLING_DATA);
+				Member member = MemberFixture.createMemberWithSellingDataWithId(MEMBER_ID,
+						SELLING_DATA);
 				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
 						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
