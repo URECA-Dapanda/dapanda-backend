@@ -586,3 +586,74 @@ include::{snippets}/product/get-wifi-info-invalid-product-error/http-request.ado
 
 include::{snippets}/product/get-wifi-info-invalid-product-error/http-response.adoc[]
 
+[[resources-product-put-mobile-data]]
+==== 데이터 상품 수정
+
+`PUT /api/products/mobile-data`
+
+데이터 상품을 수정합니다.
+
+===== 요청
+
+include::{snippets}/product/put-mobile-data/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/product/put-mobile-data/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/product/put-mobile-data/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 상품을 등록하지 않은 사용자
+
+include::{snippets}/product/put-mobile-data-invalid-member-error/http-request.adoc[]
+
+include::{snippets}/product/put-mobile-data-invalid-member-error/http-response.adoc[]
+
+====== 데이터 전송 정책 초과
+
+include::{snippets}/product/put-mobile-data-invalid-data-amount-policy-error/http-request.adoc[]
+
+include::{snippets}/product/put-mobile-data-invalid-data-amount-policy-error/http-response.adoc[]
+
+====== 유효하지 않은 데이터 전송량
+
+include::{snippets}/product/put-mobile-data-exceed-data-amount-error/http-request.adoc[]
+
+include::{snippets}/product/put-mobile-data-exceed-data-amount-error/http-response.adoc[]
+
+[[resources-product-put-wifi]]
+==== 와이파이 상품 수정
+
+`PUT /api/products/wifi`
+
+와이파이 상품을 수정합니다.
+
+===== 요청
+
+include::{snippets}/product/put-wifi/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/product/put-wifi/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/product/put-wifi/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 상품을 등록하지 않은 사용자
+
+include::{snippets}/product/put-wifi-invalid-member-error/http-request.adoc[]
+
+include::{snippets}/product/put-wifi-invalid-member-error/http-response.adoc[]
+
+====== 종료 시간이 시작 시간보다 늦을 떄
+
+include::{snippets}/product/put-wifi-invalid-time-error/http-request.adoc[]
+
+include::{snippets}/product/put-wifi-invalid-time-error/http-response.adoc[]
