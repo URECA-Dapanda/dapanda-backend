@@ -5,6 +5,7 @@ import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.report.dto.request.CreateReportRequest;
+import com.dapanda.report.dto.response.CreateReportResponse;
 import com.dapanda.report.entity.Report;
 import com.dapanda.report.entity.ReportTargetCategory;
 import com.dapanda.report.repository.ReportRepository;
@@ -20,14 +21,14 @@ public class ReportService {
 	private final MemberRepository memberRepository;
 
 	@Transactional
-	public void createReport(Long targetId, Long memberId, CreateReportRequest request) {
+	public CreateReportResponse createReport(Long targetId, Long memberId, CreateReportRequest request) {
 
 		Member reporter = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
 		Report report = Report.of(request.reason(), targetId, request.targetCategory(), reporter);
 
-		reportRepository.save(report);
+		Report savedReport = reportRepository.save(report);
 
 		Long reportTargetMemberId = findReportTargetMemberId(targetId, request.targetCategory());
 
@@ -35,6 +36,8 @@ public class ReportService {
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
 		reportedMember.increaseReportedCount();
+
+		return CreateReportResponse.of(savedReport.getId());
 	}
 
 	private Long findReportTargetMemberId(Long targetId, ReportTargetCategory category) {
