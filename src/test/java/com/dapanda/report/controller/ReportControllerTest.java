@@ -10,10 +10,6 @@ import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductFixture;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.report.dto.request.CreateReportRequest;
-import com.dapanda.report.entity.Report;
-import com.dapanda.report.entity.ReportFixture;
-import com.dapanda.report.entity.ReportTargetCategory;
-import com.dapanda.report.repository.ReportRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,8 +70,6 @@ class ReportControllerTest {
 
 	@Autowired
 	private ProductRepository productRepository;
-	@Autowired
-	private ReportRepository reportRepository;
 
 
 	@BeforeEach
@@ -92,8 +86,9 @@ class ReportControllerTest {
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
 
-		jdbcTemplate.execute("TRUNCATE TABLE review");
 		jdbcTemplate.execute("TRUNCATE TABLE member");
+		jdbcTemplate.execute("TRUNCATE TABLE product");
+		jdbcTemplate.execute("TRUNCATE TABLE report");
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
@@ -169,10 +164,6 @@ class ReportControllerTest {
 
 				Product product = productRepository.save(ProductFixture.createProduct1(reportedMember));
 
-				Report report = ReportFixture.createReportFromProduct1(product, ReportTargetCategory.PRODUCT, reporter);
-
-				reportRepository.save(report);
-
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
 				given(userDetails.getId()).willReturn(reporter.getId());
@@ -185,8 +176,8 @@ class ReportControllerTest {
 										userDetails, null, Collections.emptyList()
 								)))
 						)
-						.andExpect(status().isConflict())
-						.andDo(document("review/create-report/duple-error"));
+						.andExpect(status().isBadRequest())
+						.andDo(document("report/create-report/duple-error"));
 			}
 
 			@Test
@@ -214,7 +205,7 @@ class ReportControllerTest {
 								)))
 						)
 						.andExpect(status().isBadRequest())
-						.andDo(document("review/create-report/validation-error"));
+						.andDo(document("report/create-report/validation-error"));
 			}
 		}
 	}
