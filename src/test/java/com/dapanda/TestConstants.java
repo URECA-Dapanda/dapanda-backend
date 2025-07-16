@@ -30,6 +30,8 @@ public final class TestConstants {
 
 	public static final class Report {
 
+		public static final Long REPORT_ID = 1L;
+		public static final Long TARGET_ID = 1L;
 		public static final String REASON = "너무 비싸요";
 		public static final ReportTargetCategory REPORT_TARGET_CATEGORY_PRODUCT = ReportTargetCategory.PRODUCT;
 	}
