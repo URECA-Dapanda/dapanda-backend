@@ -58,6 +58,11 @@ jobs:
           echo "📦 Contents under docs/ in app.jar:"
           jar tf app.jar | grep 'docs/' || echo "  (docs/ 디렉터리가 없습니다)"
 
+      - name: List Asciidoctor output
+        run: |
+          echo "▶ build/asciidoctor/html5 내부 목록:"
+          ls -R build/asciidoctor/html5 || echo "(html5 디렉터리가 없습니다)"
+
       - name: 배포 패키지 압축(zip)
         run: |
           zip -r app.zip app.jar appspec.yml scripts/
