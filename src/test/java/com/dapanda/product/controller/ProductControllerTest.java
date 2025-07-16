@@ -70,7 +70,6 @@ import org.springframework.web.context.WebApplicationContext;
 @DisplayName("상품 컨트롤러 테스트")
 class ProductControllerTest {
 
-	private static final Long MEMBER_ID = 1L;
 	private static final Long PRODUCT_ID = 1L;
 	private static final Long INVALID_PRODUCT_ID = 100L;
 	private static final float DATA_AMOUNT = 1.0F;
@@ -85,16 +84,12 @@ class ProductControllerTest {
 	private static final double CHANGED_LATITUDE = 35F;
 	private static final double LONGITUDE = 126F;
 	private static final double CHANGED_LONGITUDE = 150;
-	private static final double AVERAGE_RATE = 3.5;
-	private static final int REVIEW_COUNT = 3;
 	private static final LocalDateTime START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0);
 	private static final LocalDateTime WRONG_START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0);
 	private static final LocalDateTime END_TIME = LocalDateTime.of(2025, 3, 4, 21, 0);
 	private static final LocalDateTime WRONG_END_TIME = LocalDateTime.of(2024, 3, 4, 21, 0);
-	private static final LocalDateTime UPDATED_AT = LocalDateTime.of(2025, 3, 3, 21, 0, 0);
 	private static final String IMAGE_URL_1 = "image1";
 	private static final String IMAGE_URL_2 = "image2";
-	private static final Long OTHER_MEMBER_ID = 2L;
 	private static final int NEW_PRICE = 9000;
 	private static final float BEFORE_DATA_AMOUNT = 1.0F;
 	private static final float BEFORE_REMAIN_AMOUNT = 1.0F;
