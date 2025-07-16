@@ -5,10 +5,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record SaveReviewRequest(
-
-		@NotNull(message = "거래 아이디는 필수입니다.")
-		Long tradeId,
+public record CreateReviewRequest(
 
 		@NotNull(message = "평점은 필수입니다.")
 		@DecimalMin(value = "1.0", message = "평점은 1.0 이상이어야 합니다.")

@@ -23,17 +23,15 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
-import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductFixture;
-import com.dapanda.review.dto.request.DeleteReviewRequest;
+import com.dapanda.review.dto.request.CreateReviewRequest;
 import com.dapanda.review.dto.request.ReadReviewRequest;
-import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
+import com.dapanda.review.dto.response.CreateReviewResponse;
 import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
 import com.dapanda.review.dto.response.ReadReviewResponse;
 import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
-import com.dapanda.review.dto.response.SaveReviewResponse;
 import com.dapanda.review.dto.response.UpdateReviewResponse;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.entity.ReviewFixture;
@@ -55,9 +53,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("리뷰 서비스 테스트")
 class ReviewServiceTest {
-
-	@Mock
-	MemberRepository memberRepository;
 
 	@Mock
 	ReviewRepository reviewRepository;
@@ -89,17 +84,17 @@ class ReviewServiceTest {
 				Trade savedTrade = TradeFixture.createTrade1WithId(savedProduct, savedBuyer,
 						TRADE_ID);
 
-				SaveReviewRequest request = new SaveReviewRequest(savedTrade.getId(), RATING,
-						COMMENT);
+				CreateReviewRequest request = new CreateReviewRequest(RATING, COMMENT);
 
 				Review savedReview = ReviewFixture.createReview1WithId(savedTrade, REVIEW_ID);
 
-				given(tradeRepository.findById(request.tradeId())).willReturn(
+				given(tradeRepository.findById(savedTrade.getId())).willReturn(
 						Optional.of(savedTrade));
 				given(reviewRepository.save(any(Review.class))).willReturn(savedReview);
 
 				//when
-				SaveReviewResponse response = reviewService.saveReview(request, BUYER_MEMBER_ID);
+				CreateReviewResponse response = reviewService.createReview(savedTrade.getId(),
+						request, BUYER_MEMBER_ID);
 
 				//then
 				assertThat(response.getReviewId()).isEqualTo(savedReview.getId());
@@ -117,12 +112,13 @@ class ReviewServiceTest {
 			public void selfReviewTest() {
 
 				//given
-				SaveReviewRequest request = new SaveReviewRequest(TRADE_ID, RATING, COMMENT);
+				CreateReviewRequest request = new CreateReviewRequest(RATING, COMMENT);
 
-				given(tradeRepository.findById(request.tradeId())).willReturn(Optional.empty());
+				given(tradeRepository.findById(TRADE_ID)).willReturn(Optional.empty());
 
 				//when & then
-				assertThatThrownBy(() -> reviewService.saveReview(request, USER_DETAILS_MEMBER_ID))
+				assertThatThrownBy(
+						() -> reviewService.createReview(TRADE_ID, request, USER_DETAILS_MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.TRADE_NOT_FOUND.getMessage());
 
@@ -134,7 +130,7 @@ class ReviewServiceTest {
 			public void memberNotFoundTest() {
 
 				//given
-				SaveReviewRequest request = new SaveReviewRequest(TRADE_ID, RATING, COMMENT);
+				CreateReviewRequest request = new CreateReviewRequest(RATING, COMMENT);
 
 				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
 				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
@@ -142,10 +138,11 @@ class ReviewServiceTest {
 
 				Trade trade = TradeFixture.createTrade1WithId(product, buyer, TRADE_ID);
 
-				given(tradeRepository.findById(request.tradeId())).willReturn(Optional.of(trade));
+				given(tradeRepository.findById(TRADE_ID)).willReturn(Optional.of(trade));
 
 				//when & then
-				assertThatThrownBy(() -> reviewService.saveReview(request, USER_DETAILS_MEMBER_ID))
+				assertThatThrownBy(
+						() -> reviewService.createReview(TRADE_ID, request, USER_DETAILS_MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.OTHER_TRADE.getMessage());
 
@@ -167,8 +164,6 @@ class ReviewServiceTest {
 			public void deleteReviewTest() {
 
 				//given
-				DeleteReviewRequest request = new DeleteReviewRequest(REVIEW_ID);
-
 				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
 				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
 
@@ -176,13 +171,12 @@ class ReviewServiceTest {
 
 				Trade trade = TradeFixture.createTrade1WithId(product, buyer, TRADE_ID);
 
-				Review review = ReviewFixture.createReview1WithId(trade, request.reviewId());
+				Review review = ReviewFixture.createReview1WithId(trade, REVIEW_ID);
 
-				given(reviewRepository.findById(request.reviewId())).willReturn(
-						Optional.of(review));
+				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
 
 				//when
-				reviewService.deleteReview(request, buyer.getId());
+				reviewService.deleteReview(REVIEW_ID, buyer.getId());
 
 				//then
 				verify(reviewRepository).delete(review);
@@ -198,13 +192,11 @@ class ReviewServiceTest {
 			public void reviewNotFoundTest() {
 
 				//given
-				DeleteReviewRequest request = new DeleteReviewRequest(REVIEW_ID);
-
 				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.empty());
 
 				//when & then
 				assertThatThrownBy(
-						() -> reviewService.deleteReview(request, USER_DETAILS_MEMBER_ID))
+						() -> reviewService.deleteReview(REVIEW_ID, USER_DETAILS_MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.REVIEW_NOT_FOUND.getMessage());
 			}
@@ -214,8 +206,6 @@ class ReviewServiceTest {
 			public void reviewOwnerTest() {
 
 				//given
-				DeleteReviewRequest request = new DeleteReviewRequest(REVIEW_ID);
-
 				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
 				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
 
@@ -223,14 +213,13 @@ class ReviewServiceTest {
 
 				Trade trade = TradeFixture.createTrade1WithId(product, buyer, TRADE_ID);
 
-				Review review = ReviewFixture.createReview1WithId(trade, request.reviewId());
+				Review review = ReviewFixture.createReview1WithId(trade, REVIEW_ID);
 
-				given(reviewRepository.findById(request.reviewId())).willReturn(
-						Optional.of(review));
+				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
 
 				//when & then
 				assertThatThrownBy(
-						() -> reviewService.deleteReview(request, USER_DETAILS_MEMBER_ID))
+						() -> reviewService.deleteReview(REVIEW_ID, USER_DETAILS_MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.OTHER_REVIEW.getMessage());
 			}
@@ -250,7 +239,7 @@ class ReviewServiceTest {
 			public void updateReviewTest() {
 
 				//given
-				UpdateReviewRequest request = new UpdateReviewRequest(REVIEW_ID, RATING, COMMENT);
+				UpdateReviewRequest request = new UpdateReviewRequest(RATING, COMMENT);
 
 				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
 				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
@@ -259,14 +248,13 @@ class ReviewServiceTest {
 
 				Trade trade = TradeFixture.createTrade1WithId(product, buyer, TRADE_ID);
 
-				Review originalReview = ReviewFixture.createReview1WithId(trade,
-						request.reviewId());
+				Review originalReview = ReviewFixture.createReview1WithId(trade, REVIEW_ID);
 
-				given(reviewRepository.findById(request.reviewId())).willReturn(
-						Optional.of(originalReview));
+				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(originalReview));
 
 				//when
-				UpdateReviewResponse response = reviewService.updateReview(request, buyer.getId());
+				UpdateReviewResponse response = reviewService.updateReview(REVIEW_ID, request,
+						buyer.getId());
 
 				//then
 				assertThat(response.getReviewId()).isEqualTo(originalReview.getId());
@@ -282,17 +270,17 @@ class ReviewServiceTest {
 			public void reviewNotFoundTest() {
 
 				//given
-				UpdateReviewRequest request = new UpdateReviewRequest(REVIEW_ID, RATING, COMMENT);
+				UpdateReviewRequest request = new UpdateReviewRequest(RATING, COMMENT);
 
-				given(reviewRepository.findById(request.reviewId())).willReturn(Optional.empty());
+				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.empty());
 
 				//when & then
-				assertThatThrownBy(
-						() -> reviewService.updateReview(request, USER_DETAILS_MEMBER_ID))
+				assertThatThrownBy(() -> reviewService.updateReview(REVIEW_ID, request,
+						USER_DETAILS_MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.REVIEW_NOT_FOUND.getMessage());
 
-				verify(reviewRepository).findById(request.reviewId());
+				verify(reviewRepository).findById(REVIEW_ID);
 			}
 
 			@Test
@@ -300,7 +288,7 @@ class ReviewServiceTest {
 			public void reviewOwnerTest() {
 
 				//given
-				UpdateReviewRequest request = new UpdateReviewRequest(REVIEW_ID, RATING, COMMENT);
+				UpdateReviewRequest request = new UpdateReviewRequest(RATING, COMMENT);
 
 				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
 				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
@@ -309,14 +297,13 @@ class ReviewServiceTest {
 
 				Trade trade = TradeFixture.createTrade1WithId(product, buyer, TRADE_ID);
 
-				Review review = ReviewFixture.createReview1WithId(trade, request.reviewId());
+				Review review = ReviewFixture.createReview1WithId(trade, REVIEW_ID);
 
-				given(reviewRepository.findById(request.reviewId())).willReturn(
-						Optional.of(review));
+				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
 
 				//when & then
-				assertThatThrownBy(
-						() -> reviewService.updateReview(request, USER_DETAILS_MEMBER_ID))
+				assertThatThrownBy(() -> reviewService.updateReview(REVIEW_ID, request,
+						USER_DETAILS_MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.OTHER_REVIEW.getMessage());
 			}

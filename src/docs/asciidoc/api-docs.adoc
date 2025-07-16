@@ -217,33 +217,37 @@ include::{snippets}/review/read-written-review/response-fields.adoc[]
 
 `POST` 요청을 사용하여 새로운 리뷰를 등록할 수 있습니다.
 
+include::{snippets}/review/create-review/path-parameters.adoc[]
+
 ===== 요청
 
-include::{snippets}/review/save-review/http-request.adoc[]
+include::{snippets}/review/create-review/http-request.adoc[]
 
 ===== 요청 필드
 
-include::{snippets}/review/save-review/request-fields.adoc[]
+include::{snippets}/review/create-review/request-fields.adoc[]
 
 ===== 응답
 
-include::{snippets}/review/save-review/http-response.adoc[]
+include::{snippets}/review/create-review/http-response.adoc[]
 
 ===== 응답 필드
 
-include::{snippets}/review/save-review/response-fields.adoc[]
+include::{snippets}/review/create-review/response-fields.adoc[]
 
 ===== 실패 요청
 
 ====== 필수 필드 누락
 
-include::{snippets}/review/save-review-validation-error/http-request.adoc[]
+include::{snippets}/review/create-review/validation-error/http-request.adoc[]
 
-include::{snippets}/review/save-review-validation-error/http-response.adoc[]
+include::{snippets}/review/create-review/validation-error/http-response.adoc[]
 
 ==== 리뷰 수정
 
-`PUT` 요청을 사용하여 리뷰를 수정할 수 있습니다.
+`PATCH` 요청을 사용하여 리뷰를 수정할 수 있습니다.
+
+include::{snippets}/review/update-review/path-parameters.adoc[]
 
 ===== 요청
 
@@ -272,6 +276,8 @@ include::{snippets}/review/update-review-validation-error/http-response.adoc[]
 ==== 리뷰 삭제
 
 `DELETE` 요청을 사용하여 리뷰를 삭제할 수 있습니다.
+
+include::{snippets}/review/delete-review/path-parameters.adoc[]
 
 ===== 요청
 
