@@ -61,6 +61,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 		response.addCookie(cookie);
 
-		response.sendRedirect("/"); // 클라이언트 페이지
+		response.sendRedirect("https://dapanda.org/data"); // 클라이언트 페이지
 	}
 }
