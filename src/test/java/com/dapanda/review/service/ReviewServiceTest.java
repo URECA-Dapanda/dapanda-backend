@@ -1,5 +1,23 @@
 package com.dapanda.review.service;
 
+import static com.dapanda.TestConstants.Member.BUYER_MEMBER_ID;
+import static com.dapanda.TestConstants.Member.SELLER_MEMBER_ID;
+import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_REVIEW_SORT_OPTION;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE;
+import static com.dapanda.TestConstants.Product.PRODUCT_ID;
+import static com.dapanda.TestConstants.Review.COMMENT;
+import static com.dapanda.TestConstants.Review.RATING;
+import static com.dapanda.TestConstants.Review.REVIEW_ID;
+import static com.dapanda.TestConstants.Trade.TRADE_ID;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
@@ -12,13 +30,20 @@ import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.dto.response.*;
+import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
+import com.dapanda.review.dto.response.ReadReviewResponse;
+import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
+import com.dapanda.review.dto.response.SaveReviewResponse;
+import com.dapanda.review.dto.response.UpdateReviewResponse;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.entity.ReviewFixture;
 import com.dapanda.review.repository.ReviewRepository;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeFixture;
 import com.dapanda.trade.repository.TradeRepository;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,22 +51,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import static com.dapanda.TestConstants.Member.*;
-import static com.dapanda.TestConstants.Pagination.*;
-import static com.dapanda.TestConstants.Product.PRODUCT_ID;
-import static com.dapanda.TestConstants.Review.*;
-import static com.dapanda.TestConstants.Trade.TRADE_ID;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("리뷰 서비스 테스트")
@@ -77,13 +86,16 @@ class ReviewServiceTest {
 
 				Product savedProduct = ProductFixture.createProduct1WithId(savedSeller, PRODUCT_ID);
 
-				Trade savedTrade = TradeFixture.createTrade1WithId(savedProduct, savedBuyer, TRADE_ID);
+				Trade savedTrade = TradeFixture.createTrade1WithId(savedProduct, savedBuyer,
+						TRADE_ID);
 
-				SaveReviewRequest request = new SaveReviewRequest(savedTrade.getId(), RATING, COMMENT);
+				SaveReviewRequest request = new SaveReviewRequest(savedTrade.getId(), RATING,
+						COMMENT);
 
 				Review savedReview = ReviewFixture.createReview1WithId(savedTrade, REVIEW_ID);
 
-				given(tradeRepository.findById(request.tradeId())).willReturn(Optional.of(savedTrade));
+				given(tradeRepository.findById(request.tradeId())).willReturn(
+						Optional.of(savedTrade));
 				given(reviewRepository.save(any(Review.class))).willReturn(savedReview);
 
 				//when
@@ -166,7 +178,8 @@ class ReviewServiceTest {
 
 				Review review = ReviewFixture.createReview1WithId(trade, request.reviewId());
 
-				given(reviewRepository.findById(request.reviewId())).willReturn(Optional.of(review));
+				given(reviewRepository.findById(request.reviewId())).willReturn(
+						Optional.of(review));
 
 				//when
 				reviewService.deleteReview(request, buyer.getId());
@@ -190,7 +203,8 @@ class ReviewServiceTest {
 				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.empty());
 
 				//when & then
-				assertThatThrownBy(() -> reviewService.deleteReview(request, USER_DETAILS_MEMBER_ID))
+				assertThatThrownBy(
+						() -> reviewService.deleteReview(request, USER_DETAILS_MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.REVIEW_NOT_FOUND.getMessage());
 			}
@@ -211,10 +225,12 @@ class ReviewServiceTest {
 
 				Review review = ReviewFixture.createReview1WithId(trade, request.reviewId());
 
-				given(reviewRepository.findById(request.reviewId())).willReturn(Optional.of(review));
+				given(reviewRepository.findById(request.reviewId())).willReturn(
+						Optional.of(review));
 
 				//when & then
-				assertThatThrownBy(() -> reviewService.deleteReview(request, USER_DETAILS_MEMBER_ID))
+				assertThatThrownBy(
+						() -> reviewService.deleteReview(request, USER_DETAILS_MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.OTHER_REVIEW.getMessage());
 			}
@@ -243,9 +259,11 @@ class ReviewServiceTest {
 
 				Trade trade = TradeFixture.createTrade1WithId(product, buyer, TRADE_ID);
 
-				Review originalReview = ReviewFixture.createReview1WithId(trade, request.reviewId());
+				Review originalReview = ReviewFixture.createReview1WithId(trade,
+						request.reviewId());
 
-				given(reviewRepository.findById(request.reviewId())).willReturn(Optional.of(originalReview));
+				given(reviewRepository.findById(request.reviewId())).willReturn(
+						Optional.of(originalReview));
 
 				//when
 				UpdateReviewResponse response = reviewService.updateReview(request, buyer.getId());
@@ -269,7 +287,8 @@ class ReviewServiceTest {
 				given(reviewRepository.findById(request.reviewId())).willReturn(Optional.empty());
 
 				//when & then
-				assertThatThrownBy(() -> reviewService.updateReview(request, USER_DETAILS_MEMBER_ID))
+				assertThatThrownBy(
+						() -> reviewService.updateReview(request, USER_DETAILS_MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.REVIEW_NOT_FOUND.getMessage());
 
@@ -292,10 +311,12 @@ class ReviewServiceTest {
 
 				Review review = ReviewFixture.createReview1WithId(trade, request.reviewId());
 
-				given(reviewRepository.findById(request.reviewId())).willReturn(Optional.of(review));
+				given(reviewRepository.findById(request.reviewId())).willReturn(
+						Optional.of(review));
 
 				//when & then
-				assertThatThrownBy(() -> reviewService.updateReview(request, USER_DETAILS_MEMBER_ID))
+				assertThatThrownBy(
+						() -> reviewService.updateReview(request, USER_DETAILS_MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.OTHER_REVIEW.getMessage());
 			}
@@ -323,16 +344,20 @@ class ReviewServiceTest {
 			given(reviewRepository.findReceivedReviews(request)).willReturn(response);
 
 			//when
-			CursorPageResponse<ReadReceivedReviewResponse> pageResponse = reviewService.readReceivedReview(request);
+			CursorPageResponse<ReadReceivedReviewResponse> pageResponse = reviewService.readReceivedReview(
+					request);
 
 			//then
 			assertThat(pageResponse.getPageInfo().getSize()).isEqualTo(request.size());
 			assertThat(pageResponse.getPageInfo().isHasNext()).isTrue();
-			assertThat(pageResponse.getPageInfo().getNextCursorId()).isEqualTo(response.get(request.size() - 1).getReviewId());
+			assertThat(pageResponse.getPageInfo().getNextCursorId()).isEqualTo(
+					response.get(request.size() - 1).getReviewId());
 
 			assertThat(pageResponse.getData()).hasSize(request.size());
-			assertThat(pageResponse.getData().get(0).getReviewId()).isEqualTo(response.get(0).getReviewId());
-			assertThat(pageResponse.getData().get(1).getReviewId()).isEqualTo(response.get(1).getReviewId());
+			assertThat(pageResponse.getData().get(0).getReviewId()).isEqualTo(
+					response.get(0).getReviewId());
+			assertThat(pageResponse.getData().get(1).getReviewId()).isEqualTo(
+					response.get(1).getReviewId());
 		}
 
 		@Test
@@ -352,7 +377,8 @@ class ReviewServiceTest {
 			given(reviewRepository.findReceivedReviews(request)).willReturn(response);
 
 			//when
-			CursorPageResponse<ReadReceivedReviewResponse> pageResponse = reviewService.readReceivedReview(request);
+			CursorPageResponse<ReadReceivedReviewResponse> pageResponse = reviewService.readReceivedReview(
+					request);
 
 			//then
 			assertThat(pageResponse.getPageInfo().getSize()).isEqualTo(request.size());
@@ -360,9 +386,12 @@ class ReviewServiceTest {
 			assertThat(pageResponse.getPageInfo().getNextCursorId()).isNull();
 
 			assertThat(pageResponse.getData()).hasSize(request.size());
-			assertThat(pageResponse.getData().get(0).getReviewId()).isEqualTo(response.get(0).getReviewId());
-			assertThat(pageResponse.getData().get(1).getReviewId()).isEqualTo(response.get(1).getReviewId());
-			assertThat(pageResponse.getData().get(2).getReviewId()).isEqualTo(response.get(2).getReviewId());
+			assertThat(pageResponse.getData().get(0).getReviewId()).isEqualTo(
+					response.get(0).getReviewId());
+			assertThat(pageResponse.getData().get(1).getReviewId()).isEqualTo(
+					response.get(1).getReviewId());
+			assertThat(pageResponse.getData().get(2).getReviewId()).isEqualTo(
+					response.get(2).getReviewId());
 		}
 
 		@Test
@@ -382,7 +411,8 @@ class ReviewServiceTest {
 			given(reviewRepository.findReceivedReviews(request)).willReturn(response);
 
 			//when
-			CursorPageResponse<ReadReceivedReviewResponse> pageResponse = reviewService.readReceivedReview(request);
+			CursorPageResponse<ReadReceivedReviewResponse> pageResponse = reviewService.readReceivedReview(
+					request);
 
 			//then
 			assertThat(pageResponse.getData()).hasSize(0);
@@ -416,16 +446,20 @@ class ReviewServiceTest {
 				given(reviewRepository.findWrittenReviews(request)).willReturn(response);
 
 				//when
-				CursorPageResponse<ReadWrittenReviewResponse> pageResponse = reviewService.readWrittenReview(request);
+				CursorPageResponse<ReadWrittenReviewResponse> pageResponse = reviewService.readWrittenReview(
+						request);
 
 				//then
 				assertThat(pageResponse.getPageInfo().getSize()).isEqualTo(request.size());
 				assertThat(pageResponse.getPageInfo().isHasNext()).isTrue();
-				assertThat(pageResponse.getPageInfo().getNextCursorId()).isEqualTo(response.get(request.size() - 1).getReviewId());
+				assertThat(pageResponse.getPageInfo().getNextCursorId()).isEqualTo(
+						response.get(request.size() - 1).getReviewId());
 
 				assertThat(pageResponse.getData()).hasSize(request.size());
-				assertThat(pageResponse.getData().get(0).getReviewId()).isEqualTo(response.get(0).getReviewId());
-				assertThat(pageResponse.getData().get(1).getReviewId()).isEqualTo(response.get(1).getReviewId());
+				assertThat(pageResponse.getData().get(0).getReviewId()).isEqualTo(
+						response.get(0).getReviewId());
+				assertThat(pageResponse.getData().get(1).getReviewId()).isEqualTo(
+						response.get(1).getReviewId());
 			}
 
 			@Test
@@ -445,7 +479,8 @@ class ReviewServiceTest {
 				given(reviewRepository.findWrittenReviews(request)).willReturn(response);
 
 				//when
-				CursorPageResponse<ReadWrittenReviewResponse> pageResponse = reviewService.readWrittenReview(request);
+				CursorPageResponse<ReadWrittenReviewResponse> pageResponse = reviewService.readWrittenReview(
+						request);
 
 				//then
 				assertThat(pageResponse.getPageInfo().getSize()).isEqualTo(request.size());
@@ -453,9 +488,12 @@ class ReviewServiceTest {
 				assertThat(pageResponse.getPageInfo().getNextCursorId()).isNull();
 
 				assertThat(pageResponse.getData()).hasSize(request.size());
-				assertThat(pageResponse.getData().get(0).getReviewId()).isEqualTo(response.get(0).getReviewId());
-				assertThat(pageResponse.getData().get(1).getReviewId()).isEqualTo(response.get(1).getReviewId());
-				assertThat(pageResponse.getData().get(2).getReviewId()).isEqualTo(response.get(2).getReviewId());
+				assertThat(pageResponse.getData().get(0).getReviewId()).isEqualTo(
+						response.get(0).getReviewId());
+				assertThat(pageResponse.getData().get(1).getReviewId()).isEqualTo(
+						response.get(1).getReviewId());
+				assertThat(pageResponse.getData().get(2).getReviewId()).isEqualTo(
+						response.get(2).getReviewId());
 			}
 
 			@Test
@@ -475,7 +513,8 @@ class ReviewServiceTest {
 				given(reviewRepository.findWrittenReviews(request)).willReturn(response);
 
 				//when
-				CursorPageResponse<ReadWrittenReviewResponse> pageResponse = reviewService.readWrittenReview(request);
+				CursorPageResponse<ReadWrittenReviewResponse> pageResponse = reviewService.readWrittenReview(
+						request);
 
 				//then
 				assertThat(pageResponse.getData()).hasSize(0);
@@ -510,7 +549,8 @@ class ReviewServiceTest {
 				given(reviewRepository.findById(review.getId())).willReturn(Optional.of(review));
 
 				//when
-				ReadReviewResponse response = reviewService.readReview(review.getId(), buyer.getId());
+				ReadReviewResponse response = reviewService.readReview(review.getId(),
+						buyer.getId());
 
 				//then
 				assertThat(response.getReviewId()).isEqualTo(review.getId());
@@ -562,7 +602,8 @@ class ReviewServiceTest {
 				given(reviewRepository.findById(review.getId())).willReturn(Optional.of(review));
 
 				//when & then
-				assertThatThrownBy(() -> reviewService.readReview(review.getId(), USER_DETAILS_MEMBER_ID))
+				assertThatThrownBy(
+						() -> reviewService.readReview(review.getId(), USER_DETAILS_MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.OTHER_REVIEW.getMessage());
 			}
