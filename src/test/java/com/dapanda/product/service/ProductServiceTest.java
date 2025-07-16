@@ -12,6 +12,7 @@ import static com.dapanda.TestConstants.Product.CONTENT;
 import static com.dapanda.TestConstants.Product.DATA_AMOUNT;
 import static com.dapanda.TestConstants.Product.END_TIME;
 import static com.dapanda.TestConstants.Product.EXCEED_CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.Product.INVALID_PRODUCT_ID;
 import static com.dapanda.TestConstants.Product.LATITUDE;
 import static com.dapanda.TestConstants.Product.LONGITUDE;
 import static com.dapanda.TestConstants.Product.MEMBER_ID;
@@ -44,6 +45,7 @@ import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
+import com.dapanda.product.dto.request.DeleteProductRequest;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
@@ -57,6 +59,7 @@ import com.dapanda.product.entity.MobileDataFixture;
 import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductFixture;
 import com.dapanda.product.entity.ProductSortOption;
+import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.entity.Wifi;
 import com.dapanda.product.entity.WifiFixture;
 import com.dapanda.product.repository.MobileDataRepository;
@@ -776,6 +779,83 @@ class ProductServiceTest {
 				assertThatThrownBy(() -> productService.updateWifi(request, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.INVALID_TIME.getMessage());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("상품 삭제")
+	class DeleteProduct {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("상품 삭제를 성공한다")
+			void deleteProductTest() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
+				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
+						REMAIN_AMOUNT, PRICE_PER_100MB);
+				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
+						mobileData.getId(), PRICE, member);
+
+				DeleteProductRequest request = new DeleteProductRequest(PRODUCT_ID);
+
+				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+
+				// when
+				productService.deleteProduct(request, MEMBER_ID);
+
+				// then
+				assertThat(product.getState()).isEqualTo(ProductState.DELETED);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("존재하지 않는 상품이면 예외를 던진다")
+			void deleteProductFailWhenNotFoundProductTest() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
+				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
+						REMAIN_AMOUNT, PRICE_PER_100MB);
+				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
+						mobileData.getId(), PRICE, member);
+
+				DeleteProductRequest request = new DeleteProductRequest(INVALID_PRODUCT_ID);
+
+				// when & then
+				assertThatThrownBy(() -> productService.deleteProduct(request, MEMBER_ID))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.PRODUCT_NOT_FOUND.getMessage());
+			}
+
+			@Test
+			@DisplayName("이미 삭제된 상품이면 예외를 던진다")
+			void deleteProductFailWhenAlreadyDeletedTest() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
+				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
+						REMAIN_AMOUNT, PRICE_PER_100MB);
+				Product product = ProductFixture.createMobileDataProductWithIdWithState(PRODUCT_ID,
+						mobileData.getId(), ProductState.DELETED, member);
+
+				DeleteProductRequest request = new DeleteProductRequest(PRODUCT_ID);
+
+				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+
+				// when & then
+				assertThatThrownBy(() -> productService.deleteProduct(request, MEMBER_ID))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.ALREADY_DELETED_PRODUCT.getMessage());
 			}
 		}
 	}
