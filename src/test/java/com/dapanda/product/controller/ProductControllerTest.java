@@ -2,21 +2,28 @@ package com.dapanda.product.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.dapanda.TestConfig;
+import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
+import com.dapanda.product.dto.request.UpdateMobileDataRequest;
+import com.dapanda.product.dto.request.UpdateWifiRequest;
 import com.dapanda.product.dto.request.WifiCursorRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
@@ -36,6 +43,7 @@ import com.dapanda.product.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,6 +57,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -64,21 +73,35 @@ class ProductControllerTest {
 	private static final Long MEMBER_ID = 1L;
 	private static final Long PRODUCT_ID = 1L;
 	private static final Long INVALID_PRODUCT_ID = 100L;
-	private static final float DATA_AMOUNT = 2.0F;
+	private static final float DATA_AMOUNT = 1.0F;
 	private static final float REMAIN_AMOUNT = 1.0F;
 	private static final int PRICE_PER_100MB = 300;
 	private static final int PRICE = 3000;
 	private static final String TITLE = "와이파이 팔아요";
+	private static final String CHANGED_TITLE = "와이파이 팝니당";
 	private static final String CONTENT = "서울시 강남구 할리스입니다";
+	private static final String CHANGED_CONTENT = "서울시 강남구 할리스입니다람쥐";
 	private static final double LATITUDE = 30F;
+	private static final double CHANGED_LATITUDE = 35F;
 	private static final double LONGITUDE = 126F;
+	private static final double CHANGED_LONGITUDE = 150;
 	private static final double AVERAGE_RATE = 3.5;
 	private static final int REVIEW_COUNT = 3;
-	private static final LocalDateTime START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0, 0);
-	private static final LocalDateTime END_TIME = LocalDateTime.of(2025, 3, 4, 21, 0, 0);
+	private static final LocalDateTime START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0);
+	private static final LocalDateTime WRONG_START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0);
+	private static final LocalDateTime END_TIME = LocalDateTime.of(2025, 3, 4, 21, 0);
+	private static final LocalDateTime WRONG_END_TIME = LocalDateTime.of(2024, 3, 4, 21, 0);
 	private static final LocalDateTime UPDATED_AT = LocalDateTime.of(2025, 3, 3, 21, 0, 0);
 	private static final String IMAGE_URL_1 = "image1";
 	private static final String IMAGE_URL_2 = "image2";
+	private static final Long OTHER_MEMBER_ID = 2L;
+	private static final int NEW_PRICE = 9000;
+	private static final float BEFORE_DATA_AMOUNT = 1.0F;
+	private static final float BEFORE_REMAIN_AMOUNT = 1.0F;
+	private static final float CHANGED_AMOUNT = 1.0F;
+	private static final float EXCEED_CHANGED_AMOUNT = 3.0F;
+	private static final float SELLING_DATA = 1.5F;
+	private static final boolean SPLIT_TYPE = true;
 
 	@Autowired
 	private WebApplicationContext context;
@@ -648,6 +671,372 @@ class ProductControllerTest {
 								.contentType(MediaType.APPLICATION_JSON))
 						.andExpect(status().isBadRequest())
 						.andDo(document("product/get-wifi-info-invalid-product-error",
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지")
+								))
+						);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("데이터 상품 수정 API")
+	class UpdateMobileData {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("데이터 상품을 수정한다")
+			void updateMobileDataInfo() throws Exception {
+
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT, BEFORE_REMAIN_AMOUNT,
+								PRICE_PER_100MB));
+				Product product = productRepository.save(
+						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+				given(userDetails.getId()).willReturn(member.getId());
+
+				UpdateMobileDataRequest request = new UpdateMobileDataRequest(product.getId(),
+						NEW_PRICE, CHANGED_AMOUNT, SPLIT_TYPE);
+
+				// when & then
+				mockMvc.perform(put("/api/products/mobile-data")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.data.productId").value(product.getId()))
+						.andDo(document("product/put-mobile-data",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)"),
+										fieldWithPath("price").description("상품 가격 (필수)"),
+										fieldWithPath("changedAmount").description(
+												"데이터 변화량 (필수, 음수/양수)"),
+										fieldWithPath("isSplitType").description("분할 여부 (필수)")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data.productId").description("상품 아이디")
+								))
+						);
+
+				Product updatedProduct = productRepository.findById(product.getId()).orElseThrow();
+				MobileData updatedMobileData = mobileDataRepository.findById(mobileData.getId())
+						.orElseThrow();
+
+				assertThat(updatedProduct.getId()).isEqualTo(product.getId());
+				assertThat(updatedProduct.getPrice()).isEqualTo(NEW_PRICE);
+				assertThat(updatedMobileData.getDataAmount()).isEqualTo(
+						BEFORE_DATA_AMOUNT + CHANGED_AMOUNT);
+				assertThat(updatedMobileData.getRemainAmount()).isEqualTo(
+						BEFORE_REMAIN_AMOUNT + CHANGED_AMOUNT);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("상품 등록자가 아닌 회원이 상품을 수정하면 예외를 던진다")
+			public void failUpdateMobileDataIfMemberIsWrongTest() throws Exception {
+
+				// given
+				Member member1 = memberRepository.save(MemberFixture.createMember1());
+				Member member2 = memberRepository.save(MemberFixture.createMember2());
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT, BEFORE_REMAIN_AMOUNT,
+								PRICE_PER_100MB));
+				Product product = productRepository.save(
+						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member1));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+				given(userDetails.getId()).willReturn(member2.getId());
+
+				UpdateMobileDataRequest request = new UpdateMobileDataRequest(product.getId(),
+						NEW_PRICE, CHANGED_AMOUNT, SPLIT_TYPE);
+
+				// when & then
+				mockMvc.perform(put("/api/products/mobile-data")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andDo(document("product/put-mobile-data-invalid-member-error",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)"),
+										fieldWithPath("price").description("상품 가격 (필수)"),
+										fieldWithPath("changedAmount").description(
+												"데이터 변화량 (필수, 음수/양수)"),
+										fieldWithPath("isSplitType").description("분할 여부 (필수)")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지")
+								))
+						);
+			}
+
+			@Test
+			@DisplayName("데이터 전송량과 판매한 데이터의 합이 데이터 전송 정책을 초과하면 예외를 던진다")
+			public void failUpdateMobileDataIfDataTransferPolicyTest() throws Exception {
+
+				// given
+				Member member = memberRepository.save(
+						MemberFixture.createMemberWithSellingData(SELLING_DATA));
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT, BEFORE_REMAIN_AMOUNT,
+								PRICE_PER_100MB));
+				Product product = productRepository.save(
+						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+				given(userDetails.getId()).willReturn(member.getId());
+
+				UpdateMobileDataRequest request = new UpdateMobileDataRequest(product.getId(),
+						NEW_PRICE, CHANGED_AMOUNT, SPLIT_TYPE);
+
+				// when & then
+				mockMvc.perform(put("/api/products/mobile-data")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andDo(document("product/put-mobile-data-invalid-data-amount-policy-error",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)"),
+										fieldWithPath("price").description("상품 가격 (필수)"),
+										fieldWithPath("changedAmount").description(
+												"데이터 변화량 (필수, 음수/양수)"),
+										fieldWithPath("isSplitType").description("분할 여부 (필수)")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지")
+								))
+						);
+			}
+
+			@Test
+			@DisplayName("데이터 전송량이 유효하지 않을 때 예외를 던진다")
+			public void failUpdateMobileDataIfDataInvalidTest() throws Exception {
+
+				// given
+				Member member = memberRepository.save(
+						MemberFixture.createMemberWithSellingData(SELLING_DATA));
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT, BEFORE_REMAIN_AMOUNT,
+								PRICE_PER_100MB));
+				Product product = productRepository.save(
+						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+				given(userDetails.getId()).willReturn(member.getId());
+
+				UpdateMobileDataRequest request = new UpdateMobileDataRequest(product.getId(),
+						NEW_PRICE, EXCEED_CHANGED_AMOUNT, SPLIT_TYPE);
+
+				// when & then
+				mockMvc.perform(put("/api/products/mobile-data")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andDo(document("product/put-mobile-data-exceed-data-amount-error",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)"),
+										fieldWithPath("price").description("상품 가격 (필수)"),
+										fieldWithPath("changedAmount").description(
+												"데이터 변화량 (필수, 음수/양수)"),
+										fieldWithPath("isSplitType").description("분할 여부 (필수)")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지")
+								))
+						);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("와이파이 상품 수정 API")
+	class UpdateWifi {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("와이파이 상품을 수정한다")
+			void updateWifiInfo() throws Exception {
+
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+				Wifi wifi = wifiRepository.save(
+						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
+								END_TIME));
+				Product product = productRepository.save(
+						ProductFixture.createWifiProduct(PRICE, wifi.getId(), member));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+				given(userDetails.getId()).willReturn(member.getId());
+
+				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE,
+						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
+						START_TIME, END_TIME);
+
+				// when & then
+				mockMvc.perform(put("/api/products/wifi")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.data.productId").value(product.getId()))
+						.andDo(document("product/put-wifi",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)"),
+										fieldWithPath("price").description("상품 가격 (필수)"),
+										fieldWithPath("title").description("상품 제목 (필수)"),
+										fieldWithPath("content").description("상품 본문 (필수)"),
+										fieldWithPath("latitude").description("위도 (필수)"),
+										fieldWithPath("longitude").description("경도 (필수)"),
+										fieldWithPath("startTime").description("시작 시간 (필수)"),
+										fieldWithPath("endTime").description("종료 시간 (필수)")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data.productId").description("상품 아이디")
+								))
+						);
+
+				Product updatedProduct = productRepository.findById(product.getId()).orElseThrow();
+				Wifi updatedWifi = wifiRepository.findById(wifi.getId())
+						.orElseThrow();
+
+				assertThat(updatedProduct.getId()).isEqualTo(product.getId());
+				assertThat(updatedProduct.getPrice()).isEqualTo(NEW_PRICE);
+				assertThat(updatedWifi.getTitle()).isEqualTo(CHANGED_TITLE);
+				assertThat(updatedWifi.getContent()).isEqualTo(CHANGED_CONTENT);
+				assertThat(updatedWifi.getLatitude()).isEqualTo(CHANGED_LATITUDE);
+				assertThat(updatedWifi.getLongitude()).isEqualTo(CHANGED_LONGITUDE);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("상품 등록자가 아닌 회원이 상품을 수정하면 예외를 던진다")
+			public void failUpdateMobileDataIfMemberIsWrongTest() throws Exception {
+
+				// given
+				Member member1 = memberRepository.save(MemberFixture.createMember1());
+				Member member2 = memberRepository.save(MemberFixture.createMember2());
+				Wifi wifi = wifiRepository.save(
+						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
+								END_TIME));
+				Product product = productRepository.save(
+						ProductFixture.createWifiProduct(PRICE, wifi.getId(), member1));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+				given(userDetails.getId()).willReturn(member2.getId());
+
+				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE,
+						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
+						START_TIME, END_TIME);
+
+				// when & then
+				mockMvc.perform(put("/api/products/wifi")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andDo(document("product/put-wifi-invalid-member-error",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)"),
+										fieldWithPath("price").description("상품 가격 (필수)"),
+										fieldWithPath("title").description("상품 제목 (필수)"),
+										fieldWithPath("content").description("상품 본문 (필수)"),
+										fieldWithPath("latitude").description("위도 (필수)"),
+										fieldWithPath("longitude").description("경도 (필수)"),
+										fieldWithPath("startTime").description("시작 시간 (필수)"),
+										fieldWithPath("endTime").description("종료 시간 (필수)")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지")
+								))
+						);
+			}
+
+			@Test
+			@DisplayName("종료 시간이 시작 시간보다 늦으면 예외를 던진다")
+			public void failUpdateWifiIfTimeIsInvalidTest() throws Exception {
+
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+				Wifi wifi = wifiRepository.save(
+						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
+								END_TIME));
+				Product product = productRepository.save(
+						ProductFixture.createWifiProduct(PRICE, wifi.getId(), member));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+				given(userDetails.getId()).willReturn(member.getId());
+
+				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE,
+						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
+						WRONG_START_TIME, WRONG_END_TIME);
+
+				// when & then
+				mockMvc.perform(put("/api/products/wifi")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andDo(document("product/put-wifi-invalid-time-error",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)"),
+										fieldWithPath("price").description("상품 가격 (필수)"),
+										fieldWithPath("title").description("상품 제목 (필수)"),
+										fieldWithPath("content").description("상품 본문 (필수)"),
+										fieldWithPath("latitude").description("위도 (필수)"),
+										fieldWithPath("longitude").description("경도 (필수)"),
+										fieldWithPath("startTime").description("시작 시간 (필수)"),
+										fieldWithPath("endTime").description("종료 시간 (필수)")
+								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
 										fieldWithPath("message").description("처리 결과 메시지")
