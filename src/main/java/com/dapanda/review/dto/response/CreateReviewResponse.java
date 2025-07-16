@@ -6,13 +6,13 @@ import lombok.*;
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class SaveReviewResponse {
+public class CreateReviewResponse {
 
 	private Long reviewId;
 
-	public static SaveReviewResponse from(Long reviewId) {
+	public static CreateReviewResponse from(Long reviewId) {
 
-		return SaveReviewResponse.builder()
+		return CreateReviewResponse.builder()
 				.reviewId(reviewId)
 				.build();
 	}
