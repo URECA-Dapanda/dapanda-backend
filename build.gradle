@@ -123,9 +123,10 @@ asciidoctor {
     // 1) 테스트 스니펫 디렉토리 입력
     inputs.dir snippetsDir
     // 2) 마스터 Adoc 파일 입력
-    inputs.file file('api-docs.adoc')
+    inputs.file file('src/docs/asciidoc/api-docs.adoc')
 
     // Asciidoctor가 처리할 소스 파일 지정
+    sourceDir = file('src/docs/asciidoc')
     sources {
         include 'api-docs.adoc'
     }
