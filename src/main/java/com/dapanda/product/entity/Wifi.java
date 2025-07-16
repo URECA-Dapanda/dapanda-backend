@@ -46,4 +46,15 @@ public class Wifi {
 				.endTime(endTime)
 				.build();
 	}
+
+	public void updateWifi(String title, String content, double latitude, double longitude,
+			LocalDateTime startTime, LocalDateTime endTime) {
+
+		this.title = title;
+		this.content = content;
+		this.latitude = latitude;
+		this.longitude = longitude;
+		this.startTime = startTime;
+		this.endTime = endTime;
+	}
 }

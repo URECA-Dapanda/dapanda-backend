@@ -17,16 +17,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class MobileData {
 
+	public static final float MAX_TRANSFERABLE_DATA_AMOUNT = 2.0F; // 데이터 전송 제한 정책
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
 	private float dataAmount;
-
 	private float remainAmount;
-
 	private int pricePer100MB;
-
 	private boolean isSplitType;
 
 	public static MobileData of(float dataAmount, float remainAmount, int pricePer100MB,
@@ -38,5 +36,13 @@ public class MobileData {
 				.pricePer100MB(pricePer100MB)
 				.isSplitType(isSplitType)
 				.build();
+	}
+
+	public void updateMobileData(float changedAmount, int pricePer100MB, boolean isSplitType) {
+
+		this.dataAmount += changedAmount;
+		this.remainAmount += changedAmount;
+		this.pricePer100MB = pricePer100MB;
+		this.isSplitType = isSplitType;
 	}
 }
