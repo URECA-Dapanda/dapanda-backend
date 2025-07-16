@@ -2,7 +2,6 @@ package com.dapanda.refreshToken.entity;
 
 import com.dapanda.common.entity.CreatedAtEntity;
 import com.dapanda.member.entity.Member;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -19,6 +18,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Getter
@@ -39,8 +40,9 @@ public class RefreshToken extends CreatedAtEntity {
 	@Builder.Default
 	private TokenState state = TokenState.VALID;
 
-	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id")
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Member member;
 
 }
