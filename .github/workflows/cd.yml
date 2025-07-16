@@ -53,15 +53,15 @@ jobs:
           echo "▶ 프로젝트 루트에 .adoc 마스터 파일 존재 여부:"
           ls src/docs/asciidoc || echo "(src/docs/asciidoc 폴더가 없습니다)"
 
-      - name: List docs in JAR
-        run: |
-          echo "📦 Contents under docs/ in app.jar:"
-          jar tf app.jar | grep 'docs/' || echo "  (docs/ 디렉터리가 없습니다)"
-
       - name: List Asciidoctor output
         run: |
-          echo "▶ build/asciidoctor/html5 내부 목록:"
-          ls -R build/asciidoctor/html5 || echo "(html5 디렉터리가 없습니다)"
+          echo "▶ build/docs/asciidoc 내부 목록:"
+          ls -R build/docs/asciidoc || echo "(docs/asciidoc 디렉터리가 없습니다)"
+
+      - name: List docs in JAR
+        run: |
+          echo "📦 Contents under static/docs/ in app.jar:"
+          jar tf app.jar | grep 'static/docs/' || echo "  (static/docs/ 디렉터리가 없습니다)"              
 
       - name: 배포 패키지 압축(zip)
         run: |

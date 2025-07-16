@@ -133,23 +133,19 @@ asciidoctor {
 
     configurations 'asciidoctorExt'
 
-    // 스니펫이 없으면 건너뛰기
-    onlyIf {
-        file(snippetsDir).exists()
-                && fileTree(snippetsDir).include('**/*.adoc').files.size() > 0
+    // 스니펫을 Asciidoctor 리소스 경로에 복사
+    resources {
+        from(snippetsDir) {
+            into 'snippets'
+        }
     }
+
+    outputDir = layout.buildDirectory.dir("docs/asciidoc").get().asFile
 
     // 스니펫 디렉토리가 없으면 생성
     doFirst {
         if (!file(snippetsDir).exists()) {
             mkdir snippetsDir
-        }
-    }
-
-    // 스니펫을 Asciidoctor 리소스 경로에 복사
-    resources {
-        from(snippetsDir) {
-            into 'snippets'
         }
     }
 }
@@ -175,7 +171,7 @@ bootJar {
     }
 
     doFirst {
-        def docsDir = file("${asciidoctor.outputDir}")
+        def docsDir = asciidoctor.outputDir
         if (docsDir.exists() && docsDir.list().length > 0) {
             copy {
                 from("${asciidoctor.outputDir}")
