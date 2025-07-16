@@ -10,6 +10,10 @@ import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductFixture;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.report.dto.request.CreateReportRequest;
+import com.dapanda.report.entity.Report;
+import com.dapanda.report.entity.ReportFixture;
+import com.dapanda.report.entity.ReportTargetCategory;
+import com.dapanda.report.repository.ReportRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +35,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Collections;
 
-import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
 import static com.dapanda.TestConstants.Report.REASON;
 import static com.dapanda.TestConstants.Report.REPORT_TARGET_CATEGORY_PRODUCT;
 import static org.mockito.BDDMockito.given;
@@ -71,6 +74,8 @@ class ReportControllerTest {
 
 	@Autowired
 	private ProductRepository productRepository;
+	@Autowired
+	private ReportRepository reportRepository;
 
 
 	@BeforeEach
@@ -145,6 +150,71 @@ class ReportControllerTest {
 										)
 								)
 						);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("동일한 대상으로 신고 요청을 할 경우 예외가 발생한다")
+			public void duplicateReportTest() throws Exception {
+
+				//given
+				CreateReportRequest request = new CreateReportRequest(REASON, REPORT_TARGET_CATEGORY_PRODUCT);
+
+				Member reporter = memberRepository.save(MemberFixture.createMember1());
+				Member reportedMember = memberRepository.save(MemberFixture.createMember2());
+
+				Product product = productRepository.save(ProductFixture.createProduct1(reportedMember));
+
+				Report report = ReportFixture.createReportFromProduct1(product, ReportTargetCategory.PRODUCT, reporter);
+
+				reportRepository.save(report);
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(reporter.getId());
+
+				//when & then
+				mockMvc.perform(post("/api/report/{targetId}", product.getId())
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isConflict())
+						.andDo(document("review/create-report/duple-error"));
+			}
+
+			@Test
+			@DisplayName("필수 필드가 누락되면 BadRequest 를 반환한다")
+			public void validateRequiredFields() throws Exception {
+
+				//given
+				CreateReportRequest request = new CreateReportRequest(null, null);
+
+				Member reporter = memberRepository.save(MemberFixture.createMember1());
+				Member reportedMember = memberRepository.save(MemberFixture.createMember2());
+
+				Product product = productRepository.save(ProductFixture.createProduct1(reportedMember));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(reporter.getId());
+
+				//when & then
+				mockMvc.perform(post("/api/report/{targetId}", product.getId())
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andDo(document("review/create-report/validation-error"));
 			}
 		}
 	}
