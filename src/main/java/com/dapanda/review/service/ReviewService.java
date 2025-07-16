@@ -10,7 +10,7 @@ import com.dapanda.review.dto.request.UpdateReviewRequest;
 import com.dapanda.review.dto.response.SaveReviewResponse;
 import com.dapanda.review.dto.response.UpdateReviewResponse;
 import com.dapanda.review.entity.Review;
-import com.dapanda.review.repository.ReviewRepository;
+import com.dapanda.review.entity.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,8 @@ public class ReviewService {
 		Member reviewer = memberRepository.getReferenceById(memberId);
 		Member reviewee = memberRepository.getReferenceById(request.revieweeId());
 
-		Review review = Review.of(request.rating(), request.comment(), request.productId(), reviewer, reviewee);
+		Review review = Review.of(request.rating(), request.comment(), request.productId(),
+				reviewer, reviewee);
 
 		Review savedReview = reviewRepository.save(review);
 
@@ -40,7 +41,7 @@ public class ReviewService {
 	}
 
 	@Transactional
-	public UpdateReviewResponse updateReview(UpdateReviewRequest request, Long memberId){
+	public UpdateReviewResponse updateReview(UpdateReviewRequest request, Long memberId) {
 
 		Review savedReview = reviewRepository.findById(request.reviewId())
 				.orElseThrow(() -> new GlobalException(ResultCode.REVIEW_NOT_FOUND));
@@ -63,7 +64,7 @@ public class ReviewService {
 	}
 
 	/**
-	 *	리뷰 오너 검증
+	 * 리뷰 오너 검증
 	 */
 	private void validateReviewOwner(Review savedReview, Long memberId) {
 
@@ -76,16 +77,16 @@ public class ReviewService {
 	/**
 	 * 셀프 리뷰 검증
 	 */
-	private void validateSelfReview(Long reviewerId, Long revieweeId){
+	private void validateSelfReview(Long reviewerId, Long revieweeId) {
 
-		if (reviewerId.equals(revieweeId)){
+		if (reviewerId.equals(revieweeId)) {
 
 			throw new GlobalException(ResultCode.SELF_REVIEW);
 		}
 	}
 
 	/**
-	 *	리뷰 받는 회원 아이디 검증
+	 * 리뷰 받는 회원 아이디 검증
 	 */
 	private void validateRevieweeId(Long revieweeId) {
 

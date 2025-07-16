@@ -1,5 +1,19 @@
 package com.dapanda.review.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
@@ -11,9 +25,11 @@ import com.dapanda.review.dto.request.SaveReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.entity.ReviewFixture;
-import com.dapanda.review.repository.ReviewRepository;
+import com.dapanda.review.entity.repository.ReviewRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.util.Collections;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -31,19 +47,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Collections;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.mock;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @SpringBootTest
 @Import(TestConfig.class)
 @ActiveProfiles("test")
@@ -51,23 +54,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("리뷰 컨트롤러 테스트")
 class ReviewControllerTest {
 
+	private static final Float TEST_RATING = 3.5F;
+	private static final String TEST_COMMENT = "적당해요";
+	private static final Long TEST_PRODUCT_ID = 123L;
+	private static final Float NEW_RATING = 1.0F;
+	private static final String NEW_COMMENT = "별로에요";
 	@Autowired
 	private WebApplicationContext context;
-
 	@Autowired
 	private ObjectMapper objectMapper;
-
 	@Autowired
 	private ReviewRepository reviewRepository;
-
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
-
 	@Autowired
 	private EntityManager entityManager;
-
 	private MockMvc mockMvc;
-
 	@Autowired
 	private MemberRepository memberRepository;
 
@@ -79,7 +81,7 @@ class ReviewControllerTest {
 		cleanupDatabase();
 	}
 
-	private void cleanupDatabase(){
+	private void cleanupDatabase() {
 
 		entityManager.clear();
 
@@ -90,12 +92,6 @@ class ReviewControllerTest {
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
-
-	private static final Float TEST_RATING = 3.5F;
-	private static final String TEST_COMMENT = "적당해요";
-	private static final Long TEST_PRODUCT_ID = 123L;
-	private static final Float NEW_RATING = 1.0F;
-	private static final String NEW_COMMENT = "별로에요";
 
 	@Nested
 	@DisplayName("리뷰 등록 API")
@@ -113,7 +109,8 @@ class ReviewControllerTest {
 				Member savedReviewer = memberRepository.save(MemberFixture.createMember1());
 				Member savedReviewee = memberRepository.save(MemberFixture.createMember2());
 
-				SaveReviewRequest request = new SaveReviewRequest(savedReviewee.getId(), TEST_PRODUCT_ID, TEST_RATING, TEST_COMMENT);
+				SaveReviewRequest request = new SaveReviewRequest(savedReviewee.getId(),
+						TEST_PRODUCT_ID, TEST_RATING, TEST_COMMENT);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
@@ -124,7 +121,7 @@ class ReviewControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails,null,Collections.emptyList()
+										userDetails, null, Collections.emptyList()
 								)))
 						)
 						.andExpect(status().isOk())
@@ -133,9 +130,12 @@ class ReviewControllerTest {
 						.andExpect(jsonPath("$.data.reviewId").exists())
 						.andDo(document("review/save-review",
 								requestFields(
-										fieldWithPath("revieweeId").description("리뷰 대상 회원의 아이디 (필수)"),
-										fieldWithPath("productId").description("리뷰 대상 상품의 아이디 (필수)"),
-										fieldWithPath("rating").description("리뷰 평점 (필수, 1.0 ~ 5.0)"),
+										fieldWithPath("revieweeId").description(
+												"리뷰 대상 회원의 아이디 (필수)"),
+										fieldWithPath("productId").description(
+												"리뷰 대상 상품의 아이디 (필수)"),
+										fieldWithPath("rating").description(
+												"리뷰 평점 (필수, 1.0 ~ 5.0)"),
 										fieldWithPath("comment").description("리뷰 코멘트 (필수, 최대 50자)")
 								),
 								responseFields(
@@ -165,7 +165,7 @@ class ReviewControllerTest {
 			public void validateRequiredFields() throws Exception {
 
 				// given
-				SaveReviewRequest request = new SaveReviewRequest(null, null, null,  null);
+				SaveReviewRequest request = new SaveReviewRequest(null, null, null, null);
 
 				// when & then
 				mockMvc.perform(post("/api/reviews")
@@ -195,7 +195,8 @@ class ReviewControllerTest {
 				Member savedReviewer = memberRepository.save(MemberFixture.createMember1());
 				Member savedReviewee = memberRepository.save(MemberFixture.createMember2());
 
-				Review review = ReviewFixture.createReview(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee);
+				Review review = ReviewFixture.createReview(TEST_RATING, TEST_COMMENT,
+						TEST_PRODUCT_ID, savedReviewer, savedReviewee);
 
 				Review savedReview = reviewRepository.save(review);
 
@@ -277,10 +278,12 @@ class ReviewControllerTest {
 				Member savedReviewer = memberRepository.save(MemberFixture.createMember1());
 				Member savedReviewee = memberRepository.save(MemberFixture.createMember2());
 
-				Review review = ReviewFixture.createReview(TEST_RATING, TEST_COMMENT, TEST_PRODUCT_ID, savedReviewer, savedReviewee);
+				Review review = ReviewFixture.createReview(TEST_RATING, TEST_COMMENT,
+						TEST_PRODUCT_ID, savedReviewer, savedReviewee);
 				Review savedReview = reviewRepository.save(review);
 
-				UpdateReviewRequest request = new UpdateReviewRequest(savedReview.getId(), NEW_RATING, NEW_COMMENT);
+				UpdateReviewRequest request = new UpdateReviewRequest(savedReview.getId(),
+						NEW_RATING, NEW_COMMENT);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(savedReviewer.getId());
