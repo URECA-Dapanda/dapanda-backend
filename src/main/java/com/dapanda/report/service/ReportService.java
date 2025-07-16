@@ -26,13 +26,15 @@ public class ReportService {
 		Member reporter = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
+		validateDuplicateReport(targetId, request.targetCategory(), reporter);
+
 		Report report = Report.of(request.reason(), targetId, request.targetCategory(), reporter);
 
 		Report savedReport = reportRepository.save(report);
 
 		Long reportTargetMemberId = findReportTargetMemberId(targetId, request.targetCategory());
 
-		Member reportedMember = memberRepository.findByIdWithLock(reportTargetMemberId)
+		Member reportedMember = memberRepository.findByIdForUpdate(reportTargetMemberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
 		reportedMember.increaseReportedCount();
@@ -53,5 +55,15 @@ public class ReportService {
 			case REVIEW -> memberRepository.findMemberIdByReviewId(targetId)
 					.orElseThrow(() -> new GlobalException(ResultCode.REVIEW_NOT_FOUND));
 		};
+	}
+
+	private void validateDuplicateReport(Long targetId, ReportTargetCategory category, Member reporter) {
+
+		boolean isDuple = reportRepository.existsByReportTargetIdAndReportTargetCategoryAndReporter(targetId, category, reporter);
+
+		if (isDuple) {
+
+			throw new GlobalException(ResultCode.DUPLICATE_REPORT);
+		}
 	}
 }

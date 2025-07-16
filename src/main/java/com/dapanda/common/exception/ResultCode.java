@@ -64,6 +64,7 @@ public enum ResultCode {
 	REVIEW_NOT_FOUND(HttpStatus.BAD_REQUEST, 6002, "리뷰를 찾을 수 없습니다."),
 
 	// 신고 7000번대
+	DUPLICATE_REPORT(HttpStatus.CONFLICT, 7001, "이미 신고되었습니다."),
 
 	// 채팅 8000번대
 
