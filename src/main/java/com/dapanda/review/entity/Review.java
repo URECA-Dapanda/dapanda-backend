@@ -1,8 +1,8 @@
 package com.dapanda.review.entity;
 
 import com.dapanda.common.entity.BaseEntity;
-import com.dapanda.member.entity.Member;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
+import com.dapanda.trade.entity.Trade;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,15 +21,9 @@ public class Review extends BaseEntity {
 
 	private String comment;
 
-	private Long productId;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "reviewer_id")
-	private Member reviewer;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "reviewee_id")
-	private Member reviewee;
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "trade_id", unique = true)
+	private Trade trade;
 
 	public void updateReview(UpdateReviewRequest request) {
 
@@ -37,14 +31,12 @@ public class Review extends BaseEntity {
 		this.comment = request.comment();
 	}
 
-	public static Review of(float rating, String comment, Long productId, Member reviewer, Member reviewee) {
+	public static Review of(float rating, String comment, Trade trade) {
 
 		return Review.builder()
 				.rating(rating)
 				.comment(comment)
-				.productId(productId)
-				.reviewer(reviewer)
-				.reviewee(reviewee)
+				.trade(trade)
 				.build();
 	}
 }
