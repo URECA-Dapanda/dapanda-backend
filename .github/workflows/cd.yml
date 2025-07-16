@@ -37,7 +37,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Gradle 빌드 실행
-        run: ./gradlew clean test asciidoctor bootJar --stacktrace
+        run: ./gradlew clean build asciidoctor bootJar --stacktrace
 
       - name: fat jar만 복사하여 app.jar로 이름 변경
         run: |
