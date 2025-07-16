@@ -44,9 +44,9 @@ public class Member extends BaseEntity {
 	@Column(nullable = false)
 	private OAuthProvider provider;
 
-	private int buyingData;
+	private float buyingData;
 
-	private int sellingData;
+	private float sellingData;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -84,13 +84,13 @@ public class Member extends BaseEntity {
 				.build();
 	}
 
-    public void addCash(int amount) {
+	public void addCash(int amount) {
 
-        this.cash += amount;
-    }
+		this.cash += amount;
+	}
 
-    public void deductCash(int amount) {
+	public void deductCash(int amount) {
 
-        this.cash -= amount;
-    }
+		this.cash -= amount;
+	}
 }

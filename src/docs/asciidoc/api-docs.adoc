@@ -217,33 +217,37 @@ include::{snippets}/review/read-written-review/response-fields.adoc[]
 
 `POST` 요청을 사용하여 새로운 리뷰를 등록할 수 있습니다.
 
+include::{snippets}/review/create-review/path-parameters.adoc[]
+
 ===== 요청
 
-include::{snippets}/review/save-review/http-request.adoc[]
+include::{snippets}/review/create-review/http-request.adoc[]
 
 ===== 요청 필드
 
-include::{snippets}/review/save-review/request-fields.adoc[]
+include::{snippets}/review/create-review/request-fields.adoc[]
 
 ===== 응답
 
-include::{snippets}/review/save-review/http-response.adoc[]
+include::{snippets}/review/create-review/http-response.adoc[]
 
 ===== 응답 필드
 
-include::{snippets}/review/save-review/response-fields.adoc[]
+include::{snippets}/review/create-review/response-fields.adoc[]
 
 ===== 실패 요청
 
 ====== 필수 필드 누락
 
-include::{snippets}/review/save-review-validation-error/http-request.adoc[]
+include::{snippets}/review/create-review/validation-error/http-request.adoc[]
 
-include::{snippets}/review/save-review-validation-error/http-response.adoc[]
+include::{snippets}/review/create-review/validation-error/http-response.adoc[]
 
 ==== 리뷰 수정
 
-`PUT` 요청을 사용하여 리뷰를 수정할 수 있습니다.
+`PATCH` 요청을 사용하여 리뷰를 수정할 수 있습니다.
+
+include::{snippets}/review/update-review/path-parameters.adoc[]
 
 ===== 요청
 
@@ -272,6 +276,8 @@ include::{snippets}/review/update-review-validation-error/http-response.adoc[]
 ==== 리뷰 삭제
 
 `DELETE` 요청을 사용하여 리뷰를 삭제할 수 있습니다.
+
+include::{snippets}/review/delete-review/path-parameters.adoc[]
 
 ===== 요청
 
@@ -613,3 +619,74 @@ include::{snippets}/product/get-wifi-info-invalid-product-error/http-request.ado
 
 include::{snippets}/product/get-wifi-info-invalid-product-error/http-response.adoc[]
 
+[[resources-product-put-mobile-data]]
+==== 데이터 상품 수정
+
+`PUT /api/products/mobile-data`
+
+데이터 상품을 수정합니다.
+
+===== 요청
+
+include::{snippets}/product/put-mobile-data/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/product/put-mobile-data/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/product/put-mobile-data/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 상품을 등록하지 않은 사용자
+
+include::{snippets}/product/put-mobile-data-invalid-member-error/http-request.adoc[]
+
+include::{snippets}/product/put-mobile-data-invalid-member-error/http-response.adoc[]
+
+====== 데이터 전송 정책 초과
+
+include::{snippets}/product/put-mobile-data-invalid-data-amount-policy-error/http-request.adoc[]
+
+include::{snippets}/product/put-mobile-data-invalid-data-amount-policy-error/http-response.adoc[]
+
+====== 유효하지 않은 데이터 전송량
+
+include::{snippets}/product/put-mobile-data-exceed-data-amount-error/http-request.adoc[]
+
+include::{snippets}/product/put-mobile-data-exceed-data-amount-error/http-response.adoc[]
+
+[[resources-product-put-wifi]]
+==== 와이파이 상품 수정
+
+`PUT /api/products/wifi`
+
+와이파이 상품을 수정합니다.
+
+===== 요청
+
+include::{snippets}/product/put-wifi/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/product/put-wifi/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/product/put-wifi/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 상품을 등록하지 않은 사용자
+
+include::{snippets}/product/put-wifi-invalid-member-error/http-request.adoc[]
+
+include::{snippets}/product/put-wifi-invalid-member-error/http-response.adoc[]
+
+====== 종료 시간이 시작 시간보다 늦을 떄
+
+include::{snippets}/product/put-wifi-invalid-time-error/http-request.adoc[]
+
+include::{snippets}/product/put-wifi-invalid-time-error/http-response.adoc[]

@@ -53,4 +53,9 @@ public class Product extends BaseEntity {
 				.member(member)
 				.build();
 	}
+
+	public void updatePrice(int price) {
+
+		this.price = price;
+	}
 }

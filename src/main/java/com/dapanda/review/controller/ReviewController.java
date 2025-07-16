@@ -3,9 +3,8 @@ package com.dapanda.review.controller;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.CommonResponse;
-import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.ReadReviewRequest;
-import com.dapanda.review.dto.request.SaveReviewRequest;
+import com.dapanda.review.dto.request.CreateReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
 import com.dapanda.review.dto.response.*;
 import com.dapanda.review.service.ReviewService;
@@ -23,12 +22,16 @@ public class ReviewController {
 
 	private final ReviewService reviewService;
 
-	@PostMapping("/reviews")
-	public CommonResponse<SaveReviewResponse> saveReview(
-			@RequestBody @Valid SaveReviewRequest request,
+	/**
+	 * 리뷰 등록
+	 */
+	@PostMapping("/trades/{tradeId}/reviews")
+	public CommonResponse<CreateReviewResponse> saveReview(
+			@PathVariable Long tradeId,
+			@RequestBody @Valid CreateReviewRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		return CommonResponse.success(reviewService.saveReview(request, userDetails.getId()));
+		return CommonResponse.success(reviewService.createReview(tradeId, request, userDetails.getId()));
 	}
 
 	/**
@@ -45,7 +48,7 @@ public class ReviewController {
 	/**
 	 * 회원이 받은 리뷰 조회
 	 */
-	@GetMapping("/reviews/rc/{memberId}")
+	@GetMapping("/members/{memberId}/reviews/received")
 	public CommonResponse<CursorPageResponse<ReadReceivedReviewResponse>> readMyReceivedReview(
 			@PathVariable(name = "memberId") Long memberId,
 			@RequestParam(required = false) Long cursorId,
@@ -60,7 +63,7 @@ public class ReviewController {
 	/**
 	 * 회원이 작성한 리뷰 조회
 	 */
-	@GetMapping("/reviews/wt")
+	@GetMapping("/reviews/my/written")
 	public CommonResponse<CursorPageResponse<ReadWrittenReviewResponse>> readMyWrittenReview(
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@RequestParam(required = false) Long cursorId,
@@ -72,20 +75,27 @@ public class ReviewController {
 		return CommonResponse.success(reviewService.readWrittenReview(request));
 	}
 
-	@PutMapping("/reviews")
+	/**
+	 * 리뷰 일부 수정
+	 */
+	@PatchMapping("/reviews/{reviewId}")
 	public CommonResponse<UpdateReviewResponse> updateReview(
+			@PathVariable Long reviewId,
 			@RequestBody @Valid UpdateReviewRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails){
 
-		return CommonResponse.success(reviewService.updateReview(request, userDetails.getId()));
+		return CommonResponse.success(reviewService.updateReview(reviewId, request, userDetails.getId()));
 	}
 
-	@DeleteMapping("/reviews")
+	/**
+	 * 리뷰 삭제
+	 */
+	@DeleteMapping("/reviews/{reviewId}")
 	public CommonResponse<Void> deleteReview(
-			@RequestBody @Valid DeleteReviewRequest request,
+			@PathVariable Long reviewId,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		reviewService.deleteReview(request, userDetails.getId());
+		reviewService.deleteReview(reviewId, userDetails.getId());
 
 		return CommonResponse.success(null);
 	}

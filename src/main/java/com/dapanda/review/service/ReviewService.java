@@ -3,9 +3,8 @@ package com.dapanda.review.service;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
-import com.dapanda.review.dto.request.DeleteReviewRequest;
 import com.dapanda.review.dto.request.ReadReviewRequest;
-import com.dapanda.review.dto.request.SaveReviewRequest;
+import com.dapanda.review.dto.request.CreateReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
 import com.dapanda.review.dto.response.*;
 import com.dapanda.review.entity.Review;
@@ -83,9 +82,9 @@ public class ReviewService {
 		return CursorPageResponse.of(reviews, pageInfo);
 	}
 
-	public SaveReviewResponse saveReview(SaveReviewRequest request, Long memberId) {
+	public CreateReviewResponse createReview(Long tradeId, CreateReviewRequest request, Long memberId) {
 
-		Trade trade = tradeRepository.findById(request.tradeId())
+		Trade trade = tradeRepository.findById(tradeId)
 				.orElseThrow(() -> new GlobalException(ResultCode.TRADE_NOT_FOUND));
 
 		validateTradeOwner(trade, memberId);
@@ -94,13 +93,13 @@ public class ReviewService {
 
 		Review savedReview = reviewRepository.save(review);
 
-		return SaveReviewResponse.from(savedReview.getId());
+		return CreateReviewResponse.from(savedReview.getId());
 	}
 
 	@Transactional
-	public UpdateReviewResponse updateReview(UpdateReviewRequest request, Long memberId){
+	public UpdateReviewResponse updateReview(Long reviewId, UpdateReviewRequest request, Long memberId){
 
-		Review savedReview = reviewRepository.findById(request.reviewId())
+		Review savedReview = reviewRepository.findById(reviewId)
 				.orElseThrow(() -> new GlobalException(ResultCode.REVIEW_NOT_FOUND));
 
 		validateReviewOwner(savedReview, memberId);
@@ -110,9 +109,9 @@ public class ReviewService {
 		return UpdateReviewResponse.from(savedReview.getId());
 	}
 
-	public void deleteReview(DeleteReviewRequest request, Long memberId) {
+	public void deleteReview(Long reviewId, Long memberId) {
 
-		Review savedReview = reviewRepository.findById(request.reviewId())
+		Review savedReview = reviewRepository.findById(reviewId)
 				.orElseThrow(() -> new GlobalException(ResultCode.REVIEW_NOT_FOUND));
 
 		validateReviewOwner(savedReview, memberId);
