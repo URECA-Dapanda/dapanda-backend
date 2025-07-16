@@ -117,6 +117,8 @@ tasks.register('createSnippetsDir') {
     }
 }
 
+tasks.named('asciidoctor') { dependsOn tasks.named('createSnippetsDir') }
+
 asciidoctor {
     dependsOn test
 
@@ -169,7 +171,7 @@ bootJar {
     if (!project.hasProperty('skipDocs')) {
         dependsOn asciidoctor
     }
-    
+
     from(layout.buildDirectory.dir("docs/asciidoc")) {
         into "static/docs"
     }
