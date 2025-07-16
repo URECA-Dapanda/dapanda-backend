@@ -93,11 +93,11 @@
 
 ## 🛠️ 시스템 아키텍처
 
-<img width="1200" alt="시스템 아키텍처" src="https://github.com/user-attachments/assets/14be38f1-7c97-4c0b-8e12-62a446ccac16" />
+<img width="1334" height="3840" alt="시스템 아키텍처" src="https://github.com/user-attachments/assets/8044193d-3a7f-48a4-afcd-c0dc214611f8" />
 
 ## 🧱 ERD
 
-<img width="1992" height="1202" alt="ERD 20250716ver" src="https://github.com/user-attachments/assets/4929827f-49bd-4628-b4b7-1de0285e0da0" />
+<img width="1992" height="1202" alt="ERD" src="https://github.com/user-attachments/assets/d6f7c0c3-b9f7-4320-a9e9-fa9eb0ea2e47" />
 
 ## 🔁 시퀀스 다이어그램
 
