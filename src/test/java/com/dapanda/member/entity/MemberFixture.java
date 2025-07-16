@@ -53,9 +53,17 @@ public class MemberFixture {
 		return member;
 	}
 
-	public static Member createMemberWithSellingData(long memberId, float sellingData) {
+	public static Member createMemberWithSellingDataWithId(long memberId, float sellingData) {
 
 		Member member = createMember1WithId(memberId);
+		ReflectionTestUtils.setField(member, "sellingData", sellingData);  // 강제로 세팅
+
+		return member;
+	}
+
+	public static Member createMemberWithSellingData(float sellingData) {
+
+		Member member = createMember1();
 		ReflectionTestUtils.setField(member, "sellingData", sellingData);  // 강제로 세팅
 
 		return member;
