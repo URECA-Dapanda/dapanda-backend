@@ -45,6 +45,14 @@ jobs:
           echo "복사할 jar: $JAR_PATH"
           cp "$JAR_PATH" app.jar
 
+      - name: Debug generated snippets
+        run: |
+          echo "▶ build/generated-snippets 내부 목록:"
+          ls -R build/generated-snippets || echo "(디렉토리 자체가 없습니다)"
+          echo
+          echo "▶ 프로젝트 루트에 .adoc 마스터 파일 존재 여부:"
+          ls src/docs/asciidoc || echo "(src/docs/asciidoc 폴더가 없습니다)"
+
       - name: List docs in JAR
         run: |
           echo "📦 Contents under docs/ in app.jar:"
