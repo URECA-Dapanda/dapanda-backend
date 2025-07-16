@@ -23,9 +23,6 @@ public class Trade extends CreatedAtEntity {
 
 	private int tradingPrice;
 
-	@Enumerated(EnumType.STRING)
-	private TradeState state;
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_id")
 	private Product product;
