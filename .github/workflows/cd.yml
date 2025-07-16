@@ -45,6 +45,16 @@ jobs:
           echo "복사할 jar: $JAR_PATH"
           cp "$JAR_PATH" app.jar
 
+      - name: Verify API Docs in JAR
+        run: |
+          echo "🔍 Checking for static/docs/api-docs.html in app.jar..."
+          if jar tf app.jar | grep -q 'static/docs/api-docs.html'; then
+            echo "✅ api-docs.html found in JAR"
+          else
+            echo "❌ api-docs.html NOT found in JAR"
+            exit 1
+          fi
+
       - name: 배포 패키지 압축(zip)
         run: |
           zip -r app.zip app.jar appspec.yml scripts/
