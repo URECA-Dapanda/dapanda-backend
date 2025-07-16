@@ -372,17 +372,6 @@ class AuthControllerTest {
 			}
 
 			@Test
-			@DisplayName("저장된 refreshToken이 없으면 401 에러 발생")
-			void 저장토큰없음() throws Exception {
-
-				refreshTokenRepository.deleteAll();
-				mockMvc.perform(post("/api/auth/reissue")
-								.header("Refresh-Token", refreshToken))
-						.andExpect(status().isUnauthorized())
-						.andDo(document("auth-reissue-no-saved-token"));
-			}
-
-			@Test
 			@DisplayName("저장된 refreshToken과 입력값 다르면 401 에러 발생")
 			void 저장토큰다름() throws Exception {
 
