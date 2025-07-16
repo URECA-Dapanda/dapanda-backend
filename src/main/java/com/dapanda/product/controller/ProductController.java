@@ -5,6 +5,7 @@ import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.CommonResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
+import com.dapanda.product.dto.request.DeleteProductRequest;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
@@ -17,6 +18,7 @@ import com.dapanda.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -76,5 +78,15 @@ public class ProductController {
 
 		return CommonResponse.success(
 				productService.updateWifi(request, userDetails.getId()));
+	}
+
+	@DeleteMapping("/products")
+	public CommonResponse<Void> deleteProduct(
+			@RequestBody @Valid DeleteProductRequest request,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		productService.deleteProduct(request, userDetails.getId());
+
+		return CommonResponse.success(null);
 	}
 }
