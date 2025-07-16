@@ -37,6 +37,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -48,6 +49,7 @@ import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.product.dto.request.DeleteProductRequest;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
@@ -60,6 +62,7 @@ import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductFixture;
 import com.dapanda.product.entity.ProductImage;
 import com.dapanda.product.entity.ProductImageFixture;
+import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.entity.Wifi;
 import com.dapanda.product.entity.WifiFixture;
 import com.dapanda.product.repository.MobileDataRepository;
@@ -1036,6 +1039,125 @@ class ProductControllerTest {
 										fieldWithPath("message").description("처리 결과 메시지")
 								))
 						);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("상품 삭제 API")
+	class DeleteProduct {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("상품을 삭제한다")
+			void deleteProduct() throws Exception {
+
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileData(DATA_AMOUNT, REMAIN_AMOUNT,
+								PRICE_PER_100MB));
+				Product product = productRepository.save(
+						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+				given(userDetails.getId()).willReturn(member.getId());
+
+				DeleteProductRequest request = new DeleteProductRequest(product.getId());
+
+				// when & then
+				mockMvc.perform(delete("/api/products")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andDo(document("product/delete-product",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)")
+								)
+						));
+
+				Product deletedProduct = productRepository.findById(product.getId()).orElseThrow();
+
+				assertThat(deletedProduct.getState()).isEqualTo(ProductState.DELETED);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("존재하지 않는 상품이면 예외를 던진다")
+			void deleteProductFailWhenNotFoundProductTest() throws Exception {
+
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileData(DATA_AMOUNT,
+								REMAIN_AMOUNT, PRICE_PER_100MB));
+				Product product = productRepository.save(
+						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+				given(userDetails.getId()).willReturn(member.getId());
+
+				DeleteProductRequest request = new DeleteProductRequest(INVALID_PRODUCT_ID);
+
+				// when & then
+				mockMvc.perform(delete("/api/products")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andDo(document("product/delete-product-not-found-error",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)")
+								)
+						));
+			}
+
+			@Test
+			@DisplayName("이미 삭제된 상품이면 예외를 던진다")
+			void deleteProductFailWhenAlreadyDeletedTest() throws Exception {
+
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileData(DATA_AMOUNT,
+								REMAIN_AMOUNT, PRICE_PER_100MB));
+				Product product = productRepository.save(
+						ProductFixture.createMobileDataProductWithIdWithState(null,
+								mobileData.getId(), ProductState.DELETED, member));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+				given(userDetails.getId()).willReturn(member.getId());
+
+				DeleteProductRequest request = new DeleteProductRequest(product.getId());
+
+				// when & then
+				mockMvc.perform(delete("/api/products")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andDo(document("product/delete-product-already-deleted-error",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)")
+								)
+						));
 			}
 		}
 	}
