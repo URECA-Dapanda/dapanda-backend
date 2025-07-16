@@ -10,6 +10,9 @@ import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductFixture;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.report.dto.request.CreateReportRequest;
+import com.dapanda.report.entity.Report;
+import com.dapanda.report.entity.ReportFixture;
+import com.dapanda.report.repository.ReportRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,6 +73,8 @@ class ReportControllerTest {
 
 	@Autowired
 	private ProductRepository productRepository;
+	@Autowired
+	private ReportRepository reportRepository;
 
 
 	@BeforeEach
@@ -164,6 +169,10 @@ class ReportControllerTest {
 
 				Product product = productRepository.save(ProductFixture.createProduct1(reportedMember));
 
+				Report report = ReportFixture.createReportFromProduct1(product, REPORT_TARGET_CATEGORY_PRODUCT, reporter);
+
+				reportRepository.save(report);
+
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
 				given(userDetails.getId()).willReturn(reporter.getId());
@@ -176,7 +185,7 @@ class ReportControllerTest {
 										userDetails, null, Collections.emptyList()
 								)))
 						)
-						.andExpect(status().isBadRequest())
+						.andExpect(status().isConflict())
 						.andDo(document("report/create-report/duple-error"));
 			}
 
