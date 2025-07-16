@@ -21,10 +21,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) {
-		
+
 		String path = request.getServletPath();
 
-		return "/actuator/health".equals(path);
+		return "/actuator/health".equals(path) || path.contains("code");
 	}
 
 	@Override

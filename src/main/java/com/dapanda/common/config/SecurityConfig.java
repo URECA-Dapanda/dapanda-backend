@@ -49,7 +49,7 @@ public class SecurityConfig {
 						FrameOptionsConfig::disable
 				))
 				.sessionManagement(
-						sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+						sess -> sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/", "/api/**", "/api-docs.html", "/docs/**",
 								"/oauth2/**", "error", "/actuator/health",
@@ -64,7 +64,7 @@ public class SecurityConfig {
 						.failureHandler(oAuth2FailureHandler)
 				);
 
-		http.addFilterBefore(
+		http.addFilterAfter(
 				new JwtAuthenticationFilter(jwtTokenProvider),
 				OAuth2AuthorizationRequestRedirectFilter.class
 		);
