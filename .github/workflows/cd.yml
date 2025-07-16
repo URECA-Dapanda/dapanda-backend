@@ -1,8 +1,10 @@
 name: Dapanda CD
 
 on:
-  pull_request:
-    branches: [ main, dev ]
+  workflow_run:
+    workflows: [ "Dapanda CI FOR MVP" ]
+    types:
+      - completed
     paths-ignore:
       - 'README.md'
 
@@ -16,6 +18,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:

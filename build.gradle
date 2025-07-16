@@ -165,22 +165,15 @@ tasks.register('buildWithoutDocs') {
 }
 
 bootJar {
-    // skipDocs 프로퍼티가 없으면 asciidoctor 실행 후 jar 생성
-    if (!project.hasProperty('skipDocs')) {
-        dependsOn asciidoctor
+    dependsOn asciidoctor
+
+    // build/docs/asciidoc → BOOT-INF/classes/static/docs 로 복사
+    from(layout.buildDirectory.dir("docs/asciidoc")) {
+        into 'static/docs'
     }
 
     doFirst {
-        def docsDir = asciidoctor.outputDir
-        if (docsDir.exists() && docsDir.list().length > 0) {
-            copy {
-                from("${asciidoctor.outputDir}")
-                into 'src/main/resources/static/docs'
-            }
-            println "API documentation copied to static resources"
-        } else {
-            println "No API documentation found, skipping copy"
-        }
+        println "Including REST Docs from: ${layout.buildDirectory.dir('docs/asciidoc').get().asFile}"
     }
 }
 
