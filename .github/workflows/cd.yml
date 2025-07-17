@@ -1,8 +1,8 @@
 name: Dapanda CD
 
 on:
-  pull_request:
-    branches: [ "main", "dev" ]
+  push:
+    branches: [ main, dev ]
     paths-ignore:
       - 'README.md'
 
@@ -37,13 +37,31 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Gradle 빌드 실행
-        run: ./gradlew clean build -x test
+        run: ./gradlew clean build asciidoctor bootJar --stacktrace
 
       - name: fat jar만 복사하여 app.jar로 이름 변경
         run: |
           JAR_PATH=$(find build/libs -type f -name "*.jar" ! -name "*-plain.jar" | head -n 1)
           echo "복사할 jar: $JAR_PATH"
           cp "$JAR_PATH" app.jar
+
+      - name: Debug generated snippets
+        run: |
+          echo "▶ build/generated-snippets 내부 목록:"
+          ls -R build/generated-snippets || echo "(디렉토리 자체가 없습니다)"
+          echo
+          echo "▶ 프로젝트 루트에 .adoc 마스터 파일 존재 여부:"
+          ls src/docs/asciidoc || echo "(src/docs/asciidoc 폴더가 없습니다)"
+
+      - name: List Asciidoctor output
+        run: |
+          echo "▶ build/docs/asciidoc 내부 목록:"
+          ls -R build/docs/asciidoc || echo "(docs/asciidoc 디렉터리가 없습니다)"
+
+      - name: List docs in JAR
+        run: |
+          echo "📦 Contents under static/docs/ in app.jar:"
+          jar tf app.jar | grep 'static/docs/' || echo "  (static/docs/ 디렉터리가 없습니다)"              
 
       - name: 배포 패키지 압축(zip)
         run: |
@@ -56,8 +74,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: S3에 배포 패키지 업로드
-        run: |
-          aws s3 cp app.zip s3://${{ secrets.BUCKET_NAME }}/app.zip
+        run: aws s3 cp app.zip s3://${{ secrets.BUCKET_NAME }}/app.zip
 
       - name: 어플리케이션 리비전 등록
         run: |

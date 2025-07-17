@@ -21,8 +21,8 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -49,10 +49,10 @@ public class SecurityConfig {
 						FrameOptionsConfig::disable
 				))
 				.sessionManagement(
-						sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+						sess -> sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/", "/index.html", "/api/**", "/oauth2/**",
-								"error", "/actuator/health",
+						.requestMatchers("/", "/api/**", "/api-docs.html", "/docs/**",
+								"/oauth2/**", "error", "/actuator/health", "/default-ui.css",
 								"/api/auth/**").permitAll()
 						.anyRequest().authenticated()
 				)
@@ -64,9 +64,9 @@ public class SecurityConfig {
 						.failureHandler(oAuth2FailureHandler)
 				);
 
-		http.addFilterBefore(
+		http.addFilterAfter(
 				new JwtAuthenticationFilter(jwtTokenProvider),
-				UsernamePasswordAuthenticationFilter.class
+				OAuth2AuthorizationRequestRedirectFilter.class
 		);
 
 		return http.build();

@@ -432,12 +432,6 @@ include::{snippets}/auth-reissue-invalid-token/http-request.adoc[]
 
 include::{snippets}/auth-reissue-invalid-token/http-response.adoc[]
 
-====== 저장된 Refresh Token 없음
-
-include::{snippets}/auth-reissue-no-saved-token/http-request.adoc[]
-
-include::{snippets}/auth-reissue-no-saved-token/http-response.adoc[]
-
 ====== 저장된 Refresh Token과 입력값 다름
 
 include::{snippets}/auth-reissue-token-mismatch/http-request.adoc[]
