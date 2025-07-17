@@ -303,6 +303,8 @@ include::{snippets}/review/delete-review-validation-error/http-request.adoc[]
 
 include::{snippets}/review/delete-review-validation-error/http-response.adoc[]
 
+---
+
 [[resources-auth]]
 === 인증/인가
 
@@ -362,8 +364,6 @@ include::{snippets}/auth-signup-invalid-membername/http-request.adoc[]
 
 include::{snippets}/auth-signup-invalid-membername/http-response.adoc[]
 
----
-
 [[resources-auth-login]]
 ==== 로그인
 
@@ -399,8 +399,6 @@ include::{snippets}/auth-login-not-found/http-response.adoc[]
 include::{snippets}/auth-login-invalid-password/http-request.adoc[]
 
 include::{snippets}/auth-login-invalid-password/http-response.adoc[]
-
----
 
 [[resources-auth-reissue]]
 ==== 액세스 토큰 재발급
@@ -452,8 +450,6 @@ include::{snippets}/auth-reissue-invalid-state/http-request.adoc[]
 
 include::{snippets}/auth-reissue-invalid-state/http-response.adoc[]
 
----
-
 [[resources-auth-logout]]
 ==== 로그아웃
 
@@ -481,6 +477,8 @@ include::{snippets}/auth-logout-no-token/http-response.adoc[]
 include::{snippets}/auth-logout-invalid-token/http-request.adoc[]
 
 include::{snippets}/auth-logout-invalid-token/http-response.adoc[]
+
+---
 
 [[resources-product]]
 === 상품
@@ -696,3 +694,32 @@ include::{snippets}/product/put-wifi-invalid-member-error/http-response.adoc[]
 include::{snippets}/product/put-wifi-invalid-time-error/http-request.adoc[]
 
 include::{snippets}/product/put-wifi-invalid-time-error/http-response.adoc[]
+
+[[resources-product-delete-product]]
+==== 상품 삭제
+
+`DELETE /api/products`
+
+상품을 삭제합니다.
+
+===== 요청
+
+include::{snippets}/product/delete-product/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/product/delete-product/http-response.adoc[]
+
+===== 실패 요청
+
+====== 존재하지 않는 상품
+
+include::{snippets}/product/delete-product-not-found-error/http-request.adoc[]
+
+include::{snippets}/product/delete-product-not-found-error/http-response.adoc[]
+
+====== 이미 삭제된 상품
+
+include::{snippets}/product/delete-product-already-deleted-error/http-request.adoc[]
+
+include::{snippets}/product/delete-product-already-deleted-error/http-response.adoc[]
