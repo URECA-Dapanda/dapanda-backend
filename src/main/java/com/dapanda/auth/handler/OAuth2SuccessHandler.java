@@ -53,14 +53,38 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 		refreshTokenService.issueRefreshToken(member, refreshToken);
 
-		Cookie cookie = new Cookie("accessToken", accessToken);
-		cookie.setHttpOnly(true);
-		cookie.setSecure(true);
-		cookie.setPath("/");
-		cookie.setMaxAge(60 * 60);
+		String origin = request.getHeader("Origin");
+		String host = request.getHeader("Host");
+		boolean isLocal = (origin != null && origin.contains("localhost")) ||
+				(host != null && host.contains("localhost"));
 
-		response.addCookie(cookie);
+		Cookie accessCookie = new Cookie("accessToken", accessToken);
+		accessCookie.setHttpOnly(true);
+		accessCookie.setSecure(true);
+		accessCookie.setPath("/");
+		accessCookie.setMaxAge(jwtTokenProvider.getAccessTokenExpirationSec());
+		if (!isLocal) {
+			accessCookie.setDomain(".dapanda.org");
+		}
+		response.addCookie(accessCookie);
 
-		response.sendRedirect("https://dapanda.org/data"); // 클라이언트 페이지
+		Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+		refreshCookie.setHttpOnly(true);
+		refreshCookie.setSecure(true);
+		refreshCookie.setPath("/");
+		refreshCookie.setMaxAge(jwtTokenProvider.getRefreshTokenExpirationSec());
+		if (!isLocal) {
+			refreshCookie.setDomain(".dapanda.org");
+		}
+		response.addCookie(refreshCookie);
+
+		String redirectUrl;
+		if (isLocal) {
+			redirectUrl = "http://localhost:3000/data";
+		} else {
+			redirectUrl = "https://dapanda.org/data";
+		}
+
+		response.sendRedirect(redirectUrl);
 	}
 }
