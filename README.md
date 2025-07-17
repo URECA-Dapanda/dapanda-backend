@@ -122,6 +122,14 @@
 </div>
 </details>
 
+## 📄 API 명세서
+[🔗 Spring REST Docs](https://api.dapanda.org/docs/api-docs.html)
+
+[🔗 Notion](https://elastic-blue-594.notion.site/API-22445e92a0218025a92ee846417d99c5?source=copy_link)
+
+## [📚 Github Wiki](https://github.com/URECA-Dapanda/dapanda-backend/wiki)
+> 더 자세한 내용은 Github Wiki를 확인해주세요 ☺️
+
 ## 🧑🏻‍💻 역할 분담
 
 | <img src="https://avatars.githubusercontent.com/yereumi" width="120"><br><a href="https://github.com/yereumi">신예지</a> | <img src="https://avatars.githubusercontent.com/hyeonZIP" width="120"><br><a href="https://github.com/hyeonZIP">임재현</a> | <img src="https://github.com/user-attachments/assets/4304fcd3-369c-46d1-b369-d4ca0569e4e3" width="120"><br><a href="https://github.com/tmdals1207">홍승민</a> |
