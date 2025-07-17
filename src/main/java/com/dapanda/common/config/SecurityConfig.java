@@ -8,6 +8,8 @@ import com.dapanda.auth.service.CustomOAuth2UserService;
 import com.dapanda.auth.service.CustomUserDetailsService;
 import com.dapanda.jwt.JwtAuthenticationFilter;
 import com.dapanda.jwt.JwtTokenProvider;
+import com.dapanda.member.service.MemberService;
+import com.dapanda.refreshToken.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,7 +39,17 @@ public class SecurityConfig {
 	private final CustomUserDetailsService userDetailsService;
 
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	public JwtAuthenticationFilter jwtAuthenticationFilter(
+			JwtTokenProvider jwtTokenProvider,
+			MemberService memberService,
+			RefreshTokenService refreshTokenService
+	) {
+		return new JwtAuthenticationFilter(jwtTokenProvider, memberService, refreshTokenService);
+	}
+
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http,
+			JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
 
 		http
 				.cors(withDefaults())
@@ -65,7 +77,7 @@ public class SecurityConfig {
 				);
 
 		http.addFilterAfter(
-				new JwtAuthenticationFilter(jwtTokenProvider),
+				jwtAuthenticationFilter,
 				OAuth2AuthorizationRequestRedirectFilter.class
 		);
 
