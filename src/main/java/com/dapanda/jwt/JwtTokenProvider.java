@@ -13,6 +13,7 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import java.security.Key;
 import java.util.Date;
@@ -130,6 +131,30 @@ public class JwtTokenProvider {
 		String raw = getClaims(token).get("provider", String.class);
 
 		return OAuthProvider.valueOf(raw);
+	}
+
+	public String resolveTokenFromCookie(HttpServletRequest request, String cookieName) {
+
+		if (request.getCookies() != null) {
+			for (Cookie cookie : request.getCookies()) {
+				if (cookieName.equals(cookie.getName())) {
+
+					return cookie.getValue();
+				}
+			}
+		}
+
+		return null;
+	}
+
+	public int getAccessTokenExpirationSec() {
+
+		return (int) (jwtProperties.getAccessTokenExpiration() / 1000L);
+	}
+
+	public int getRefreshTokenExpirationSec() {
+
+		return (int) (jwtProperties.getRefreshTokenExpiration() / 1000L);
 	}
 
 }
