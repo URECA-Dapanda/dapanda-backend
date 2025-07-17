@@ -1,11 +1,41 @@
 package com.dapanda.product.service;
 
+import static com.dapanda.TestConstants.Product.AVERAGE_RATE;
+import static com.dapanda.TestConstants.Product.BEFORE_DATA_AMOUNT;
+import static com.dapanda.TestConstants.Product.BEFORE_REMAIN_AMOUNT;
+import static com.dapanda.TestConstants.Product.CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.Product.CHANGED_CONTENT;
+import static com.dapanda.TestConstants.Product.CHANGED_LATITUDE;
+import static com.dapanda.TestConstants.Product.CHANGED_LONGITUDE;
+import static com.dapanda.TestConstants.Product.CHANGED_TITLE;
+import static com.dapanda.TestConstants.Product.CONTENT;
+import static com.dapanda.TestConstants.Product.DATA_AMOUNT;
+import static com.dapanda.TestConstants.Product.END_TIME;
+import static com.dapanda.TestConstants.Product.EXCEED_CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.Product.LATITUDE;
+import static com.dapanda.TestConstants.Product.LONGITUDE;
+import static com.dapanda.TestConstants.Product.MEMBER_ID;
+import static com.dapanda.TestConstants.Product.NEW_PRICE;
+import static com.dapanda.TestConstants.Product.OTHER_MEMBER_ID;
+import static com.dapanda.TestConstants.Product.PRICE;
+import static com.dapanda.TestConstants.Product.PRICE_PER_100MB;
+import static com.dapanda.TestConstants.Product.PRODUCT_ID;
+import static com.dapanda.TestConstants.Product.REMAIN_AMOUNT;
+import static com.dapanda.TestConstants.Product.REVIEW_COUNT;
+import static com.dapanda.TestConstants.Product.SELLING_DATA;
+import static com.dapanda.TestConstants.Product.SPLIT_TYPE;
+import static com.dapanda.TestConstants.Product.START_TIME;
+import static com.dapanda.TestConstants.Product.TITLE;
+import static com.dapanda.TestConstants.Product.UPDATED_AT;
+import static com.dapanda.TestConstants.Product.WRONG_END_TIME;
+import static com.dapanda.TestConstants.Product.WRONG_START_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 
+import com.dapanda.TestConstants;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
@@ -27,12 +57,12 @@ import com.dapanda.product.entity.MobileDataFixture;
 import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductFixture;
 import com.dapanda.product.entity.ProductSortOption;
+import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.entity.Wifi;
 import com.dapanda.product.entity.WifiFixture;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,36 +77,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("상품 서비스 테스트")
 class ProductServiceTest {
-
-	private static final Long MEMBER_ID = 1L;
-	private static final Long OTHER_MEMBER_ID = 2L;
-	private static final Long PRODUCT_ID = 1L;
-	private static final int NEW_PRICE = 9000;
-	private static final float BEFORE_DATA_AMOUNT = 1.0F;
-	private static final float BEFORE_REMAIN_AMOUNT = 1.0F;
-	private static final float CHANGED_AMOUNT = 1.0F;
-	private static final float EXCEED_CHANGED_AMOUNT = 3.0F;
-	private static final float SELLING_DATA = 1.5F;
-	private static final boolean SPLIT_TYPE = true;
-	private static final float DATA_AMOUNT = 2.0F;
-	private static final float REMAIN_AMOUNT = 1.0F;
-	private static final int PRICE_PER_100MB = 300;
-	private static final int PRICE = 3000;
-	private static final String TITLE = "와이파이 팔아요";
-	private static final String CHANGED_TITLE = "와이파이 팝니당";
-	private static final String CONTENT = "서울시 강남구 할리스입니다";
-	private static final String CHANGED_CONTENT = "서울시 강남구 할리스입니다람쥐";
-	private static final double LATITUDE = 30F;
-	private static final double CHANGED_LATITUDE = 35F;
-	private static final double LONGITUDE = 126F;
-	private static final double CHANGED_LONGITUDE = 150;
-	private static final double AVERAGE_RATE = 3.5;
-	private static final int REVIEW_COUNT = 3;
-	private static final LocalDateTime START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0);
-	private static final LocalDateTime WRONG_START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0);
-	private static final LocalDateTime END_TIME = LocalDateTime.of(2025, 3, 4, 21, 0);
-	private static final LocalDateTime WRONG_END_TIME = LocalDateTime.of(2024, 3, 4, 21, 0);
-	private static final LocalDateTime UPDATED_AT = LocalDateTime.of(2025, 3, 3, 21, 0);
 
 	@Mock
 	private ProductRepository productRepository;
@@ -437,7 +437,7 @@ class ProductServiceTest {
 			void findMobileDataInfoTest() {
 
 				// given
-				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
 						REMAIN_AMOUNT, PRICE_PER_100MB);
 				MobileDataInfoResponse expectedResponse = new MobileDataInfoResponse(PRODUCT_ID,
@@ -777,6 +777,77 @@ class ProductServiceTest {
 				assertThatThrownBy(() -> productService.updateWifi(request, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.INVALID_TIME.getMessage());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("상품 삭제")
+	class DeleteProduct {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("상품 삭제를 성공한다")
+			void deleteProductTest() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
+				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
+						REMAIN_AMOUNT, PRICE_PER_100MB);
+				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
+						mobileData.getId(), PRICE, member);
+
+				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+
+				// when
+				productService.deleteProduct(PRODUCT_ID, MEMBER_ID);
+
+				// then
+				assertThat(product.getState()).isEqualTo(ProductState.DELETED);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("존재하지 않는 상품이면 예외를 던진다")
+			void deleteProductFailWhenNotFoundProductTest() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
+				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
+						REMAIN_AMOUNT, PRICE_PER_100MB);
+				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
+						mobileData.getId(), PRICE, member);
+
+				// when & then
+				assertThatThrownBy(() -> productService.deleteProduct(PRODUCT_ID, MEMBER_ID))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.PRODUCT_NOT_FOUND.getMessage());
+			}
+
+			@Test
+			@DisplayName("이미 삭제된 상품이면 예외를 던진다")
+			void deleteProductFailWhenAlreadyDeletedTest() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
+				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
+						REMAIN_AMOUNT, PRICE_PER_100MB);
+				Product product = ProductFixture.createMobileDataProductWithIdWithState(PRODUCT_ID,
+						mobileData.getId(), ProductState.DELETED, member);
+
+				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+
+				// when & then
+				assertThatThrownBy(() -> productService.deleteProduct(PRODUCT_ID, MEMBER_ID))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.ALREADY_DELETED_PRODUCT.getMessage());
 			}
 		}
 	}

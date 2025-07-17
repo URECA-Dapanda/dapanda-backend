@@ -17,7 +17,7 @@ public class ProductFixture {
 		);
 	}
 
-	public static Product createProduct1WithId(Member member, Long productId){
+	public static Product createProduct1WithId(Member member, Long productId) {
 
 		Product product = createProduct1(member);
 
@@ -55,6 +55,22 @@ public class ProductFixture {
 		Product product = Product.of(
 				ProductState.ACTIVE,
 				price,
+				mobileDataId,
+				ItemType.MOBILE_DATA,
+				member
+		);
+
+		ReflectionTestUtils.setField(product, "id", productId);
+
+		return product;
+	}
+
+	public static Product createMobileDataProductWithIdWithState(Long productId, Long mobileDataId,
+			ProductState state, Member member) {
+
+		Product product = Product.of(
+				state,
+				1000,
 				mobileDataId,
 				ItemType.MOBILE_DATA,
 				member

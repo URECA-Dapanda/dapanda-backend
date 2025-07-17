@@ -18,6 +18,7 @@ import com.dapanda.product.dto.response.WifiInfoResponse;
 import com.dapanda.product.entity.MobileData;
 import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductSortOption;
+import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.entity.Wifi;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
@@ -127,6 +128,26 @@ public class ProductService {
 				request.longitude(), request.startTime(), request.endTime());
 
 		return UpdateWifiResponse.from(savedProduct.getId());
+	}
+
+	@Transactional
+	public void deleteProduct(Long productId, Long memberId) {
+
+		Product savedProduct = productRepository.findById(productId)
+				.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
+
+		validateProductOwner(savedProduct, memberId);
+		validateProductState(savedProduct);
+
+		savedProduct.changeState(ProductState.DELETED);
+	}
+
+	private void validateProductState(Product savedProduct) {
+
+		if (savedProduct.getState().equals(ProductState.DELETED)) {
+
+			throw new GlobalException(ResultCode.ALREADY_DELETED_PRODUCT);
+		}
 	}
 
 	private void validateTime(LocalDateTime startTime, LocalDateTime endTime) {

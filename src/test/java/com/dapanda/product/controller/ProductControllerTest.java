@@ -1,5 +1,32 @@
 package com.dapanda.product.controller;
 
+import static com.dapanda.TestConstants.Product.BEFORE_DATA_AMOUNT;
+import static com.dapanda.TestConstants.Product.BEFORE_REMAIN_AMOUNT;
+import static com.dapanda.TestConstants.Product.CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.Product.CHANGED_CONTENT;
+import static com.dapanda.TestConstants.Product.CHANGED_LATITUDE;
+import static com.dapanda.TestConstants.Product.CHANGED_LONGITUDE;
+import static com.dapanda.TestConstants.Product.CHANGED_TITLE;
+import static com.dapanda.TestConstants.Product.CONTENT;
+import static com.dapanda.TestConstants.Product.DATA_AMOUNT;
+import static com.dapanda.TestConstants.Product.END_TIME;
+import static com.dapanda.TestConstants.Product.EXCEED_CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.Product.IMAGE_URL_1;
+import static com.dapanda.TestConstants.Product.IMAGE_URL_2;
+import static com.dapanda.TestConstants.Product.INVALID_PRODUCT_ID;
+import static com.dapanda.TestConstants.Product.LATITUDE;
+import static com.dapanda.TestConstants.Product.LONGITUDE;
+import static com.dapanda.TestConstants.Product.NEW_PRICE;
+import static com.dapanda.TestConstants.Product.PRICE;
+import static com.dapanda.TestConstants.Product.PRICE_PER_100MB;
+import static com.dapanda.TestConstants.Product.PRODUCT_ID;
+import static com.dapanda.TestConstants.Product.REMAIN_AMOUNT;
+import static com.dapanda.TestConstants.Product.SELLING_DATA;
+import static com.dapanda.TestConstants.Product.SPLIT_TYPE;
+import static com.dapanda.TestConstants.Product.START_TIME;
+import static com.dapanda.TestConstants.Product.TITLE;
+import static com.dapanda.TestConstants.Product.WRONG_END_TIME;
+import static com.dapanda.TestConstants.Product.WRONG_START_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.BDDMockito.given;
@@ -9,7 +36,10 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -33,6 +63,7 @@ import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductFixture;
 import com.dapanda.product.entity.ProductImage;
 import com.dapanda.product.entity.ProductImageFixture;
+import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.entity.Wifi;
 import com.dapanda.product.entity.WifiFixture;
 import com.dapanda.product.repository.MobileDataRepository;
@@ -69,34 +100,6 @@ import org.springframework.web.context.WebApplicationContext;
 @ExtendWith(RestDocumentationExtension.class)
 @DisplayName("상품 컨트롤러 테스트")
 class ProductControllerTest {
-
-	private static final Long PRODUCT_ID = 1L;
-	private static final Long INVALID_PRODUCT_ID = 100L;
-	private static final float DATA_AMOUNT = 1.0F;
-	private static final float REMAIN_AMOUNT = 1.0F;
-	private static final int PRICE_PER_100MB = 300;
-	private static final int PRICE = 3000;
-	private static final String TITLE = "와이파이 팔아요";
-	private static final String CHANGED_TITLE = "와이파이 팝니당";
-	private static final String CONTENT = "서울시 강남구 할리스입니다";
-	private static final String CHANGED_CONTENT = "서울시 강남구 할리스입니다람쥐";
-	private static final double LATITUDE = 30F;
-	private static final double CHANGED_LATITUDE = 35F;
-	private static final double LONGITUDE = 126F;
-	private static final double CHANGED_LONGITUDE = 150;
-	private static final LocalDateTime START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0);
-	private static final LocalDateTime WRONG_START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0);
-	private static final LocalDateTime END_TIME = LocalDateTime.of(2025, 3, 4, 21, 0);
-	private static final LocalDateTime WRONG_END_TIME = LocalDateTime.of(2024, 3, 4, 21, 0);
-	private static final String IMAGE_URL_1 = "image1";
-	private static final String IMAGE_URL_2 = "image2";
-	private static final int NEW_PRICE = 9000;
-	private static final float BEFORE_DATA_AMOUNT = 1.0F;
-	private static final float BEFORE_REMAIN_AMOUNT = 1.0F;
-	private static final float CHANGED_AMOUNT = 1.0F;
-	private static final float EXCEED_CHANGED_AMOUNT = 3.0F;
-	private static final float SELLING_DATA = 1.5F;
-	private static final boolean SPLIT_TYPE = true;
 
 	@Autowired
 	private WebApplicationContext context;
@@ -1037,6 +1040,119 @@ class ProductControllerTest {
 										fieldWithPath("message").description("처리 결과 메시지")
 								))
 						);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("상품 삭제 API")
+	class DeleteProduct {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("상품을 삭제한다")
+			void deleteProduct() throws Exception {
+
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileData(DATA_AMOUNT, REMAIN_AMOUNT,
+								PRICE_PER_100MB));
+				Product product = productRepository.save(
+						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+				given(userDetails.getId()).willReturn(member.getId());
+
+				// when & then
+				mockMvc.perform(delete("/api/products/{productId}", PRODUCT_ID)
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andDo(document("product/delete-product",
+								pathParameters(
+										parameterWithName("productId").description(
+												"삭제할 상품 아이디 (필수)")
+								)
+						));
+
+				Product deletedProduct = productRepository.findById(product.getId()).orElseThrow();
+
+				assertThat(deletedProduct.getState()).isEqualTo(ProductState.DELETED);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("존재하지 않는 상품이면 예외를 던진다")
+			void deleteProductFailWhenNotFoundProductTest() throws Exception {
+
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileData(DATA_AMOUNT,
+								REMAIN_AMOUNT, PRICE_PER_100MB));
+				Product product = productRepository.save(
+						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+				given(userDetails.getId()).willReturn(member.getId());
+
+				// when & then
+				mockMvc.perform(delete("/api/products/{productId}", INVALID_PRODUCT_ID)
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andDo(document("product/delete-product-not-found-error",
+								pathParameters(
+										parameterWithName("productId").description(
+												"삭제할 상품 아이디 (필수)")
+								)
+						));
+			}
+
+			@Test
+			@DisplayName("이미 삭제된 상품이면 예외를 던진다")
+			void deleteProductFailWhenAlreadyDeletedTest() throws Exception {
+
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileData(DATA_AMOUNT,
+								REMAIN_AMOUNT, PRICE_PER_100MB));
+				Product product = productRepository.save(
+						ProductFixture.createMobileDataProductWithIdWithState(null,
+								mobileData.getId(), ProductState.DELETED, member));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+				given(userDetails.getId()).willReturn(member.getId());
+
+				// when & then
+				mockMvc.perform(delete("/api/products/{productId}", PRODUCT_ID)
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andDo(document("product/delete-product-already-deleted-error",
+								pathParameters(
+										parameterWithName("productId").description(
+												"삭제할 상품 아이디 (필수)")
+								)
+						));
 			}
 		}
 	}

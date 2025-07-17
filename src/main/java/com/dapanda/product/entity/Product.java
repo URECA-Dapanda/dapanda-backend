@@ -61,4 +61,9 @@ public class Product extends BaseEntity {
 
 		this.price = price;
 	}
+
+	public void changeState(ProductState state) {
+
+		this.state = state;
+	}
 }
