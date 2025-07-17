@@ -52,7 +52,7 @@ public class SecurityConfig {
 						sess -> sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/", "/api/**", "/api-docs.html", "/docs/**",
-								"/oauth2/**", "error", "/actuator/health",
+								"/oauth2/**", "error", "/actuator/health", "/default-ui.css",
 								"/api/auth/**").permitAll()
 						.anyRequest().authenticated()
 				)
