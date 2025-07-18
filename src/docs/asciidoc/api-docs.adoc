@@ -528,7 +528,7 @@ include::{snippets}/auth-logout-invalid-token/http-response.adoc[]
 
 include::{snippets}/product/get-products-mobile-data/http-request.adoc[]
 
-===== 요청 필드
+===== 요청 파라미터
 
 include::{snippets}/product/get-products-mobile-data/query-parameters.adoc[]
 
@@ -565,7 +565,7 @@ include::{snippets}/product/get-products-mobile-data-plan-sort-option-validation
 
 include::{snippets}/product/get-products-wifi/http-request.adoc[]
 
-===== 요청 필드
+===== 요청 파라미터
 
 include::{snippets}/product/get-products-wifi/query-parameters.adoc[]
 
