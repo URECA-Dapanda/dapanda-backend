@@ -45,6 +45,16 @@ spring:
       ddl-auto: update
     show-sql: true
 
+  cache:
+    type: redis
+    redis:
+      time-to-live: ${REDIS_TTL}
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
 toss:
   secret-key: ${TOSS_PAYMENTS_SECRET}
 
