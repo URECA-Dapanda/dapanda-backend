@@ -80,6 +80,45 @@ DaPanda 서비스의 REST API 문서입니다.
 == API 목록
 
 [[resources-payment]]
+
+=== 신고
+
+==== 신고 생성
+
+`POST` 요청으로 리뷰, 상품, 회원, 채팅에 대해 신고할 수 있습니다.
+
+include::{snippets}/report/create-report/path-parameters.adoc[]
+
+===== 요청
+
+include::{snippets}/report/create-report/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/report/create-report/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/report/create-report/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/report/create-report/response-fields.adoc[]
+
+===== 실패 응답
+
+====== 중복 신고
+
+include::{snippets}/report/create-report/duple-error/http-request.adoc[]
+
+include::{snippets}/report/create-report/duple-error/http-response.adoc[]
+
+====== 필수 필드 누락
+
+include::{snippets}/report/create-report/validation-error/http-request.adoc[]
+
+include::{snippets}/report/create-report/validation-error/http-response.adoc[]
+
 === 결제
 
 결제 리소스는 사용자가 캐시를 충전하는 데 사용됩니다.
@@ -217,11 +256,13 @@ include::{snippets}/review/read-written-review/response-fields.adoc[]
 
 `POST` 요청을 사용하여 새로운 리뷰를 등록할 수 있습니다.
 
-include::{snippets}/review/create-review/path-parameters.adoc[]
-
 ===== 요청
 
 include::{snippets}/review/create-review/http-request.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/review/create-review/path-parameters.adoc[]
 
 ===== 요청 필드
 
@@ -247,11 +288,13 @@ include::{snippets}/review/create-review/validation-error/http-response.adoc[]
 
 `PATCH` 요청을 사용하여 리뷰를 수정할 수 있습니다.
 
-include::{snippets}/review/update-review/path-parameters.adoc[]
-
 ===== 요청
 
 include::{snippets}/review/update-review/http-request.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/review/update-review/path-parameters.adoc[]
 
 ===== 요청 필드
 
@@ -269,23 +312,21 @@ include::{snippets}/review/update-review/response-fields.adoc[]
 
 ====== 필수 필드 누락
 
-include::{snippets}/review/update-review-validation-error/http-request.adoc[]
+include::{snippets}/review/update-review/validation-error/http-request.adoc[]
 
-include::{snippets}/review/update-review-validation-error/http-response.adoc[]
+include::{snippets}/review/update-review/validation-error/http-response.adoc[]
 
 ==== 리뷰 삭제
 
 `DELETE` 요청을 사용하여 리뷰를 삭제할 수 있습니다.
 
-include::{snippets}/review/delete-review/path-parameters.adoc[]
-
 ===== 요청
 
 include::{snippets}/review/delete-review/http-request.adoc[]
 
-===== 요청 필드
+===== 요청 파라미터
 
-include::{snippets}/review/delete-review/request-fields.adoc[]
+include::{snippets}/review/delete-review/path-parameters.adoc[]
 
 ===== 응답
 
@@ -299,9 +340,9 @@ include::{snippets}/review/delete-review/response-fields.adoc[]
 
 ====== 필수 필드 누락
 
-include::{snippets}/review/delete-review-validation-error/http-request.adoc[]
+include::{snippets}/review/delete-review/validation-error/http-request.adoc[]
 
-include::{snippets}/review/delete-review-validation-error/http-response.adoc[]
+include::{snippets}/review/delete-review/validation-error/http-response.adoc[]
 
 ---
 

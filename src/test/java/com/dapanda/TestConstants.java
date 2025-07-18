@@ -1,5 +1,6 @@
 package com.dapanda;
 
+import com.dapanda.report.entity.ReportTargetCategory;
 import com.dapanda.review.entity.ReviewSortOption;
 import java.time.LocalDateTime;
 
@@ -26,6 +27,14 @@ public final class TestConstants {
 		public static final String COMMENT = "좋아요";
 		public static final float NEW_RATING = 1.0f;
 		public static final String NEW_COMMENT = "별로에요";
+	}
+
+	public static final class Report {
+
+		public static final Long REPORT_ID = 1L;
+		public static final Long TARGET_ID = 1L;
+		public static final String REASON = "너무 비싸요";
+		public static final ReportTargetCategory REPORT_TARGET_CATEGORY_PRODUCT = ReportTargetCategory.PRODUCT;
 	}
 
 	public static final class Trade {
