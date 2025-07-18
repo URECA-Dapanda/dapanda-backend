@@ -4,6 +4,7 @@ import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.jwt.JwtTokenProvider;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.plan.service.PlanService;
 import com.dapanda.refreshToken.service.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +25,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RefreshTokenService refreshTokenService;
 	private final MemberRepository memberRepository;
+	private final PlanService planService;
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request,
@@ -47,6 +49,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 		Member member = memberRepository.findByEmailAndProvider(email, provider)
 				.orElseThrow(() -> new IllegalArgumentException("OAuth 로그인 유저 DB에 없음"));
+
+		planService.createRandomPlanForMember(member);
 
 		String accessToken = jwtTokenProvider.generateAccessToken(member);
 		String refreshToken = jwtTokenProvider.generateRefreshToken(member);
