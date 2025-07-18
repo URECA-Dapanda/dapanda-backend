@@ -23,7 +23,7 @@ public class PlanService {
 
 	@Transactional
 	public Plan createRandomPlanForMember(Member member) {
-		// 이미 Plan이 있으면 아무것도 안 함
+
 		if (hasPlan(member)) {
 			return planRepository.findByMember(member).orElseThrow();
 		}
