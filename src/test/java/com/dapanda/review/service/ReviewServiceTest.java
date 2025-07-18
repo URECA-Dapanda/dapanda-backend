@@ -6,7 +6,6 @@ import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_REVIEW_SORT_OPTION;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE;
-import static com.dapanda.TestConstants.Product.PRODUCT_ID;
 import static com.dapanda.TestConstants.Review.COMMENT;
 import static com.dapanda.TestConstants.Review.RATING;
 import static com.dapanda.TestConstants.Review.REVIEW_ID;
@@ -23,8 +22,6 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
-import com.dapanda.product.entity.Product;
-import com.dapanda.product.entity.ProductFixture;
 import com.dapanda.review.dto.request.CreateReviewRequest;
 import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
@@ -77,11 +74,7 @@ class ReviewServiceTest {
 
 				//given
 				Member savedBuyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
-				Member savedSeller = MemberFixture.createMember2WithId(SELLER_MEMBER_ID);
-
-				Product savedProduct = ProductFixture.createProduct1WithId(savedSeller, PRODUCT_ID);
-
-				Trade savedTrade = TradeFixture.createTrade1WithId(savedProduct, savedBuyer,
+				Trade savedTrade = TradeFixture.createTrade1WithId(savedBuyer,
 						TRADE_ID);
 
 				CreateReviewRequest request = new CreateReviewRequest(RATING, COMMENT);
@@ -132,11 +125,8 @@ class ReviewServiceTest {
 				//given
 				CreateReviewRequest request = new CreateReviewRequest(RATING, COMMENT);
 
-				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
 				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
-				Product product = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
-
-				Trade trade = TradeFixture.createTrade1WithId(product, buyer, TRADE_ID);
+				Trade trade = TradeFixture.createTrade1WithId(buyer, TRADE_ID);
 
 				given(tradeRepository.findById(TRADE_ID)).willReturn(Optional.of(trade));
 
@@ -164,13 +154,8 @@ class ReviewServiceTest {
 			public void deleteReviewTest() {
 
 				//given
-				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
 				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
-
-				Product product = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
-
-				Trade trade = TradeFixture.createTrade1WithId(product, buyer, TRADE_ID);
-
+				Trade trade = TradeFixture.createTrade1WithId(buyer, TRADE_ID);
 				Review review = ReviewFixture.createReview1WithId(trade, REVIEW_ID);
 
 				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
@@ -206,13 +191,8 @@ class ReviewServiceTest {
 			public void reviewOwnerTest() {
 
 				//given
-				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
 				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
-
-				Product product = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
-
-				Trade trade = TradeFixture.createTrade1WithId(product, buyer, TRADE_ID);
-
+				Trade trade = TradeFixture.createTrade1WithId(buyer, TRADE_ID);
 				Review review = ReviewFixture.createReview1WithId(trade, REVIEW_ID);
 
 				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
@@ -241,13 +221,8 @@ class ReviewServiceTest {
 				//given
 				UpdateReviewRequest request = new UpdateReviewRequest(RATING, COMMENT);
 
-				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
 				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
-
-				Product product = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
-
-				Trade trade = TradeFixture.createTrade1WithId(product, buyer, TRADE_ID);
-
+				Trade trade = TradeFixture.createTrade1WithId(buyer, TRADE_ID);
 				Review originalReview = ReviewFixture.createReview1WithId(trade, REVIEW_ID);
 
 				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(originalReview));
@@ -290,13 +265,8 @@ class ReviewServiceTest {
 				//given
 				UpdateReviewRequest request = new UpdateReviewRequest(RATING, COMMENT);
 
-				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
 				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
-
-				Product product = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
-
-				Trade trade = TradeFixture.createTrade1WithId(product, buyer, TRADE_ID);
-
+				Trade trade = TradeFixture.createTrade1WithId(buyer, TRADE_ID);
 				Review review = ReviewFixture.createReview1WithId(trade, REVIEW_ID);
 
 				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
@@ -527,9 +497,7 @@ class ReviewServiceTest {
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				Member seller = MemberFixture.createMember2WithId(SELLER_MEMBER_ID);
 
-				Product savedProduct = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
-
-				Trade savedTrade = TradeFixture.createTrade1WithId(savedProduct, buyer, TRADE_ID);
+				Trade savedTrade = TradeFixture.createTrade1WithId(buyer, TRADE_ID);
 
 				Review review = ReviewFixture.createReview1WithId(savedTrade, REVIEW_ID);
 
@@ -558,9 +526,7 @@ class ReviewServiceTest {
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				Member seller = MemberFixture.createMember2WithId(SELLER_MEMBER_ID);
 
-				Product savedProduct = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
-
-				Trade savedTrade = TradeFixture.createTrade1WithId(savedProduct, buyer, TRADE_ID);
+				Trade savedTrade = TradeFixture.createTrade1WithId(buyer, TRADE_ID);
 
 				Review review = ReviewFixture.createReview1WithId(savedTrade, REVIEW_ID);
 
@@ -580,9 +546,7 @@ class ReviewServiceTest {
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				Member seller = MemberFixture.createMember2WithId(SELLER_MEMBER_ID);
 
-				Product savedProduct = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
-
-				Trade savedTrade = TradeFixture.createTrade1WithId(savedProduct, buyer, TRADE_ID);
+				Trade savedTrade = TradeFixture.createTrade1WithId(buyer, TRADE_ID);
 
 				Review review = ReviewFixture.createReview1WithId(savedTrade, REVIEW_ID);
 

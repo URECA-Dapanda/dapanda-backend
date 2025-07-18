@@ -548,9 +548,9 @@ include::{snippets}/product/read-selling-product/response-fields.adoc[]
 
 include::{snippets}/product/get-products-mobile-data/http-request.adoc[]
 
-===== 요청 필드
+===== 요청 파라미터
 
-include::{snippets}/product/get-products-mobile-data/request-fields.adoc[]
+include::{snippets}/product/get-products-mobile-data/query-parameters.adoc[]
 
 ===== 응답
 
@@ -585,9 +585,9 @@ include::{snippets}/product/get-products-mobile-data-plan-sort-option-validation
 
 include::{snippets}/product/get-products-wifi/http-request.adoc[]
 
-===== 요청 필드
+===== 요청 파라미터
 
-include::{snippets}/product/get-products-wifi/request-fields.adoc[]
+include::{snippets}/product/get-products-wifi/query-parameters.adoc[]
 
 ===== 응답
 

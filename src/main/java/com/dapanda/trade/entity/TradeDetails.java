@@ -1,7 +1,7 @@
 package com.dapanda.trade.entity;
 
 import com.dapanda.common.entity.CreatedAtEntity;
-import com.dapanda.member.entity.Member;
+import com.dapanda.product.entity.Product;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -9,42 +9,40 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Trade extends CreatedAtEntity {
+public class TradeDetails extends CreatedAtEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	private Float dataAmount;
-
-	private Integer timeAmount;
-
-	private int tradingPrice;
-
-	private TradeType tradeType;
-
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "member_id")
-	private Member member;
+	@JoinColumn(name = "product_id")
+	private Product product;
 
-	public static Trade of(Float dataAmount, Integer timeAmount, int tradingPrice, Member member) {
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "trade_id")
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	private Trade trade;
 
-		return Trade.builder()
-				.dataAmount(dataAmount)
-				.timeAmount(timeAmount)
-				.tradingPrice(tradingPrice)
-				.member(member)
+	public static TradeDetails of(Product product, Trade trade) {
+
+		return TradeDetails.builder()
+				.product(product)
+				.trade(trade)
 				.build();
 	}
 }

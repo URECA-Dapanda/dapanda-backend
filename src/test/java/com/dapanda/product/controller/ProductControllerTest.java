@@ -1,5 +1,51 @@
 package com.dapanda.product.controller;
 
+import static com.dapanda.TestConstants.Product.BEFORE_DATA_AMOUNT;
+import static com.dapanda.TestConstants.Product.BEFORE_REMAIN_AMOUNT;
+import static com.dapanda.TestConstants.Product.CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.Product.CHANGED_CONTENT;
+import static com.dapanda.TestConstants.Product.CHANGED_LATITUDE;
+import static com.dapanda.TestConstants.Product.CHANGED_LONGITUDE;
+import static com.dapanda.TestConstants.Product.CHANGED_TITLE;
+import static com.dapanda.TestConstants.Product.CONTENT;
+import static com.dapanda.TestConstants.Product.DATA_AMOUNT;
+import static com.dapanda.TestConstants.Product.END_TIME;
+import static com.dapanda.TestConstants.Product.EXCEED_CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.Product.IMAGE_URL_1;
+import static com.dapanda.TestConstants.Product.IMAGE_URL_2;
+import static com.dapanda.TestConstants.Product.INVALID_PRODUCT_ID;
+import static com.dapanda.TestConstants.Product.LATITUDE;
+import static com.dapanda.TestConstants.Product.LONGITUDE;
+import static com.dapanda.TestConstants.Product.NEW_PRICE;
+import static com.dapanda.TestConstants.Product.PRICE;
+import static com.dapanda.TestConstants.Product.PRICE_PER_100MB;
+import static com.dapanda.TestConstants.Product.PRODUCT_ID;
+import static com.dapanda.TestConstants.Product.REMAIN_AMOUNT;
+import static com.dapanda.TestConstants.Product.SELLING_DATA;
+import static com.dapanda.TestConstants.Product.SPLIT_TYPE;
+import static com.dapanda.TestConstants.Product.START_TIME;
+import static com.dapanda.TestConstants.Product.TITLE;
+import static com.dapanda.TestConstants.Product.WRONG_END_TIME;
+import static com.dapanda.TestConstants.Product.WRONG_START_TIME;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
@@ -9,7 +55,6 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
-import com.dapanda.product.dto.request.WifiCursorRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
 import com.dapanda.product.entity.*;
@@ -148,22 +193,28 @@ class ProductControllerTest {
 
 				// when & then
 				mockMvc.perform(
-								MockMvcRequestBuilders.post(
+								MockMvcRequestBuilders.get(
 												"/api/products/mobile-data")
+										.param("cursorId", "1")
+										.param("size", String.valueOf(size))
+										.param("productSortOption", productSortOption)
+										.param("dataAmount", String.valueOf(dataAmount))
 										.contentType(MediaType.APPLICATION_JSON)
-										.content(objectMapper.writeValueAsString(request))
 						)
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data").exists())
 						.andDo(document("product/get-products-mobile-data",
-								requestFields(
-										fieldWithPath("cursorId").description("마지막 커서 아이디 (필수 X)"),
-										fieldWithPath("size").description("페이지 사이즈 (필수, 1 이상 정수)"),
-										fieldWithPath("productSortOption").description(
+								queryParameters(
+										parameterWithName("cursorId").description(
+												"마지막 커서 아이디 (필수 X)").optional(),
+										parameterWithName("size").description(
+												"페이지 사이즈 (필수, 1 이상 정수)"),
+										parameterWithName("productSortOption").description(
 												"정렬 조건 (필수 X, 기본값: 최신순) - RECENT(최신순), PRICE_ASC(가격 낮은순), AMOUNT_ASC(데이터 용량 적은순), AMOUNT_DESC(데이터 용량 많은순"),
-										fieldWithPath("dataAmount").description("데이터 양 (필수 X)")
+										parameterWithName("dataAmount").description("데이터 양 (필수 X)")
+												.optional()
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -203,41 +254,31 @@ class ProductControllerTest {
 				@DisplayName("데이터 상품 목록 조회 시 size가 null이거나 1 미만이면 예외를 던진다")
 				void throwExceptionWhenSizeIsNullOrLessThan1() throws Exception {
 
-					// given
-					List<MobileDataCursorRequest> invalidRequests = List.of(
-							new MobileDataCursorRequest(3L, 0, "RECENT", 2.0F),
-							new MobileDataCursorRequest(3L, null, "RECENT", 2.0F)
-					);
-
-					// when & then
-					for (MobileDataCursorRequest request : invalidRequests) {
-						mockMvc.perform(MockMvcRequestBuilders.post(
-												"/api/products/mobile-data")
-										.contentType(MediaType.APPLICATION_JSON)
-										.content(objectMapper.writeValueAsString(request))
-								)
-								.andExpect(status().isBadRequest())
-								.andExpect(jsonPath("$.message").value(
-										containsString("유효하지 않은 파라미터입니다.")))
-								.andExpect(jsonPath("$.code").value(1006))
-								.andDo(document(
-										"product/get-products-mobile-data-size-validation-error"));
-					}
+					// given & when & then
+					mockMvc.perform(MockMvcRequestBuilders.get("/api/products/mobile-data")
+									.param("cursorId", "3")
+									.param("size", "0")
+									.param("productSortOption", "RECENT")
+									.param("dataAmount", String.valueOf(2.0F))
+									.contentType(MediaType.APPLICATION_JSON)
+							)
+							.andExpect(status().isBadRequest())
+							.andDo(document(
+									"product/get-products-mobile-data-size-validation-error"));
 				}
 
 				@Test
 				@DisplayName("데이터 상품 목록 조회 시 상품 정렬 조건이 유효하지 않으면 예외를 던진다")
 				void throwExceptionWhenProductSortOptionIsInvalid() throws Exception {
 
-					// given
-					MobileDataCursorRequest request = new MobileDataCursorRequest(3L, 2,
-							"RECENT123", 2.0F);
-
-					// when & then
-					mockMvc.perform(MockMvcRequestBuilders.post(
+					// given & when & then
+					mockMvc.perform(MockMvcRequestBuilders.get(
 											"/api/products/mobile-data")
+									.param("cursorId", "3")
+									.param("size", String.valueOf(2))
+									.param("productSortOption", "RECENT123")
+									.param("dataAmount", String.valueOf(2.0F))
 									.contentType(MediaType.APPLICATION_JSON)
-									.content(objectMapper.writeValueAsString(request))
 							)
 							.andExpect(status().isBadRequest())
 							.andExpect(jsonPath("$.message").value(
@@ -294,14 +335,15 @@ class ProductControllerTest {
 				Product product3 = ProductFixture.createWifiProduct(5000, wifi3.getId(), member);
 				productRepository.saveAll(List.of(product1, product2, product3));
 
-				WifiCursorRequest request = new WifiCursorRequest(cursorId, size,
-						productSortOption, isOpen, latitude, longitude);
-
 				// when & then
-				mockMvc.perform(MockMvcRequestBuilders.post(
-										"/api/products/wifi")
+				mockMvc.perform(MockMvcRequestBuilders.get("/api/products/wifi")
+								.param("cursorId", String.valueOf(cursorId))
+								.param("size", String.valueOf(size))
+								.param("productSortOption", productSortOption)
+								.param("open", String.valueOf(isOpen))
+								.param("latitude", String.valueOf(latitude))
+								.param("longitude", String.valueOf(longitude))
 								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request))
 						)
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
@@ -309,14 +351,16 @@ class ProductControllerTest {
 						.andExpect(jsonPath("$.data").exists())
 						.andDo(print())
 						.andDo(document("product/get-products-wifi",
-								requestFields(
-										fieldWithPath("cursorId").description("마지막 커서 아이디 (필수 X)"),
-										fieldWithPath("size").description("페이지 사이즈 (필수, 1 이상 정수)"),
-										fieldWithPath("productSortOption").description(
+								queryParameters(
+										parameterWithName("cursorId").description(
+												"마지막 커서 아이디 (필수 X)"),
+										parameterWithName("size").description(
+												"페이지 사이즈 (필수, 1 이상 정수)"),
+										parameterWithName("productSortOption").description(
 												"정렬 조건 (필수 X) - PRICE_ASC(가격 낮은순), AVERAGE_RATE_DESC(평점 높은순)"),
-										fieldWithPath("open").description("영업중 여부(필수 X)"),
-										fieldWithPath("latitude").description("사용자의 위도"),
-										fieldWithPath("longitude").description("사용자의 경도")
+										parameterWithName("open").description("영업중 여부 (필수 X)"),
+										parameterWithName("latitude").description("사용자의 위도 (필수 O)"),
+										parameterWithName("longitude").description("사용자의 경도 (필수 O)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -360,46 +404,34 @@ class ProductControllerTest {
 			@DisplayName("와이파이 상품 목록 조회 시 size가 null이거나 1 미만이면 예외를 던진다")
 			void throwExceptionWhenSizeIsNullOrLessThan1() throws Exception {
 
-				// given
-				List<WifiCursorRequest> invalidRequests = List.of(
-						new WifiCursorRequest(3L, 0, "RECENT", true, 30.0, 126.0),
-						new WifiCursorRequest(4L, null, "RECENT", true, 30.0, 126.0)
-				);
-
-				// when & then
-				for (WifiCursorRequest request : invalidRequests) {
-					mockMvc.perform(MockMvcRequestBuilders.post(
-											"/api/products/wifi")
-									.contentType(MediaType.APPLICATION_JSON)
-									.content(objectMapper.writeValueAsString(request))
-							)
-							.andExpect(status().isBadRequest())
-							.andExpect(jsonPath("$.message").value(
-									containsString("유효하지 않은 파라미터입니다.")))
-							.andExpect(jsonPath("$.code").value(1006))
-							.andDo(document(
-									"product/get-products-wifi-size-validation-error"));
-				}
+				// given & when & then
+				mockMvc.perform(MockMvcRequestBuilders.get("/api/products/wifi")
+								.param("cursorId", "3")
+								.param("size", String.valueOf(0))
+								.param("productSortOption", "RECENT123")
+								.param("isOpen", String.valueOf(true))
+								.param("latitude", String.valueOf(30.0))
+								.param("longitude", String.valueOf(126.0))
+								.contentType(MediaType.APPLICATION_JSON)
+						)
+						.andExpect(status().isBadRequest())
+						.andDo(document(
+								"product/get-products-wifi-size-validation-error"));
 			}
 
 			@Test
 			@DisplayName("와아파이 상품 목록 조회 시 위도, 경도 값이 유효하지 않으면 예외를 던진다")
 			void throwExceptionWhenProductSortOptionIsInvalid() throws Exception {
 
-				// given
-				WifiCursorRequest request = new WifiCursorRequest(3L, 2,
-						"RECENT123", true, null, null);
-
-				// when & then
-				mockMvc.perform(MockMvcRequestBuilders.post(
-										"/api/products/wifi")
+				// given & when & then
+				mockMvc.perform(MockMvcRequestBuilders.get("/api/products/wifi")
 								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request))
+								.param("cursorId", "3")
+								.param("size", String.valueOf(2))
+								.param("productSortOption", "RECENT123")
+								.param("isOpen", String.valueOf(true))
 						)
 						.andExpect(status().isBadRequest())
-						.andExpect(jsonPath("$.message").value(
-								containsString("유효하지 않은 파라미터입니다.")))
-						.andExpect(jsonPath("$.code").value(1006))
 						.andDo(document(
 								"product/get-products-wifi-plan-sort-option-validation-error"));
 			}

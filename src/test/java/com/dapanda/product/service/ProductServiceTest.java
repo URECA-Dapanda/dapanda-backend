@@ -12,6 +12,20 @@ import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.*;
 import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.*;
+import com.dapanda.product.dto.request.UpdateMobileDataRequest;
+import com.dapanda.product.dto.request.UpdateWifiRequest;
+import com.dapanda.product.dto.response.MobileDataInfoResponse;
+import com.dapanda.product.dto.response.UpdateMobileDataResponse;
+import com.dapanda.product.dto.response.UpdateWifiResponse;
+import com.dapanda.product.dto.response.WifiInfoResponse;
+import com.dapanda.product.entity.MobileData;
+import com.dapanda.product.entity.MobileDataFixture;
+import com.dapanda.product.entity.Product;
+import com.dapanda.product.entity.ProductFixture;
+import com.dapanda.product.entity.ProductSortOption;
+import com.dapanda.product.entity.ProductState;
+import com.dapanda.product.entity.Wifi;
+import com.dapanda.product.entity.WifiFixture;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
@@ -145,8 +159,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new MobileDataCursorRequest(null, 3,
-								"RECENT", null));
+						null, 3, "RECENT", null);
 
 				// then
 				assertThat(result.getData()).hasSize(3);
@@ -171,8 +184,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new MobileDataCursorRequest(null, 3,
-								"PRICE_ASC", null));
+						null, 3, "PRICE_ASC", null);
 
 				// then
 				assertThat(result.getData()).hasSize(3);
@@ -209,9 +221,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new MobileDataCursorRequest(null, 2,
-								"AMOUNT_ASC", 2.0F)
-				);
+						null, 2, "AMOUNT_ASC", 2.0F);
 
 				// then
 				assertThat(result.getData()).hasSize(3);
@@ -237,8 +247,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new MobileDataCursorRequest(null, 3,
-								"AMOUNT_DESC", null));
+						null, 3, "AMOUNT_DESC", null);
 
 				// then
 				assertThat(result.getData()).hasSize(3);
@@ -264,8 +273,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new MobileDataCursorRequest(null, 3,
-								"AMOUNT_ASC", 5.0F));
+						null, 3, "AMOUNT_ASC", 5.0F);
 
 				// then
 				assertThat(result.getData()).hasSize(2);
@@ -281,13 +289,10 @@ class ProductServiceTest {
 			@DisplayName("정렬 옵션이 유효하지 않으면 예외를 던진다")
 			void failWhenInvalidSizeTest() {
 
-				// given
-				MobileDataCursorRequest request = new MobileDataCursorRequest(null, 1, "RECENT123",
-						null);
-
-				// when
+				// given & when
 				GlobalException exception = assertThrows(GlobalException.class, () -> {
-					productService.findMobileDataByCursor(request);
+					productService.findMobileDataByCursor(null, 1, "RECENT123",
+							null);
 				});
 
 				// then
@@ -323,8 +328,8 @@ class ProductServiceTest {
 						true, 37.0, 127.0)).willReturn(response);
 
 				// when
-				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
-						new WifiCursorRequest(null, 3, "PRICE_ASC", true, 37.0, 127.0));
+				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(null, 3,
+						"PRICE_ASC", true, 37.0, 127.0);
 
 				// then
 				assertThat(result.getData()).hasSize(3);
@@ -363,8 +368,8 @@ class ProductServiceTest {
 						response);
 
 				// when
-				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
-						new WifiCursorRequest(null, 2, "DISTANCE_ASC", true, 37.0, 127.0));
+				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(null, 2,
+						"DISTANCE_ASC", true, 37.0, 127.0);
 
 				// then
 				assertThat(result.getData()).hasSize(3);
@@ -392,8 +397,8 @@ class ProductServiceTest {
 						response);
 
 				// when
-				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
-						new WifiCursorRequest(null, 3, "AVERAGE_RATE_DESC", true, 37.0, 127.0));
+				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(null, 3,
+						"AVERAGE_RATE_DESC", true, 37.0, 127.0);
 
 				// then
 				assertThat(result.getData()).hasSize(3);
@@ -420,8 +425,8 @@ class ProductServiceTest {
 						response);
 
 				// when
-				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
-						new WifiCursorRequest(null, 3, "DISTANCE_ASC", true, 37.0, 127.0));
+				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(null, 3,
+						"DISTANCE_ASC", true, 37.0, 127.0);
 
 				// then
 				assertThat(result.getData()).hasSize(2);
@@ -437,13 +442,10 @@ class ProductServiceTest {
 			@DisplayName("정렬 옵션이 유효하지 않으면 예외를 던진다")
 			void failWhenInvalidSortOptionTest() {
 
-				// given
-				WifiCursorRequest request = new WifiCursorRequest(null, 1, "RECENT123",
-						true, 37.0, 127.0);
-
-				// when
+				// given & when
 				GlobalException exception = assertThrows(GlobalException.class, () -> {
-					productService.findWifiByCursor(request);
+					productService.findWifiByCursor(null, 1, "RECENT123",
+							true, 37.0, 127.0);
 				});
 
 				// then

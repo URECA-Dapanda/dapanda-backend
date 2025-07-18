@@ -7,7 +7,9 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
-import com.dapanda.product.dto.request.*;
+import com.dapanda.product.dto.request.ReadSellingProductRequest;
+import com.dapanda.product.dto.request.UpdateMobileDataRequest;
+import com.dapanda.product.dto.request.UpdateWifiRequest;
 import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.MobileDataRepository;
@@ -57,18 +59,21 @@ public class ProductService {
 		return CursorPageResponse.of(response, pageInfo);
 	}
 
-	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(
-			MobileDataCursorRequest request) {
+//	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(
+//			MobileDataCursorRequest request) {
 
-		return productRepository.findMobileDataByCursor(request.getCursorId(), request.getSize(),
-				ProductSortOption.from(request.getProductSortOption()), request.getDataAmount());
+	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, Integer size,
+																		String productSortOption, Float dataAmount) {
+
+		return productRepository.findMobileDataByCursor(cursorId, size,
+				ProductSortOption.from(productSortOption), dataAmount);
 	}
 
-	public CursorPageResponse<WifiSummary> findWifiByCursor(WifiCursorRequest request) {
+	public CursorPageResponse<WifiSummary> findWifiByCursor(Long cursorId, Integer size,
+															String productSortOption, boolean open, Double latitude, Double longitude) {
 
-		return productRepository.findWifiByCursor(request.getCursorId(), request.getSize(),
-				ProductSortOption.from(request.getProductSortOption()), request.isOpen(),
-				request.getLatitude(), request.getLongitude());
+		return productRepository.findWifiByCursor(cursorId, size,
+				ProductSortOption.from(productSortOption), open, latitude, longitude);
 	}
 
 	public MobileDataInfoResponse findMobileDataInfo(Long productId) {
