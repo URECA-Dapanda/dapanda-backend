@@ -71,8 +71,8 @@ class ReportServiceTest {
 
 				Report savedReport = ReportFixture.createReportFromProduct1WithId(product, request.targetCategory(), reporter, REPORT_ID);
 
-				given(memberRepository.findById(USER_DETAILS_MEMBER_ID)).willReturn(Optional.of(reporter));
-				given(reportRepository.existsByReportTargetIdAndReportTargetCategoryAndReporter(TARGET_ID, REPORT_TARGET_CATEGORY_PRODUCT, reporter)).willReturn(false);
+				given(memberRepository.getReferenceById(USER_DETAILS_MEMBER_ID)).willReturn(reporter);
+				given(reportRepository.existsByReportTargetIdAndReportTargetCategoryAndReporterId(TARGET_ID, REPORT_TARGET_CATEGORY_PRODUCT, USER_DETAILS_MEMBER_ID)).willReturn(false);
 				given(reportRepository.save(any(Report.class))).willReturn(savedReport);
 				given(memberRepository.findMemberIdByProductId(PRODUCT_ID)).willReturn(Optional.of(SELLER_MEMBER_ID));
 				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID)).willReturn(Optional.of(reportedMember));
@@ -98,10 +98,7 @@ class ReportServiceTest {
 				//given
 				CreateReportRequest request = new CreateReportRequest(REASON, REPORT_TARGET_CATEGORY_PRODUCT);
 
-				Member reporter = MemberFixture.createMember1WithId(USER_DETAILS_MEMBER_ID);
-
-				given(memberRepository.findById(USER_DETAILS_MEMBER_ID)).willReturn(Optional.of(reporter));
-				given(reportRepository.existsByReportTargetIdAndReportTargetCategoryAndReporter(TARGET_ID, REPORT_TARGET_CATEGORY_PRODUCT, reporter)).willReturn(true);
+				given(reportRepository.existsByReportTargetIdAndReportTargetCategoryAndReporterId(TARGET_ID, REPORT_TARGET_CATEGORY_PRODUCT, USER_DETAILS_MEMBER_ID)).willReturn(true);
 
 				//when & then
 				assertThatThrownBy(() -> reportService.createReport(PRODUCT_ID, USER_DETAILS_MEMBER_ID, request))
