@@ -34,6 +34,8 @@ public class ProductService {
 
 	public CursorPageResponse<ReadSellingProductResponse> readSellingProduct(ReadSellingProductRequest request) {
 
+		validateMemberId(request.memberId());
+
 		List<ReadSellingProductResponse> response = productRepository.findSellingProduct(request);
 
 		boolean hasNext = response.size() > request.size();
@@ -192,6 +194,15 @@ public class ProductService {
 
 		if (!savedProduct.getMember().getId().equals(memberId)) {
 			throw new GlobalException(ResultCode.OTHER_PRODUCT);
+		}
+	}
+
+
+	private void validateMemberId(Long memberId) {
+
+		if (!memberRepository.existsById(memberId)) {
+
+			throw new GlobalException(ResultCode.MEMBER_NOT_FOUND);
 		}
 	}
 }
