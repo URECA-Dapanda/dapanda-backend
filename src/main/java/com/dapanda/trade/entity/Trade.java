@@ -2,9 +2,18 @@ package com.dapanda.trade.entity;
 
 import com.dapanda.common.entity.CreatedAtEntity;
 import com.dapanda.member.entity.Member;
-import com.dapanda.product.entity.Product;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -23,21 +32,18 @@ public class Trade extends CreatedAtEntity {
 
 	private int tradingPrice;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "product_id")
-	private Product product;
+	private TradeType tradeType;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id")
 	private Member member;
 
-	public static Trade of(Float dataAmount, Integer timeAmount, int tradingPrice, Product product, Member member) {
+	public static Trade of(Float dataAmount, Integer timeAmount, int tradingPrice, Member member) {
 
 		return Trade.builder()
 				.dataAmount(dataAmount)
 				.timeAmount(timeAmount)
 				.tradingPrice(tradingPrice)
-				.product(product)
 				.member(member)
 				.build();
 	}
