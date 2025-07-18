@@ -5,6 +5,7 @@ import static com.dapanda.product.entity.QProduct.product;
 import static com.dapanda.product.entity.QProductImage.productImage;
 import static com.dapanda.product.entity.QWifi.wifi;
 import static com.dapanda.review.entity.QReview.review;
+import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
@@ -73,6 +74,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.limit(size + 1)
 				.fetch();
 
+		// TODO: 메서드로 뺴기
 		boolean hasNext = content.size() > size;
 		if (hasNext) {
 			content.remove(size);
@@ -114,7 +116,12 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.from(product)
 				.groupBy(product.id)
 				.join(wifi).on(wifi.id.eq(product.itemId))
-				.leftJoin(review).on(review.trade.product.id.eq(product.id))
+				.leftJoin(review).on(review.trade.id.eq(
+						JPAExpressions
+								.select(tradeDetails.trade.id)
+								.from(tradeDetails)
+								.where(tradeDetails.product.id.eq(product.id))
+				))
 				.where(
 						gtCursorId(cursorId),
 						isOpenNow(isOpen, now)
@@ -170,7 +177,12 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				))
 				.from(product)
 				.join(mobileData).on(product.itemId.eq(mobileData.id))
-				.leftJoin(review).on(review.trade.product.id.eq(product.id))
+				.leftJoin(review).on(review.trade.id.eq(
+						JPAExpressions
+								.select(tradeDetails.trade.id)
+								.from(tradeDetails)
+								.where(tradeDetails.product.id.eq(product.id))
+				))
 				.where(isActiveProduct(),
 						product.itemId.eq(mobileData.id),
 						product.id.eq(productId)
@@ -203,7 +215,12 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				))
 				.from(product)
 				.join(wifi).on(product.itemId.eq(wifi.id))
-				.leftJoin(review).on(review.trade.product.id.eq(product.id))
+				.leftJoin(review).on(review.trade.id.eq(
+						JPAExpressions
+								.select(tradeDetails.trade.id)
+								.from(tradeDetails)
+								.where(tradeDetails.product.id.eq(product.id))
+				))
 				.where(isActiveProduct(),
 						product.itemId.eq(wifi.id),
 						product.id.eq(productId)
