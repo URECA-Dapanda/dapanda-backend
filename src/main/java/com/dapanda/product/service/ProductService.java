@@ -7,10 +7,8 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
-import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
-import com.dapanda.product.dto.request.WifiCursorRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.UpdateMobileDataResponse;
 import com.dapanda.product.dto.response.UpdateWifiResponse;
@@ -41,18 +39,18 @@ public class ProductService {
 
 	private final MemberRepository memberRepository;
 
-	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(
-			MobileDataCursorRequest request) {
+	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, Integer size,
+			String productSortOption, Float dataAmount) {
 
-		return productRepository.findMobileDataByCursor(request.getCursorId(), request.getSize(),
-				ProductSortOption.from(request.getProductSortOption()), request.getDataAmount());
+		return productRepository.findMobileDataByCursor(cursorId, size,
+				ProductSortOption.from(productSortOption), dataAmount);
 	}
 
-	public CursorPageResponse<WifiSummary> findWifiByCursor(WifiCursorRequest request) {
+	public CursorPageResponse<WifiSummary> findWifiByCursor(Long cursorId, Integer size,
+			String productSortOption, boolean open, Double latitude, Double longitude) {
 
-		return productRepository.findWifiByCursor(request.getCursorId(), request.getSize(),
-				ProductSortOption.from(request.getProductSortOption()), request.isOpen(),
-				request.getLatitude(), request.getLongitude());
+		return productRepository.findWifiByCursor(cursorId, size,
+				ProductSortOption.from(productSortOption), open, latitude, longitude);
 	}
 
 	public MobileDataInfoResponse findMobileDataInfo(Long productId) {
