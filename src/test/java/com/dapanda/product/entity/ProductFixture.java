@@ -2,12 +2,39 @@ package com.dapanda.product.entity;
 
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
+import com.dapanda.product.dto.response.ReadSellingProductResponse;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductFixture {
+
+	public static List<ReadSellingProductResponse> createReadSellingProductResponse() {
+
+		ReadSellingProductResponse response1 = ReadSellingProductResponse.createWifiResponse(
+				1L,
+				ItemType.MOBILE_DATA,
+				ProductState.ACTIVE,
+				LocalDateTime.now(),
+				LocalDateTime.now(),
+				LocalDateTime.now(),
+				LocalDateTime.now()
+		);
+
+		ReadSellingProductResponse response2 = ReadSellingProductResponse.createWifiResponse(
+				1L,
+				ItemType.MOBILE_DATA,
+				ProductState.ACTIVE,
+				LocalDateTime.now(),
+				LocalDateTime.now(),
+				LocalDateTime.now(),
+				LocalDateTime.now()
+		);
+
+		return List.of(response1, response2);
+	}
 
 	public static Product createProduct1(Member member) {
 
