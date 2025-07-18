@@ -4,6 +4,9 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ProductFixture {
 
 	public static Product createProduct1(Member member) {
@@ -15,6 +18,29 @@ public class ProductFixture {
 				ItemType.MOBILE_DATA,
 				member
 		);
+	}
+
+	public static Product createProductWithMobileData(Member member, MobileData mobileData, ProductState state) {
+
+		return Product.of(
+				state,
+				1000,
+				mobileData.getId(),
+				ItemType.MOBILE_DATA,
+				member
+		);
+	}
+
+	public static List<Product> createProductList(Member member, List<MobileData> mobileDataList, ProductState state) {
+
+		List<Product> productList = new ArrayList<>();
+
+		for (MobileData mobileData : mobileDataList) {
+
+			productList.add(createProductWithMobileData(member, mobileData, state));
+		}
+
+		return productList;
 	}
 
 	public static Product createProduct1WithId(Member member, Long productId) {
