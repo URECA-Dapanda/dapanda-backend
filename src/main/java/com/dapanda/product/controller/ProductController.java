@@ -27,12 +27,11 @@ public class ProductController {
 	public CommonResponse<CursorPageResponse<ReadSellingProductResponse>> readSellingProductHistory(
 
 			@PathVariable Long memberId,
-			@RequestParam ProductState state,
+			@RequestParam ProductState productState,
 			@RequestParam(required = false) Long cursorId,
-			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size,
-			@RequestParam(defaultValue = "RECENT") String reviewSortOption) {
+			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size) {
 
-		ReadSellingProductRequest request = new ReadSellingProductRequest(cursorId, size, reviewSortOption, memberId, state);
+		ReadSellingProductRequest request = new ReadSellingProductRequest(cursorId, size, memberId, productState);
 
 		return CommonResponse.success(productService.readSellingProduct(request));
 	}
