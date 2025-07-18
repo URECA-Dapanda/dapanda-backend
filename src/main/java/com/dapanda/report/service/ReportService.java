@@ -23,10 +23,9 @@ public class ReportService {
 	@Transactional
 	public CreateReportResponse createReport(Long targetId, Long memberId, CreateReportRequest request) {
 
-		Member reporter = memberRepository.findById(memberId)
-				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+		validateDuplicateReport(targetId, request.targetCategory(), memberId);
 
-		validateDuplicateReport(targetId, request.targetCategory(), reporter);
+		Member reporter = memberRepository.getReferenceById(memberId);
 
 		Report report = Report.of(request.reason(), targetId, request.targetCategory(), reporter);
 
@@ -57,9 +56,9 @@ public class ReportService {
 		};
 	}
 
-	private void validateDuplicateReport(Long targetId, ReportTargetCategory category, Member reporter) {
+	private void validateDuplicateReport(Long targetId, ReportTargetCategory category, Long memberId) {
 
-		boolean isDuple = reportRepository.existsByReportTargetIdAndReportTargetCategoryAndReporter(targetId, category, reporter);
+		boolean isDuple = reportRepository.existsByReportTargetIdAndReportTargetCategoryAndReporterId(targetId, category, memberId);
 
 		if (isDuple) {
 
