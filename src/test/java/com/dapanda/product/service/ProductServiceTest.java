@@ -110,7 +110,7 @@ class ProductServiceTest {
 				for (int i = 1; i <= 3; i++) {
 					summaries.add(
 							MobileDataFixture.createMobileDataSummary((long) i, 1000, (long) i,
-									"회원" + i, 5, 200, false));
+									"회원" + i, 5, 200, false, UPDATED_AT));
 				}
 				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -136,7 +136,7 @@ class ProductServiceTest {
 				for (int i = 1; i <= 3; i++) {
 					summaries.add(
 							MobileDataFixture.createMobileDataSummary((long) i, 100 + i, (long) i,
-									"회원" + i, 5, 200, false));
+									"회원" + i, 5, 200, false, UPDATED_AT));
 				}
 				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -169,7 +169,8 @@ class ProductServiceTest {
 							"회원" + i,
 							1 + i,
 							100 + 100 * i,
-							i % 2 == 0
+							i % 2 == 0,
+							UPDATED_AT
 					));
 				}
 
@@ -201,7 +202,7 @@ class ProductServiceTest {
 				for (int i = 3; i >= 1; i--) {
 					summaries.add(
 							MobileDataFixture.createMobileDataSummary((long) i, 1000, (long) i,
-									"회원" + i, i * 10, 200, false));
+									"회원" + i, i * 10, 200, false, UPDATED_AT));
 				}
 				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -226,10 +227,10 @@ class ProductServiceTest {
 				// given
 				List<MobileDataSummary> summaries = new ArrayList<>();
 				summaries.add(new MobileDataSummary(1L, 1000, 1L, "회원1", 5.0F, 200,
-						false));
+						false, UPDATED_AT));
 				summaries.add(
 						new MobileDataSummary(2L, 2000, 2L, "회원2", 10, 200,
-								false));
+								false, UPDATED_AT));
 				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(2L, false, 2));
 
@@ -287,7 +288,8 @@ class ProductServiceTest {
 				for (int i = 1; i <= 3; i++) {
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 100 + i, (long) i,
-									"회원" + i, "상품제목" + i, 37.0 + i, 127.0 + i, i * 10.0, i));
+									"회원" + i, "상품제목" + i, 37.0 + i, 127.0 + i, i * 10.0, i,
+									UPDATED_AT));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -321,7 +323,8 @@ class ProductServiceTest {
 							37.0 + i,
 							127.0 + i,
 							i * 10.0,
-							i % 2 == 0 ? 2 : 1
+							i % 2 == 0 ? 2 : 1,
+							UPDATED_AT
 					));
 				}
 
@@ -354,7 +357,7 @@ class ProductServiceTest {
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 1000, (long) i,
 									"회원" + i, "상품제목" + idx, 37.0 + idx, 127.0 + idx, 5.0 - idx,
-									idx));
+									idx, UPDATED_AT));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -380,10 +383,10 @@ class ProductServiceTest {
 				List<WifiSummary> summaries = new ArrayList<>();
 				summaries.add(
 						new WifiSummary(1L, 1000, 1L, "회원1", "상품제목1", "imageUrl", 37.0, 127.0,
-								5, 5));
+								5, 5, UPDATED_AT));
 				summaries.add(
 						new WifiSummary(2L, 2000, 2L, "회원2", "상품제목2", "imageUrl", 37.1, 127.1,
-								10, 10));
+								10, 10, UPDATED_AT));
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(2L, false, 2));
 

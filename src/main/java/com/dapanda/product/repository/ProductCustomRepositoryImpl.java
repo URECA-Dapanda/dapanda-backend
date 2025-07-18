@@ -1,5 +1,11 @@
 package com.dapanda.product.repository;
 
+import static com.dapanda.product.entity.QMobileData.mobileData;
+import static com.dapanda.product.entity.QProduct.product;
+import static com.dapanda.product.entity.QProductImage.productImage;
+import static com.dapanda.product.entity.QWifi.wifi;
+import static com.dapanda.review.entity.QReview.review;
+
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
@@ -14,17 +20,10 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static com.dapanda.product.entity.QMobileData.mobileData;
-import static com.dapanda.product.entity.QProduct.product;
-import static com.dapanda.product.entity.QProductImage.productImage;
-import static com.dapanda.product.entity.QWifi.wifi;
-import static com.dapanda.review.entity.QReview.review;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
@@ -53,7 +52,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.member.name,
 						mobileData.remainAmount,
 						mobileData.pricePer100MB,
-						mobileData.isSplitType
+						mobileData.isSplitType,
+						product.updatedAt
 				))
 				.from(product)
 				.join(mobileData).on(mobileData.id.eq(product.itemId))
@@ -108,7 +108,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						wifi.latitude,
 						wifi.longitude,
 						review.rating.avg().coalesce(DEFAULT_RATING),
-						distance.divide(METER_TO_KILOMETER)
+						distance.divide(METER_TO_KILOMETER),
+						product.updatedAt
 				))
 				.from(product)
 				.groupBy(product.id)

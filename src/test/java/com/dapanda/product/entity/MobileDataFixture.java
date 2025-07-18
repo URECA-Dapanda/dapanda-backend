@@ -1,6 +1,7 @@
 package com.dapanda.product.entity;
 
 import com.dapanda.product.dto.MobileDataSummary;
+import java.time.LocalDateTime;
 
 public class MobileDataFixture {
 
@@ -16,7 +17,8 @@ public class MobileDataFixture {
 	}
 
 	public static MobileDataSummary createMobileDataSummary(Long id, int price, Long itemId,
-			String memberName, float remainAmount, int pricePer100MB, boolean isSplitType) {
+			String memberName, float remainAmount, int pricePer100MB, boolean isSplitType,
+			LocalDateTime updatedAt) {
 
 		return new MobileDataSummary(
 				id,
@@ -25,7 +27,8 @@ public class MobileDataFixture {
 				memberName,
 				remainAmount,
 				pricePer100MB,
-				isSplitType
+				isSplitType,
+				updatedAt
 		);
 	}
 }

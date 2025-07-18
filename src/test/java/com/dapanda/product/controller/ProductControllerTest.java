@@ -217,6 +217,8 @@ class ProductControllerTest {
 												"100MB당 가격"),
 										fieldWithPath("data.data[].splitType").description(
 												"분할 판매 여부"),
+										fieldWithPath("data.data[].updatedAt").description(
+												"수정된 날짜"),
 										fieldWithPath("data.pageInfo.nextCursorId").description(
 												"다음 커서 아이디"),
 										fieldWithPath("data.pageInfo.hasNext").description(
@@ -367,11 +369,12 @@ class ProductControllerTest {
 												"대표 이미지 URL").optional(),
 										fieldWithPath("data.data[].latitude").description("위도"),
 										fieldWithPath("data.data[].longitude").description("경도"),
-
 										fieldWithPath("data.data[].averageRate").description(
 												"평균 평점"),
 										fieldWithPath("data.data[].distanceKm").description(
 												"현 위치로부터 거리 (km)"),
+										fieldWithPath("data.data[].updatedAt").description(
+												"수정된 날짜"),
 										fieldWithPath("data.pageInfo.nextCursorId").description(
 												"다음 커서 아이디"),
 										fieldWithPath("data.pageInfo.hasNext").description(
