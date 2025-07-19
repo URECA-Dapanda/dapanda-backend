@@ -56,6 +56,8 @@ public class PaymentService {
 				Payment.of(response.paymentKey(), response.totalAmount(),
 						approvedAt, member));
 
+		// TODO: Trade에 저장
+
 		return ConfirmPaymentResponse.of(payment.getId(), response.totalAmount());
 	}
 
