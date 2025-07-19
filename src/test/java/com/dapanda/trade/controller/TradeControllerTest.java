@@ -164,7 +164,7 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data.tradeId").exists())
-						.andDo(document("trade/mobile-data-default",
+						.andDo(document("trade/post-mobile-data-default",
 								requestFields(
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)")
@@ -236,7 +236,7 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.ALREADY_SOLD_OUT.getCode()))
 						.andExpect(jsonPath("$.message").value(
 								ResultCode.ALREADY_SOLD_OUT.getMessage()))
-						.andDo(document("trade/mobile-data-default-already-sold-out-error",
+						.andDo(document("trade/post-mobile-data-default-already-sold-out-error",
 								requestFields(
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)")
@@ -284,7 +284,7 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.INSUFFICIENT_CASH.getCode()))
 						.andExpect(jsonPath("$.message").value(
 								ResultCode.INSUFFICIENT_CASH.getMessage()))
-						.andDo(document("trade/mobile-data-default-insufficient-cash-error",
+						.andDo(document("trade/post-mobile-data-default-insufficient-cash-error",
 								requestFields(
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)")
@@ -333,7 +333,7 @@ class TradeControllerTest {
 								ResultCode.CANNOT_PURCHASE_OWN_PRODUCT.getCode()))
 						.andExpect(jsonPath("$.message").value(
 								ResultCode.CANNOT_PURCHASE_OWN_PRODUCT.getMessage()))
-						.andDo(document("trade/mobile-data-default-own-product-error",
+						.andDo(document("trade/post-mobile-data-default-own-product-error",
 								requestFields(
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)")
