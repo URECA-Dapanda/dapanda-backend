@@ -1,41 +1,40 @@
 package com.dapanda.product.service;
 
-import static com.dapanda.TestConstants.Product.AVERAGE_RATE;
-import static com.dapanda.TestConstants.Product.BEFORE_DATA_AMOUNT;
-import static com.dapanda.TestConstants.Product.BEFORE_REMAIN_AMOUNT;
-import static com.dapanda.TestConstants.Product.CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.Product.CHANGED_CONTENT;
-import static com.dapanda.TestConstants.Product.CHANGED_LATITUDE;
-import static com.dapanda.TestConstants.Product.CHANGED_LONGITUDE;
-import static com.dapanda.TestConstants.Product.CHANGED_TITLE;
-import static com.dapanda.TestConstants.Product.CONTENT;
-import static com.dapanda.TestConstants.Product.DATA_AMOUNT;
-import static com.dapanda.TestConstants.Product.END_TIME;
-import static com.dapanda.TestConstants.Product.EXCEED_CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.Product.LATITUDE;
-import static com.dapanda.TestConstants.Product.LONGITUDE;
-import static com.dapanda.TestConstants.Product.MEMBER_ID;
+import static com.dapanda.TestConstants.Member.MEMBER_ID;
+import static com.dapanda.TestConstants.Member.OTHER_MEMBER_ID;
+import static com.dapanda.TestConstants.MobileData.BEFORE_DATA_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.BEFORE_REMAIN_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.EXCEED_CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB;
+import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
+import static com.dapanda.TestConstants.MobileData.SPLIT_TYPE;
 import static com.dapanda.TestConstants.Product.NEW_PRICE;
-import static com.dapanda.TestConstants.Product.OTHER_MEMBER_ID;
 import static com.dapanda.TestConstants.Product.PRICE;
-import static com.dapanda.TestConstants.Product.PRICE_PER_100MB;
 import static com.dapanda.TestConstants.Product.PRODUCT_ID;
-import static com.dapanda.TestConstants.Product.REMAIN_AMOUNT;
-import static com.dapanda.TestConstants.Product.REVIEW_COUNT;
-import static com.dapanda.TestConstants.Product.SELLING_DATA;
-import static com.dapanda.TestConstants.Product.SPLIT_TYPE;
-import static com.dapanda.TestConstants.Product.START_TIME;
-import static com.dapanda.TestConstants.Product.TITLE;
 import static com.dapanda.TestConstants.Product.UPDATED_AT;
-import static com.dapanda.TestConstants.Product.WRONG_END_TIME;
-import static com.dapanda.TestConstants.Product.WRONG_START_TIME;
+import static com.dapanda.TestConstants.Review.AVERAGE_RATE;
+import static com.dapanda.TestConstants.Review.REVIEW_COUNT;
+import static com.dapanda.TestConstants.Wifi.CHANGED_CONTENT;
+import static com.dapanda.TestConstants.Wifi.CHANGED_LATITUDE;
+import static com.dapanda.TestConstants.Wifi.CHANGED_LONGITUDE;
+import static com.dapanda.TestConstants.Wifi.CHANGED_TITLE;
+import static com.dapanda.TestConstants.Wifi.CONTENT;
+import static com.dapanda.TestConstants.Wifi.END_TIME;
+import static com.dapanda.TestConstants.Wifi.LATITUDE;
+import static com.dapanda.TestConstants.Wifi.LONGITUDE;
+import static com.dapanda.TestConstants.Wifi.START_TIME;
+import static com.dapanda.TestConstants.Wifi.TITLE;
+import static com.dapanda.TestConstants.Wifi.WRONG_END_TIME;
+import static com.dapanda.TestConstants.Wifi.WRONG_START_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 
-import com.dapanda.TestConstants;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
@@ -426,7 +425,7 @@ class ProductServiceTest {
 			void findMobileDataInfoTest() {
 
 				// given
-				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
 						REMAIN_AMOUNT, PRICE_PER_100MB);
 				MobileDataInfoResponse expectedResponse = new MobileDataInfoResponse(PRODUCT_ID,
@@ -783,7 +782,7 @@ class ProductServiceTest {
 			void deleteProductTest() {
 
 				// given
-				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
 						REMAIN_AMOUNT, PRICE_PER_100MB);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
@@ -808,7 +807,7 @@ class ProductServiceTest {
 			void deleteProductFailWhenNotFoundProductTest() {
 
 				// given
-				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
 						REMAIN_AMOUNT, PRICE_PER_100MB);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
@@ -825,7 +824,7 @@ class ProductServiceTest {
 			void deleteProductFailWhenAlreadyDeletedTest() {
 
 				// given
-				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
 						REMAIN_AMOUNT, PRICE_PER_100MB);
 				Product product = ProductFixture.createMobileDataProductWithIdWithState(PRODUCT_ID,
