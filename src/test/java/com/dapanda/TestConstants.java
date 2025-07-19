@@ -13,6 +13,7 @@ public final class TestConstants {
 		public static final Long SELLER_MEMBER_ID = 3L;
 		public static final Long MEMBER_ID = 1L;
 		public static final Long OTHER_MEMBER_ID = 2L;
+		public static final int CASH_5000 = 5000;
 	}
 
 	public static final class Pagination {
@@ -49,8 +50,8 @@ public final class TestConstants {
 	public static final class Product {
 
 		public static final Long PRODUCT_ID = 1L;
-		public static final int NEW_PRICE = 9000;
-		public static final int PRICE = 3000;
+		public static final int NEW_PRICE_9000 = 9000;
+		public static final int PRICE_3000 = 3000;
 		public static final Long INVALID_PRODUCT_ID = 100L;
 		public static final LocalDateTime UPDATED_AT = LocalDateTime.of(2025, 3, 3, 21, 0);
 	}
@@ -64,8 +65,8 @@ public final class TestConstants {
 		public static final float EXCEED_CHANGED_AMOUNT = 3.0F;
 		public static final float SELLING_DATA = 1.5F;
 		public static final boolean SPLIT_TYPE = true;
-		public static final float DATA_AMOUNT = 2.0F;
-		public static final float REMAIN_AMOUNT = 1.0F;
+		public static final float DATA_AMOUNT_1 = 1.0F;
+		public static final float REMAIN_AMOUNT_1 = 1.0F;
 		public static final int PRICE_PER_100MB = 300;
 	}
 
@@ -87,4 +88,8 @@ public final class TestConstants {
 		public static final LocalDateTime WRONG_END_TIME = LocalDateTime.of(2024, 3, 4, 21, 0);
 	}
 
+	public static final class Plan {
+
+		public static final Float PROVIDING_DATA_AMOUNT_10 = 10.0F;
+	}
 }
