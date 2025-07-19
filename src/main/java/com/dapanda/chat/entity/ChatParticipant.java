@@ -12,11 +12,11 @@ public class ChatParticipant {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@OneToOne
-	@JoinColumn(name = "chat_room_id")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "chat_room_id", nullable = false)
 	private ChatRoom chatRoom;
 
-	@OneToOne
-	@JoinColumn(name = "member_id")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id", nullable = false)
 	private Member member;
 }

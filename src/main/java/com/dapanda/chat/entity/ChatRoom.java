@@ -19,7 +19,7 @@ public class ChatRoom extends CreatedAtEntity {
 	@Enumerated(EnumType.STRING)
 	private ChatRoomState state;
 
-	@OneToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_id")
 	private Product product;
 }
