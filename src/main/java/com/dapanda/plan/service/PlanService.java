@@ -31,7 +31,7 @@ public class PlanService {
 		PlanCategory category = randomCategory();
 		AgeGroup ageGroup = randomAgeGroup();
 		String name = randomPlanName(category, ageGroup);
-		int dataAmount = randomDataAmount();
+		float dataAmount = randomDataAmount();
 		int price = randomMonthlyPrice();
 
 		Plan plan = Plan.of(
