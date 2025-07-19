@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,19 @@ public class ChatService {
 		Product product = productRepository.findById(productId)
 				.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
 
+		Optional<Long> chatRoomId = chatRoomRepository.findExistingChatRoomIdOnProduct(
+				product.getId(),
+				product.getMember().getId(),
+				memberId
+		);
+
+		if (chatRoomId.isPresent()) {
+
+			return CreateChatRoomResponse.of(chatRoomId.get());
+		}
+
+		validateOwnProductChatRoom(product, memberId);
+
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
@@ -45,5 +59,13 @@ public class ChatService {
 		chatParticipantRepository.saveAll(List.of(seller, buyer));
 
 		return CreateChatRoomResponse.of(savedChatRoom.getId());
+	}
+
+	private void validateOwnProductChatRoom(Product product, Long memberId) {
+
+		if (product.getMember().getId().equals(memberId)) {
+
+			throw new GlobalException(ResultCode.CHAT_OWN_PRODUCT);
+		}
 	}
 }
