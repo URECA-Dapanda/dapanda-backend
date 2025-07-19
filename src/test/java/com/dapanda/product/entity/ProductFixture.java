@@ -65,6 +65,22 @@ public class ProductFixture {
 		return product;
 	}
 
+	public static Product createMobileDataProductSoldOutWithId(Long productId, Long mobileDataId,
+			int price, Member member) {
+
+		Product product = Product.of(
+				ProductState.SOLD_OUT,
+				price,
+				mobileDataId,
+				ItemType.MOBILE_DATA,
+				member
+		);
+
+		ReflectionTestUtils.setField(product, "id", productId);
+
+		return product;
+	}
+
 	public static Product createMobileDataProductWithIdWithState(Long productId, Long mobileDataId,
 			ProductState state, Member member) {
 
