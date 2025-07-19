@@ -1,22 +1,23 @@
 package com.dapanda.review.repository;
 
+import static com.dapanda.review.entity.QReview.review;
+
 import com.dapanda.member.entity.QMember;
+import com.dapanda.product.entity.QProduct;
 import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
 import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
+import com.dapanda.review.entity.QReview;
 import com.dapanda.review.entity.ReviewSortOption;
+import com.dapanda.trade.entity.QTrade;
+import com.dapanda.trade.entity.QTradeDetails;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
-
-import static com.dapanda.product.entity.QProduct.product;
-import static com.dapanda.review.entity.QReview.review;
-import static com.dapanda.trade.entity.QTrade.trade;
 
 @Repository
 @RequiredArgsConstructor
@@ -32,6 +33,10 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
 		QMember buyer = new QMember(BUYER);
 		QMember seller = new QMember(SELLER);
+		QReview review = QReview.review;
+		QTrade trade = QTrade.trade;
+		QTradeDetails tradeDetails = QTradeDetails.tradeDetails;
+		QProduct product = QProduct.product;
 
 		return queryFactory
 				.select(Projections.constructor(ReadReceivedReviewResponse.class,
@@ -50,7 +55,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 				))
 				.from(review)
 				.join(review.trade, trade)
-				.join(trade.product, product)
+				.join(tradeDetails).on(tradeDetails.trade.eq(trade))
+				.join(tradeDetails.product, product)
 				.join(trade.member, buyer)
 				.join(product.member, seller)
 				.where(buildWhereClause(request, seller))
@@ -64,6 +70,10 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
 		QMember buyer = new QMember(BUYER);
 		QMember seller = new QMember(SELLER);
+		QReview review = QReview.review;
+		QTrade trade = QTrade.trade;
+		QTradeDetails tradeDetails = QTradeDetails.tradeDetails;
+		QProduct product = QProduct.product;
 
 		return queryFactory
 				.select(Projections.constructor(ReadWrittenReviewResponse.class,
@@ -82,7 +92,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 				))
 				.from(review)
 				.join(review.trade, trade)
-				.join(trade.product, product)
+				.join(tradeDetails).on(tradeDetails.trade.eq(trade))
+				.join(tradeDetails.product, product)
 				.join(trade.member, buyer)
 				.join(product.member, seller)
 				.where(buildWhereClause(request, buyer))
@@ -97,7 +108,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 		whereClause.and(member.id.eq(request.memberId()));
 
 		if (request.cursorId() != null) {
-			whereClause.and(buildCursorCondition(request.cursorId(), ReviewSortOption.valueOf(request.reviewSortOption())));
+			whereClause.and(buildCursorCondition(request.cursorId(),
+					ReviewSortOption.valueOf(request.reviewSortOption())));
 		}
 		return whereClause;
 	}
