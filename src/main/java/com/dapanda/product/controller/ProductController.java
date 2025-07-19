@@ -51,7 +51,6 @@ public class ProductController {
 		return CommonResponse.success(productService.readSellingProduct(request));
 	}
 
-//	@PostMapping("/products/mobile-data")
 	@GetMapping("/products/mobile-data")
 	public CommonResponse<CursorPageResponse<MobileDataSummary>> getMobileDataByCursor(
 			@RequestParam(required = false) Long cursorId,
