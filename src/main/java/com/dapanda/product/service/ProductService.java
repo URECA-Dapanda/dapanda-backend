@@ -7,12 +7,14 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
+import com.dapanda.product.dto.request.CreateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.UpdateMobileDataResponse;
 import com.dapanda.product.dto.response.UpdateWifiResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
+import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.MobileData;
 import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductSortOption;
@@ -25,8 +27,10 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -84,6 +88,41 @@ public class ProductService {
 
 		return response.withImageUrls(wifiImages);
 	}
+
+	@Transactional
+	public void createMobileData(CreateMobileDataRequest request, Long memberId) {
+
+		Member member = memberRepository.findById(request.getMemberId())
+				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+
+		Float soldAmount = productRepository.sumSoldMobileDataAmountByMemberId(member.getId());
+		if (soldAmount == null) {
+			soldAmount = 0f;
+		}
+
+		float willSellAmount = request.getDataAmount();
+		if (soldAmount + willSellAmount > MobileData.MAX_TRANSFERABLE_DATA_AMOUNT * 1000) {
+			throw new GlobalException(ResultCode.EXCEEDED_TRANSFER_LIMIT);
+		}
+
+		MobileData savedMobileData = mobileDataRepository.save(
+				MobileData.singleOf(
+						request.getDataAmount(),
+						request.getPrice(),
+						request.getIsSplitType()
+				)
+		);
+		log.info(savedMobileData.toString());
+
+		Product savedProduct = productRepository.save(
+				Product.of(ProductState.ACTIVE, request.getPrice(), savedMobileData.getId(),
+						ItemType.MOBILE_DATA,
+						member)
+		);
+
+		validateProductOwner(savedProduct, memberId);
+	}
+
 
 	@Transactional
 	public UpdateMobileDataResponse updateMobileData(UpdateMobileDataRequest request,
