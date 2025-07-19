@@ -1,0 +1,33 @@
+package com.dapanda.chat.config;
+
+import com.dapanda.common.config.AllowedOriginPath;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+
+@Configuration
+@RequiredArgsConstructor
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+	@Override
+	public void registerStompEndpoints(StompEndpointRegistry registry) {
+
+		registry.addEndpoint(WebSocketPath.CONNECT.getPath())
+				.setAllowedOrigins(AllowedOriginPath.LOCAL.getPath(), AllowedOriginPath.PROD.getPath())
+				.withSockJS();
+	}
+
+	@Override
+	public void configureMessageBroker(MessageBrokerRegistry registry) {
+
+		// @MessageMapping 메서드로 라우팅하기 위한 url 패턴 지정
+		registry.setApplicationDestinationPrefixes(WebSocketPath.PUBLISH.getPath());
+
+		// 메시지를 수신(sub, 구독)하기 위한 url 패턴 지정
+		registry.enableSimpleBroker(WebSocketPath.TOPIC.getPath());
+	}
+}
