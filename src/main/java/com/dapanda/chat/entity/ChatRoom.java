@@ -22,4 +22,12 @@ public class ChatRoom extends CreatedAtEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_id")
 	private Product product;
+
+	public static ChatRoom createChatRoom(Product product){
+
+		return ChatRoom.builder()
+				.state(ChatRoomState.OPENED)
+				.product(product)
+				.build();
+	}
 }
