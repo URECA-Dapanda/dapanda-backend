@@ -1,40 +1,5 @@
 package com.dapanda.product.service;
 
-import static com.dapanda.TestConstants.Product.AVERAGE_RATE;
-import static com.dapanda.TestConstants.Product.BEFORE_DATA_AMOUNT;
-import static com.dapanda.TestConstants.Product.BEFORE_REMAIN_AMOUNT;
-import static com.dapanda.TestConstants.Product.CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.Product.CHANGED_CONTENT;
-import static com.dapanda.TestConstants.Product.CHANGED_LATITUDE;
-import static com.dapanda.TestConstants.Product.CHANGED_LONGITUDE;
-import static com.dapanda.TestConstants.Product.CHANGED_TITLE;
-import static com.dapanda.TestConstants.Product.CONTENT;
-import static com.dapanda.TestConstants.Product.DATA_AMOUNT;
-import static com.dapanda.TestConstants.Product.END_TIME;
-import static com.dapanda.TestConstants.Product.EXCEED_CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.Product.LATITUDE;
-import static com.dapanda.TestConstants.Product.LONGITUDE;
-import static com.dapanda.TestConstants.Product.MEMBER_ID;
-import static com.dapanda.TestConstants.Product.NEW_PRICE;
-import static com.dapanda.TestConstants.Product.OTHER_MEMBER_ID;
-import static com.dapanda.TestConstants.Product.PRICE;
-import static com.dapanda.TestConstants.Product.PRICE_PER_100MB;
-import static com.dapanda.TestConstants.Product.PRODUCT_ID;
-import static com.dapanda.TestConstants.Product.REMAIN_AMOUNT;
-import static com.dapanda.TestConstants.Product.REVIEW_COUNT;
-import static com.dapanda.TestConstants.Product.SELLING_DATA;
-import static com.dapanda.TestConstants.Product.SPLIT_TYPE;
-import static com.dapanda.TestConstants.Product.START_TIME;
-import static com.dapanda.TestConstants.Product.TITLE;
-import static com.dapanda.TestConstants.Product.UPDATED_AT;
-import static com.dapanda.TestConstants.Product.WRONG_END_TIME;
-import static com.dapanda.TestConstants.Product.WRONG_START_TIME;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.BDDMockito.given;
-
 import com.dapanda.TestConstants;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
@@ -44,6 +9,9 @@ import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
+import com.dapanda.product.dto.request.*;
+import com.dapanda.product.dto.response.*;
+import com.dapanda.product.entity.*;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
@@ -61,9 +29,6 @@ import com.dapanda.product.entity.WifiFixture;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -71,6 +36,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE;
+import static com.dapanda.TestConstants.Product.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("상품 서비스 테스트")
@@ -90,6 +69,68 @@ class ProductServiceTest {
 
 	@InjectMocks
 	private ProductService productService;
+
+	@Nested
+	@DisplayName("판매 상태에 따른 회원의 상품 목록 조회")
+	class ReadSellingProduct {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("페이징조건이 없으면 기본 페이징 값으로 조회된다")
+			public void readDefaultPagingSellingProduct() {
+
+				//given
+				ReadSellingProductRequest request = new ReadSellingProductRequest(
+						DEFAULT_CURSOR_ID,
+						DEFAULT_SIZE,
+						USER_DETAILS_MEMBER_ID,
+						ProductState.ACTIVE
+				);
+
+				List<ReadSellingProductResponse> queryResponse = ProductFixture.createReadSellingProductResponse();
+
+				given(memberRepository.existsById(USER_DETAILS_MEMBER_ID)).willReturn(true);
+				given(productRepository.findSellingProduct(request)).willReturn(queryResponse);
+
+				//when
+				CursorPageResponse<ReadSellingProductResponse> response = productService.readSellingProduct(request);
+
+				//then
+				assertThat(response.getData()).hasSize(DEFAULT_SIZE);
+
+				assertThat(response.getData()).isEqualTo(queryResponse);
+
+				assertThat(response.getPageInfo().isHasNext()).isFalse(); // 다음 페이지가 없다고 가정
+				assertThat(response.getPageInfo().getNextCursorId()).isNull(); // 다음 커서 ID가 없다고 가정
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("회원을 찾을 수 없으면 예외가 발생한다")
+			public void memberNotFoundTest() {
+
+				//given
+				ReadSellingProductRequest request = new ReadSellingProductRequest(
+						DEFAULT_CURSOR_ID,
+						DEFAULT_SIZE,
+						USER_DETAILS_MEMBER_ID,
+						ProductState.ACTIVE
+				);
+
+				//when & then
+				assertThatThrownBy(() -> productService.readSellingProduct(request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.MEMBER_NOT_FOUND.getMessage());
+			}
+		}
+	}
 
 	@Nested
 	@DisplayName("데이터 상품 목록 조회")
