@@ -1,6 +1,7 @@
 package com.dapanda.trade.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.common.exception.CommonResponse;
 import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
 import com.dapanda.trade.dto.response.TradeMobileDataDefaultResponse;
 import com.dapanda.trade.service.TradeService;
@@ -20,10 +21,10 @@ public class TradeController {
 	private final TradeService tradeService;
 
 	@PostMapping("/trades/mobile-data/default")
-	public TradeMobileDataDefaultResponse mobileDataDefaultPurchase(
+	public CommonResponse<TradeMobileDataDefaultResponse> mobileDataDefaultPurchase(
 			@RequestBody @Valid TradeMobileDataDefaultRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		return tradeService.mobileDataDefault(userDetails.getId(), request);
+		return CommonResponse.success(tradeService.mobileDataDefault(userDetails.getId(), request));
 	}
 }
