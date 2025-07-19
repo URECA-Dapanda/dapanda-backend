@@ -52,6 +52,9 @@ public enum ResultCode {
 	// 거래 4000번대
 	TRADE_NOT_FOUND(HttpStatus.BAD_REQUEST, 4000, "거래 이력을 찾을 수 없습니다."),
 	OTHER_TRADE(HttpStatus.BAD_REQUEST, 4001, "다른 회원의 거래 이력입니다."),
+	CANNOT_PURCHASE_OWN_PRODUCT(HttpStatus.BAD_REQUEST, 4002, "자신이 등록한 상품은 구매할 수 없습니다"),
+	ALREADY_SOLD_OUT(HttpStatus.BAD_REQUEST, 4003, "이미 판매 완료된 상품입니다."),
+	INSUFFICIENT_CASH(HttpStatus.BAD_REQUEST, 4004, "보유 캐시가 부족합니다"),
 
 	// 결제 5000번대
 	FAIL_PAYMENT_PROCESSING(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "내부 오류로 결제 처리에 실패했습니다."),
