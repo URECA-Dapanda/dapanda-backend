@@ -65,22 +65,21 @@ public class TradeService {
 			return handlePartialPurchaseProduct();
 		}
 
-		return handleFullPurchaseProduct(product, mobileData, buyerId,
-				request.price());
+		return handleFullPurchaseProduct(product, mobileData, buyerId);
 	}
 
 	private TradeMobileDataDefaultResponse handleFullPurchaseProduct(Product product,
-			MobileData mobileData, Long buyerId, Integer price) {
+			MobileData mobileData, Long buyerId) {
 
 		// Lock 건 상태로 구매자, 판매자 조회
 		Member buyer = memberRepository.findByIdForUpdate(buyerId).orElseThrow();
 		Member seller = memberRepository.findByIdForUpdate(product.getMember().getId())
 				.orElseThrow();
 
-		deductBuyerCashAndUpdateState(buyer, product, mobileData, price,
+		deductBuyerCashAndUpdateState(buyer, product, mobileData, product.getPrice(),
 				mobileData.getDataAmount());
 
-		Trade trade = createTradeAndTradeDetails(product, mobileData, buyer, price);
+		Trade trade = createTradeAndTradeDetails(product, mobileData, buyer, product.getPrice());
 
 		updateBuyerAndSellerData(buyer, seller, mobileData.getDataAmount());
 
@@ -88,8 +87,7 @@ public class TradeService {
 	}
 
 	private void deductBuyerCashAndUpdateState(Member buyer, Product product, MobileData mobileData,
-			int price,
-			float dataAmount) {
+			int price, float dataAmount) {
 
 		if (buyer.getCash() < price) {
 			throw new GlobalException(ResultCode.INSUFFICIENT_CASH);
@@ -113,6 +111,7 @@ public class TradeService {
 	}
 
 	private void updateBuyerAndSellerData(Member buyer, Member seller, float dataAmount) {
+
 		seller.addSellingData(dataAmount);
 
 		Plan sellerPlan = planRepository.findByMember(seller).orElseThrow();
