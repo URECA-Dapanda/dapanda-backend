@@ -16,6 +16,7 @@ import com.dapanda.product.entity.Product;
 import com.dapanda.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +31,7 @@ public class ChatService {
 	private final ProductRepository productRepository;
 	private final MemberRepository memberRepository;
 
+	@Transactional
 	public CreateChatRoomResponse createChatRoom(Long productId, Long memberId) {
 
 		validateProductId(productId);
