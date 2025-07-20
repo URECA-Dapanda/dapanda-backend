@@ -313,7 +313,6 @@ public class TradeService {
 			}
 
 			mobileData.deductRemainAmount(purchaseAmount);
-			mobileDataRepository.save(mobileData);
 
 			// 4-3. 상품 가격
 			int purchasePrice = scrap.getPurchasePrice();
@@ -332,10 +331,6 @@ public class TradeService {
 			// 4-7. 거래 상세 저장
 			TradeDetails tradeDetails = TradeDetails.of(product, trade);
 			tradeDetailsRepository.save(tradeDetails);
-
-			// 4-8. 판매자/상품 저장
-			productRepository.save(product);
-			memberRepository.save(seller);
 		}
 
 		// 5. 구매자 캐시 차감
@@ -343,9 +338,6 @@ public class TradeService {
 
 		// 6. 구매 데이터양 업데이트
 		buyer.addBuyingData(totalAmount);
-
-		// 7. 구매자 저장
-		memberRepository.save(buyer);
 
 		return TradeMobileDataResponse.of(trade.getId());
 	}
