@@ -8,7 +8,8 @@ public record TradeMobileDataDefaultRequest(
 		Long productId,
 
 		@NotNull(message = "데이터 아이디는 필수입니다.")
-		Long mobileDataId
-) {
+		Long mobileDataId,
+
+		Float dataAmount) {
 
 }
