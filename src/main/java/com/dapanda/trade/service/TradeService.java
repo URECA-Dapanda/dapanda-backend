@@ -33,6 +33,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TradeService {
 
+	private static final int MAX_COMBINATION_CANDIDATES = 5;
+
 	private final TradeRepository tradeRepository;
 	private final ProductRepository productRepository;
 	private final MobileDataRepository mobileDataRepository;
@@ -163,54 +165,64 @@ public class TradeService {
 
 	public FindMobileDataScrapResponse findMobileDataScrap(Float dataAmount) {
 
+		// 1. 정렬된 상품 목록 조회 (단가 낮은순, 용량 많은순, 일반우선)
 		List<MobileDataScrap> sortedList = productRepository.findMobileDataScrap(dataAmount);
-		List<List<MobileDataScrap>> candidates = new ArrayList<>();
-		int n = sortedList.size();
-		float target = dataAmount;
 
-		for (int start = 0; start < n; start++) {
-			float sumAmount = 0;
+		// 2. 가능한 조합들을 저장할 리스트
+		List<List<MobileDataScrap>> candidates = new ArrayList<>(); // 가능한 조합들을 저장하는 리스트
+		int sortedListSize = sortedList.size();
+		float target = dataAmount; // 사용자가 구매하고자 하는 목표 데이터 용량 (GB 단위)
+
+		// 3. 시작 인덱스를 0부터 n-1까지 순차적으로 이동하며 탐색
+		for (int start = 0; start < sortedListSize; start++) {
+			float sumAmount = 0; // 현재 조합에 포함된 상품들로 누적한 총 데이터 용량 (GB 단위)
 			int sumPrice = 0;
-			List<MobileDataScrap> temp = new ArrayList<>();
+			List<MobileDataScrap> temp = new ArrayList<>(); // 현재 조합 중인 상품 목록을 저장하는 임시 리스트
 
-			for (int i = start; i < n; i++) {
+			// 4. 현재 start 위치부터 하나씩 상품을 누적하며 조합을 시도
+			for (int i = start; i < sortedListSize; i++) {
 				MobileDataScrap item = sortedList.get(i);
 				float amount = item.getRemainAmount();
 
+				// 4-1. 분할 가능한 상품이고, 목표 용량을 초과한다면 필요한 만큼만 구매
 				if (item.isSplitType() && sumAmount + amount > target) {
 					float needed = target - sumAmount;
 					sumAmount += needed;
 					sumPrice += (int) (needed * 10 * item.getPricePer100MB());
 					temp.add(item);
-				} else {
+				} else { // 4-2. 일반 상품이거나, 전체를 써도 용량 초과하지 않는 경우 전부 사용
 					sumAmount += amount;
 					sumPrice += item.getPrice();
 					temp.add(item);
 				}
 
-				if (sumAmount == target) {
+				if (sumAmount == target) { // 5. 목표 용량을 정확히 채운 조합은 후보군에 추가
 					candidates.add(temp);
 					break;
 				}
-				if (sumAmount > target) {
+				if (sumAmount > target) { // 6. 목표 용량을 초과하면 더 이상 탐색하지 않음
 					break;
 				}
 			}
 
-			if (candidates.size() >= 5) {
+			// 7. 후보군이 5개 이상이면 더 이상 탐색하지 않음 (성능 최적화 목적)
+			if (candidates.size() >= MAX_COMBINATION_CANDIDATES) {
 				break;
 			}
 		}
 
+		// 8. 후보 중에서 실제 가격이 가장 저렴한 조합을 선택
 		Optional<List<MobileDataScrap>> best = candidates.stream()
 				.min(Comparator.comparingInt(
 						scrapList -> calculateTotalPrice(scrapList, dataAmount)));
 
+		// 9. 후보가 없으면 빈 응답 반환
 		if (best.isEmpty()) {
 
 			return FindMobileDataScrapResponse.of(0, 0, Collections.emptyList());
 		}
 
+		// 10. 최적 조합이 존재하면 최종 응답 생성
 		List<MobileDataScrap> bestCombination = best.get();
 		int totalPrice = calculateTotalPrice(bestCombination, dataAmount);
 
@@ -221,15 +233,20 @@ public class TradeService {
 
 		float sumAmount = 0;
 		int total = 0;
+
+		// 조합된 상품 리스트를 순회하며, 실제로 필요한 만큼만 구매하고 총 가격 계산
 		for (MobileDataScrap scrap : scrapList) {
+			// 분할 상품의 경우: 필요한 만큼만 구매 (단가 적용)
 			if (scrap.isSplitType()) {
 				float needed = Math.min(scrap.getRemainAmount(), dataAmount - sumAmount);
 				total += (int) (needed * 10 * scrap.getPricePer100MB());
 				sumAmount += needed;
-			} else {
+			} else { // 일반 상품의 경우: 상품 전체를 사용하며 고정 가격 적용
 				total += scrap.getPrice();
 				sumAmount += scrap.getRemainAmount();
 			}
+
+			// 목표 용량을 채웠으면 반복 종료
 			if (sumAmount >= dataAmount) {
 				break;
 			}
