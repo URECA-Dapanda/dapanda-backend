@@ -11,12 +11,19 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Getter
+@Builder(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class Plan extends BaseEntity {
 
 	@Id
@@ -25,7 +32,7 @@ public class Plan extends BaseEntity {
 
 	private String name;
 
-	private int providingDataAmount;
+	private float providingDataAmount;
 
 	private int monthlyPrice;
 
@@ -39,4 +46,27 @@ public class Plan extends BaseEntity {
 	@JoinColumn(name = "member_id", nullable = false, unique = true)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Member member;
+
+	public static Plan of(String name, float providingDataAmount, int monthlyPrice,
+			PlanCategory category, AgeGroup ageGroup, Member member) {
+
+		return Plan.builder()
+				.name(name)
+				.providingDataAmount(providingDataAmount)
+				.monthlyPrice(monthlyPrice)
+				.category(category)
+				.ageGroup(ageGroup)
+				.member(member)
+				.build();
+	}
+
+	public void addMobileData(float dataAmount) {
+
+		this.providingDataAmount += dataAmount;
+	}
+
+	public void deductMobileData(float dataAmount) {
+
+		this.providingDataAmount -= dataAmount;
+	}
 }

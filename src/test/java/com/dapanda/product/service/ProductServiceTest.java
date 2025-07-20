@@ -1,41 +1,40 @@
 package com.dapanda.product.service;
 
-import static com.dapanda.TestConstants.Product.AVERAGE_RATE;
-import static com.dapanda.TestConstants.Product.BEFORE_DATA_AMOUNT;
-import static com.dapanda.TestConstants.Product.BEFORE_REMAIN_AMOUNT;
-import static com.dapanda.TestConstants.Product.CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.Product.CHANGED_CONTENT;
-import static com.dapanda.TestConstants.Product.CHANGED_LATITUDE;
-import static com.dapanda.TestConstants.Product.CHANGED_LONGITUDE;
-import static com.dapanda.TestConstants.Product.CHANGED_TITLE;
-import static com.dapanda.TestConstants.Product.CONTENT;
-import static com.dapanda.TestConstants.Product.DATA_AMOUNT;
-import static com.dapanda.TestConstants.Product.END_TIME;
-import static com.dapanda.TestConstants.Product.EXCEED_CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.Product.LATITUDE;
-import static com.dapanda.TestConstants.Product.LONGITUDE;
-import static com.dapanda.TestConstants.Product.MEMBER_ID;
-import static com.dapanda.TestConstants.Product.NEW_PRICE;
-import static com.dapanda.TestConstants.Product.OTHER_MEMBER_ID;
-import static com.dapanda.TestConstants.Product.PRICE;
-import static com.dapanda.TestConstants.Product.PRICE_PER_100MB;
+import static com.dapanda.TestConstants.Member.MEMBER_ID;
+import static com.dapanda.TestConstants.Member.OTHER_MEMBER_ID;
+import static com.dapanda.TestConstants.MobileData.BEFORE_DATA_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.BEFORE_REMAIN_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
+import static com.dapanda.TestConstants.MobileData.EXCEED_CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB;
+import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
+import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
+import static com.dapanda.TestConstants.MobileData.SPLIT_TYPE;
+import static com.dapanda.TestConstants.Product.NEW_PRICE_9000;
+import static com.dapanda.TestConstants.Product.PRICE_3000;
 import static com.dapanda.TestConstants.Product.PRODUCT_ID;
-import static com.dapanda.TestConstants.Product.REMAIN_AMOUNT;
-import static com.dapanda.TestConstants.Product.REVIEW_COUNT;
-import static com.dapanda.TestConstants.Product.SELLING_DATA;
-import static com.dapanda.TestConstants.Product.SPLIT_TYPE;
-import static com.dapanda.TestConstants.Product.START_TIME;
-import static com.dapanda.TestConstants.Product.TITLE;
 import static com.dapanda.TestConstants.Product.UPDATED_AT;
-import static com.dapanda.TestConstants.Product.WRONG_END_TIME;
-import static com.dapanda.TestConstants.Product.WRONG_START_TIME;
+import static com.dapanda.TestConstants.Review.AVERAGE_RATE;
+import static com.dapanda.TestConstants.Review.REVIEW_COUNT;
+import static com.dapanda.TestConstants.Wifi.CHANGED_CONTENT;
+import static com.dapanda.TestConstants.Wifi.CHANGED_LATITUDE;
+import static com.dapanda.TestConstants.Wifi.CHANGED_LONGITUDE;
+import static com.dapanda.TestConstants.Wifi.CHANGED_TITLE;
+import static com.dapanda.TestConstants.Wifi.CONTENT;
+import static com.dapanda.TestConstants.Wifi.END_TIME;
+import static com.dapanda.TestConstants.Wifi.LATITUDE;
+import static com.dapanda.TestConstants.Wifi.LONGITUDE;
+import static com.dapanda.TestConstants.Wifi.START_TIME;
+import static com.dapanda.TestConstants.Wifi.TITLE;
+import static com.dapanda.TestConstants.Wifi.WRONG_END_TIME;
+import static com.dapanda.TestConstants.Wifi.WRONG_START_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 
-import com.dapanda.TestConstants;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
@@ -44,10 +43,8 @@ import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
-import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
-import com.dapanda.product.dto.request.WifiCursorRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.UpdateMobileDataResponse;
 import com.dapanda.product.dto.response.UpdateWifiResponse;
@@ -120,8 +117,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new MobileDataCursorRequest(null, 3,
-								"RECENT", null));
+						null, 3, "RECENT", null);
 
 				// then
 				assertThat(result.getData()).hasSize(3);
@@ -146,8 +142,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new MobileDataCursorRequest(null, 3,
-								"PRICE_ASC", null));
+						null, 3, "PRICE_ASC", null);
 
 				// then
 				assertThat(result.getData()).hasSize(3);
@@ -184,9 +179,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new MobileDataCursorRequest(null, 2,
-								"AMOUNT_ASC", 2.0F)
-				);
+						null, 2, "AMOUNT_ASC", 2.0F);
 
 				// then
 				assertThat(result.getData()).hasSize(3);
@@ -212,8 +205,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new MobileDataCursorRequest(null, 3,
-								"AMOUNT_DESC", null));
+						null, 3, "AMOUNT_DESC", null);
 
 				// then
 				assertThat(result.getData()).hasSize(3);
@@ -239,8 +231,7 @@ class ProductServiceTest {
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						new MobileDataCursorRequest(null, 3,
-								"AMOUNT_ASC", 5.0F));
+						null, 3, "AMOUNT_ASC", 5.0F);
 
 				// then
 				assertThat(result.getData()).hasSize(2);
@@ -256,13 +247,10 @@ class ProductServiceTest {
 			@DisplayName("정렬 옵션이 유효하지 않으면 예외를 던진다")
 			void failWhenInvalidSizeTest() {
 
-				// given
-				MobileDataCursorRequest request = new MobileDataCursorRequest(null, 1, "RECENT123",
-						null);
-
-				// when
+				// given & when
 				GlobalException exception = assertThrows(GlobalException.class, () -> {
-					productService.findMobileDataByCursor(request);
+					productService.findMobileDataByCursor(null, 1, "RECENT123",
+							null);
 				});
 
 				// then
@@ -298,8 +286,8 @@ class ProductServiceTest {
 						true, 37.0, 127.0)).willReturn(response);
 
 				// when
-				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
-						new WifiCursorRequest(null, 3, "PRICE_ASC", true, 37.0, 127.0));
+				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(null, 3,
+						"PRICE_ASC", true, 37.0, 127.0);
 
 				// then
 				assertThat(result.getData()).hasSize(3);
@@ -338,8 +326,8 @@ class ProductServiceTest {
 						response);
 
 				// when
-				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
-						new WifiCursorRequest(null, 2, "DISTANCE_ASC", true, 37.0, 127.0));
+				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(null, 2,
+						"DISTANCE_ASC", true, 37.0, 127.0);
 
 				// then
 				assertThat(result.getData()).hasSize(3);
@@ -367,8 +355,8 @@ class ProductServiceTest {
 						response);
 
 				// when
-				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
-						new WifiCursorRequest(null, 3, "AVERAGE_RATE_DESC", true, 37.0, 127.0));
+				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(null, 3,
+						"AVERAGE_RATE_DESC", true, 37.0, 127.0);
 
 				// then
 				assertThat(result.getData()).hasSize(3);
@@ -395,8 +383,8 @@ class ProductServiceTest {
 						response);
 
 				// when
-				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(
-						new WifiCursorRequest(null, 3, "DISTANCE_ASC", true, 37.0, 127.0));
+				CursorPageResponse<WifiSummary> result = productService.findWifiByCursor(null, 3,
+						"DISTANCE_ASC", true, 37.0, 127.0);
 
 				// then
 				assertThat(result.getData()).hasSize(2);
@@ -412,13 +400,10 @@ class ProductServiceTest {
 			@DisplayName("정렬 옵션이 유효하지 않으면 예외를 던진다")
 			void failWhenInvalidSortOptionTest() {
 
-				// given
-				WifiCursorRequest request = new WifiCursorRequest(null, 1, "RECENT123",
-						true, 37.0, 127.0);
-
-				// when
+				// given & when
 				GlobalException exception = assertThrows(GlobalException.class, () -> {
-					productService.findWifiByCursor(request);
+					productService.findWifiByCursor(null, 1, "RECENT123",
+							true, 37.0, 127.0);
 				});
 
 				// then
@@ -440,11 +425,12 @@ class ProductServiceTest {
 			void findMobileDataInfoTest() {
 
 				// given
-				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
-				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
-						REMAIN_AMOUNT, PRICE_PER_100MB);
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB);
 				MobileDataInfoResponse expectedResponse = new MobileDataInfoResponse(PRODUCT_ID,
-						mobileData.getId(), PRICE, member.getId(), member.getName(), REMAIN_AMOUNT,
+						mobileData.getId(), PRICE_3000, member.getId(), member.getName(),
+						REMAIN_AMOUNT_1,
 						PRICE_PER_100MB, AVERAGE_RATE, REVIEW_COUNT, UPDATED_AT);
 
 				given(productRepository.existsById(PRODUCT_ID))
@@ -458,7 +444,7 @@ class ProductServiceTest {
 
 				// then
 				assertThat(actualResponse.getItemId()).isEqualTo(mobileData.getId());
-				assertThat(actualResponse.getRemainAmount()).isEqualTo(REMAIN_AMOUNT);
+				assertThat(actualResponse.getRemainAmount()).isEqualTo(REMAIN_AMOUNT_1);
 				assertThat(actualResponse.getPricePer100MB()).isEqualTo(PRICE_PER_100MB);
 			}
 
@@ -513,7 +499,7 @@ class ProductServiceTest {
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE,
 						START_TIME, END_TIME);
 				WifiInfoResponse expectedResponse = new WifiInfoResponse(PRODUCT_ID,
-						wifi.getId(), PRICE, member.getId(), member.getName(), TITLE, CONTENT,
+						wifi.getId(), PRICE_3000, member.getId(), member.getName(), TITLE, CONTENT,
 						LATITUDE, LONGITUDE, AVERAGE_RATE, REVIEW_COUNT, null, START_TIME, END_TIME,
 						UPDATED_AT);
 
@@ -578,14 +564,15 @@ class ProductServiceTest {
 			public void updateMobileDataTest() {
 
 				// given
-				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID, NEW_PRICE,
+				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID,
+						NEW_PRICE_9000,
 						CHANGED_AMOUNT, SPLIT_TYPE);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
 						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
-						mobileData.getId(), PRICE, member);
+						mobileData.getId(), PRICE_3000, member);
 
 				given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
@@ -598,7 +585,7 @@ class ProductServiceTest {
 
 				// then
 				assertThat(response.getProductId()).isEqualTo(PRODUCT_ID);
-				assertThat(product.getPrice()).isEqualTo(NEW_PRICE);
+				assertThat(product.getPrice()).isEqualTo(NEW_PRICE_9000);
 				assertThat(mobileData.getDataAmount()).isEqualTo(
 						BEFORE_DATA_AMOUNT + CHANGED_AMOUNT);
 				assertThat(mobileData.getRemainAmount()).isEqualTo(
@@ -615,14 +602,15 @@ class ProductServiceTest {
 			public void failUpdateMobileDataIfMemberIsWrongTest() throws Exception {
 
 				// given
-				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID, NEW_PRICE,
+				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID,
+						NEW_PRICE_9000,
 						CHANGED_AMOUNT, SPLIT_TYPE);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
 						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
-						mobileData.getId(), PRICE, member);
+						mobileData.getId(), PRICE_3000, member);
 
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
 				given(mobileDataRepository.findById(mobileData.getId())).willReturn(
@@ -639,14 +627,15 @@ class ProductServiceTest {
 			public void failUpdateMobileDataIfDataTransferPolicyTest() throws Exception {
 
 				// given
-				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID, NEW_PRICE,
+				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID,
+						NEW_PRICE_9000,
 						EXCEED_CHANGED_AMOUNT, SPLIT_TYPE);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
 						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
-						mobileData.getId(), PRICE, member);
+						mobileData.getId(), PRICE_3000, member);
 
 				given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
@@ -664,7 +653,8 @@ class ProductServiceTest {
 			public void failUpdateMobileDataIfDataInvalidTest() throws Exception {
 
 				// given
-				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID, NEW_PRICE,
+				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID,
+						NEW_PRICE_9000,
 						CHANGED_AMOUNT, SPLIT_TYPE);
 
 				Member member = MemberFixture.createMemberWithSellingDataWithId(MEMBER_ID,
@@ -672,7 +662,7 @@ class ProductServiceTest {
 				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
 						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
-						mobileData.getId(), PRICE, member);
+						mobileData.getId(), PRICE_3000, member);
 
 				given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
@@ -700,7 +690,7 @@ class ProductServiceTest {
 			public void updateWifiTest() {
 
 				// given
-				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE,
+				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
 						START_TIME, END_TIME);
 
@@ -708,7 +698,7 @@ class ProductServiceTest {
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
 						END_TIME);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
-						wifi.getId(), PRICE, member);
+						wifi.getId(), PRICE_3000, member);
 
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
 				given(wifiRepository.findById(wifi.getId())).willReturn(
@@ -720,7 +710,7 @@ class ProductServiceTest {
 
 				// then
 				assertThat(response.getProductId()).isEqualTo(PRODUCT_ID);
-				assertThat(product.getPrice()).isEqualTo(NEW_PRICE);
+				assertThat(product.getPrice()).isEqualTo(NEW_PRICE_9000);
 				assertThat(wifi.getTitle()).isEqualTo(CHANGED_TITLE);
 				assertThat(wifi.getContent()).isEqualTo(CHANGED_CONTENT);
 				assertThat(wifi.getLatitude()).isEqualTo(CHANGED_LATITUDE);
@@ -737,7 +727,7 @@ class ProductServiceTest {
 			public void failUpdateWifiIfMemberIsWrongTest() throws Exception {
 
 				// given
-				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE,
+				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
 						START_TIME, END_TIME);
 
@@ -745,7 +735,7 @@ class ProductServiceTest {
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
 						END_TIME);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
-						wifi.getId(), PRICE, member);
+						wifi.getId(), PRICE_3000, member);
 
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
 				given(wifiRepository.findById(wifi.getId())).willReturn(
@@ -762,7 +752,7 @@ class ProductServiceTest {
 			public void failUpdateWifiIfTimeIsInvalidTest() throws Exception {
 
 				// given
-				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE,
+				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
 						WRONG_START_TIME, WRONG_END_TIME);
 
@@ -770,7 +760,7 @@ class ProductServiceTest {
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
 						END_TIME);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
-						wifi.getId(), PRICE, member);
+						wifi.getId(), PRICE_3000, member);
 
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
 				given(wifiRepository.findById(wifi.getId())).willReturn(
@@ -797,11 +787,11 @@ class ProductServiceTest {
 			void deleteProductTest() {
 
 				// given
-				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
-				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
-						REMAIN_AMOUNT, PRICE_PER_100MB);
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
-						mobileData.getId(), PRICE, member);
+						mobileData.getId(), PRICE_3000, member);
 
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
 
@@ -822,11 +812,11 @@ class ProductServiceTest {
 			void deleteProductFailWhenNotFoundProductTest() {
 
 				// given
-				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
-				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
-						REMAIN_AMOUNT, PRICE_PER_100MB);
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
-						mobileData.getId(), PRICE, member);
+						mobileData.getId(), PRICE_3000, member);
 
 				// when & then
 				assertThatThrownBy(() -> productService.deleteProduct(PRODUCT_ID, MEMBER_ID))
@@ -839,9 +829,9 @@ class ProductServiceTest {
 			void deleteProductFailWhenAlreadyDeletedTest() {
 
 				// given
-				Member member = MemberFixture.createMember1WithId(TestConstants.Product.MEMBER_ID);
-				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT,
-						REMAIN_AMOUNT, PRICE_PER_100MB);
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB);
 				Product product = ProductFixture.createMobileDataProductWithIdWithState(PRODUCT_ID,
 						mobileData.getId(), ProductState.DELETED, member);
 

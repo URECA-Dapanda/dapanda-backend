@@ -1,0 +1,99 @@
+package com.dapanda.plan.service;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.dapanda.member.entity.Member;
+import com.dapanda.plan.entity.AgeGroup;
+import com.dapanda.plan.entity.Plan;
+import com.dapanda.plan.entity.PlanCategory;
+import com.dapanda.plan.repository.PlanRepository;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("PlanService 단위 테스트")
+class PlanServiceTest {
+
+	@Mock
+	private PlanRepository planRepository;
+
+	@InjectMocks
+	private PlanService planService;
+
+	private Member member;
+
+	@BeforeEach
+	void setUp() {
+		member = mock(Member.class);
+	}
+
+	@Nested
+	@DisplayName("createRandomPlanForMember")
+	class CreateRandomPlanForMemberTest {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("요금제가 없는 회원에게 요금제를 생성해서 반환한다")
+			void shouldCreateAndReturnPlanForMemberWithoutPlan() {
+				// given
+				when(planRepository.existsByMember(member)).thenReturn(false);
+
+				ArgumentCaptor<Plan> planCaptor = ArgumentCaptor.forClass(Plan.class);
+				when(planRepository.save(planCaptor.capture()))
+						.thenAnswer(invocation -> invocation.getArgument(0));
+
+				// when
+				Plan result = planService.createRandomPlanForMember(member);
+
+				// then
+				assertThat(result).isNotNull();
+				assertThat(result.getMember()).isEqualTo(member);
+				assertThat(result.getName()).isNotBlank();
+				assertThat(result.getProvidingDataAmount()).isPositive();
+				assertThat(result.getMonthlyPrice()).isPositive();
+				assertThat(result.getCategory()).isInstanceOf(PlanCategory.class);
+				assertThat(result.getAgeGroup()).isInstanceOf(AgeGroup.class);
+
+				verify(planRepository, times(1)).save(any(Plan.class));
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("이미 요금제가 있는 경우 기존 요금제를 반환한다")
+			void shouldReturnExistingPlanIfAlreadyExists() {
+				// given
+				Plan existingPlan = mock(Plan.class);
+				when(planRepository.existsByMember(member)).thenReturn(true);
+				when(planRepository.findByMember(member)).thenReturn(Optional.of(existingPlan));
+
+				// when
+				Plan result = planService.createRandomPlanForMember(member);
+
+				// then
+				assertThat(result).isEqualTo(existingPlan);
+				verify(planRepository, never()).save(any(Plan.class));
+			}
+		}
+	}
+}

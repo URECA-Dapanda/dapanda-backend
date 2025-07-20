@@ -517,7 +517,27 @@ include::{snippets}/auth-logout-invalid-token/http-response.adoc[]
 [[resources-product]]
 === 상품
 
-[[resources-product-get-mobile-data]]
+==== 회원의 판매 상태에 따른 상품 목록 조회
+
+`GET` 요청을 통해 커서 기반으로 조회합니다.
+
+===== 요청 파라미터
+
+include::{snippets}/product/read-selling-product/path-parameters.adoc[]
+include::{snippets}/product/read-selling-product/query-parameters.adoc[]
+
+===== 요청
+
+include::{snippets}/product/read-selling-product/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/product/read-selling-product/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/product/read-selling-product/response-fields.adoc[]
+
 ==== 모바일 데이터 상품 목록 조회
 
 `GET /api/products/mobile-data`
@@ -528,9 +548,9 @@ include::{snippets}/auth-logout-invalid-token/http-response.adoc[]
 
 include::{snippets}/product/get-products-mobile-data/http-request.adoc[]
 
-===== 요청 필드
+===== 요청 파라미터
 
-include::{snippets}/product/get-products-mobile-data/request-fields.adoc[]
+include::{snippets}/product/get-products-mobile-data/query-parameters.adoc[]
 
 ===== 응답
 
@@ -565,9 +585,9 @@ include::{snippets}/product/get-products-mobile-data-plan-sort-option-validation
 
 include::{snippets}/product/get-products-wifi/http-request.adoc[]
 
-===== 요청 필드
+===== 요청 파라미터
 
-include::{snippets}/product/get-products-wifi/request-fields.adoc[]
+include::{snippets}/product/get-products-wifi/query-parameters.adoc[]
 
 ===== 응답
 
@@ -757,3 +777,50 @@ include::{snippets}/product/delete-product-not-found-error/http-response.adoc[]
 include::{snippets}/product/delete-product-already-deleted-error/http-request.adoc[]
 
 include::{snippets}/product/delete-product-already-deleted-error/http-response.adoc[]
+
+---
+
+[[resources-trade]]
+=== 거래
+
+==== 데이터 통합 상품 일반 구매
+
+`POST /api/trades/mobile-data/default}`
+
+데이터 통합 상품 일반 구매를 합니다.
+
+===== 요청
+
+include::{snippets}/trade/post-mobile-data-default/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/trade/post-mobile-data-default/request-fields.adoc[]
+
+====== 응답
+
+include::{snippets}/trade/post-mobile-data-default/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/trade/post-mobile-data-default/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 이미 판매 완료된 상품
+
+include::{snippets}/trade/post-mobile-data-default-already-sold-out-error/http-request.adoc[]
+
+include::{snippets}/trade/post-mobile-data-default-already-sold-out-error/http-response.adoc[]
+
+====== 보유 캐시 부족
+
+include::{snippets}/trade/post-mobile-data-default-insufficient-cash-error/http-request.adoc[]
+
+include::{snippets}/trade/post-mobile-data-default-insufficient-cash-error/http-response.adoc[]
+
+====== 자신이 등록한 상품
+
+include::{snippets}/trade/post-mobile-data-default-own-product-error/http-request.adoc[]
+
+include::{snippets}/trade/post-mobile-data-default-own-product-error/http-response.adoc[]

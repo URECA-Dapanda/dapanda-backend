@@ -5,25 +5,37 @@ import static com.dapanda.product.entity.QProduct.product;
 import static com.dapanda.product.entity.QProductImage.productImage;
 import static com.dapanda.product.entity.QWifi.wifi;
 import static com.dapanda.review.entity.QReview.review;
+import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
+import com.dapanda.product.dto.request.ReadSellingProductRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
+import com.dapanda.product.dto.response.ReadSellingProductResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
+import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.entity.QProductImage;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static com.dapanda.product.entity.QMobileData.mobileData;
+import static com.dapanda.product.entity.QProduct.product;
+import static com.dapanda.product.entity.QProductImage.productImage;
+import static com.dapanda.product.entity.QWifi.wifi;
+import static com.dapanda.review.entity.QReview.review;
 
 @Repository
 @RequiredArgsConstructor
@@ -73,6 +85,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.limit(size + 1)
 				.fetch();
 
+		// TODO: 메서드로 뺴기
 		boolean hasNext = content.size() > size;
 		if (hasNext) {
 			content.remove(size);
@@ -114,7 +127,12 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.from(product)
 				.groupBy(product.id)
 				.join(wifi).on(wifi.id.eq(product.itemId))
-				.leftJoin(review).on(review.trade.product.id.eq(product.id))
+				.leftJoin(review).on(review.trade.id.eq(
+						JPAExpressions
+								.select(tradeDetails.trade.id)
+								.from(tradeDetails)
+								.where(tradeDetails.product.id.eq(product.id))
+				))
 				.where(
 						gtCursorId(cursorId),
 						isOpenNow(isOpen, now)
@@ -170,7 +188,12 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				))
 				.from(product)
 				.join(mobileData).on(product.itemId.eq(mobileData.id))
-				.leftJoin(review).on(review.trade.product.id.eq(product.id))
+				.leftJoin(review).on(review.trade.id.eq(
+						JPAExpressions
+								.select(tradeDetails.trade.id)
+								.from(tradeDetails)
+								.where(tradeDetails.product.id.eq(product.id))
+				))
 				.where(isActiveProduct(),
 						product.itemId.eq(mobileData.id),
 						product.id.eq(productId)
@@ -203,7 +226,12 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				))
 				.from(product)
 				.join(wifi).on(product.itemId.eq(wifi.id))
-				.leftJoin(review).on(review.trade.product.id.eq(product.id))
+				.leftJoin(review).on(review.trade.id.eq(
+						JPAExpressions
+								.select(tradeDetails.trade.id)
+								.from(tradeDetails)
+								.where(tradeDetails.product.id.eq(product.id))
+				))
 				.where(isActiveProduct(),
 						product.itemId.eq(wifi.id),
 						product.id.eq(productId)
@@ -222,6 +250,67 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.where(productImage.wifiId.eq(wifiId))
 				.orderBy(productImage.priority.asc())
 				.fetch();
+	}
+
+	@Override
+	public List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request) {
+
+		List<Tuple> tuples = queryFactory
+				.select(
+						product.id,
+						product.itemType,
+						product.state,
+						mobileData.dataAmount,
+						mobileData.remainAmount,
+						wifi.startTime,
+						wifi.endTime,
+						product.createdAt,
+						product.updatedAt
+				)
+				.from(product)
+				.leftJoin(mobileData).on(
+						product.itemId.eq(mobileData.id)
+								.and(product.itemType.eq(ItemType.MOBILE_DATA))
+				)
+				.leftJoin(wifi).on(
+						product.member.id.eq(request.memberId()),
+						request.productState() != null ? product.state.eq(request.productState()) : null
+				)
+				.where(
+						product.member.id.eq(request.memberId()),
+						request.productState() != null ? product.state.eq(request.productState()) : null
+				)
+				.fetch();
+
+		return tuples.stream()
+				.map(tuple -> {
+
+					ItemType type = tuple.get(product.itemType);
+
+					if (type == ItemType.MOBILE_DATA) {
+
+						return ReadSellingProductResponse.createMobileDataResponse(
+								tuple.get(product.id),
+								type,
+								tuple.get(product.state),
+								tuple.get(mobileData.dataAmount),
+								tuple.get(mobileData.remainAmount),
+								tuple.get(product.createdAt),
+								tuple.get(product.updatedAt)
+						);
+					}
+
+					return ReadSellingProductResponse.createWifiResponse(
+							tuple.get(product.id),
+							type,
+							tuple.get(product.state),
+							tuple.get(wifi.startTime),
+							tuple.get(wifi.endTime),
+							tuple.get(product.createdAt),
+							tuple.get(product.updatedAt)
+					);
+				})
+				.toList();
 	}
 
 	private BooleanExpression isActiveProduct() {

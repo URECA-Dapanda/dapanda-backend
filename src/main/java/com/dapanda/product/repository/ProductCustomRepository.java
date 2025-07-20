@@ -3,11 +3,14 @@ package com.dapanda.product.repository;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
+import com.dapanda.product.dto.request.ReadSellingProductRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
+import com.dapanda.product.dto.response.ReadSellingProductResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
 import com.dapanda.product.entity.ProductSortOption;
-import java.util.List;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface ProductCustomRepository {
@@ -23,4 +26,6 @@ public interface ProductCustomRepository {
 	public WifiInfoResponse findWifiInfo(Long productId);
 
 	public List<String> findWifiImages(Long wifiId);
+
+	List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request);
 }
