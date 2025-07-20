@@ -471,7 +471,7 @@ class ProductControllerTest {
 										fieldWithPath("data.productId").description("상품 아이디"),
 										fieldWithPath("data.itemId").description("데이터 아이디"),
 										fieldWithPath("data.price").description("가격"),
-										fieldWithPath("data.senderId").description(
+										fieldWithPath("data.memberId").description(
 												"상품을 등록한 회원의 아이디"),
 										fieldWithPath("data.memberName").description(
 												"상품을 등록한 회원의 이름"),
@@ -598,7 +598,7 @@ class ProductControllerTest {
 										fieldWithPath("data.productId").description("상품 아이디"),
 										fieldWithPath("data.itemId").description("데이터 아이디"),
 										fieldWithPath("data.price").description("가격"),
-										fieldWithPath("data.senderId").description(
+										fieldWithPath("data.memberId").description(
 												"상품을 등록한 회원의 아이디"),
 										fieldWithPath("data.memberName").description(
 												"상품을 등록한 회원의 이름"),
@@ -1185,7 +1185,7 @@ class ProductControllerTest {
 				given(userDetails.getId()).willReturn(USER_DETAILS_MEMBER_ID);
 
 				//when & then
-				mockMvc.perform(get("/api/members/{senderId}/selling-products", seller.getId())
+				mockMvc.perform(get("/api/members/{memberId}/selling-products", seller.getId())
 								.param("productState", ProductState.ACTIVE.name())
 								.param("size", String.valueOf(DEFAULT_SIZE))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
@@ -1203,7 +1203,7 @@ class ProductControllerTest {
 						.andExpect(jsonPath("$.data.pageInfo.nextCursorId").exists())
 						.andDo(document("product/read-selling-product",
 								pathParameters(
-										parameterWithName("senderId").description(
+										parameterWithName("memberId").description(
 												"조회할 회원의 아이디 (필수)")
 								),
 								queryParameters(
