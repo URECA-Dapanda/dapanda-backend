@@ -30,9 +30,11 @@ import static com.dapanda.TestConstants.Wifi.TITLE;
 import static com.dapanda.TestConstants.Wifi.WRONG_END_TIME;
 import static com.dapanda.TestConstants.Wifi.WRONG_START_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
@@ -43,12 +45,15 @@ import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
+import com.dapanda.product.dto.request.CreateMobileDataRequest;
+import com.dapanda.product.dto.request.CreateWifiRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.UpdateMobileDataResponse;
 import com.dapanda.product.dto.response.UpdateWifiResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
+import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.MobileData;
 import com.dapanda.product.entity.MobileDataFixture;
 import com.dapanda.product.entity.Product;
@@ -60,6 +65,7 @@ import com.dapanda.product.entity.WifiFixture;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -70,6 +76,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("상품 서비스 테스트")
@@ -89,6 +96,114 @@ class ProductServiceTest {
 
 	@InjectMocks
 	private ProductService productService;
+
+	@Nested
+	@DisplayName("모바일 데이터 상품 등록")
+	class CreateMobileData {
+
+		@Test
+		@DisplayName("성공: 정상 등록")
+		void createMobileDataSuccess() {
+
+			// given
+			Long memberId = 1L;
+			Member member = MemberFixture.createMember1WithId(memberId);
+			CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2.0F, false);
+
+			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
+			given(productRepository.sumSoldMobileDataAmountByMemberId(memberId)).willReturn(1.0F);
+
+			MobileData mobileData = MobileData.singleOf(2.0F, 12000, false);
+			given(mobileDataRepository.save(any())).willReturn(mobileData);
+
+			Product product = Product.of(ProductState.ACTIVE, 12000, 1L, ItemType.MOBILE_DATA,
+					member);
+			given(productRepository.save(any())).willReturn(product);
+
+			// when/then (예외 없음 = 성공)
+			assertThatCode(() -> productService.createMobileData(request,
+					memberId)).doesNotThrowAnyException();
+		}
+
+		@Test
+		@DisplayName("실패: 존재하지 않는 회원")
+		void failCreateMobileDataIfNoMember() {
+
+			// given
+			Long memberId = 1234L;
+			CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2.0F, false);
+
+			given(memberRepository.findById(memberId)).willReturn(Optional.empty());
+
+			// when/then
+			assertThatThrownBy(() -> productService.createMobileData(request, memberId))
+					.isInstanceOf(GlobalException.class)
+					.hasMessage(ResultCode.MEMBER_NOT_FOUND.getMessage());
+		}
+
+		@Test
+		@DisplayName("실패: 판매 데이터 2GB 초과")
+		void failCreateMobileDataIfOverLimit() {
+
+			// given
+			Long memberId = 1L;
+			Member member = MemberFixture.createMember1WithId(memberId);
+			CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2000.0F,
+					false); // 2GB 추가
+
+			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
+			given(productRepository.sumSoldMobileDataAmountByMemberId(memberId)).willReturn(
+					2000.0F);
+
+			// when/then
+			assertThatThrownBy(() -> productService.createMobileData(request, memberId))
+					.isInstanceOf(GlobalException.class)
+					.hasMessage(ResultCode.EXCEEDED_TRANSFER_LIMIT.getMessage());
+		}
+	}
+
+	@Nested
+	@DisplayName("와이파이 상품 등록")
+	class CreateWifi {
+
+		@Test
+		@DisplayName("성공: 정상 등록")
+		void createWifiSuccess() {
+
+			// given
+			Long memberId = 1L;
+			Member member = MemberFixture.createMember1WithId(memberId);
+			CreateWifiRequest request = new CreateWifiRequest(15000, "와이파이", "설명", 37.5, 127.0,
+					LocalDateTime.now(), LocalDateTime.now().plusHours(5));
+			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
+			Wifi wifi = Wifi.of("와이파이", "설명", 37.5, 127.0, request.getStartTime(),
+					request.getEndTime());
+			given(wifiRepository.save(any())).willReturn(wifi);
+
+			Product product = Product.of(ProductState.ACTIVE, 15000, 1L, ItemType.WIFI, member);
+			given(productRepository.save(any())).willReturn(product);
+
+			// when/then
+			assertThatCode(
+					() -> productService.createWifi(request, memberId)).doesNotThrowAnyException();
+		}
+
+		@Test
+		@DisplayName("실패: 존재하지 않는 회원")
+		void failCreateWifiIfNoMember() {
+
+			// given
+			Long memberId = 999L;
+			CreateWifiRequest request = new CreateWifiRequest(15000, "와이파이", "설명", 37.5, 127.0,
+					LocalDateTime.now(), LocalDateTime.now().plusHours(5));
+			given(memberRepository.findById(memberId)).willReturn(Optional.empty());
+
+			// when/then
+			assertThatThrownBy(() -> productService.createWifi(request, memberId))
+					.isInstanceOf(GlobalException.class)
+					.hasMessage(ResultCode.MEMBER_NOT_FOUND.getMessage());
+		}
+	}
 
 	@Nested
 	@DisplayName("데이터 상품 목록 조회")
