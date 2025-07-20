@@ -45,11 +45,14 @@ import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
 import com.dapanda.trade.dto.MobileDataScrap;
 import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
+import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
+import com.dapanda.trade.entity.TradeFixture;
 import com.dapanda.trade.repository.TradeRepository;
 import com.dapanda.trade.service.TradeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -566,8 +569,14 @@ class TradeControllerTest {
 										fieldWithPath("data.combinations[].price").description(
 												"상품 가격"),
 										fieldWithPath(
+												"data.combinations[].purchasePrice").description(
+												"구매할 상품 가격"),
+										fieldWithPath(
 												"data.combinations[].remainAmount").description(
 												"남은 데이터양"),
+										fieldWithPath(
+												"data.combinations[].purchaseAmount").description(
+												"구매할 데이터양"),
 										fieldWithPath(
 												"data.combinations[].pricePer100MB").description(
 												"100MB 당 가격").optional(),
@@ -641,6 +650,320 @@ class TradeControllerTest {
 				assertThat(response.getTotalAmount()).isEqualTo(0);
 				assertThat(response.getTotalPrice()).isEqualTo(0); // 조합된 상품의 총 가격
 				assertThat(response.getCombinations().size()).isEqualTo(0); // 조합된 상품 개수 확인
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("데이터 상품 자투리 구매 API")
+	class ScrapPurchaseMobileData {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("데이터 상품 자투리 구매를 성공한다")
+			void scrapPurchaseMobileData() throws Exception {
+
+				// given
+				Member seller1 = MemberFixture.createMember1();
+				Member seller2 = MemberFixture.createMember2();
+				Member buyer = MemberFixture.createMember3();
+				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
+				List<Member> members = Arrays.asList(seller1, seller2, buyer);
+				memberRepository.saveAll(members);
+
+				MobileData mobileData1 = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_150);
+				MobileData mobileData2 = MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
+				List<MobileData> mobileDataList = Arrays.asList(mobileData1, mobileData2);
+				mobileDataRepository.saveAll(mobileDataList);
+
+				Product product1 = ProductFixture.createMobileDataProduct(PRICE_1500,
+						mobileData1.getId(), seller1);
+				Product product2 = ProductFixture.createMobileDataProduct(PRICE_3000,
+						mobileData2.getId(), seller2);
+				List<Product> products = Arrays.asList(product1, product2);
+				productRepository.saveAll(products);
+
+				MobileDataScrap mobileDataScrap1 = TradeFixture.createMobileDataScrap(product1,
+						mobileData1, PRICE_1500, DATA_AMOUNT_1);
+				MobileDataScrap mobileDataScrap2 = TradeFixture.createMobileDataScrap(product2,
+						mobileData2, PRICE_3000, DATA_AMOUNT_1);
+				List<MobileDataScrap> mobileDataScrapList = new ArrayList<>(
+						Arrays.asList(mobileDataScrap1, mobileDataScrap2));
+
+				TradeMobileDataScrapRequest request = new TradeMobileDataScrapRequest(DATA_AMOUNT_2,
+						PRICE_1500 + PRICE_3000, mobileDataScrapList);
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(buyer.getId());
+
+				// when & then
+				mockMvc.perform(post("/api/trades/mobile-data/scrap")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.tradeId").exists())
+						.andDo(document("trade/post-mobile-data-scrap",
+								requestFields(
+										fieldWithPath("totalPrice").description("총 가격 (필수)"),
+										fieldWithPath("totalAmount").description("총 데이터양 (필수)"),
+										fieldWithPath("combinations[]").description(
+												"데이터 상품 조합 목록 (필수)"),
+										fieldWithPath("combinations[].productId").description(
+												"상품 아이디"),
+										fieldWithPath(
+												"combinations[].mobileDataId").description(
+												"데이터 가격"),
+										fieldWithPath("combinations[].memberName").description(
+												"판매자 이름"),
+										fieldWithPath("combinations[].price").description(
+												"상품 가격"),
+										fieldWithPath(
+												"combinations[].purchasePrice").description(
+												"구매할 상품 가격"),
+										fieldWithPath(
+												"combinations[].remainAmount").description(
+												"남은 데이터양"),
+										fieldWithPath(
+												"combinations[].purchaseAmount").description(
+												"구매할 데이터양"),
+										fieldWithPath(
+												"combinations[].pricePer100MB").description(
+												"100MB 당 가격").optional(),
+										fieldWithPath("combinations[].splitType").description(
+												"분할 타입 여부"),
+										fieldWithPath("combinations[].updatedAt").description(
+												"수정된 날짜")
+
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data").description("응답 데이터 (에러시 반환되지 않음)"),
+										fieldWithPath("data.tradeId").description("생성된 거래 아이디")
+								))
+						);
+
+				Member updatedBuyer = memberRepository.findById(buyer.getId()).orElseThrow();
+				Member updatedSeller1 = memberRepository.findById(seller1.getId()).orElseThrow();
+				Member updatedSeller2 = memberRepository.findById(seller2.getId()).orElseThrow();
+				MobileData updatedMobileData1 = mobileDataRepository.findById(mobileData1.getId())
+						.orElseThrow();
+				MobileData updatedMobileData2 = mobileDataRepository.findById(mobileData2.getId())
+						.orElseThrow();
+
+				assertThat(updatedMobileData1.getRemainAmount()).isEqualTo(0);
+				assertThat(updatedMobileData2.getRemainAmount()).isEqualTo(0);
+
+				assertThat(updatedBuyer.getCash()).isEqualTo(CASH_5000 - request.totalPrice());
+				assertThat(updatedBuyer.getBuyingData()).isEqualTo(request.totalAmount());
+
+				assertThat(updatedSeller1.getSellingData()).isEqualTo(DATA_AMOUNT_1);
+				assertThat(updatedSeller1.getCash()).isEqualTo(PRICE_1500);
+
+				assertThat(updatedSeller2.getSellingData()).isEqualTo(DATA_AMOUNT_1);
+				assertThat(updatedSeller2.getCash()).isEqualTo(PRICE_3000);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("데이터 상품 자투리 구매를 할 때 보유 캐시가 충분하지 않으면 예외를 던진다")
+			void throwExceptionWhenCashInsufficient() throws Exception {
+
+				// given
+				Member seller1 = MemberFixture.createMember1();
+				Member seller2 = MemberFixture.createMember2();
+				Member buyer = MemberFixture.createMember3();
+				ReflectionTestUtils.setField(buyer, "cash", 0);
+				List<Member> members = Arrays.asList(seller1, seller2, buyer);
+				memberRepository.saveAll(members);
+
+				MobileData mobileData1 = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_150);
+				MobileData mobileData2 = MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
+				List<MobileData> mobileDataList = Arrays.asList(mobileData1, mobileData2);
+				mobileDataRepository.saveAll(mobileDataList);
+
+				Product product1 = ProductFixture.createMobileDataProduct(PRICE_1500,
+						mobileData1.getId(), seller1);
+				Product product2 = ProductFixture.createMobileDataProduct(PRICE_3000,
+						mobileData2.getId(), seller2);
+				List<Product> products = Arrays.asList(product1, product2);
+				productRepository.saveAll(products);
+
+				MobileDataScrap mobileDataScrap1 = TradeFixture.createMobileDataScrap(product1,
+						mobileData1, PRICE_1500, DATA_AMOUNT_1);
+				MobileDataScrap mobileDataScrap2 = TradeFixture.createMobileDataScrap(product2,
+						mobileData2, PRICE_3000, DATA_AMOUNT_1);
+				List<MobileDataScrap> mobileDataScrapList = new ArrayList<>(
+						Arrays.asList(mobileDataScrap1, mobileDataScrap2));
+
+				TradeMobileDataScrapRequest request = new TradeMobileDataScrapRequest(DATA_AMOUNT_2,
+						PRICE_1500 + PRICE_3000, mobileDataScrapList);
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(buyer.getId());
+
+				// when & then
+				mockMvc.perform(post("/api/trades/mobile-data/scrap")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andExpect(jsonPath("$.code").value(ResultCode.INSUFFICIENT_CASH.getCode()))
+						.andExpect(jsonPath("$.message").value(
+								ResultCode.INSUFFICIENT_CASH.getMessage()))
+						.andDo(document("trade/post-mobile-data-scrap-insufficient-cash-error",
+								requestFields(
+										fieldWithPath("totalPrice").description("총 가격 (필수)"),
+										fieldWithPath("totalAmount").description("총 데이터양 (필수)"),
+										fieldWithPath("combinations[]").description(
+												"데이터 상품 조합 목록 (필수)"),
+										fieldWithPath("combinations[].productId").description(
+												"상품 아이디"),
+										fieldWithPath(
+												"combinations[].mobileDataId").description(
+												"데이터 가격"),
+										fieldWithPath("combinations[].memberName").description(
+												"판매자 이름"),
+										fieldWithPath("combinations[].price").description(
+												"상품 가격"),
+										fieldWithPath(
+												"combinations[].purchasePrice").description(
+												"구매할 상품 가격"),
+										fieldWithPath(
+												"combinations[].remainAmount").description(
+												"남은 데이터양"),
+										fieldWithPath(
+												"combinations[].purchaseAmount").description(
+												"구매할 데이터양"),
+										fieldWithPath(
+												"combinations[].pricePer100MB").description(
+												"100MB 당 가격").optional(),
+										fieldWithPath("combinations[].splitType").description(
+												"분할 타입 여부"),
+										fieldWithPath("combinations[].updatedAt").description(
+												"수정된 날짜")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지")
+								))
+						);
+			}
+
+			@Test
+			@DisplayName("데이터 상품 자투리 구매를 할 때 잔여 데이터양이 유효하지 않으면 예외를 던진다")
+			void throwExceptionWhenRemainAmountInsufficient() throws Exception {
+
+				// given
+				Member seller1 = MemberFixture.createMember1();
+				Member seller2 = MemberFixture.createMember2();
+				Member buyer = MemberFixture.createMember3();
+				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
+				List<Member> members = Arrays.asList(seller1, seller2, buyer);
+				memberRepository.saveAll(members);
+
+				MobileData mobileData1 = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
+						0, PRICE_PER_100MB_150);
+				MobileData mobileData2 = MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2,
+						0, PRICE_PER_100MB_300);
+				List<MobileData> mobileDataList = Arrays.asList(mobileData1, mobileData2);
+				mobileDataRepository.saveAll(mobileDataList);
+
+				Product product1 = ProductFixture.createMobileDataProduct(PRICE_1500,
+						mobileData1.getId(), seller1);
+				Product product2 = ProductFixture.createMobileDataProduct(PRICE_3000,
+						mobileData2.getId(), seller2);
+				List<Product> products = Arrays.asList(product1, product2);
+				productRepository.saveAll(products);
+
+				MobileDataScrap mobileDataScrap1 = TradeFixture.createMobileDataScrap(product1,
+						mobileData1, PRICE_1500, DATA_AMOUNT_1);
+				MobileDataScrap mobileDataScrap2 = TradeFixture.createMobileDataScrap(product2,
+						mobileData2, PRICE_3000, DATA_AMOUNT_1);
+				List<MobileDataScrap> mobileDataScrapList = new ArrayList<>(
+						Arrays.asList(mobileDataScrap1, mobileDataScrap2));
+
+				TradeMobileDataScrapRequest request = new TradeMobileDataScrapRequest(DATA_AMOUNT_2,
+						PRICE_1500 + PRICE_3000, mobileDataScrapList);
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(buyer.getId());
+
+				// when & then
+				mockMvc.perform(post("/api/trades/mobile-data/scrap")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andExpect(jsonPath("$.code").value(
+								ResultCode.INVALID_REMAIN_DATA_AMOUNT.getCode()))
+						.andExpect(jsonPath("$.message").value(
+								ResultCode.INVALID_REMAIN_DATA_AMOUNT.getMessage()))
+						.andDo(document(
+								"trade/post-mobile-data-scrap-insufficient-reamin-amount-error",
+								requestFields(
+										fieldWithPath("totalPrice").description("총 가격 (필수)"),
+										fieldWithPath("totalAmount").description("총 데이터양 (필수)"),
+										fieldWithPath("combinations[]").description(
+												"데이터 상품 조합 목록 (필수)"),
+										fieldWithPath("combinations[].productId").description(
+												"상품 아이디"),
+										fieldWithPath(
+												"combinations[].mobileDataId").description(
+												"데이터 가격"),
+										fieldWithPath("combinations[].memberName").description(
+												"판매자 이름"),
+										fieldWithPath("combinations[].price").description(
+												"상품 가격"),
+										fieldWithPath(
+												"combinations[].purchasePrice").description(
+												"구매할 상품 가격"),
+										fieldWithPath(
+												"combinations[].remainAmount").description(
+												"남은 데이터양"),
+										fieldWithPath(
+												"combinations[].purchaseAmount").description(
+												"구매할 데이터양"),
+										fieldWithPath(
+												"combinations[].pricePer100MB").description(
+												"100MB 당 가격").optional(),
+										fieldWithPath("combinations[].splitType").description(
+												"분할 타입 여부"),
+										fieldWithPath("combinations[].updatedAt").description(
+												"수정된 날짜")
+
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지")
+								))
+						);
 			}
 		}
 	}
