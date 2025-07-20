@@ -144,7 +144,7 @@ public class TradeService {
 	private Trade createTradeAndTradeDetails(Product product, MobileData mobileData, Member buyer,
 			int price) {
 
-		Trade trade = Trade.of(mobileData.getDataAmount(), null, price, TradeType.PURCHASE_SINGLE,
+		Trade trade = Trade.of(mobileData.getDataAmount(), price, TradeType.PURCHASE_SINGLE,
 				buyer);
 		tradeRepository.save(trade);
 		TradeDetails tradeDetails = TradeDetails.of(product, trade);
