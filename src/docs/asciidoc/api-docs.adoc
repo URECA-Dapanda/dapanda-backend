@@ -440,50 +440,6 @@ include::{snippets}/auth-login-invalid-password/http-request.adoc[]
 
 include::{snippets}/auth-login-invalid-password/http-response.adoc[]
 
-[[resources-auth-reissue]]
-==== 액세스 토큰 재발급
-
-`POST /api/auth/reissue`
-Refresh Token을 이용해 새로운 Access Token을 발급받습니다.
-
-===== 요청
-
-include::{snippets}/auth-reissue-success/http-request.adoc[]
-
-===== 응답
-
-include::{snippets}/auth-reissue-success/http-response.adoc[]
-
-===== 응답 필드
-
-include::{snippets}/auth-reissue-success/response-fields.adoc[]
-
-===== 실패 요청
-
-====== Refresh Token 헤더 없음
-
-include::{snippets}/auth-reissue-no-header/http-request.adoc[]
-
-include::{snippets}/auth-reissue-no-header/http-response.adoc[]
-
-====== Refresh Token 유효하지 않음
-
-include::{snippets}/auth-reissue-invalid-token/http-request.adoc[]
-
-include::{snippets}/auth-reissue-invalid-token/http-response.adoc[]
-
-====== 저장된 Refresh Token과 입력값 다름
-
-include::{snippets}/auth-reissue-token-mismatch/http-request.adoc[]
-
-include::{snippets}/auth-reissue-token-mismatch/http-response.adoc[]
-
-====== Refresh Token 상태가 INVALID 등일 때
-
-include::{snippets}/auth-reissue-invalid-state/http-request.adoc[]
-
-include::{snippets}/auth-reissue-invalid-state/http-response.adoc[]
-
 [[resources-auth-logout]]
 ==== 로그아웃
 

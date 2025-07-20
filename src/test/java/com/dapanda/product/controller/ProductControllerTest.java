@@ -51,11 +51,14 @@ import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.product.dto.request.CreateMobileDataRequest;
+import com.dapanda.product.dto.request.CreateWifiRequest;
 import com.dapanda.product.dto.request.MobileDataCursorRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
+import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.MobileData;
 import com.dapanda.product.entity.MobileDataFixture;
 import com.dapanda.product.entity.Product;
@@ -143,6 +146,233 @@ class ProductControllerTest {
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
+
+	@Nested
+	@DisplayName("상품 등록 API")
+	class CreateProduct {
+
+		private Member member;
+		private CustomUserDetails userDetails;
+
+		@BeforeEach
+		void setUp() {
+			// 모든 테스트에서 공통적으로 사용할 member, userDetails 준비
+			member = memberRepository.save(MemberFixture.createMember1());
+			userDetails = CustomUserDetails.from(member);
+		}
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("정상적으로 모바일 데이터 상품을 등록한다")
+			void createMobileData_success() throws Exception {
+				CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2.0F, false);
+
+				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/mobile-data")
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request)))
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(0))
+						.andExpect(jsonPath("$.message").value("정상 처리 되었습니다."))
+						.andDo(document("product/post-mobile-data-success",
+								requestFields(
+										fieldWithPath("price").description("상품 가격"),
+										fieldWithPath("dataAmount").description("데이터 용량(MB 단위)"),
+										fieldWithPath("isSplitType").description("분할 판매 여부")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지")
+								)
+						));
+			}
+
+			@Test
+			@DisplayName("정상적으로 와이파이 상품을 등록한다")
+			void createWifi_success() throws Exception {
+				CreateWifiRequest request = new CreateWifiRequest(15000, "Test Wifi", "설명", 37.5,
+						127.0, LocalDateTime.now(), LocalDateTime.now().plusHours(2));
+
+				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/wifi")
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request)))
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(0))
+						.andDo(document("product/post-wifi-success",
+								requestFields(
+										fieldWithPath("price").description("상품 가격"),
+										fieldWithPath("title").description("와이파이 이름"),
+										fieldWithPath("content").description("상세 설명"),
+										fieldWithPath("latitude").description("위도"),
+										fieldWithPath("longitude").description("경도"),
+										fieldWithPath("startTime").description("시작 시간"),
+										fieldWithPath("endTime").description("종료 시간")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지")
+								)
+						));
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("존재하지 않는 회원이면 예외를 반환한다 - 모바일 데이터")
+			void createMobileData_fail_noMember() throws Exception {
+				Member member = memberRepository.save(MemberFixture.createMember2());
+				Long memberId = member.getId(); // 실제 DB에서 발급된 id
+				CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2.0F, false);
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
+				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/mobile-data")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request)))
+						.andExpect(status().isUnauthorized())
+						.andDo(document("product/post-mobile-data-no-member-error",
+								requestFields(
+										fieldWithPath("price").description("상품 가격"),
+										fieldWithPath("dataAmount").description("데이터 용량(MB 단위)"),
+										fieldWithPath("isSplitType").description("분할 판매 여부")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("에러 메시지")
+								)
+						));
+			}
+
+			@Test
+			@DisplayName("데이터 총합이 2GB 초과시 예외를 반환한다 - 모바일 데이터")
+			void createMobileData_fail_overLimit() throws Exception {
+				// 이미 sellingData가 꽉 찬 상태로 설정
+				Member member = memberRepository.save(MemberFixture.createMember2());
+				// sellingData 필드를 강제로 세팅하려면 set 메소드 또는 ReflectionTestUtils 사용
+				MobileData fullMobileData = mobileDataRepository.save(
+						MobileData.singleOf(2000F, 1000, false) // 2000MB짜리 상품
+				);
+				productRepository.save(
+						Product.of(ProductState.ACTIVE, 1000, fullMobileData.getId(),
+								ItemType.MOBILE_DATA, member)
+				);
+
+				userDetails = CustomUserDetails.from(member);
+
+				CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 1.0F, false);
+
+				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/mobile-data")
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request)))
+						.andExpect(status().isBadRequest())
+						.andExpect(jsonPath("$.code").value(3005))
+						.andExpect(jsonPath("$.message").value("전송 가능한 데이터양을 초과했습니다."))
+						.andDo(document("product/post-mobile-data-over-limit-error",
+								requestFields(
+										fieldWithPath("price").description("상품 가격"),
+										fieldWithPath("dataAmount").description("데이터 용량(MB 단위)"),
+										fieldWithPath("isSplitType").description("분할 판매 여부")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("에러 메시지")
+								)
+						));
+			}
+
+			@Test
+			@DisplayName("필수 입력값이 누락되면 예외를 반환한다 - 모바일 데이터")
+			void createMobileData_fail_missingField() throws Exception {
+				String invalidJson = "{\"dataAmount\":2.0,\"isSplitType\":false}"; // price 누락
+
+				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/mobile-data")
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(invalidJson))
+						.andExpect(status().isBadRequest())
+						.andDo(document("product/post-mobile-data-missing-field-error",
+								requestFields(
+										fieldWithPath("dataAmount").description("데이터 용량(MB 단위)"),
+										fieldWithPath("isSplitType").description("분할 판매 여부")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("에러 메시지")
+								)
+						));
+			}
+
+			@Test
+			@DisplayName("존재하지 않는 회원이면 예외를 반환한다 - 와이파이")
+			void createWifi_fail_noMember() throws Exception {
+				CreateWifiRequest request = new CreateWifiRequest(15000, "Test Wifi", "설명", 37.5,
+						127.0, LocalDateTime.now(), LocalDateTime.now().plusHours(2));
+
+				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/wifi")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request)))
+						.andExpect(status().isUnauthorized())
+						.andDo(document("product/post-wifi-no-member-error",
+								requestFields(
+										fieldWithPath("price").description("상품 가격"),
+										fieldWithPath("title").description("와이파이 이름"),
+										fieldWithPath("content").description("상세 설명"),
+										fieldWithPath("latitude").description("위도"),
+										fieldWithPath("longitude").description("경도"),
+										fieldWithPath("startTime").description("시작 시간"),
+										fieldWithPath("endTime").description("종료 시간")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("에러 메시지")
+								)
+						));
+			}
+
+			@Test
+			@DisplayName("필수 입력값이 누락되면 예외를 반환한다 - 와이파이")
+			void createWifi_fail_missingField() throws Exception {
+				String invalidJson = "{\"latitude\":37.5,\"longitude\":127.0,\"startTime\":\"2025-07-18T10:00:00\",\"endTime\":\"2025-07-18T20:00:00\"}";
+
+				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/wifi")
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(invalidJson))
+						.andExpect(status().isBadRequest())
+						.andDo(document("product/post-wifi-missing-field-error",
+								requestFields(
+										fieldWithPath("latitude").description("위도"),
+										fieldWithPath("longitude").description("경도"),
+										fieldWithPath("startTime").description("시작 시간"),
+										fieldWithPath("endTime").description("종료 시간")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("에러 메시지")
+								)
+						));
+			}
+		}
+	}
+
 
 	@Nested
 	@DisplayName("데이터 상품 목록 조회 API")
