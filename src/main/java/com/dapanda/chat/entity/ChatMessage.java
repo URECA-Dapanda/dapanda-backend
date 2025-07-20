@@ -13,13 +13,14 @@ public class ChatMessage extends CreatedAtEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@Column(nullable = false, length = 300)
 	private String message;
 
-	@ManyToOne
-	@JoinColumn(name = "chat_room_id")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "chat_room_id", nullable = false)
 	private ChatRoom chatRoom;
 
-	@ManyToOne
-	@JoinColumn(name = "member_id")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id", nullable = false)
 	private Member member;
 }
