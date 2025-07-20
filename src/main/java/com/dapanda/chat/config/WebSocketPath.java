@@ -9,7 +9,8 @@ public enum WebSocketPath {
 
 	PUBLISH("/publish"),
 	CONNECT("/connect"),
-	TOPIC("/topic");
+	TOPIC("/topic"),
+	SLASH("/");
 
 	private final String path;
 }
