@@ -3,8 +3,10 @@ package com.dapanda.trade.controller;
 
 import static com.dapanda.TestConstants.Member.CASH_5000;
 import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
+import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_2;
 import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB;
 import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
+import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_2;
 import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
 import static com.dapanda.TestConstants.Product.PRICE_3000;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -111,13 +113,14 @@ class TradeControllerTest {
 		jdbcTemplate.execute("TRUNCATE TABLE member");
 		jdbcTemplate.execute("TRUNCATE TABLE plan");
 		jdbcTemplate.execute("TRUNCATE TABLE trade");
+		jdbcTemplate.execute("TRUNCATE TABLE trade_details");
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
 
 	@Nested
-	@DisplayName("데이터 통합 상품 일반 구매 API")
-	class MobileDataList {
+	@DisplayName("데이터 상품 일반 구매 API")
+	class MobileDataFullDefaultPurchase {
 
 		@Nested
 		@DisplayName("성공 케이스")
@@ -164,10 +167,12 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data.tradeId").exists())
-						.andDo(document("trade/post-mobile-data-default",
+						.andDo(document("trade/post-mobile-data-full-default",
 								requestFields(
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
-										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)")
+										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
+										fieldWithPath("dataAmount").description(
+												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -194,6 +199,81 @@ class TradeControllerTest {
 				assertThat(afterBuyer.getBuyingData()).isEqualTo(mobileData.getDataAmount());
 				assertThat(afterSeller.getSellingData()).isEqualTo(mobileData.getDataAmount());
 			}
+
+			@Test
+			@DisplayName("데이터 분할 상품 일반 구매를 성공한다")
+			void purchaseDataProductDefaultPartialPurchase() throws Exception {
+
+				// given
+				Member seller = memberRepository.save(MemberFixture.createMember1());
+				Member buyer = memberRepository.save(MemberFixture.createMember2());
+				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
+				memberRepository.save(buyer);
+
+				Plan sellerPlan = planRepository.save(
+						PlanFixture.createPlan(seller, PROVIDING_DATA_AMOUNT_10));
+				Plan buyerPlan = planRepository.save(
+						PlanFixture.createPlan(buyer, PROVIDING_DATA_AMOUNT_10));
+
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2, REMAIN_AMOUNT_2,
+								PRICE_PER_100MB));
+				Product product = productRepository.save(
+						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
+								seller));
+
+				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+						product.getId(), mobileData.getId(), DATA_AMOUNT_1);
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(buyer.getId());
+
+				// when & then
+				mockMvc.perform(post("/api/trades/mobile-data/default")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.tradeId").exists())
+						.andDo(document("trade/post-mobile-data-partial-default",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)"),
+										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
+										fieldWithPath("dataAmount").description(
+												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data").description("응답 데이터 (에러시 반환되지 않음)"),
+										fieldWithPath("data.tradeId").description("생성된 거래 아이디")
+								))
+						);
+
+				Product soldOutProduct = productRepository.findById(product.getId()).orElseThrow();
+				MobileData soldOutMobileData = mobileDataRepository.findById(mobileData.getId())
+						.orElseThrow();
+				Plan afterBuyerPlan = planRepository.findById(buyerPlan.getId()).orElseThrow();
+				Plan afterSellerPlan = planRepository.findById(sellerPlan.getId()).orElseThrow();
+				Member afterBuyer = memberRepository.findById(buyer.getId()).orElseThrow();
+				Member afterSeller = memberRepository.findById(seller.getId()).orElseThrow();
+
+				assertThat(soldOutProduct.getState()).isEqualTo(ProductState.ACTIVE);
+				assertThat(soldOutMobileData.getRemainAmount()).isEqualTo(
+						DATA_AMOUNT_2 - DATA_AMOUNT_1);
+				assertThat(afterBuyerPlan.getProvidingDataAmount()).isEqualTo(
+						PROVIDING_DATA_AMOUNT_10 + DATA_AMOUNT_1);
+				assertThat(afterSellerPlan.getProvidingDataAmount()).isEqualTo(
+						PROVIDING_DATA_AMOUNT_10 - DATA_AMOUNT_1);
+				assertThat(afterBuyer.getBuyingData()).isEqualTo(DATA_AMOUNT_1);
+				assertThat(afterSeller.getSellingData()).isEqualTo(DATA_AMOUNT_1);
+			}
 		}
 
 		@Nested
@@ -201,7 +281,7 @@ class TradeControllerTest {
 		class Fail {
 
 			@Test
-			@DisplayName("데이터 통합 상품 일반 구매를 할 때 이미 판매 완료된 상품이면 예외를 던진다")
+			@DisplayName("데이터 상품 일반 구매를 할 때 이미 판매 완료된 상품이면 예외를 던진다")
 			void throwExceptionWhenBuyingDataFullDefault() throws Exception {
 
 				// given
@@ -239,7 +319,9 @@ class TradeControllerTest {
 						.andDo(document("trade/post-mobile-data-default-already-sold-out-error",
 								requestFields(
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
-										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)")
+										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
+										fieldWithPath("dataAmount").description(
+												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -249,7 +331,7 @@ class TradeControllerTest {
 			}
 
 			@Test
-			@DisplayName("데이터 통합 상품 일반 구매를 할 때 보유 캐시가 부족하면 예외를 던진다")
+			@DisplayName("데이터 상품 일반 구매를 할 때 보유 캐시가 부족하면 예외를 던진다")
 			void throwExceptionWhenCashInSufficient() throws Exception {
 
 				// given
@@ -287,7 +369,9 @@ class TradeControllerTest {
 						.andDo(document("trade/post-mobile-data-default-insufficient-cash-error",
 								requestFields(
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
-										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)")
+										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
+										fieldWithPath("dataAmount").description(
+												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -297,7 +381,7 @@ class TradeControllerTest {
 			}
 
 			@Test
-			@DisplayName("데이터 통합 상품 일반 구매를 할 때 자신이 등록한 상품이면 예외를 던진다")
+			@DisplayName("데이터 상품 일반 구매를 할 때 자신이 등록한 상품이면 예외를 던진다")
 			void throwExceptionWhenBuyingSelfProduct() throws Exception {
 
 				// given
@@ -336,7 +420,9 @@ class TradeControllerTest {
 						.andDo(document("trade/post-mobile-data-default-own-product-error",
 								requestFields(
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
-										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)")
+										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
+										fieldWithPath("dataAmount").description(
+												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -344,6 +430,65 @@ class TradeControllerTest {
 								))
 						);
 			}
+
+			@Test
+			@DisplayName("데이터 분할 상품 일반 구매를 할 때 요청 데이터양이 상품의 잔여량보다 크면 예외를 던진다")
+			void throwExceptionWhenBuyingDataPartialDefaultIfRequestIsGreaterThanRemain()
+					throws Exception {
+
+				// given
+				Member seller = memberRepository.save(MemberFixture.createMember1());
+				Member buyer = memberRepository.save(MemberFixture.createMember2());
+				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
+				memberRepository.save(buyer);
+
+				Plan sellerPlan = planRepository.save(
+						PlanFixture.createPlan(seller, PROVIDING_DATA_AMOUNT_10));
+				Plan buyerPlan = planRepository.save(
+						PlanFixture.createPlan(buyer, PROVIDING_DATA_AMOUNT_10));
+
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2, REMAIN_AMOUNT_1,
+								PRICE_PER_100MB));
+				Product product = productRepository.save(
+						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
+								seller));
+
+				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+						product.getId(), mobileData.getId(), DATA_AMOUNT_2);
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(buyer.getId());
+
+				// when & then
+				mockMvc.perform(post("/api/trades/mobile-data/default")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andExpect(jsonPath("$.code").value(
+								ResultCode.INVALID_REMAIN_DATA_AMOUNT.getCode()))
+						.andExpect(jsonPath("$.message").value(
+								ResultCode.INVALID_REMAIN_DATA_AMOUNT.getMessage()))
+						.andDo(document(
+								"trade/post-mobile-data-default-invalid-remain-data-amount-error",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)"),
+										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
+										fieldWithPath("dataAmount").description(
+												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지")
+								))
+						);
+			}
+
 		}
 	}
 }
