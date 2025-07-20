@@ -5,7 +5,7 @@ import static com.dapanda.TestConstants.MobileData.BEFORE_REMAIN_AMOUNT;
 import static com.dapanda.TestConstants.MobileData.CHANGED_AMOUNT;
 import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
 import static com.dapanda.TestConstants.MobileData.EXCEED_CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB;
+import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
 import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
 import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
 import static com.dapanda.TestConstants.MobileData.SPLIT_TYPE;
@@ -441,7 +441,7 @@ class ProductControllerTest {
 
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 
 				productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
@@ -457,7 +457,7 @@ class ProductControllerTest {
 						.andExpect(jsonPath("$.data.memberId").value(member.getId()))
 						.andExpect(jsonPath("$.data.memberName").value(member.getName()))
 						.andExpect(jsonPath("$.data.remainAmount").value(REMAIN_AMOUNT_1))
-						.andExpect(jsonPath("$.data.pricePer100MB").value(PRICE_PER_100MB))
+						.andExpect(jsonPath("$.data.pricePer100MB").value(PRICE_PER_100MB_300))
 						.andExpect(jsonPath("$.data.averageRate").exists())
 						.andExpect(jsonPath("$.data.reviewCount").exists())
 						.andExpect(jsonPath("$.data.updatedAt").exists())
@@ -487,7 +487,7 @@ class ProductControllerTest {
 				assertThat(actualResponse.getProductId()).isEqualTo(PRODUCT_ID);
 				assertThat(actualResponse.getItemId()).isEqualTo(mobileData.getId());
 				assertThat(actualResponse.getRemainAmount()).isEqualTo(REMAIN_AMOUNT_1);
-				assertThat(actualResponse.getPricePer100MB()).isEqualTo(PRICE_PER_100MB);
+				assertThat(actualResponse.getPricePer100MB()).isEqualTo(PRICE_PER_100MB_300);
 			}
 		}
 
@@ -520,7 +520,7 @@ class ProductControllerTest {
 
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 
 				productRepository.save(
 						ProductFixture.createMobileDataProductInactive(PRICE_3000,
@@ -684,7 +684,7 @@ class ProductControllerTest {
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT, BEFORE_REMAIN_AMOUNT,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								member));
@@ -746,7 +746,7 @@ class ProductControllerTest {
 				Member member2 = memberRepository.save(MemberFixture.createMember2());
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT, BEFORE_REMAIN_AMOUNT,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								member1));
@@ -790,7 +790,7 @@ class ProductControllerTest {
 						MemberFixture.createMemberWithSellingData(SELLING_DATA));
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT, BEFORE_REMAIN_AMOUNT,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								member));
@@ -834,7 +834,7 @@ class ProductControllerTest {
 						MemberFixture.createMemberWithSellingData(SELLING_DATA));
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT, BEFORE_REMAIN_AMOUNT,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								member));
@@ -1054,7 +1054,7 @@ class ProductControllerTest {
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								member));
@@ -1095,7 +1095,7 @@ class ProductControllerTest {
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(DATA_AMOUNT_1,
-								REMAIN_AMOUNT_1, PRICE_PER_100MB));
+								REMAIN_AMOUNT_1, PRICE_PER_100MB_300));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								member));
@@ -1127,7 +1127,7 @@ class ProductControllerTest {
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(DATA_AMOUNT_1,
-								REMAIN_AMOUNT_1, PRICE_PER_100MB));
+								REMAIN_AMOUNT_1, PRICE_PER_100MB_300));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProductWithIdWithState(null,
 								mobileData.getId(), ProductState.DELETED, member));

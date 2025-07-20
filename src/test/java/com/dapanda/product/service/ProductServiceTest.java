@@ -7,7 +7,7 @@ import static com.dapanda.TestConstants.MobileData.BEFORE_REMAIN_AMOUNT;
 import static com.dapanda.TestConstants.MobileData.CHANGED_AMOUNT;
 import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
 import static com.dapanda.TestConstants.MobileData.EXCEED_CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB;
+import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
 import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
 import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
 import static com.dapanda.TestConstants.MobileData.SPLIT_TYPE;
@@ -427,11 +427,11 @@ class ProductServiceTest {
 				// given
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
-						REMAIN_AMOUNT_1, PRICE_PER_100MB);
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
 				MobileDataInfoResponse expectedResponse = new MobileDataInfoResponse(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member.getId(), member.getName(),
 						REMAIN_AMOUNT_1,
-						PRICE_PER_100MB, AVERAGE_RATE, REVIEW_COUNT, UPDATED_AT);
+						PRICE_PER_100MB_300, AVERAGE_RATE, REVIEW_COUNT, UPDATED_AT);
 
 				given(productRepository.existsById(PRODUCT_ID))
 						.willReturn(true);
@@ -445,7 +445,7 @@ class ProductServiceTest {
 				// then
 				assertThat(actualResponse.getItemId()).isEqualTo(mobileData.getId());
 				assertThat(actualResponse.getRemainAmount()).isEqualTo(REMAIN_AMOUNT_1);
-				assertThat(actualResponse.getPricePer100MB()).isEqualTo(PRICE_PER_100MB);
+				assertThat(actualResponse.getPricePer100MB()).isEqualTo(PRICE_PER_100MB_300);
 			}
 
 			@Nested
@@ -570,7 +570,7 @@ class ProductServiceTest {
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
-						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB);
+						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB_300);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member);
 
@@ -608,7 +608,7 @@ class ProductServiceTest {
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
-						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB);
+						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB_300);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member);
 
@@ -633,7 +633,7 @@ class ProductServiceTest {
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
-						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB);
+						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB_300);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member);
 
@@ -660,7 +660,7 @@ class ProductServiceTest {
 				Member member = MemberFixture.createMemberWithSellingDataWithId(MEMBER_ID,
 						SELLING_DATA);
 				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
-						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB);
+						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB_300);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member);
 
@@ -789,7 +789,7 @@ class ProductServiceTest {
 				// given
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
-						REMAIN_AMOUNT_1, PRICE_PER_100MB);
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member);
 
@@ -814,7 +814,7 @@ class ProductServiceTest {
 				// given
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
-						REMAIN_AMOUNT_1, PRICE_PER_100MB);
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member);
 
@@ -831,7 +831,7 @@ class ProductServiceTest {
 				// given
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
-						REMAIN_AMOUNT_1, PRICE_PER_100MB);
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
 				Product product = ProductFixture.createMobileDataProductWithIdWithState(PRODUCT_ID,
 						mobileData.getId(), ProductState.DELETED, member);
 
