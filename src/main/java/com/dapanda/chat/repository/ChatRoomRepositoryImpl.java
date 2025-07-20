@@ -18,7 +18,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 
 		Long chatRoomId = jpaQueryFactory
 				.select(chatRoom.id)
-				.from(chatRoom)
+				.from(chatParticipant)
 				.join(chatParticipant.chatRoom, chatRoom)
 				.where(chatRoom.product.id.eq(productId)
 						.and(chatParticipant.member.id.in(sellerId, buyerId)))
