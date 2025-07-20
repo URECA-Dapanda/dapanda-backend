@@ -33,6 +33,7 @@ public class ChatService {
 		Product product = productRepository.findById(productId)
 				.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
 
+		// 기존에 상품에 대해 나와 판매자의 1:1 채팅방이 생성되어 있는 경우, 기존 채팅방 아이디를 반환한다.
 		Optional<Long> chatRoomId = chatRoomRepository.findExistingChatRoomIdOnProduct(
 				product.getId(),
 				product.getMember().getId(),
