@@ -48,8 +48,7 @@ public class ChatService {
 			return CreateChatRoomResponse.of(chatRoomId.get());
 		}
 
-		Member member = memberRepository.findById(memberId)
-				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+		Member member = memberRepository.getReferenceById(memberId);
 
 		ChatRoom chatRoom = ChatRoom.of(product);
 
