@@ -84,12 +84,12 @@ public class ChatService {
 
 	public void createChatMessage(Long chatRoomId, CreateChatMessageRequest request) {
 
-		validateParticipant(chatRoomId, request.memberId());
+		validateParticipant(chatRoomId, request.senderId());
 
 		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
 				.orElseThrow(() -> new GlobalException(ResultCode.CHAT_ROOM_NOT_FOUND));
 
-		Member sender = memberRepository.findById(request.memberId())
+		Member sender = memberRepository.findById(request.senderId())
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
 		ChatMessage chatMessage = ChatMessage.of(request.message(), chatRoom, sender);

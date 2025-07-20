@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 public record CreateChatMessageRequest(
 
 		@NotNull(message = "회원 아이디는 필수입니다.")
-		Long memberId,
+		Long senderId,
 
 		@NotNull(message = "채팅 메시지는 필수입니다.")
 		@Size(min = 1, max = 250, message = "채팅 메시지는 1~250자 까지 가능합니다")

@@ -182,7 +182,7 @@ public class ChatServiceTest {
 
 				given(chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoom.getId(), buyer.getId())).willReturn(true);
 				given(chatRoomRepository.findById(chatRoom.getId())).willReturn(Optional.of(chatRoom));
-				given(memberRepository.findById(request.memberId())).willReturn(Optional.of(buyer));
+				given(memberRepository.findById(request.senderId())).willReturn(Optional.of(buyer));
 
 				//when
 				chatService.createChatMessage(chatRoom.getId(), request);
@@ -264,7 +264,7 @@ public class ChatServiceTest {
 
 				given(chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoom.getId(), buyer.getId())).willReturn(true);
 				given(chatRoomRepository.findById(chatRoom.getId())).willReturn(Optional.of(chatRoom));
-				given(memberRepository.findById(request.memberId())).willReturn(Optional.empty());
+				given(memberRepository.findById(request.senderId())).willReturn(Optional.empty());
 
 				//when & then
 				assertThatThrownBy(() -> chatService.createChatMessage(chatRoom.getId(), request))
