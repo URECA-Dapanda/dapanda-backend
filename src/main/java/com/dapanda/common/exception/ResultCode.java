@@ -73,6 +73,8 @@ public enum ResultCode {
 
 	// 채팅 8000번대
 	CHAT_OWN_PRODUCT(HttpStatus.BAD_REQUEST, 8000, "자기 상품의 채팅방은 생성할 수 없습니다."),
+	CHAT_ROOM_NOT_FOUND(HttpStatus.BAD_REQUEST, 8001, "채팅방을 찾을 수 없습니다."),
+	CHAT_ROOM_ACCESS_DENIED(HttpStatus.BAD_REQUEST, 8002, "해당 채팅방의 참가자가 아닙니다."),
 
 	// 관리자 9000번대
 
