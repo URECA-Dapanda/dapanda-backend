@@ -36,11 +36,13 @@ import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.trade.dto.MobileDataScrap;
 import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
+import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
 import com.dapanda.trade.entity.TradeFixture;
 import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -321,9 +323,9 @@ class TradeServiceTest {
 						PRODUCT_ID + 1, MOBILE_DATA_ID + 1, PRICE_3000, seller2);
 
 				MobileDataScrap mobileDataScrap1 = TradeFixture.createMobileDataScrap(product1,
-						mobileData1);
+						mobileData1, PRICE_1500, DATA_AMOUNT_1);
 				MobileDataScrap mobileDataScrap2 = TradeFixture.createMobileDataScrap(product2,
-						mobileData2);
+						mobileData2, PRICE_3000, DATA_AMOUNT_1);
 
 				float dataAmount = DATA_AMOUNT_2;
 
@@ -379,6 +381,167 @@ class TradeServiceTest {
 				assertThat(response.getTotalAmount()).isEqualTo(0);
 				assertThat(response.getTotalPrice()).isEqualTo(0); // 조합된 상품의 총 가격
 				assertThat(response.getCombinations().size()).isEqualTo(0); // 조합된 상품 개수 확인
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("데이터 상품 자투리 구매")
+	class ScrapPurchaseMobileData {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("데이터 상품 자투리 구매를 성공한다")
+			void scrapPurchaseMobileData() {
+
+				// given
+				Member seller1 = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member seller2 = MemberFixture.createMember1WithId(SELLER_MEMBER_ID + 1);
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
+
+				MobileData mobileData1 = MobileDataFixture.createMobileDataWithId(MOBILE_DATA_ID,
+						DATA_AMOUNT_1,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_150);
+				MobileData mobileData2 = MobileDataFixture.createMobileDataSplitTypeWithId(
+						MOBILE_DATA_ID + 1, DATA_AMOUNT_2,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
+				Product product1 = ProductFixture.createMobileDataProductWithId(
+						PRODUCT_ID, mobileData1.getId(), PRICE_1500, seller1);
+				Product product2 = ProductFixture.createMobileDataProductWithId(
+						PRODUCT_ID + 1, mobileData2.getId(), PRICE_3000, seller2);
+
+				MobileDataScrap mobileDataScrap1 = TradeFixture.createMobileDataScrap(product1,
+						mobileData1, PRICE_1500, DATA_AMOUNT_1);
+				MobileDataScrap mobileDataScrap2 = TradeFixture.createMobileDataScrap(product2,
+						mobileData2, PRICE_3000, DATA_AMOUNT_1);
+				List<MobileDataScrap> mobileDataScrapList = new ArrayList<>(
+						Arrays.asList(mobileDataScrap1, mobileDataScrap2));
+
+				TradeMobileDataScrapRequest request = new TradeMobileDataScrapRequest(DATA_AMOUNT_2,
+						PRICE_1500 + PRICE_3000, mobileDataScrapList);
+
+				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
+				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID)).willReturn(
+						Optional.of(seller1));
+				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID + 1)).willReturn(
+						Optional.of(seller2));
+				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
+						Optional.of(product1));
+				given(productRepository.findByIdForUpdate(PRODUCT_ID + 1)).willReturn(
+						Optional.of(product2));
+				given(mobileDataRepository.findById(mobileData1.getId())).willReturn(
+						Optional.of(mobileData1));
+				given(mobileDataRepository.findById(mobileData2.getId())).willReturn(
+						Optional.of(mobileData2));
+
+				// when
+				tradeService.mobileDataScrap(BUYER_MEMBER_ID, request);
+
+				// then
+				assertThat(mobileData1.getRemainAmount()).isEqualTo(0);
+				assertThat(mobileData2.getRemainAmount()).isEqualTo(0);
+
+				assertThat(buyer.getCash()).isEqualTo(CASH_5000 - request.totalPrice());
+				assertThat(buyer.getBuyingData()).isEqualTo(request.totalAmount());
+
+				assertThat(seller1.getSellingData()).isEqualTo(DATA_AMOUNT_1);
+				assertThat(seller1.getCash()).isEqualTo(PRICE_1500);
+
+				assertThat(seller2.getSellingData()).isEqualTo(DATA_AMOUNT_1);
+				assertThat(seller2.getCash()).isEqualTo(PRICE_3000);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("데이터 상품 자투리 구매를 할 때 보유 캐시가 충분하지 않으면 예외를 던진다")
+			void throwExceptionWhenCashInsufficient() {
+
+				// given
+				Member seller1 = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member seller2 = MemberFixture.createMember1WithId(SELLER_MEMBER_ID + 1);
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				ReflectionTestUtils.setField(buyer, "cash", 0);
+
+				MobileData mobileData1 = MobileDataFixture.createMobileDataWithId(MOBILE_DATA_ID,
+						DATA_AMOUNT_1, REMAIN_AMOUNT_1, PRICE_PER_100MB_150);
+				MobileData mobileData2 = MobileDataFixture.createMobileDataSplitTypeWithId(
+						MOBILE_DATA_ID + 1, DATA_AMOUNT_2,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
+				Product product1 = ProductFixture.createMobileDataProductWithId(
+						PRODUCT_ID, mobileData1.getId(), PRICE_1500, seller1);
+				Product product2 = ProductFixture.createMobileDataProductWithId(
+						PRODUCT_ID + 1, mobileData2.getId(), PRICE_3000, seller2);
+
+				MobileDataScrap mobileDataScrap1 = TradeFixture.createMobileDataScrap(product1,
+						mobileData1, PRICE_1500, DATA_AMOUNT_1);
+				MobileDataScrap mobileDataScrap2 = TradeFixture.createMobileDataScrap(product2,
+						mobileData2, PRICE_3000, DATA_AMOUNT_1);
+				List<MobileDataScrap> mobileDataScrapList = new ArrayList<>(
+						Arrays.asList(mobileDataScrap1, mobileDataScrap2));
+
+				TradeMobileDataScrapRequest request = new TradeMobileDataScrapRequest(DATA_AMOUNT_2,
+						PRICE_1500 + PRICE_3000, mobileDataScrapList);
+
+				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
+
+				// when & then
+				assertThatThrownBy(() -> tradeService.mobileDataScrap(BUYER_MEMBER_ID, request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.INSUFFICIENT_CASH.getMessage());
+			}
+
+			@Test
+			@DisplayName("데이터 상품 자투리 구매를 할 때 잔여 데이터양이 유효하지 않으면 예외를 던진다")
+			void throwExceptionWhenRemainAmountInsufficient() {
+
+				// given
+				Member seller1 = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member seller2 = MemberFixture.createMember1WithId(SELLER_MEMBER_ID + 1);
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
+
+				MobileData mobileData1 = MobileDataFixture.createMobileDataWithId(MOBILE_DATA_ID,
+						DATA_AMOUNT_1, 0, PRICE_PER_100MB_150);
+				MobileData mobileData2 = MobileDataFixture.createMobileDataSplitTypeWithId(
+						MOBILE_DATA_ID + 1, DATA_AMOUNT_2, REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
+				Product product1 = ProductFixture.createMobileDataProductWithId(
+						PRODUCT_ID, mobileData1.getId(), PRICE_1500, seller1);
+				Product product2 = ProductFixture.createMobileDataProductWithId(
+						PRODUCT_ID + 1, mobileData2.getId(), PRICE_3000, seller2);
+
+				MobileDataScrap mobileDataScrap1 = TradeFixture.createMobileDataScrap(product1,
+						mobileData1, PRICE_1500, DATA_AMOUNT_1);
+				MobileDataScrap mobileDataScrap2 = TradeFixture.createMobileDataScrap(product2,
+						mobileData2, PRICE_3000, DATA_AMOUNT_1);
+				List<MobileDataScrap> mobileDataScrapList = new ArrayList<>(
+						Arrays.asList(mobileDataScrap1, mobileDataScrap2));
+
+				TradeMobileDataScrapRequest request = new TradeMobileDataScrapRequest(DATA_AMOUNT_2,
+						PRICE_1500 + PRICE_3000, mobileDataScrapList);
+
+				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
+				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID)).willReturn(
+						Optional.of(seller1));
+				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
+						Optional.of(product1));
+				given(mobileDataRepository.findById(mobileData1.getId())).willReturn(
+						Optional.of(mobileData1));
+
+				// when & then
+				assertThatThrownBy(() -> tradeService.mobileDataScrap(BUYER_MEMBER_ID, request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.INVALID_REMAIN_DATA_AMOUNT.getMessage());
 			}
 		}
 	}
