@@ -15,6 +15,7 @@ import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
 import com.dapanda.trade.dto.response.TradeMobileDataDefaultResponse;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeDetails;
+import com.dapanda.trade.entity.TradeType;
 import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
 import jakarta.transaction.Transactional;
@@ -62,12 +63,18 @@ public class TradeService {
 
 		if (mobileData.isSplitType()) {
 
-			return handlePartialPurchaseProduct();
+			int price = (int) (mobileData.getPricePer100MB() * request.dataAmount() * 10);
+
+			return handlePartialPurchaseProduct(product, mobileData, buyerId, request.dataAmount(),
+					price);
 		}
 
 		return handleFullPurchaseProduct(product, mobileData, buyerId);
 	}
 
+	/**
+	 * 데이터 통합 상품 일반 구매
+	 */
 	private TradeMobileDataDefaultResponse handleFullPurchaseProduct(Product product,
 			MobileData mobileData, Long buyerId) {
 
@@ -86,23 +93,49 @@ public class TradeService {
 		return TradeMobileDataDefaultResponse.of(trade.getId());
 	}
 
+	/**
+	 * 데이터 분할 상품 일반 구매
+	 */
+	private TradeMobileDataDefaultResponse handlePartialPurchaseProduct(Product product,
+			MobileData mobileData, Long buyerId, float dataAmount, int price) {
+
+		// Lock 건 상태로 구매자, 판매자 조회
+		Member buyer = memberRepository.findByIdForUpdate(buyerId).orElseThrow();
+		Member seller = memberRepository.findByIdForUpdate(product.getMember().getId())
+				.orElseThrow();
+
+		deductBuyerCashAndUpdateState(buyer, product, mobileData, price, dataAmount);
+
+		Trade trade = createTradeAndTradeDetails(product, mobileData, buyer, product.getPrice());
+
+		updateBuyerAndSellerData(buyer, seller, dataAmount);
+
+		return TradeMobileDataDefaultResponse.of(trade.getId());
+	}
+
 	private void deductBuyerCashAndUpdateState(Member buyer, Product product, MobileData mobileData,
 			int price, float dataAmount) {
 
+		if (mobileData.getRemainAmount() < dataAmount) {
+			throw new GlobalException(ResultCode.INVALID_REMAIN_DATA_AMOUNT);
+		}
 		if (buyer.getCash() < price) {
 			throw new GlobalException(ResultCode.INSUFFICIENT_CASH);
 		}
 
 		buyer.deductCash(price);
 		buyer.addBuyingData(dataAmount);
-		product.changeState(ProductState.SOLD_OUT);
 		mobileData.deductRemainAmount(dataAmount);
+		if (mobileData.getRemainAmount() == 0) {
+			product.changeState(ProductState.SOLD_OUT);
+		}
 	}
 
 	private Trade createTradeAndTradeDetails(Product product, MobileData mobileData, Member buyer,
 			int price) {
 
-		Trade trade = Trade.of(mobileData.getDataAmount(), null, price, buyer);
+		Trade trade = Trade.of(mobileData.getDataAmount(), null, price, TradeType.PURCHASE_SINGLE,
+				buyer);
 		tradeRepository.save(trade);
 		TradeDetails tradeDetails = TradeDetails.of(product, trade);
 		tradeDetailsRepository.save(tradeDetails);
@@ -121,8 +154,4 @@ public class TradeService {
 		sellerPlan.deductMobileData(dataAmount);
 	}
 
-	private TradeMobileDataDefaultResponse handlePartialPurchaseProduct() {
-
-		return null;
-	}
 }
