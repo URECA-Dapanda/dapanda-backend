@@ -25,25 +25,27 @@ public class TradeController {
 	private final TradeService tradeService;
 
 	@PostMapping("/trades/mobile-data/default")
-	public CommonResponse<TradeMobileDataResponse> mobileDataDefaultPurchase(
+	public CommonResponse<TradeMobileDataResponse> defaultPurchaseMobileData(
 			@RequestBody @Valid TradeMobileDataDefaultRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		return CommonResponse.success(tradeService.mobileDataDefault(userDetails.getId(), request));
+		return CommonResponse.success(
+				tradeService.defaultPurchaseMobileData(userDetails.getId(), request));
 	}
 
 	@GetMapping("/trades/mobile-data/scrap")
-	public CommonResponse<FindMobileDataScrapResponse> mobileDataDefaultPurchase(
+	public CommonResponse<FindMobileDataScrapResponse> defaultPurchaseMobileData(
 			@RequestParam Float dataAmount) {
 
 		return CommonResponse.success(tradeService.findMobileDataScrap(dataAmount));
 	}
 
 	@PostMapping("/trades/mobile-data/scrap")
-	public CommonResponse<TradeMobileDataResponse> mobileDataDefaultPurchase(
+	public CommonResponse<TradeMobileDataResponse> scrapPurchaseMobileData(
 			@RequestBody @Valid TradeMobileDataScrapRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		return CommonResponse.success(tradeService.mobileDataScrap(userDetails.getId(), request));
+		return CommonResponse.success(
+				tradeService.scrapPurchaseMobileData(userDetails.getId(), request));
 	}
 }

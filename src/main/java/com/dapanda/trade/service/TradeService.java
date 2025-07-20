@@ -55,7 +55,7 @@ public class TradeService {
 	 * 9. Response: 구매 데이터양, 내 총 데이터양
 	 */
 	@Transactional
-	public TradeMobileDataResponse mobileDataDefault(
+	public TradeMobileDataResponse defaultPurchaseMobileData(
 			Long buyerId, TradeMobileDataDefaultRequest request) {
 
 		Product product = productRepository.findByIdForUpdate(request.productId())
@@ -275,7 +275,7 @@ public class TradeService {
 	 * 데이터 상품 자투리 구매
 	 */
 	@Transactional
-	public TradeMobileDataResponse mobileDataScrap(Long buyerId,
+	public TradeMobileDataResponse scrapPurchaseMobileData(Long buyerId,
 			TradeMobileDataScrapRequest request) {
 
 		float totalAmount = request.totalAmount();
