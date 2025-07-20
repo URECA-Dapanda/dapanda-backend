@@ -1,7 +1,6 @@
 package com.dapanda.product.entity;
 
 import com.dapanda.product.dto.MobileDataSummary;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,6 +14,17 @@ public class MobileDataFixture {
 				remainAmount,
 				pricePer100MB,
 				false
+		);
+	}
+
+	public static MobileData createMobileDataSplitType(float dataAmount, float remainAmount,
+			int pricePer100MB) {
+
+		return MobileData.of(
+				dataAmount,
+				remainAmount,
+				pricePer100MB,
+				true
 		);
 	}
 

@@ -55,6 +55,7 @@ public enum ResultCode {
 	CANNOT_PURCHASE_OWN_PRODUCT(HttpStatus.BAD_REQUEST, 4002, "자신이 등록한 상품은 구매할 수 없습니다"),
 	ALREADY_SOLD_OUT(HttpStatus.BAD_REQUEST, 4003, "이미 판매 완료된 상품입니다."),
 	INSUFFICIENT_CASH(HttpStatus.BAD_REQUEST, 4004, "보유 캐시가 부족합니다"),
+	INVALID_REMAIN_DATA_AMOUNT(HttpStatus.BAD_REQUEST, 4005, "남은 데이터양이 유효하지 않습니다."),
 
 	// 결제 5000번대
 	FAIL_PAYMENT_PROCESSING(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "내부 오류로 결제 처리에 실패했습니다."),

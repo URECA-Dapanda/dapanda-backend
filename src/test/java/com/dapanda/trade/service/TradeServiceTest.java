@@ -4,9 +4,11 @@ import static com.dapanda.TestConstants.Member.BUYER_MEMBER_ID;
 import static com.dapanda.TestConstants.Member.CASH_5000;
 import static com.dapanda.TestConstants.Member.SELLER_MEMBER_ID;
 import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
+import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_2;
 import static com.dapanda.TestConstants.MobileData.MOBILE_DATA_ID;
 import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB;
 import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
+import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_2;
 import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
 import static com.dapanda.TestConstants.Product.PRICE_3000;
 import static com.dapanda.TestConstants.Product.PRODUCT_ID;
@@ -64,7 +66,7 @@ class TradeServiceTest {
 
 	@Nested
 	@DisplayName("데이터 통합 상품 일반 구매")
-	class FindMobileData {
+	class DefaultPurchaseMobileDataFull {
 
 		@Nested
 		@DisplayName("성공 케이스")
@@ -87,7 +89,7 @@ class TradeServiceTest {
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
 				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
-						PRODUCT_ID, MOBILE_DATA_ID);
+						PRODUCT_ID, MOBILE_DATA_ID, null);
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
 						Optional.of(buyer));
@@ -134,7 +136,7 @@ class TradeServiceTest {
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
 				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
-						PRODUCT_ID, MOBILE_DATA_ID);
+						PRODUCT_ID, MOBILE_DATA_ID, null);
 
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
 						Optional.of(product));
@@ -157,7 +159,7 @@ class TradeServiceTest {
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
 				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
-						PRODUCT_ID, MOBILE_DATA_ID);
+						PRODUCT_ID, MOBILE_DATA_ID, null);
 
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
 						Optional.of(product));
@@ -185,7 +187,7 @@ class TradeServiceTest {
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
 				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
-						PRODUCT_ID, MOBILE_DATA_ID);
+						PRODUCT_ID, MOBILE_DATA_ID, null);
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
 						Optional.of(buyer));
@@ -200,6 +202,100 @@ class TradeServiceTest {
 				assertThatThrownBy(() -> tradeService.mobileDataDefault(BUYER_MEMBER_ID, request))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.INSUFFICIENT_CASH.getMessage());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("데이터 분할 상품 일반 구매")
+	class DefaultPurchaseMobileDataPartial {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("데이터 분할 상품 일반 구매를 성공한다")
+			void purchaseDataProductDefaultPartialPurchase() {
+
+				// given
+				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				ReflectionTestUtils.setField(buyer, "cash", 3000);
+				Plan sellerPlan = PlanFixture.createPlan(seller, PROVIDING_DATA_AMOUNT_10);
+				Plan buyerPlan = PlanFixture.createPlan(buyer, PROVIDING_DATA_AMOUNT_10);
+
+				MobileData mobileData = MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2,
+						REMAIN_AMOUNT_2, PRICE_PER_100MB);
+				Product product = ProductFixture.createMobileDataProductWithId(
+						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
+
+				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+						PRODUCT_ID, MOBILE_DATA_ID, DATA_AMOUNT_1);
+
+				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
+				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID)).willReturn(
+						Optional.of(seller));
+				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
+						Optional.of(product));
+				given(mobileDataRepository.findById(MOBILE_DATA_ID)).willReturn(
+						Optional.of(mobileData));
+				given(planRepository.findByMember(buyer)).willReturn(
+						Optional.of(buyerPlan));
+				given(planRepository.findByMember(seller)).willReturn(
+						Optional.of(sellerPlan));
+
+				// when
+				tradeService.mobileDataDefault(BUYER_MEMBER_ID, request);
+
+				// then
+				assertThat(product.getState()).isEqualTo(ProductState.ACTIVE);
+				assertThat(mobileData.getRemainAmount()).isEqualTo(DATA_AMOUNT_2 - DATA_AMOUNT_1);
+				assertThat(buyerPlan.getProvidingDataAmount()).isEqualTo(
+						PROVIDING_DATA_AMOUNT_10 + DATA_AMOUNT_1);
+				assertThat(sellerPlan.getProvidingDataAmount()).isEqualTo(
+						PROVIDING_DATA_AMOUNT_10 - DATA_AMOUNT_1);
+				assertThat(buyer.getBuyingData()).isEqualTo(DATA_AMOUNT_1);
+				assertThat(seller.getSellingData()).isEqualTo(DATA_AMOUNT_1);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("데이터 분할 상품 일반 구매를 할 때 요청 데이터양이 상품의 잔여량보다 크면 예외를 던진다")
+			void throwExceptionWhenBuyingDataPartialDefaultIfRequestIsGreaterThanRemain()
+					throws Exception {
+
+				// given
+				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				ReflectionTestUtils.setField(buyer, "cash", 3000);
+
+				MobileData mobileData = MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB);
+				Product product = ProductFixture.createMobileDataProductWithId(
+						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
+
+				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+						PRODUCT_ID, MOBILE_DATA_ID, DATA_AMOUNT_2);
+
+				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
+				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID)).willReturn(
+						Optional.of(seller));
+				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
+						Optional.of(product));
+				given(mobileDataRepository.findById(MOBILE_DATA_ID)).willReturn(
+						Optional.of(mobileData));
+
+				// when & then
+				assertThatThrownBy(() -> tradeService.mobileDataDefault(BUYER_MEMBER_ID, request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.INVALID_REMAIN_DATA_AMOUNT.getMessage());
 			}
 		}
 	}
