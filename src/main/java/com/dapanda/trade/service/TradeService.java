@@ -13,8 +13,9 @@ import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.trade.dto.MobileDataScrap;
 import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
+import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
-import com.dapanda.trade.dto.response.TradeMobileDataDefaultResponse;
+import com.dapanda.trade.dto.response.TradeMobileDataResponse;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeDetails;
 import com.dapanda.trade.entity.TradeType;
@@ -54,7 +55,7 @@ public class TradeService {
 	 * 9. Response: 구매 데이터양, 내 총 데이터양
 	 */
 	@Transactional
-	public TradeMobileDataDefaultResponse mobileDataDefault(
+	public TradeMobileDataResponse mobileDataDefault(
 			Long buyerId, TradeMobileDataDefaultRequest request) {
 
 		Product product = productRepository.findByIdForUpdate(request.productId())
@@ -84,7 +85,7 @@ public class TradeService {
 	/**
 	 * 데이터 통합 상품 일반 구매
 	 */
-	private TradeMobileDataDefaultResponse handleFullPurchaseProduct(Product product,
+	private TradeMobileDataResponse handleFullPurchaseProduct(Product product,
 			MobileData mobileData, Long buyerId) {
 
 		// Lock 건 상태로 구매자, 판매자 조회
@@ -99,13 +100,13 @@ public class TradeService {
 
 		updateBuyerAndSellerData(buyer, seller, mobileData.getDataAmount());
 
-		return TradeMobileDataDefaultResponse.of(trade.getId());
+		return TradeMobileDataResponse.of(trade.getId());
 	}
 
 	/**
 	 * 데이터 분할 상품 일반 구매
 	 */
-	private TradeMobileDataDefaultResponse handlePartialPurchaseProduct(Product product,
+	private TradeMobileDataResponse handlePartialPurchaseProduct(Product product,
 			MobileData mobileData, Long buyerId, float dataAmount, int price) {
 
 		// Lock 건 상태로 구매자, 판매자 조회
@@ -119,7 +120,7 @@ public class TradeService {
 
 		updateBuyerAndSellerData(buyer, seller, dataAmount);
 
-		return TradeMobileDataDefaultResponse.of(trade.getId());
+		return TradeMobileDataResponse.of(trade.getId());
 	}
 
 	private void deductBuyerCashAndUpdateState(Member buyer, Product product, MobileData mobileData,
@@ -185,12 +186,27 @@ public class TradeService {
 				float amount = item.getRemainAmount();
 
 				// 4-1. 분할 가능한 상품이고, 목표 용량을 초과한다면 필요한 만큼만 구매
-				if (item.isSplitType() && sumAmount + amount > target) {
-					float needed = target - sumAmount;
+				if (item.isSplitType()) {
+					float needed = Math.min(amount, target - sumAmount);
+
+					// 필요한 만큼만 구매한 정보로 새 객체 생성
+					MobileDataScrap partialScrap = new MobileDataScrap(
+							item.getProductId(),
+							item.getMobileDataId(),
+							item.getMemberName(),
+							item.getPrice(),
+							(int) (needed * 10 * item.getPricePer100MB()), // purchasePrice
+							item.getRemainAmount(),
+							needed, // purchaseAmount
+							item.getPricePer100MB(),
+							true,
+							item.getUpdatedAt()
+					);
+
 					sumAmount += needed;
 					sumPrice += (int) (needed * 10 * item.getPricePer100MB());
-					temp.add(item);
-				} else { // 4-2. 일반 상품이거나, 전체를 써도 용량 초과하지 않는 경우 전부 사용
+					temp.add(partialScrap);
+				} else {
 					sumAmount += amount;
 					sumPrice += item.getPrice();
 					temp.add(item);
@@ -253,5 +269,84 @@ public class TradeService {
 		}
 
 		return total;
+	}
+
+	/**
+	 * 데이터 상품 자투리 구매
+	 */
+	@Transactional
+	public TradeMobileDataResponse mobileDataScrap(Long buyerId,
+			TradeMobileDataScrapRequest request) {
+
+		float totalAmount = request.totalAmount();
+		int totalPrice = request.totalPrice();
+
+		// 1. 구매자 Lock 조회
+		Member buyer = memberRepository.findByIdForUpdate(buyerId)
+				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+
+		// 2. 캐시 충분한지 검사
+		if (buyer.getCash() < totalPrice) {
+			throw new GlobalException(ResultCode.INSUFFICIENT_CASH);
+		}
+
+		// 3. 거래 생성
+		Trade trade = Trade.of(totalAmount, null, totalPrice, TradeType.PURCHASE_COMPOSITE, buyer);
+		tradeRepository.save(trade);
+
+		// 4. 각 상품 조합 순회
+		for (MobileDataScrap scrap : request.combinations()) {
+			// 4-1. 상품, 데이터 정보 조회 및 Lock
+			Product product = productRepository.findByIdForUpdate(scrap.getProductId())
+					.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
+
+			MobileData mobileData = mobileDataRepository.findById(scrap.getMobileDataId())
+					.orElseThrow(() -> new GlobalException(ResultCode.MOBILE_DATA_NOT_FOUND));
+
+			Member seller = memberRepository.findByIdForUpdate(product.getMember().getId())
+					.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+
+			// 4-2. 구매 데이터양 만큼 remainAmount 차감
+			float purchaseAmount = scrap.getPurchaseAmount();
+			if (mobileData.getRemainAmount() < purchaseAmount) {
+				throw new GlobalException(ResultCode.INVALID_REMAIN_DATA_AMOUNT);
+			}
+
+			mobileData.deductRemainAmount(purchaseAmount);
+			mobileDataRepository.save(mobileData);
+
+			// 4-3. 상품 가격
+			int purchasePrice = scrap.getPurchasePrice();
+
+			// 4-4. 판매자 캐시 증가
+			seller.addCash(purchasePrice);
+
+			// 4-5. 판매 데이터양 업데이트
+			seller.addSellingData(purchaseAmount);
+
+			// 4-6. 상품 상태 변경
+			if (!mobileData.isSplitType() || mobileData.getRemainAmount() == 0) {
+				product.changeState(ProductState.SOLD_OUT);
+			}
+
+			// 4-7. 거래 상세 저장
+			TradeDetails tradeDetails = TradeDetails.of(product, trade);
+			tradeDetailsRepository.save(tradeDetails);
+
+			// 4-8. 판매자/상품 저장
+			productRepository.save(product);
+			memberRepository.save(seller);
+		}
+
+		// 5. 구매자 캐시 차감
+		buyer.deductCash(totalPrice);
+
+		// 6. 구매 데이터양 업데이트
+		buyer.addBuyingData(totalAmount);
+
+		// 7. 구매자 저장
+		memberRepository.save(buyer);
+
+		return TradeMobileDataResponse.of(trade.getId());
 	}
 }
