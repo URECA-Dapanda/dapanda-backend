@@ -15,12 +15,11 @@ public class CreateMobileDataRequest extends CreateProductRequest {
 	private final Boolean isSplitType;
 
 	public CreateMobileDataRequest(
-			Long memberId,
 			Integer price,
 			Float dataAmount,
 			Boolean isSplitType
 	) {
-		super(memberId, price);
+		super(price);
 		this.dataAmount = dataAmount;
 		this.isSplitType = isSplitType;
 	}

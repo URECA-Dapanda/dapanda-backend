@@ -7,15 +7,11 @@ import lombok.Getter;
 @Getter
 public abstract class CreateProductRequest {
 
-	@NotNull(message = "memberId는 null일 수 없습니다.")
-	private final Long memberId;
-
 	@NotNull(message = "price는 null일 수 없습니다.")
 	@Min(value = 0, message = "price는 0 이상이어야 합니다.")
 	private final Integer price;
 
-	protected CreateProductRequest(Long memberId, Integer price) {
-		this.memberId = memberId;
+	protected CreateProductRequest(Integer price) {
 		this.price = price;
 	}
 }

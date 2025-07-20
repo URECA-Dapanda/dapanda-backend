@@ -14,7 +14,6 @@ public class CreateWifiRequest extends CreateProductRequest {
 	private final LocalDateTime endTime;
 
 	public CreateWifiRequest(
-			Long memberId,
 			Integer price,
 			String title,
 			String content,
@@ -23,7 +22,7 @@ public class CreateWifiRequest extends CreateProductRequest {
 			LocalDateTime startTime,
 			LocalDateTime endTime
 	) {
-		super(memberId, price);
+		super(price);
 		this.title = title;
 		this.content = content;
 		this.latitude = latitude;
