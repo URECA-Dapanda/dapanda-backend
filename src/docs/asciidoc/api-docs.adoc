@@ -885,7 +885,7 @@ include::{snippets}/trade/post-mobile-data-default-invalid-remain-data-amount-er
 
 ==== 데이터 상품 자투리 조합 조회 (조합 존재)
 
-`POST /api/trades/mobile-data/scrap`
+`GET /api/trades/mobile-data/scrap`
 
 데이터 상품 자투리 조합 조회를 합니다.
 
@@ -907,7 +907,7 @@ include::{snippets}/trade/get-mobile-data-scrap-exist/response-fields.adoc[]
 
 ==== 데이터 상품 자투리 조합 조회 (조합 존재 X)
 
-`POST /api/trades/mobile-data/scrap`
+`GET /api/trades/mobile-data/scrap`
 
 데이터 상품 자투리 조합 조회를 합니다.
 
@@ -926,3 +926,39 @@ include::{snippets}/trade/get-mobile-data-scrap-not-exist/http-response.adoc[]
 ===== 응답 필드
 
 include::{snippets}/trade/get-mobile-data-scrap-not-exist/response-fields.adoc[]
+
+==== 데이터 상품 자투리 구매
+
+`POST /api/trades/mobile-data/scrap`
+
+데이터 상품 자투리 구매를 합니다.
+
+===== 요청
+
+include::{snippets}/trade/post-mobile-data-scrap/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/trade/post-mobile-data-scrap/request-fields.adoc[]
+
+====== 응답
+
+include::{snippets}/trade/post-mobile-data-scrap/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/trade/post-mobile-data-scrap/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 보유 캐시 부족
+
+include::{snippets}/trade/post-mobile-data-scrap-insufficient-cash-error/http-request.adoc[]
+
+include::{snippets}/trade/post-mobile-data-scrap-insufficient-cash-error/http-response.adoc[]
+
+====== 잔여 데이터량 부족
+
+include::{snippets}/trade/post-mobile-data-scrap-insufficient-remain-amount-error/http-request.adoc[]
+
+include::{snippets}/trade/post-mobile-data-scrap-insufficient-remain-amount-error/http-response.adoc[]

@@ -28,10 +28,12 @@ public class TradeFixture {
 		return trade;
 	}
 
-	public static MobileDataScrap createMobileDataScrap(Product product, MobileData mobileData) {
+	public static MobileDataScrap createMobileDataScrap(Product product, MobileData mobileData,
+			int purchasePrice, float purchaseDataAmount) {
 
 		return new MobileDataScrap(product.getId(), mobileData.getId(),
-				product.getMember().getName(), product.getPrice(), mobileData.getRemainAmount(),
-				mobileData.getPricePer100MB(), mobileData.isSplitType(), product.getUpdatedAt());
+				product.getMember().getName(), product.getPrice(), purchasePrice,
+				mobileData.getRemainAmount(), purchaseDataAmount, mobileData.getPricePer100MB(),
+				mobileData.isSplitType(), product.getUpdatedAt());
 	}
 }

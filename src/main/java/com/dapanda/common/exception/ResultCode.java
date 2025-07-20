@@ -48,6 +48,7 @@ public enum ResultCode {
 	INVALID_DATA_TRANSFER_AMOUNT(HttpStatus.BAD_REQUEST, 3006, "유효하지 않은 데이터 전송양입니다."),
 	INVALID_TIME(HttpStatus.BAD_REQUEST, 3007, "시작 시간은 종료 시간보다 늦을 수 없습니다."),
 	ALREADY_DELETED_PRODUCT(HttpStatus.BAD_REQUEST, 3008, "이미 삭제된 상품은 삭제할 수 없습니다."),
+	MOBILE_DATA_NOT_FOUND(HttpStatus.BAD_REQUEST, 3008, "존재하지 않는 데이터 상품입니다."),
 
 	// 거래 4000번대
 	TRADE_NOT_FOUND(HttpStatus.BAD_REQUEST, 4000, "거래 이력을 찾을 수 없습니다."),

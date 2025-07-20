@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class TradeMobileDataDefaultResponse {
+public class TradeMobileDataResponse {
 
 	private Long tradeId;
 
-	public static TradeMobileDataDefaultResponse of(Long tradeId) {
+	public static TradeMobileDataResponse of(Long tradeId) {
 
 		return builder()
 				.tradeId(tradeId)
