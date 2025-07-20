@@ -115,7 +115,7 @@ class TradeServiceTest {
 						Optional.of(sellerPlan));
 
 				// when
-				tradeService.mobileDataDefault(BUYER_MEMBER_ID, request);
+				tradeService.defaultPurchaseMobileData(BUYER_MEMBER_ID, request);
 
 				// then
 				assertThat(product.getState()).isEqualTo(ProductState.SOLD_OUT);
@@ -161,7 +161,7 @@ class TradeServiceTest {
 						Optional.of(sellerPlan));
 
 				// when
-				tradeService.mobileDataDefault(BUYER_MEMBER_ID, request);
+				tradeService.defaultPurchaseMobileData(BUYER_MEMBER_ID, request);
 
 				// then
 				assertThat(product.getState()).isEqualTo(ProductState.ACTIVE);
@@ -198,7 +198,8 @@ class TradeServiceTest {
 						Optional.of(product));
 
 				// when & then
-				assertThatThrownBy(() -> tradeService.mobileDataDefault(BUYER_MEMBER_ID, request))
+				assertThatThrownBy(
+						() -> tradeService.defaultPurchaseMobileData(BUYER_MEMBER_ID, request))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.ALREADY_SOLD_OUT.getMessage());
 			}
@@ -221,7 +222,8 @@ class TradeServiceTest {
 						Optional.of(product));
 
 				// when & then
-				assertThatThrownBy(() -> tradeService.mobileDataDefault(SELLER_MEMBER_ID, request))
+				assertThatThrownBy(
+						() -> tradeService.defaultPurchaseMobileData(SELLER_MEMBER_ID, request))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.CANNOT_PURCHASE_OWN_PRODUCT.getMessage());
 			}
@@ -255,7 +257,8 @@ class TradeServiceTest {
 						Optional.of(mobileData));
 
 				// when & then
-				assertThatThrownBy(() -> tradeService.mobileDataDefault(BUYER_MEMBER_ID, request))
+				assertThatThrownBy(
+						() -> tradeService.defaultPurchaseMobileData(BUYER_MEMBER_ID, request))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.INSUFFICIENT_CASH.getMessage());
 			}
@@ -288,7 +291,8 @@ class TradeServiceTest {
 						Optional.of(mobileData));
 
 				// when & then
-				assertThatThrownBy(() -> tradeService.mobileDataDefault(BUYER_MEMBER_ID, request))
+				assertThatThrownBy(
+						() -> tradeService.defaultPurchaseMobileData(BUYER_MEMBER_ID, request))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.INVALID_REMAIN_DATA_AMOUNT.getMessage());
 			}
@@ -440,7 +444,7 @@ class TradeServiceTest {
 						Optional.of(mobileData2));
 
 				// when
-				tradeService.mobileDataScrap(BUYER_MEMBER_ID, request);
+				tradeService.scrapPurchaseMobileData(BUYER_MEMBER_ID, request);
 
 				// then
 				assertThat(mobileData1.getRemainAmount()).isEqualTo(0);
@@ -495,7 +499,8 @@ class TradeServiceTest {
 						Optional.of(buyer));
 
 				// when & then
-				assertThatThrownBy(() -> tradeService.mobileDataScrap(BUYER_MEMBER_ID, request))
+				assertThatThrownBy(
+						() -> tradeService.scrapPurchaseMobileData(BUYER_MEMBER_ID, request))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.INSUFFICIENT_CASH.getMessage());
 			}
@@ -539,7 +544,8 @@ class TradeServiceTest {
 						Optional.of(mobileData1));
 
 				// when & then
-				assertThatThrownBy(() -> tradeService.mobileDataScrap(BUYER_MEMBER_ID, request))
+				assertThatThrownBy(
+						() -> tradeService.scrapPurchaseMobileData(BUYER_MEMBER_ID, request))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.INVALID_REMAIN_DATA_AMOUNT.getMessage());
 			}
