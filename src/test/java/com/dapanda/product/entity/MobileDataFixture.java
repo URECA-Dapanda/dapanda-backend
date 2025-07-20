@@ -3,6 +3,7 @@ package com.dapanda.product.entity;
 import com.dapanda.product.dto.MobileDataSummary;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class MobileDataFixture {
 
@@ -17,6 +18,21 @@ public class MobileDataFixture {
 		);
 	}
 
+	public static MobileData createMobileDataWithId(Long mobileDataId, float dataAmount,
+			float remainAmount, int pricePer100MB) {
+
+		MobileData mobileData = MobileData.of(
+				dataAmount,
+				remainAmount,
+				pricePer100MB,
+				false
+		);
+
+		ReflectionTestUtils.setField(mobileData, "id", mobileDataId);
+
+		return mobileData;
+	}
+
 	public static MobileData createMobileDataSplitType(float dataAmount, float remainAmount,
 			int pricePer100MB) {
 
@@ -26,6 +42,22 @@ public class MobileDataFixture {
 				pricePer100MB,
 				true
 		);
+	}
+
+	public static MobileData createMobileDataSplitTypeWithId(Long mobileDataId, float dataAmount,
+			float remainAmount,
+			int pricePer100MB) {
+
+		MobileData mobileData = MobileData.of(
+				dataAmount,
+				remainAmount,
+				pricePer100MB,
+				true
+		);
+
+		ReflectionTestUtils.setField(mobileData, "id", mobileDataId);
+
+		return mobileData;
 	}
 
 	public static List<MobileData> createMobileDataList() {

@@ -14,7 +14,9 @@ public class MobileDataScrap {
 	private Long mobileDataId;
 	private String memberName;
 	private int price;
+	private int purchasePrice;
 	private float remainAmount;
+	private float purchaseAmount;
 	private int pricePer100MB;
 	private boolean splitType;
 	private LocalDateTime updatedAt;

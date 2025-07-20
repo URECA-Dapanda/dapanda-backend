@@ -9,14 +9,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Getter
@@ -33,9 +30,8 @@ public class TradeDetails extends CreatedAtEntity {
 	@JoinColumn(name = "product_id")
 	private Product product;
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "trade_id")
-	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Trade trade;
 
 	public static TradeDetails of(Product product, Trade trade) {

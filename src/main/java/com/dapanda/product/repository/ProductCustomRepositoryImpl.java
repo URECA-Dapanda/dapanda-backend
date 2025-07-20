@@ -318,7 +318,9 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						mobileData.id,
 						product.member.name,
 						product.price,
+						Expressions.constant(0),
 						mobileData.remainAmount,
+						Expressions.constant(0f),
 						mobileData.pricePer100MB,
 						mobileData.isSplitType,
 						product.updatedAt

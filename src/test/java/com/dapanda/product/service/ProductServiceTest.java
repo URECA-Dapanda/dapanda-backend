@@ -2,6 +2,7 @@ package com.dapanda.product.service;
 
 import static com.dapanda.TestConstants.Member.MEMBER_ID;
 import static com.dapanda.TestConstants.Member.OTHER_MEMBER_ID;
+import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
 import static com.dapanda.TestConstants.MobileData.BEFORE_DATA_AMOUNT;
 import static com.dapanda.TestConstants.MobileData.BEFORE_REMAIN_AMOUNT;
 import static com.dapanda.TestConstants.MobileData.CHANGED_AMOUNT;
@@ -11,6 +12,8 @@ import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
 import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
 import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
 import static com.dapanda.TestConstants.MobileData.SPLIT_TYPE;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE;
 import static com.dapanda.TestConstants.Product.NEW_PRICE_9000;
 import static com.dapanda.TestConstants.Product.PRICE_3000;
 import static com.dapanda.TestConstants.Product.PRODUCT_ID;
@@ -47,9 +50,11 @@ import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.CreateMobileDataRequest;
 import com.dapanda.product.dto.request.CreateWifiRequest;
+import com.dapanda.product.dto.request.ReadSellingProductRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
+import com.dapanda.product.dto.response.ReadSellingProductResponse;
 import com.dapanda.product.dto.response.UpdateMobileDataResponse;
 import com.dapanda.product.dto.response.UpdateWifiResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
@@ -956,6 +961,69 @@ class ProductServiceTest {
 				assertThatThrownBy(() -> productService.deleteProduct(PRODUCT_ID, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.ALREADY_DELETED_PRODUCT.getMessage());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("판매 상태에 따른 회원의 상품 목록 조회")
+	class ReadSellingProduct {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("페이징조건이 없으면 기본 페이징 값으로 조회된다")
+			public void readDefaultPagingSellingProduct() {
+
+				//given
+				ReadSellingProductRequest request = new ReadSellingProductRequest(
+						DEFAULT_CURSOR_ID,
+						DEFAULT_SIZE,
+						USER_DETAILS_MEMBER_ID,
+						ProductState.ACTIVE
+				);
+
+				List<ReadSellingProductResponse> queryResponse = ProductFixture.createReadSellingProductResponse();
+
+				given(memberRepository.existsById(USER_DETAILS_MEMBER_ID)).willReturn(true);
+				given(productRepository.findSellingProduct(request)).willReturn(queryResponse);
+
+				//when
+				CursorPageResponse<ReadSellingProductResponse> response = productService.readSellingProduct(
+						request);
+
+				//then
+				assertThat(response.getData()).hasSize(DEFAULT_SIZE);
+
+				assertThat(response.getData()).isEqualTo(queryResponse);
+
+				assertThat(response.getPageInfo().isHasNext()).isFalse(); // 다음 페이지가 없다고 가정
+				assertThat(response.getPageInfo().getNextCursorId()).isNull(); // 다음 커서 ID가 없다고 가정
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("회원을 찾을 수 없으면 예외가 발생한다")
+			public void memberNotFoundTest() {
+
+				//given
+				ReadSellingProductRequest request = new ReadSellingProductRequest(
+						DEFAULT_CURSOR_ID,
+						DEFAULT_SIZE,
+						USER_DETAILS_MEMBER_ID,
+						ProductState.ACTIVE
+				);
+
+				//when & then
+				assertThatThrownBy(() -> productService.readSellingProduct(request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.MEMBER_NOT_FOUND.getMessage());
 			}
 		}
 	}

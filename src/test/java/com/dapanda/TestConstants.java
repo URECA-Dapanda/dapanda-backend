@@ -2,6 +2,7 @@ package com.dapanda;
 
 import com.dapanda.report.entity.ReportTargetCategory;
 import com.dapanda.review.entity.ReviewSortOption;
+
 import java.time.LocalDateTime;
 
 public final class TestConstants {
@@ -96,5 +97,12 @@ public final class TestConstants {
 	public static final class Plan {
 
 		public static final Float PROVIDING_DATA_AMOUNT_10 = 10.0F;
+	}
+
+	public static final class Chat {
+
+		public static final Long CHAT_ROOM_ID = 1L;
+		public static final Long CHAT_PARTICIPANT_ID_1 = 1L;
+		public static final Long CHAT_PARTICIPANT_ID_2 = 2L;
 	}
 }
