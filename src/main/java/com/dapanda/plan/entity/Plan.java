@@ -32,7 +32,7 @@ public class Plan extends BaseEntity {
 
 	private String name;
 
-	private int providingDataAmount;
+	private float providingDataAmount;
 
 	private int monthlyPrice;
 
@@ -47,7 +47,7 @@ public class Plan extends BaseEntity {
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Member member;
 
-	public static Plan of(String name, int providingDataAmount, int monthlyPrice,
+	public static Plan of(String name, float providingDataAmount, int monthlyPrice,
 			PlanCategory category, AgeGroup ageGroup, Member member) {
 
 		return Plan.builder()
@@ -58,5 +58,15 @@ public class Plan extends BaseEntity {
 				.ageGroup(ageGroup)
 				.member(member)
 				.build();
+	}
+
+	public void addMobileData(float dataAmount) {
+
+		this.providingDataAmount += dataAmount;
+	}
+
+	public void deductMobileData(float dataAmount) {
+
+		this.providingDataAmount -= dataAmount;
 	}
 }

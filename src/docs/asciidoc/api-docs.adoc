@@ -777,3 +777,50 @@ include::{snippets}/product/delete-product-not-found-error/http-response.adoc[]
 include::{snippets}/product/delete-product-already-deleted-error/http-request.adoc[]
 
 include::{snippets}/product/delete-product-already-deleted-error/http-response.adoc[]
+
+---
+
+[[resources-trade]]
+=== 거래
+
+==== 데이터 통합 상품 일반 구매
+
+`POST /api/trades/mobile-data/default}`
+
+데이터 통합 상품 일반 구매를 합니다.
+
+===== 요청
+
+include::{snippets}/trade/post-mobile-data-default/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/trade/post-mobile-data-default/request-fields.adoc[]
+
+====== 응답
+
+include::{snippets}/trade/post-mobile-data-default/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/trade/post-mobile-data-default/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 이미 판매 완료된 상품
+
+include::{snippets}/trade/post-mobile-data-default-already-sold-out-error/http-request.adoc[]
+
+include::{snippets}/trade/post-mobile-data-default-already-sold-out-error/http-response.adoc[]
+
+====== 보유 캐시 부족
+
+include::{snippets}/trade/post-mobile-data-default-insufficient-cash-error/http-request.adoc[]
+
+include::{snippets}/trade/post-mobile-data-default-insufficient-cash-error/http-response.adoc[]
+
+====== 자신이 등록한 상품
+
+include::{snippets}/trade/post-mobile-data-default-own-product-error/http-request.adoc[]
+
+include::{snippets}/trade/post-mobile-data-default-own-product-error/http-response.adoc[]
