@@ -23,7 +23,7 @@ public class ChatRoom extends CreatedAtEntity {
 	@JoinColumn(name = "product_id")
 	private Product product;
 
-	public static ChatRoom createChatRoom(Product product){
+	public static ChatRoom of(Product product){
 
 		return ChatRoom.builder()
 				.state(ChatRoomState.OPENED)

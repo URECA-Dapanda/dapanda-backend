@@ -50,7 +50,7 @@ public class ChatService {
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
-		ChatRoom chatRoom = ChatRoom.createChatRoom(product);
+		ChatRoom chatRoom = ChatRoom.of(product);
 
 		ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
 
