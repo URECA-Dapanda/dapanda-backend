@@ -926,7 +926,7 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.message").value(
 								ResultCode.INVALID_REMAIN_DATA_AMOUNT.getMessage()))
 						.andDo(document(
-								"trade/post-mobile-data-scrap-insufficient-reamin-amount-error",
+								"trade/post-mobile-data-scrap-insufficient-remain-amount-error",
 								requestFields(
 										fieldWithPath("totalPrice").description("총 가격 (필수)"),
 										fieldWithPath("totalAmount").description("총 데이터양 (필수)"),
