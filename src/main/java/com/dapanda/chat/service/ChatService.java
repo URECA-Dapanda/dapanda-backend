@@ -30,6 +30,9 @@ public class ChatService {
 
 	public CreateChatRoomResponse createChatRoom(Long productId, Long memberId) {
 
+		validateProductId(productId);
+		validateOwnProductChatRoom(productId, memberId);
+
 		Product product = productRepository.findById(productId)
 				.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
 
@@ -44,8 +47,6 @@ public class ChatService {
 
 			return CreateChatRoomResponse.of(chatRoomId.get());
 		}
-
-		validateOwnProductChatRoom(product, memberId);
 
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
@@ -62,9 +63,17 @@ public class ChatService {
 		return CreateChatRoomResponse.of(savedChatRoom.getId());
 	}
 
-	private void validateOwnProductChatRoom(Product product, Long memberId) {
+	private void validateProductId(Long productId) {
 
-		if (product.getMember().getId().equals(memberId)) {
+		if (!productRepository.existsById(productId)) {
+
+			throw new GlobalException(ResultCode.PRODUCT_NOT_FOUND);
+		}
+	}
+
+	private void validateOwnProductChatRoom(Long productId, Long memberId) {
+
+		if (productRepository.existsByIdAndMember_Id(productId, memberId)) {
 
 			throw new GlobalException(ResultCode.CHAT_OWN_PRODUCT);
 		}
