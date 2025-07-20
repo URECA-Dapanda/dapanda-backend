@@ -1,6 +1,6 @@
 package com.dapanda.chat.service;
 
-import com.dapanda.chat.dto.request.ChatMessageRequest;
+import com.dapanda.chat.dto.request.CreateChatMessageRequest;
 import com.dapanda.chat.dto.response.CreateChatRoomResponse;
 import com.dapanda.chat.entity.ChatMessage;
 import com.dapanda.chat.entity.ChatParticipant;
@@ -80,7 +80,7 @@ public class ChatService {
 		}
 	}
 
-	public void createChatMessage(Long chatRoomId, ChatMessageRequest request) {
+	public void createChatMessage(Long chatRoomId, CreateChatMessageRequest request) {
 
 		validateParticipant(chatRoomId, request.memberId());
 

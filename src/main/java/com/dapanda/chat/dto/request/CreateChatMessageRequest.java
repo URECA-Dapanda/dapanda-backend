@@ -3,7 +3,7 @@ package com.dapanda.chat.dto.request;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record ChatMessageRequest(
+public record CreateChatMessageRequest(
 
 		@NotNull(message = "회원 아이디는 필수입니다.")
 		Long memberId,
