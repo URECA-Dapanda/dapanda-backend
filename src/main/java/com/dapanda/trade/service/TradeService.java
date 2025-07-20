@@ -11,7 +11,9 @@ import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
+import com.dapanda.trade.dto.MobileDataScrap;
 import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
+import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
 import com.dapanda.trade.dto.response.TradeMobileDataDefaultResponse;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeDetails;
@@ -19,6 +21,11 @@ import com.dapanda.trade.entity.TradeType;
 import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -154,4 +161,80 @@ public class TradeService {
 		sellerPlan.deductMobileData(dataAmount);
 	}
 
+	public FindMobileDataScrapResponse findMobileDataScrap(Float dataAmount) {
+
+		List<MobileDataScrap> sortedList = productRepository.findMobileDataScrap(dataAmount);
+		List<List<MobileDataScrap>> candidates = new ArrayList<>();
+		int n = sortedList.size();
+		float target = dataAmount;
+
+		for (int start = 0; start < n; start++) {
+			float sumAmount = 0;
+			int sumPrice = 0;
+			List<MobileDataScrap> temp = new ArrayList<>();
+
+			for (int i = start; i < n; i++) {
+				MobileDataScrap item = sortedList.get(i);
+				float amount = item.getRemainAmount();
+
+				if (item.isSplitType() && sumAmount + amount > target) {
+					float needed = target - sumAmount;
+					sumAmount += needed;
+					sumPrice += (int) (needed * 10 * item.getPricePer100MB());
+					temp.add(item);
+				} else {
+					sumAmount += amount;
+					sumPrice += item.getPrice();
+					temp.add(item);
+				}
+
+				if (sumAmount == target) {
+					candidates.add(temp);
+					break;
+				}
+				if (sumAmount > target) {
+					break;
+				}
+			}
+
+			if (candidates.size() >= 5) {
+				break;
+			}
+		}
+
+		Optional<List<MobileDataScrap>> best = candidates.stream()
+				.min(Comparator.comparingInt(
+						scrapList -> calculateTotalPrice(scrapList, dataAmount)));
+
+		if (best.isEmpty()) {
+
+			return FindMobileDataScrapResponse.of(0, 0, Collections.emptyList());
+		}
+
+		List<MobileDataScrap> bestCombination = best.get();
+		int totalPrice = calculateTotalPrice(bestCombination, dataAmount);
+
+		return FindMobileDataScrapResponse.of(dataAmount, totalPrice, bestCombination);
+	}
+
+	private int calculateTotalPrice(List<MobileDataScrap> scrapList, float dataAmount) {
+
+		float sumAmount = 0;
+		int total = 0;
+		for (MobileDataScrap scrap : scrapList) {
+			if (scrap.isSplitType()) {
+				float needed = Math.min(scrap.getRemainAmount(), dataAmount - sumAmount);
+				total += (int) (needed * 10 * scrap.getPricePer100MB());
+				sumAmount += needed;
+			} else {
+				total += scrap.getPrice();
+				sumAmount += scrap.getRemainAmount();
+			}
+			if (sumAmount >= dataAmount) {
+				break;
+			}
+		}
+
+		return total;
+	}
 }
