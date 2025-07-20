@@ -544,7 +544,7 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data").exists())
-						.andDo(document("product/get-trades-mobile-data-scrap",
+						.andDo(document("trade/get-mobile-data-scrap-exist",
 								queryParameters(
 										parameterWithName("dataAmount").description(
 												"구매할 데이터양 (필수)")
@@ -620,7 +620,7 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data").exists())
-						.andDo(document("product/get-trades-mobile-data-scrap",
+						.andDo(document("trade/get-mobile-data-scrap-not-exist",
 								queryParameters(
 										parameterWithName("dataAmount").description(
 												"구매할 데이터양 (필수)")
