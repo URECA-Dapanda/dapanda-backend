@@ -29,13 +29,13 @@ public class TradeDetails extends CreatedAtEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_id")
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Product product;
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "trade_id")
-	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Trade trade;
 
 	public static TradeDetails of(Product product, Trade trade) {
