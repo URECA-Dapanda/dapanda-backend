@@ -66,7 +66,9 @@ public final class TestConstants {
 		public static final float SELLING_DATA = 1.5F;
 		public static final boolean SPLIT_TYPE = true;
 		public static final float DATA_AMOUNT_1 = 1.0F;
+		public static final float DATA_AMOUNT_2 = 2.0F;
 		public static final float REMAIN_AMOUNT_1 = 1.0F;
+		public static final float REMAIN_AMOUNT_2 = 2.0F;
 		public static final int PRICE_PER_100MB = 300;
 	}
 
