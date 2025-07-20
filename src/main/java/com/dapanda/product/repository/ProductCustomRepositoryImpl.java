@@ -18,6 +18,7 @@ import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.entity.QProductImage;
+import com.dapanda.trade.dto.MobileDataScrap;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -25,17 +26,10 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static com.dapanda.product.entity.QMobileData.mobileData;
-import static com.dapanda.product.entity.QProduct.product;
-import static com.dapanda.product.entity.QProductImage.productImage;
-import static com.dapanda.product.entity.QWifi.wifi;
-import static com.dapanda.review.entity.QReview.review;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
@@ -274,11 +268,13 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				)
 				.leftJoin(wifi).on(
 						product.member.id.eq(request.memberId()),
-						request.productState() != null ? product.state.eq(request.productState()) : null
+						request.productState() != null ? product.state.eq(request.productState())
+								: null
 				)
 				.where(
 						product.member.id.eq(request.memberId()),
-						request.productState() != null ? product.state.eq(request.productState()) : null
+						request.productState() != null ? product.state.eq(request.productState())
+								: null
 				)
 				.fetch();
 
@@ -311,6 +307,35 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 					);
 				})
 				.toList();
+	}
+
+	@Override
+	public List<MobileDataScrap> findMobileDataScrap(float dataAmount) {
+
+		return queryFactory
+				.select(Projections.constructor(MobileDataScrap.class,
+						product.id,
+						mobileData.id,
+						product.member.name,
+						product.price,
+						mobileData.remainAmount,
+						mobileData.pricePer100MB,
+						mobileData.isSplitType,
+						product.updatedAt
+				))
+				.from(product)
+				.join(mobileData).on(product.itemId.eq(mobileData.id))
+				.where(
+						product.state.eq(ProductState.ACTIVE),
+						mobileData.remainAmount.gt(0)
+				)
+				.orderBy(
+						mobileData.pricePer100MB.asc(),
+						mobileData.remainAmount.desc(),
+						mobileData.isSplitType.asc()
+				)
+				.limit(200) // 필요에 따라 조절
+				.fetch();
 	}
 
 	private BooleanExpression isActiveProduct() {

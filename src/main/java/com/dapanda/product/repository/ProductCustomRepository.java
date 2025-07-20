@@ -8,9 +8,9 @@ import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.ReadSellingProductResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
 import com.dapanda.product.entity.ProductSortOption;
-import org.springframework.stereotype.Repository;
-
+import com.dapanda.trade.dto.MobileDataScrap;
 import java.util.List;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductCustomRepository {
@@ -28,4 +28,6 @@ public interface ProductCustomRepository {
 	public List<String> findWifiImages(Long wifiId);
 
 	List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request);
+
+	List<MobileDataScrap> findMobileDataScrap(float dataAmount);
 }

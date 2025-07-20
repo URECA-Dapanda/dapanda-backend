@@ -815,25 +815,47 @@ include::{snippets}/product/delete-product-already-deleted-error/http-response.a
 
 ==== 데이터 통합 상품 일반 구매
 
-`POST /api/trades/mobile-data/default}`
+`POST /api/trades/mobile-data/default`
 
 데이터 통합 상품 일반 구매를 합니다.
 
 ===== 요청
 
-include::{snippets}/trade/post-mobile-data-default/http-request.adoc[]
+include::{snippets}/trade/post-mobile-data-full-default/http-request.adoc[]
 
 ===== 요청 필드
 
-include::{snippets}/trade/post-mobile-data-default/request-fields.adoc[]
+include::{snippets}/trade/post-mobile-data-full-default/request-fields.adoc[]
 
 ====== 응답
 
-include::{snippets}/trade/post-mobile-data-default/http-response.adoc[]
+include::{snippets}/trade/post-mobile-data-full-default/http-response.adoc[]
 
 ===== 응답 필드
 
-include::{snippets}/trade/post-mobile-data-default/response-fields.adoc[]
+include::{snippets}/trade/post-mobile-data-full-default/response-fields.adoc[]
+
+==== 데이터 분할 상품 일반 구매
+
+`POST /api/trades/mobile-data/default`
+
+데이터 분할 상품 일반 구매를 합니다.
+
+===== 요청
+
+include::{snippets}/trade/post-mobile-data-partial-default/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/trade/post-mobile-data-partial-default/request-fields.adoc[]
+
+====== 응답
+
+include::{snippets}/trade/post-mobile-data-partial-default/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/trade/post-mobile-data-partial-default/response-fields.adoc[]
 
 ===== 실패 요청
 
@@ -854,3 +876,53 @@ include::{snippets}/trade/post-mobile-data-default-insufficient-cash-error/http-
 include::{snippets}/trade/post-mobile-data-default-own-product-error/http-request.adoc[]
 
 include::{snippets}/trade/post-mobile-data-default-own-product-error/http-response.adoc[]
+
+====== 요청 데이터양이 데이터 잔여량보다 큼
+
+include::{snippets}/trade/post-mobile-data-default-invalid-remain-data-amount-error/http-request.adoc[]
+
+include::{snippets}/trade/post-mobile-data-default-invalid-remain-data-amount-error/http-response.adoc[]
+
+==== 데이터 상품 자투리 조합 조회 (조합 존재)
+
+`POST /api/trades/mobile-data/scrap`
+
+데이터 상품 자투리 조합 조회를 합니다.
+
+===== 요청
+
+include::{snippets}/trade/get-mobile-data-scrap-exist/http-request.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/trade/get-mobile-data-scrap-exist/query-parameters.adoc[]
+
+====== 응답
+
+include::{snippets}/trade/get-mobile-data-scrap-exist/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/trade/get-mobile-data-scrap-exist/response-fields.adoc[]
+
+==== 데이터 상품 자투리 조합 조회 (조합 존재 X)
+
+`POST /api/trades/mobile-data/scrap`
+
+데이터 상품 자투리 조합 조회를 합니다.
+
+===== 요청
+
+include::{snippets}/trade/get-mobile-data-scrap-not-exist/http-request.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/trade/get-mobile-data-scrap-not-exist/query-parameters.adoc[]
+
+====== 응답
+
+include::{snippets}/trade/get-mobile-data-scrap-not-exist/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/trade/get-mobile-data-scrap-not-exist/response-fields.adoc[]
