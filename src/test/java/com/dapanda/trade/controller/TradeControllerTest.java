@@ -146,7 +146,7 @@ class TradeControllerTest {
 								seller));
 
 				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
-						product.getId(), mobileData.getId());
+						product.getId(), mobileData.getId(), null);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
@@ -218,7 +218,7 @@ class TradeControllerTest {
 								mobileData.getId(), seller));
 
 				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
-						product.getId(), mobileData.getId());
+						product.getId(), mobileData.getId(), null);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
@@ -266,7 +266,7 @@ class TradeControllerTest {
 								mobileData.getId(), seller));
 
 				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
-						product.getId(), mobileData.getId());
+						product.getId(), mobileData.getId(), null);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
@@ -314,7 +314,7 @@ class TradeControllerTest {
 								mobileData.getId(), seller));
 
 				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
-						product.getId(), mobileData.getId());
+						product.getId(), mobileData.getId(), null);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 

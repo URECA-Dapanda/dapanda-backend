@@ -64,7 +64,7 @@ class TradeServiceTest {
 
 	@Nested
 	@DisplayName("데이터 통합 상품 일반 구매")
-	class FindMobileData {
+	class DefaultPurchaseMobileDataFull {
 
 		@Nested
 		@DisplayName("성공 케이스")
@@ -87,7 +87,7 @@ class TradeServiceTest {
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
 				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
-						PRODUCT_ID, MOBILE_DATA_ID);
+						PRODUCT_ID, MOBILE_DATA_ID, null);
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
 						Optional.of(buyer));
@@ -134,7 +134,7 @@ class TradeServiceTest {
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
 				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
-						PRODUCT_ID, MOBILE_DATA_ID);
+						PRODUCT_ID, MOBILE_DATA_ID, null);
 
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
 						Optional.of(product));
@@ -157,7 +157,7 @@ class TradeServiceTest {
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
 				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
-						PRODUCT_ID, MOBILE_DATA_ID);
+						PRODUCT_ID, MOBILE_DATA_ID, null);
 
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
 						Optional.of(product));
@@ -185,7 +185,7 @@ class TradeServiceTest {
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
 				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
-						PRODUCT_ID, MOBILE_DATA_ID);
+						PRODUCT_ID, MOBILE_DATA_ID, null);
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
 						Optional.of(buyer));
