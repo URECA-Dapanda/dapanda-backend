@@ -4,10 +4,12 @@ package com.dapanda.trade.controller;
 import static com.dapanda.TestConstants.Member.CASH_5000;
 import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
 import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_2;
-import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB;
+import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_150;
+import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
 import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
 import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_2;
 import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
+import static com.dapanda.TestConstants.Product.PRICE_1500;
 import static com.dapanda.TestConstants.Product.PRICE_3000;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -17,7 +19,10 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -38,11 +43,16 @@ import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
+import com.dapanda.trade.dto.MobileDataScrap;
 import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
+import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
 import com.dapanda.trade.repository.TradeRepository;
+import com.dapanda.trade.service.TradeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -84,14 +94,14 @@ class TradeControllerTest {
 	private MobileDataRepository mobileDataRepository;
 	@Autowired
 	private WifiRepository wifiRepository;
-
 	@Autowired
 	private TradeRepository tradeRepository;
-
-	private MockMvc mockMvc;
-
 	@Autowired
 	private PlanRepository planRepository;
+	@Autowired
+	private TradeService tradeService;
+
+	private MockMvc mockMvc;
 
 	@BeforeEach
 	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
@@ -143,7 +153,7 @@ class TradeControllerTest {
 
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								seller));
@@ -217,7 +227,7 @@ class TradeControllerTest {
 
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2, REMAIN_AMOUNT_2,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								seller));
@@ -292,7 +302,7 @@ class TradeControllerTest {
 
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProductInactive(PRICE_3000,
 								mobileData.getId(), seller));
@@ -342,7 +352,7 @@ class TradeControllerTest {
 
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000,
 								mobileData.getId(), seller));
@@ -392,7 +402,7 @@ class TradeControllerTest {
 
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000,
 								mobileData.getId(), seller));
@@ -449,7 +459,7 @@ class TradeControllerTest {
 
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2, REMAIN_AMOUNT_1,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								seller));
@@ -488,7 +498,150 @@ class TradeControllerTest {
 								))
 						);
 			}
+		}
+	}
 
+	@Nested
+	@DisplayName("데이터 상품 자투리 조회 API")
+	class FindMobileDataScrap {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("데이터 상품 자투리 조합이 존재할 때 조회를 성공한다")
+			void findDataProductScrapWhenExist() throws Exception {
+
+				// given
+				Member seller1 = MemberFixture.createMember1();
+				Member seller2 = MemberFixture.createMember2();
+				List<Member> members = Arrays.asList(seller1, seller2);
+				memberRepository.saveAll(members);
+
+				MobileData mobileData1 = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_150);
+				MobileData mobileData2 = MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
+				List<MobileData> mobileDataList = Arrays.asList(mobileData1, mobileData2);
+				mobileDataRepository.saveAll(mobileDataList);
+
+				Product product1 = ProductFixture.createMobileDataProduct(PRICE_1500,
+						mobileData1.getId(), seller1);
+				Product product2 = ProductFixture.createMobileDataProduct(PRICE_3000,
+						mobileData2.getId(), seller2);
+				List<Product> products = Arrays.asList(product1, product2);
+				productRepository.saveAll(products);
+
+				float dataAmount = DATA_AMOUNT_2;
+
+				// when & then
+				mockMvc.perform(get("/api/trades/mobile-data/scrap")
+								.param("dataAmount", String.valueOf(dataAmount))
+								.contentType(MediaType.APPLICATION_JSON)
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data").exists())
+						.andDo(document("product/get-trades-mobile-data-scrap",
+								queryParameters(
+										parameterWithName("dataAmount").description(
+												"구매할 데이터양 (필수)")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data").description("응답 데이터 (에러시 반환되지 않음)"),
+										fieldWithPath("data.totalAmount").description("총 데이터양"),
+										fieldWithPath("data.totalPrice").description("총 가격"),
+										fieldWithPath("data.combinations").description("데이터 조합"),
+										fieldWithPath("data.combinations[].productId").description(
+												"상품 아이디"),
+										fieldWithPath(
+												"data.combinations[].mobileDataId").description(
+												"데이터 가격"),
+										fieldWithPath("data.combinations[].memberName").description(
+												"판매자 이름"),
+										fieldWithPath("data.combinations[].price").description(
+												"상품 가격"),
+										fieldWithPath(
+												"data.combinations[].remainAmount").description(
+												"남은 데이터양"),
+										fieldWithPath(
+												"data.combinations[].pricePer100MB").description(
+												"100MB 당 가격").optional(),
+										fieldWithPath("data.combinations[].splitType").description(
+												"분할 타입 여부"),
+										fieldWithPath("data.combinations[].updatedAt").description(
+												"수정된 날짜")
+								))
+						);
+
+				FindMobileDataScrapResponse response = tradeService.findMobileDataScrap(
+						dataAmount);
+
+				assertThat(response.getTotalAmount()).isEqualTo(DATA_AMOUNT_2);
+				assertThat(response.getTotalPrice()).isEqualTo(
+						PRICE_1500 + PRICE_3000); // 조합된 상품의 총 가격
+				assertThat(response.getCombinations().size()).isEqualTo(2); // 조합된 상품 개수 확인
+
+				MobileDataScrap result1 = response.getCombinations().get(0);
+				MobileDataScrap result2 = response.getCombinations().get(1);
+
+				assertThat(result1.getProductId()).isEqualTo(product1.getId());
+				assertThat(result1.getMobileDataId()).isEqualTo(mobileData1.getId());
+				assertThat(result1.getPrice()).isEqualTo(product1.getPrice());
+				assertThat(result1.getRemainAmount()).isEqualTo(mobileData1.getRemainAmount());
+				assertThat(result1.getPricePer100MB()).isEqualTo(mobileData1.getPricePer100MB());
+				assertThat(result1.isSplitType()).isEqualTo(mobileData1.isSplitType());
+
+				assertThat(result2.getProductId()).isEqualTo(product2.getId());
+				assertThat(result2.getMobileDataId()).isEqualTo(mobileData2.getId());
+				assertThat(result2.getPrice()).isEqualTo(product2.getPrice());
+				assertThat(result2.getRemainAmount()).isEqualTo(mobileData2.getRemainAmount());
+				assertThat(result2.getPricePer100MB()).isEqualTo(mobileData2.getPricePer100MB());
+				assertThat(result2.isSplitType()).isEqualTo(mobileData2.isSplitType());
+			}
+
+			@Test
+			@DisplayName("데이터 상품 자투리 조합이 존재하지 않을 때 조회를 성공한다")
+			void findDataProductScrapWhenNotExist() throws Exception {
+
+				// given
+				float dataAmount = DATA_AMOUNT_2;
+
+				// when & then
+				mockMvc.perform(get("/api/trades/mobile-data/scrap")
+								.param("dataAmount", String.valueOf(dataAmount))
+								.contentType(MediaType.APPLICATION_JSON)
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data").exists())
+						.andDo(document("product/get-trades-mobile-data-scrap",
+								queryParameters(
+										parameterWithName("dataAmount").description(
+												"구매할 데이터양 (필수)")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data").description("응답 데이터 (에러시 반환되지 않음)"),
+										fieldWithPath("data.totalAmount").description("총 데이터양"),
+										fieldWithPath("data.totalPrice").description("총 가격"),
+										fieldWithPath("data.combinations").description("데이터 조합")
+								))
+						);
+
+				FindMobileDataScrapResponse response = tradeService.findMobileDataScrap(
+						dataAmount);
+
+				assertThat(response.getTotalAmount()).isEqualTo(0);
+				assertThat(response.getTotalPrice()).isEqualTo(0); // 조합된 상품의 총 가격
+				assertThat(response.getCombinations().size()).isEqualTo(0); // 조합된 상품 개수 확인
+			}
 		}
 	}
 }
