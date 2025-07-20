@@ -260,7 +260,7 @@ class ReviewControllerTest {
 				List<Review> reviews = reviewRepository.saveAll(reviewFixtures);
 
 				//when & then
-				mockMvc.perform(get("/api/members/{memberId}/reviews/received", seller.getId())
+				mockMvc.perform(get("/api/members/{senderId}/reviews/received", seller.getId())
 								.param("size", String.valueOf(DEFAULT_SIZE))
 								.param("reviewSortOption", DEFAULT_REVIEW_SORT_OPTION))
 						.andExpect(status().isOk())
@@ -275,7 +275,7 @@ class ReviewControllerTest {
 						.andExpect(jsonPath("$.data.pageInfo.nextCursorId").isNumber())
 						.andDo(document("review/read-received-review",
 								pathParameters(
-										parameterWithName("memberId").description(
+										parameterWithName("senderId").description(
 												"받은 리뷰를 조회할 회원의 아이디 (필수)")
 								),
 								queryParameters(
