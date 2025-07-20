@@ -1,32 +1,32 @@
 package com.dapanda.product.controller;
 
-import static com.dapanda.TestConstants.Product.BEFORE_DATA_AMOUNT;
-import static com.dapanda.TestConstants.Product.BEFORE_REMAIN_AMOUNT;
-import static com.dapanda.TestConstants.Product.CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.Product.CHANGED_CONTENT;
-import static com.dapanda.TestConstants.Product.CHANGED_LATITUDE;
-import static com.dapanda.TestConstants.Product.CHANGED_LONGITUDE;
-import static com.dapanda.TestConstants.Product.CHANGED_TITLE;
-import static com.dapanda.TestConstants.Product.CONTENT;
-import static com.dapanda.TestConstants.Product.DATA_AMOUNT;
-import static com.dapanda.TestConstants.Product.END_TIME;
-import static com.dapanda.TestConstants.Product.EXCEED_CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.Product.IMAGE_URL_1;
-import static com.dapanda.TestConstants.Product.IMAGE_URL_2;
+import static com.dapanda.TestConstants.MobileData.BEFORE_DATA_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.BEFORE_REMAIN_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
+import static com.dapanda.TestConstants.MobileData.EXCEED_CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
+import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
+import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
+import static com.dapanda.TestConstants.MobileData.SPLIT_TYPE;
 import static com.dapanda.TestConstants.Product.INVALID_PRODUCT_ID;
-import static com.dapanda.TestConstants.Product.LATITUDE;
-import static com.dapanda.TestConstants.Product.LONGITUDE;
-import static com.dapanda.TestConstants.Product.NEW_PRICE;
-import static com.dapanda.TestConstants.Product.PRICE;
-import static com.dapanda.TestConstants.Product.PRICE_PER_100MB;
+import static com.dapanda.TestConstants.Product.NEW_PRICE_9000;
+import static com.dapanda.TestConstants.Product.PRICE_3000;
 import static com.dapanda.TestConstants.Product.PRODUCT_ID;
-import static com.dapanda.TestConstants.Product.REMAIN_AMOUNT;
-import static com.dapanda.TestConstants.Product.SELLING_DATA;
-import static com.dapanda.TestConstants.Product.SPLIT_TYPE;
-import static com.dapanda.TestConstants.Product.START_TIME;
-import static com.dapanda.TestConstants.Product.TITLE;
-import static com.dapanda.TestConstants.Product.WRONG_END_TIME;
-import static com.dapanda.TestConstants.Product.WRONG_START_TIME;
+import static com.dapanda.TestConstants.Wifi.CHANGED_CONTENT;
+import static com.dapanda.TestConstants.Wifi.CHANGED_LATITUDE;
+import static com.dapanda.TestConstants.Wifi.CHANGED_LONGITUDE;
+import static com.dapanda.TestConstants.Wifi.CHANGED_TITLE;
+import static com.dapanda.TestConstants.Wifi.CONTENT;
+import static com.dapanda.TestConstants.Wifi.END_TIME;
+import static com.dapanda.TestConstants.Wifi.IMAGE_URL_1;
+import static com.dapanda.TestConstants.Wifi.IMAGE_URL_2;
+import static com.dapanda.TestConstants.Wifi.LATITUDE;
+import static com.dapanda.TestConstants.Wifi.LONGITUDE;
+import static com.dapanda.TestConstants.Wifi.START_TIME;
+import static com.dapanda.TestConstants.Wifi.TITLE;
+import static com.dapanda.TestConstants.Wifi.WRONG_END_TIME;
+import static com.dapanda.TestConstants.Wifi.WRONG_START_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.BDDMockito.given;
@@ -42,7 +42,6 @@ import static org.springframework.restdocs.request.RequestDocumentation.queryPar
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -337,7 +336,6 @@ class ProductControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data").exists())
-						.andDo(print())
 						.andDo(document("product/get-products-wifi",
 								queryParameters(
 										parameterWithName("cursorId").description(
@@ -442,11 +440,12 @@ class ProductControllerTest {
 				Member member = memberRepository.save(MemberFixture.createMember1());
 
 				MobileData mobileData = mobileDataRepository.save(
-						MobileDataFixture.createMobileData(DATA_AMOUNT, REMAIN_AMOUNT,
-								PRICE_PER_100MB));
+						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
+								PRICE_PER_100MB_300));
 
 				productRepository.save(
-						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member));
+						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
+								member));
 
 				// when & then
 				mockMvc.perform(get("/api/products/mobile-data/{productId}", PRODUCT_ID)
@@ -454,11 +453,11 @@ class ProductControllerTest {
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.data.productId").value(PRODUCT_ID))
 						.andExpect(jsonPath("$.data.itemId").value(mobileData.getId()))
-						.andExpect(jsonPath("$.data.price").value(PRICE))
+						.andExpect(jsonPath("$.data.price").value(PRICE_3000))
 						.andExpect(jsonPath("$.data.memberId").value(member.getId()))
 						.andExpect(jsonPath("$.data.memberName").value(member.getName()))
-						.andExpect(jsonPath("$.data.remainAmount").value(REMAIN_AMOUNT))
-						.andExpect(jsonPath("$.data.pricePer100MB").value(PRICE_PER_100MB))
+						.andExpect(jsonPath("$.data.remainAmount").value(REMAIN_AMOUNT_1))
+						.andExpect(jsonPath("$.data.pricePer100MB").value(PRICE_PER_100MB_300))
 						.andExpect(jsonPath("$.data.averageRate").exists())
 						.andExpect(jsonPath("$.data.reviewCount").exists())
 						.andExpect(jsonPath("$.data.updatedAt").exists())
@@ -487,8 +486,8 @@ class ProductControllerTest {
 
 				assertThat(actualResponse.getProductId()).isEqualTo(PRODUCT_ID);
 				assertThat(actualResponse.getItemId()).isEqualTo(mobileData.getId());
-				assertThat(actualResponse.getRemainAmount()).isEqualTo(REMAIN_AMOUNT);
-				assertThat(actualResponse.getPricePer100MB()).isEqualTo(PRICE_PER_100MB);
+				assertThat(actualResponse.getRemainAmount()).isEqualTo(REMAIN_AMOUNT_1);
+				assertThat(actualResponse.getPricePer100MB()).isEqualTo(PRICE_PER_100MB_300);
 			}
 		}
 
@@ -520,11 +519,12 @@ class ProductControllerTest {
 				Member member = memberRepository.save(MemberFixture.createMember1());
 
 				MobileData mobileData = mobileDataRepository.save(
-						MobileDataFixture.createMobileData(DATA_AMOUNT, REMAIN_AMOUNT,
-								PRICE_PER_100MB));
+						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
+								PRICE_PER_100MB_300));
 
 				productRepository.save(
-						ProductFixture.createMobileDataProductInactive(PRICE, mobileData.getId(),
+						ProductFixture.createMobileDataProductInactive(PRICE_3000,
+								mobileData.getId(),
 								member));
 
 				// when & then
@@ -561,7 +561,7 @@ class ProductControllerTest {
 								START_TIME, END_TIME));
 
 				productRepository.save(
-						ProductFixture.createWifiProduct(PRICE, wifi.getId(), member));
+						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
 
 				productImageRepository.save(
 						ProductImageFixture.createProductImage(IMAGE_URL_1, 3, wifi.getId()));
@@ -574,7 +574,7 @@ class ProductControllerTest {
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.data.productId").value(PRODUCT_ID))
 						.andExpect(jsonPath("$.data.itemId").value(wifi.getId()))
-						.andExpect(jsonPath("$.data.price").value(PRICE))
+						.andExpect(jsonPath("$.data.price").value(PRICE_3000))
 						.andExpect(jsonPath("$.data.memberId").value(member.getId()))
 						.andExpect(jsonPath("$.data.memberName").value(member.getName()))
 						.andExpect(jsonPath("$.data.title").value(TITLE))
@@ -652,7 +652,7 @@ class ProductControllerTest {
 								START_TIME, END_TIME));
 
 				productRepository.save(
-						ProductFixture.createWifiProductInactive(PRICE, wifi.getId(), member));
+						ProductFixture.createWifiProductInactive(PRICE_3000, wifi.getId(), member));
 
 				// when & then
 				mockMvc.perform(get("/api/products/wifi/{productId}", PRODUCT_ID)
@@ -684,15 +684,16 @@ class ProductControllerTest {
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT, BEFORE_REMAIN_AMOUNT,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
-						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member));
+						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
+								member));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
 
 				UpdateMobileDataRequest request = new UpdateMobileDataRequest(product.getId(),
-						NEW_PRICE, CHANGED_AMOUNT, SPLIT_TYPE);
+						NEW_PRICE_9000, CHANGED_AMOUNT, SPLIT_TYPE);
 
 				// when & then
 				mockMvc.perform(put("/api/products/mobile-data")
@@ -724,7 +725,7 @@ class ProductControllerTest {
 						.orElseThrow();
 
 				assertThat(updatedProduct.getId()).isEqualTo(product.getId());
-				assertThat(updatedProduct.getPrice()).isEqualTo(NEW_PRICE);
+				assertThat(updatedProduct.getPrice()).isEqualTo(NEW_PRICE_9000);
 				assertThat(updatedMobileData.getDataAmount()).isEqualTo(
 						BEFORE_DATA_AMOUNT + CHANGED_AMOUNT);
 				assertThat(updatedMobileData.getRemainAmount()).isEqualTo(
@@ -745,15 +746,16 @@ class ProductControllerTest {
 				Member member2 = memberRepository.save(MemberFixture.createMember2());
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT, BEFORE_REMAIN_AMOUNT,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
-						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member1));
+						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
+								member1));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member2.getId());
 
 				UpdateMobileDataRequest request = new UpdateMobileDataRequest(product.getId(),
-						NEW_PRICE, CHANGED_AMOUNT, SPLIT_TYPE);
+						NEW_PRICE_9000, CHANGED_AMOUNT, SPLIT_TYPE);
 
 				// when & then
 				mockMvc.perform(put("/api/products/mobile-data")
@@ -788,15 +790,16 @@ class ProductControllerTest {
 						MemberFixture.createMemberWithSellingData(SELLING_DATA));
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT, BEFORE_REMAIN_AMOUNT,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
-						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member));
+						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
+								member));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
 
 				UpdateMobileDataRequest request = new UpdateMobileDataRequest(product.getId(),
-						NEW_PRICE, CHANGED_AMOUNT, SPLIT_TYPE);
+						NEW_PRICE_9000, CHANGED_AMOUNT, SPLIT_TYPE);
 
 				// when & then
 				mockMvc.perform(put("/api/products/mobile-data")
@@ -831,15 +834,16 @@ class ProductControllerTest {
 						MemberFixture.createMemberWithSellingData(SELLING_DATA));
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT, BEFORE_REMAIN_AMOUNT,
-								PRICE_PER_100MB));
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
-						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member));
+						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
+								member));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
 
 				UpdateMobileDataRequest request = new UpdateMobileDataRequest(product.getId(),
-						NEW_PRICE, EXCEED_CHANGED_AMOUNT, SPLIT_TYPE);
+						NEW_PRICE_9000, EXCEED_CHANGED_AMOUNT, SPLIT_TYPE);
 
 				// when & then
 				mockMvc.perform(put("/api/products/mobile-data")
@@ -885,12 +889,12 @@ class ProductControllerTest {
 						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
 								END_TIME));
 				Product product = productRepository.save(
-						ProductFixture.createWifiProduct(PRICE, wifi.getId(), member));
+						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
 
-				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE,
+				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
 						START_TIME, END_TIME);
 
@@ -927,7 +931,7 @@ class ProductControllerTest {
 						.orElseThrow();
 
 				assertThat(updatedProduct.getId()).isEqualTo(product.getId());
-				assertThat(updatedProduct.getPrice()).isEqualTo(NEW_PRICE);
+				assertThat(updatedProduct.getPrice()).isEqualTo(NEW_PRICE_9000);
 				assertThat(updatedWifi.getTitle()).isEqualTo(CHANGED_TITLE);
 				assertThat(updatedWifi.getContent()).isEqualTo(CHANGED_CONTENT);
 				assertThat(updatedWifi.getLatitude()).isEqualTo(CHANGED_LATITUDE);
@@ -950,12 +954,12 @@ class ProductControllerTest {
 						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
 								END_TIME));
 				Product product = productRepository.save(
-						ProductFixture.createWifiProduct(PRICE, wifi.getId(), member1));
+						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member1));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member2.getId());
 
-				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE,
+				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
 						START_TIME, END_TIME);
 
@@ -996,12 +1000,12 @@ class ProductControllerTest {
 						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
 								END_TIME));
 				Product product = productRepository.save(
-						ProductFixture.createWifiProduct(PRICE, wifi.getId(), member));
+						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
 
-				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE,
+				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
 						WRONG_START_TIME, WRONG_END_TIME);
 
@@ -1049,10 +1053,11 @@ class ProductControllerTest {
 				// given
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				MobileData mobileData = mobileDataRepository.save(
-						MobileDataFixture.createMobileData(DATA_AMOUNT, REMAIN_AMOUNT,
-								PRICE_PER_100MB));
+						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
+								PRICE_PER_100MB_300));
 				Product product = productRepository.save(
-						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member));
+						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
+								member));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
@@ -1089,10 +1094,11 @@ class ProductControllerTest {
 				// given
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				MobileData mobileData = mobileDataRepository.save(
-						MobileDataFixture.createMobileData(DATA_AMOUNT,
-								REMAIN_AMOUNT, PRICE_PER_100MB));
+						MobileDataFixture.createMobileData(DATA_AMOUNT_1,
+								REMAIN_AMOUNT_1, PRICE_PER_100MB_300));
 				Product product = productRepository.save(
-						ProductFixture.createMobileDataProduct(PRICE, mobileData.getId(), member));
+						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
+								member));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
@@ -1120,8 +1126,8 @@ class ProductControllerTest {
 				// given
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				MobileData mobileData = mobileDataRepository.save(
-						MobileDataFixture.createMobileData(DATA_AMOUNT,
-								REMAIN_AMOUNT, PRICE_PER_100MB));
+						MobileDataFixture.createMobileData(DATA_AMOUNT_1,
+								REMAIN_AMOUNT_1, PRICE_PER_100MB_300));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProductWithIdWithState(null,
 								mobileData.getId(), ProductState.DELETED, member));

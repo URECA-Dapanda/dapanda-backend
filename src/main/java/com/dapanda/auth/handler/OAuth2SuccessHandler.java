@@ -68,7 +68,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		accessCookie.setPath("/");
 		accessCookie.setMaxAge(jwtTokenProvider.getAccessTokenExpirationSec());
 		if (!isLocal) {
-			accessCookie.setDomain(".dapanda.org");
+			accessCookie.setDomain("dapanda.org");
 		}
 		response.addCookie(accessCookie);
 
@@ -78,7 +78,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		refreshCookie.setPath("/");
 		refreshCookie.setMaxAge(jwtTokenProvider.getRefreshTokenExpirationSec());
 		if (!isLocal) {
-			refreshCookie.setDomain(".dapanda.org");
+			refreshCookie.setDomain("dapanda.org");
 		}
 		response.addCookie(refreshCookie);
 

@@ -57,4 +57,9 @@ public class MobileData {
 		this.pricePer100MB = pricePer100MB;
 		this.isSplitType = isSplitType;
 	}
+
+	public void deductRemainAmount(float dataAmount) {
+
+		this.remainAmount -= dataAmount;
+	}
 }

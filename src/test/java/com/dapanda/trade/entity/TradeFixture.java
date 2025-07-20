@@ -1,26 +1,37 @@
 package com.dapanda.trade.entity;
 
 import com.dapanda.member.entity.Member;
+import com.dapanda.product.entity.MobileData;
+import com.dapanda.product.entity.Product;
+import com.dapanda.trade.dto.MobileDataScrap;
 import org.springframework.test.util.ReflectionTestUtils;
 
 public class TradeFixture {
 
-	public static Trade createTrade1(Member member) {
+	public static Trade createTradeMobileDataDefault(Member member) {
 
 		return Trade.of(
 				0.5F,
 				null,
 				1000,
+				TradeType.PURCHASE_SINGLE,
 				member
 		);
 	}
 
 	public static Trade createTrade1WithId(Member member, Long tradeId) {
 
-		Trade trade = createTrade1(member);
+		Trade trade = createTradeMobileDataDefault(member);
 
 		ReflectionTestUtils.setField(trade, "id", tradeId);
 
 		return trade;
+	}
+
+	public static MobileDataScrap createMobileDataScrap(Product product, MobileData mobileData) {
+
+		return new MobileDataScrap(product.getId(), mobileData.getId(),
+				product.getMember().getName(), product.getPrice(), mobileData.getRemainAmount(),
+				mobileData.getPricePer100MB(), mobileData.isSplitType(), product.getUpdatedAt());
 	}
 }

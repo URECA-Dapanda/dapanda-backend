@@ -141,7 +141,8 @@ class ReviewControllerTest {
 
 				//given
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
-				Trade trade = tradeRepository.save(TradeFixture.createTrade1(buyer));
+				Trade trade = tradeRepository.save(
+						TradeFixture.createTradeMobileDataDefault(buyer));
 
 				CreateReviewRequest request = new CreateReviewRequest(RATING, COMMENT);
 
@@ -237,7 +238,7 @@ class ReviewControllerTest {
 				List<Trade> tradeFixtures = new ArrayList<>();
 
 				for (Member member : members) {
-					tradeFixtures.add(TradeFixture.createTrade1(member));
+					tradeFixtures.add(TradeFixture.createTradeMobileDataDefault(member));
 				}
 
 				List<Trade> trades = tradeRepository.saveAll(tradeFixtures);
@@ -365,7 +366,7 @@ class ReviewControllerTest {
 				List<Trade> tradesFixture = new ArrayList<>();
 				for (Product product : products) {
 
-					tradesFixture.add(TradeFixture.createTrade1(buyer));
+					tradesFixture.add(TradeFixture.createTradeMobileDataDefault(buyer));
 				}
 
 				List<Trade> trades = tradeRepository.saveAll(tradesFixture);
@@ -477,7 +478,8 @@ class ReviewControllerTest {
 
 				//given
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
-				Trade trade = tradeRepository.save(TradeFixture.createTrade1(buyer));
+				Trade trade = tradeRepository.save(
+						TradeFixture.createTradeMobileDataDefault(buyer));
 				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -527,7 +529,8 @@ class ReviewControllerTest {
 				//given
 				Member seller = memberRepository.save(MemberFixture.createMember1());
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
-				Trade trade = tradeRepository.save(TradeFixture.createTrade1(buyer));
+				Trade trade = tradeRepository.save(
+						TradeFixture.createTradeMobileDataDefault(buyer));
 				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -597,7 +600,8 @@ class ReviewControllerTest {
 				//given
 				Member seller = memberRepository.save(MemberFixture.createMember1());
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
-				Trade trade = tradeRepository.save(TradeFixture.createTrade1(buyer));
+				Trade trade = tradeRepository.save(
+						TradeFixture.createTradeMobileDataDefault(buyer));
 				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
 
 				UpdateReviewRequest request = new UpdateReviewRequest(NEW_RATING, NEW_COMMENT);

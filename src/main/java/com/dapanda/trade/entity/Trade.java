@@ -38,12 +38,14 @@ public class Trade extends CreatedAtEntity {
 	@JoinColumn(name = "member_id")
 	private Member member;
 
-	public static Trade of(Float dataAmount, Integer timeAmount, int tradingPrice, Member member) {
+	public static Trade of(Float dataAmount, Integer timeAmount, int tradingPrice,
+			TradeType tradeType, Member member) {
 
 		return Trade.builder()
 				.dataAmount(dataAmount)
 				.timeAmount(timeAmount)
 				.tradingPrice(tradingPrice)
+				.tradeType(tradeType)
 				.member(member)
 				.build();
 	}

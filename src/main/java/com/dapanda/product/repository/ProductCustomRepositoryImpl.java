@@ -10,11 +10,16 @@ import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
+import com.dapanda.product.dto.request.ReadSellingProductRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
+import com.dapanda.product.dto.response.ReadSellingProductResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
+import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.entity.QProductImage;
+import com.dapanda.trade.dto.MobileDataScrap;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -238,6 +243,98 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.from(productImage)
 				.where(productImage.wifiId.eq(wifiId))
 				.orderBy(productImage.priority.asc())
+				.fetch();
+	}
+
+	@Override
+	public List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request) {
+
+		List<Tuple> tuples = queryFactory
+				.select(
+						product.id,
+						product.itemType,
+						product.state,
+						mobileData.dataAmount,
+						mobileData.remainAmount,
+						wifi.startTime,
+						wifi.endTime,
+						product.createdAt,
+						product.updatedAt
+				)
+				.from(product)
+				.leftJoin(mobileData).on(
+						product.itemId.eq(mobileData.id)
+								.and(product.itemType.eq(ItemType.MOBILE_DATA))
+				)
+				.leftJoin(wifi).on(
+						product.member.id.eq(request.memberId()),
+						request.productState() != null ? product.state.eq(request.productState())
+								: null
+				)
+				.where(
+						product.member.id.eq(request.memberId()),
+						request.productState() != null ? product.state.eq(request.productState())
+								: null
+				)
+				.fetch();
+
+		return tuples.stream()
+				.map(tuple -> {
+
+					ItemType type = tuple.get(product.itemType);
+
+					if (type == ItemType.MOBILE_DATA) {
+
+						return ReadSellingProductResponse.createMobileDataResponse(
+								tuple.get(product.id),
+								type,
+								tuple.get(product.state),
+								tuple.get(mobileData.dataAmount),
+								tuple.get(mobileData.remainAmount),
+								tuple.get(product.createdAt),
+								tuple.get(product.updatedAt)
+						);
+					}
+
+					return ReadSellingProductResponse.createWifiResponse(
+							tuple.get(product.id),
+							type,
+							tuple.get(product.state),
+							tuple.get(wifi.startTime),
+							tuple.get(wifi.endTime),
+							tuple.get(product.createdAt),
+							tuple.get(product.updatedAt)
+					);
+				})
+				.toList();
+	}
+
+	@Override
+	public List<MobileDataScrap> findMobileDataScrap(float dataAmount) {
+
+		return queryFactory
+				.select(Projections.constructor(MobileDataScrap.class,
+						product.id,
+						mobileData.id,
+						product.member.name,
+						product.price,
+						mobileData.remainAmount,
+						mobileData.pricePer100MB,
+						mobileData.isSplitType,
+						product.updatedAt
+				))
+				.from(product)
+				.join(mobileData).on(product.itemId.eq(mobileData.id))
+				.where(
+						product.state.eq(ProductState.ACTIVE),
+						mobileData.remainAmount.gt(0)
+				)
+				.orderBy(
+						mobileData.pricePer100MB.asc(),
+						mobileData.remainAmount.desc(),
+						mobileData.isSplitType.asc()
+				)
+				.limit(200) // 필요에 따라 조절
 				.fetch();
 	}
 

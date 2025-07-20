@@ -8,6 +8,7 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.CreateMobileDataRequest;
+import com.dapanda.product.dto.request.ReadSellingProductRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
@@ -20,15 +21,18 @@ import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.entity.Wifi;
+import com.dapanda.product.dto.response.*;
+import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
 import jakarta.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -43,15 +47,43 @@ public class ProductService {
 
 	private final MemberRepository memberRepository;
 
+	public CursorPageResponse<ReadSellingProductResponse> readSellingProduct(ReadSellingProductRequest request) {
+
+		validateMemberId(request.memberId());
+
+		List<ReadSellingProductResponse> response = productRepository.findSellingProduct(request);
+
+		boolean hasNext = response.size() > request.size();
+
+		if (hasNext) {
+			response = response.subList(0, request.size());
+		}
+
+		Long nextCursorId = hasNext && !response.isEmpty()
+				? response.get(response.size() - 1).getProductId()
+				: null;
+
+		CursorPageResponse.PageInfo pageInfo = CursorPageResponse.PageInfo.of(
+				nextCursorId,
+				hasNext,
+				request.size()
+		);
+
+		return CursorPageResponse.of(response, pageInfo);
+	}
+
+//	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(
+//			MobileDataCursorRequest request) {
+
 	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, Integer size,
-			String productSortOption, Float dataAmount) {
+																		String productSortOption, Float dataAmount) {
 
 		return productRepository.findMobileDataByCursor(cursorId, size,
 				ProductSortOption.from(productSortOption), dataAmount);
 	}
 
 	public CursorPageResponse<WifiSummary> findWifiByCursor(Long cursorId, Integer size,
-			String productSortOption, boolean open, Double latitude, Double longitude) {
+															String productSortOption, boolean open, Double latitude, Double longitude) {
 
 		return productRepository.findWifiByCursor(cursorId, size,
 				ProductSortOption.from(productSortOption), open, latitude, longitude);
@@ -215,6 +247,15 @@ public class ProductService {
 
 		if (!savedProduct.getMember().getId().equals(memberId)) {
 			throw new GlobalException(ResultCode.OTHER_PRODUCT);
+		}
+	}
+
+
+	private void validateMemberId(Long memberId) {
+
+		if (!memberRepository.existsById(memberId)) {
+
+			throw new GlobalException(ResultCode.MEMBER_NOT_FOUND);
 		}
 	}
 }
