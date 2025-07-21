@@ -3,8 +3,8 @@ package com.dapanda.review.controller;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.CommonResponse;
-import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.request.CreateReviewRequest;
+import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
 import com.dapanda.review.dto.response.*;
 import com.dapanda.review.service.ReviewService;
@@ -63,7 +63,7 @@ public class ReviewController {
 	/**
 	 * 내가 작성한 리뷰 조회
 	 */
-	@GetMapping("/reviews/written")
+	@GetMapping("/reviews/wrote")
 	public CommonResponse<CursorPageResponse<ReadWrittenReviewResponse>> readMyWrittenReview(
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@RequestParam(required = false) Long cursorId,
