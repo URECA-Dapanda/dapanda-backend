@@ -54,6 +54,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 				.select(
 						chatRoom.id,
 						chatRoom.createdAt,
+						chatRoom.lastMessageAt,
 						member.id,
 						member.name,
 						product.id,
@@ -109,6 +110,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 						return ReadJoiningChatRoomResponse.createMobileDataChatRoomResponse(
 								tuple.get(chatRoom.id),
 								tuple.get(chatRoom.createdAt),
+								tuple.get(chatRoom.lastMessageAt),
 								tuple.get(member.id),
 								tuple.get(member.name),
 								tuple.get(product.id),
@@ -122,6 +124,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 					return ReadJoiningChatRoomResponse.createWifiChatRoomResponse(
 							tuple.get(chatRoom.id),
 							tuple.get(chatRoom.createdAt),
+							tuple.get(chatRoom.lastMessageAt),
 							tuple.get(member.id),
 							tuple.get(member.name),
 							tuple.get(product.id),

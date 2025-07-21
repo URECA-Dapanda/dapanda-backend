@@ -15,6 +15,7 @@ public class ReadJoiningChatRoomResponse {
 	//ChatRoom
 	private Long chatRoomId;
 	private LocalDateTime createdAt;
+	private LocalDateTime lastMessageAt;
 
 	//Member
 	private Long senderId;
@@ -44,6 +45,7 @@ public class ReadJoiningChatRoomResponse {
 	public static ReadJoiningChatRoomResponse createMobileDataChatRoomResponse(
 			Long chatRoomId,
 			LocalDateTime createdAt,
+			LocalDateTime lastMessageAt,
 			Long senderId,
 			String senderName,
 			Long productId,
@@ -55,6 +57,7 @@ public class ReadJoiningChatRoomResponse {
 		return ReadJoiningChatRoomResponse.builder()
 				.chatRoomId(chatRoomId)
 				.createdAt(createdAt)
+				.lastMessageAt(lastMessageAt)
 				.senderId(senderId)
 				.senderName(senderName)
 				.productId(productId)
@@ -68,6 +71,7 @@ public class ReadJoiningChatRoomResponse {
 	public static ReadJoiningChatRoomResponse createWifiChatRoomResponse(
 			Long chatRoomId,
 			LocalDateTime createdAt,
+			LocalDateTime lastMessageAt,
 			Long senderId,
 			String senderName,
 			Long productId,
@@ -79,6 +83,7 @@ public class ReadJoiningChatRoomResponse {
 		return ReadJoiningChatRoomResponse.builder()
 				.chatRoomId(chatRoomId)
 				.createdAt(createdAt)
+				.lastMessageAt(lastMessageAt)
 				.senderId(senderId)
 				.senderName(senderName)
 				.productId(productId)
