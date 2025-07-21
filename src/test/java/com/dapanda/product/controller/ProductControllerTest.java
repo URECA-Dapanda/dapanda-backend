@@ -312,7 +312,8 @@ class ProductControllerTest {
 
 				java.util.Map<String, Object> map = objectMapper.convertValue(incompleteRequest,
 						java.util.Map.class);
-
+				map.remove("price");
+				
 				String invalidJson = objectMapper.writeValueAsString(map);
 
 				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/mobile-data")
