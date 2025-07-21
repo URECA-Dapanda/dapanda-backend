@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -25,10 +27,11 @@ public class ChatController {
 	public CommonResponse<CursorPageResponse<ReadJoiningChatRoomResponse>> readChatRoom(
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@RequestParam(required = false) Long cursorId,
+			@RequestParam(required = false) LocalDateTime lastMessageAt,
 			@RequestParam(defaultValue = "2") @Min(1) @Max(100) int size,
 			@RequestParam(defaultValue = "ALL") ChatRoomReadOption chatRoomReadOption) {
 
-		ReadJoiningChatRoomRequest request = new ReadJoiningChatRoomRequest(cursorId, size, chatRoomReadOption, userDetails.getId());
+		ReadJoiningChatRoomRequest request = new ReadJoiningChatRoomRequest(cursorId, lastMessageAt, size, chatRoomReadOption, userDetails.getId());
 
 		return CommonResponse.success(chatService.readChatRoom(request));
 	}

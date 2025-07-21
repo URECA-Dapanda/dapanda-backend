@@ -37,6 +37,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 				.where(chatRoom.product.id.eq(productId)
 						.and(chatParticipant.member.id.in(sellerId, buyerId)))
 				.groupBy(chatRoom.id)
+				// 1:1 채팅방 이므로 카운트 수가 2
 				.having(chatParticipant.member.id.countDistinct().eq(2L))
 				.fetchFirst();
 
@@ -50,7 +51,30 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 
 		BooleanBuilder whereClause = new BooleanBuilder();
 
-		JPAQuery<Tuple> query = jpaQueryFactory
+		whereClause.and(chatParticipant.member.id.eq(request.memberId()));
+
+		switch (readOption) {
+			// 구매자 기준 채팅방 조회
+			case BUYER -> whereClause.and(product.member.id.ne(request.memberId()));
+			// 판매자 기준 채팅방 조회
+			case SELLER -> whereClause.and(product.member.id.eq(request.memberId()));
+			// 전체 채팅방 조회
+			case ALL -> {
+			}
+		}
+
+		// 커서 기반 페이징을 위한 WHERE 절 추가
+		if (request.lastMessageAt() != null && request.cursorId() != null) {
+			whereClause.and(
+					chatRoom.lastMessageAt.lt(request.lastMessageAt()) // 이전 커서 시간보다 이전 메시지
+							.or(
+									chatRoom.lastMessageAt.eq(request.lastMessageAt()) // 시간이 같으면
+											.and(chatRoom.id.lt(request.cursorId())) // ID가 더 작은 (이전) 채팅방
+							)
+			);
+		}
+
+		List<Tuple> tuples = jpaQueryFactory
 				.select(
 						chatRoom.id,
 						chatRoom.createdAt,
@@ -77,19 +101,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 						product.itemId.eq(wifi.id)
 								.and(product.itemType.eq(ItemType.WIFI))
 				)
-				.where(chatParticipant.member.id.eq(request.memberId()));
-
-		switch (readOption) {
-			// 구매자 기준 채팅방 조회
-			case BUYER -> whereClause.and(product.member.id.ne(request.memberId()));
-			// 판매자 기준 채팅방 조회
-			case SELLER -> whereClause.and(product.member.id.eq(request.memberId()));
-			// 전체 채팅방 조회
-			case ALL -> {
-			}
-		}
-
-		List<Tuple> tuples = query
 				.where(whereClause)
 				.orderBy(chatRoom.lastMessageAt.desc(), chatRoom.createdAt.desc())
 				.limit(request.size() + 1)
