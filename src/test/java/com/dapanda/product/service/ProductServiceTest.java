@@ -550,8 +550,8 @@ class ProductServiceTest {
 						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
 				MobileDataInfoResponse expectedResponse = new MobileDataInfoResponse(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member.getId(), member.getName(),
-						REMAIN_AMOUNT_1,
-						PRICE_PER_100MB_300, AVERAGE_RATE, REVIEW_COUNT, UPDATED_AT);
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_300, AVERAGE_RATE, REVIEW_COUNT, false,
+						UPDATED_AT);
 
 				given(productRepository.existsById(PRODUCT_ID))
 						.willReturn(true);
