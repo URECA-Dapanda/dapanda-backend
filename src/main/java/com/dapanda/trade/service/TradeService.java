@@ -353,15 +353,23 @@ public class TradeService {
 	@Transactional
 	public TradeMobileDataResponse purchaseWifi(Long buyerId, TradeWifiRequest request) {
 
-		// 1. 상품 조회
-		Product product = productRepository.findById(request.productId())
+		// 1. 구매자 조회
+		Member buyer = memberRepository.findByIdForUpdate(buyerId).orElseThrow();
+
+		// 2. 상품 조회
+		Product product = productRepository.findByIdForUpdate(request.productId())
 				.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
 
-		// 2. 와이파이 정보 조회
+		// 3. 와이파이 정보 조회
 		Wifi wifi = wifiRepository.findById(request.wifiId())
 				.orElseThrow(() -> new GlobalException(ResultCode.WIFI_NOT_FOUND));
 
-		// 3. 유효성 검사
+		// 4. 시간/금액 검사
+		int timeAmount = (int) Duration.between(request.startTime(), request.endTime())
+				.toMinutes();
+		int totalPrice = product.getPrice() * timeAmount / 10;
+
+		// 5. 유효성 검사
 		if (request.startTime().isAfter(request.endTime())) {
 			throw new GlobalException(ResultCode.INVALID_TIME);
 		}
@@ -372,21 +380,24 @@ public class TradeService {
 		if (product.getMember().getId().equals(buyerId)) {
 			throw new GlobalException(ResultCode.CANNOT_PURCHASE_OWN_PRODUCT);
 		}
-
-		// 4. 거래 생성
-		int timeAmount = (int) Duration.between(request.startTime(), request.endTime())
-				.toMinutes();
-		int totalPrice = product.getPrice() * timeAmount;
-		Member buyer = memberRepository.findByIdForUpdate(buyerId).orElseThrow();
-
+		if (buyer.getCash() < totalPrice) {
+			throw new GlobalException(ResultCode.INSUFFICIENT_CASH);
+		}
+		// 6. 거래 생성
 		Trade trade = Trade.of(timeAmount, totalPrice, TradeType.PURCHASE_SINGLE, buyer);
 		tradeRepository.save(trade);
 
-		// 5. 거래 상세 저장
+		// 7. 판매자/구매자 캐시 업데이트
+		Member seller = memberRepository.findByIdForUpdate(product.getMember().getId())
+				.orElseThrow();
+		seller.addCash(totalPrice);
+		buyer.deductCash(totalPrice);
+
+		// 8. 거래 상세 저장
 		TradeDetails tradeDetails = TradeDetails.of(product, trade);
 		tradeDetailsRepository.save(tradeDetails);
 
-		// 6. 응답 반환
+		// 9. 응답 반환
 		return TradeMobileDataResponse.of(trade.getId());
 	}
 }
