@@ -178,6 +178,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						mobileData.pricePer100MB,
 						review.rating.avg().coalesce(DEFAULT_RATING),
 						review.rating.count().intValue(),
+						mobileData.isSplitType,
 						product.updatedAt
 				))
 				.from(product)
