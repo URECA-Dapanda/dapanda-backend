@@ -1,11 +1,14 @@
 package com.dapanda.chat.service;
 
 import com.dapanda.chat.dto.request.CreateChatMessageRequest;
+import com.dapanda.chat.dto.request.ReadJoiningChatRoomRequest;
 import com.dapanda.chat.dto.response.CreateChatRoomResponse;
+import com.dapanda.chat.dto.response.ReadJoiningChatRoomResponse;
 import com.dapanda.chat.entity.*;
 import com.dapanda.chat.repository.ChatMessageRepository;
 import com.dapanda.chat.repository.ChatParticipantRepository;
 import com.dapanda.chat.repository.ChatRoomRepository;
+import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
@@ -27,6 +30,7 @@ import java.util.Optional;
 
 import static com.dapanda.TestConstants.Chat.*;
 import static com.dapanda.TestConstants.Member.*;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE;
 import static com.dapanda.TestConstants.Product.PRODUCT_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -278,5 +282,47 @@ public class ChatServiceTest {
 				verify(chatMessageRepository, never()).save(any(ChatMessage.class));
 			}
 		}
+	}
+
+	@Nested
+	@DisplayName("채팅방 조회")
+	class ReadChatRoom {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("커서 기반 페이징 응답을 반환한다")
+			public void readChatRoomTest() {
+
+				//given
+				ReadJoiningChatRoomRequest request = new ReadJoiningChatRoomRequest(
+						null,
+						null,
+						DEFAULT_SIZE,
+						ChatRoomReadOption.ALL,
+						USER_DETAILS_MEMBER_ID
+				);
+
+				List<ReadJoiningChatRoomResponse> response = ChatRoomFixture.create2ReadJoiningChatResponse();
+
+
+				given(chatRoomRepository.findJoiningChatRoom(request)).willReturn(response);
+
+				//when
+				CursorPageResponse<ReadJoiningChatRoomResponse> pageResponse = chatService.readChatRoom(request);
+
+				//then
+				assertThat(pageResponse.getData().size()).isEqualTo(DEFAULT_SIZE);
+				assertThat(pageResponse.getData().get(0)).isEqualTo(response.get(0));
+				assertThat(pageResponse.getData().get(1)).isEqualTo(response.get(1));
+
+				assertThat(pageResponse.getPageInfo().isHasNext()).isTrue();
+				assertThat(pageResponse.getPageInfo().getNextCursorId()).isEqualTo(response.get(DEFAULT_SIZE - 1).getChatRoomId());
+				assertThat(pageResponse.getPageInfo().getSize()).isEqualTo(DEFAULT_SIZE);
+			}
+		}
+
 	}
 }
