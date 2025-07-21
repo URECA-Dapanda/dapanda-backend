@@ -20,7 +20,7 @@ public final class TestConstants {
 	public static final class Pagination {
 
 		public static final Long DEFAULT_CURSOR_ID = null;
-		public static final int DEFAULT_SIZE = 2;
+		public static final int DEFAULT_SIZE_2 = 2;
 		public static final String DEFAULT_REVIEW_SORT_OPTION = ReviewSortOption.RECENT.name();
 	}
 
@@ -45,7 +45,8 @@ public final class TestConstants {
 
 	public static final class Trade {
 
-		public static final Long TRADE_ID = 1L;
+		public static final Long TRADE_ID_1 = 1L;
+		public static final Long TRADE_ID_2 = 2L;
 	}
 
 	public static final class Product {

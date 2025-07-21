@@ -11,13 +11,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -40,8 +41,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			HttpServletResponse response,
 			FilterChain filterChain) throws ServletException, IOException {
 
-		String accessToken = jwtTokenProvider.resolveTokenFromCookie(request, "accessToken");
-		String refreshToken = jwtTokenProvider.resolveTokenFromCookie(request, "refreshToken");
+		String accessToken = jwtTokenProvider.resolveTokenFromCookie(request, JwtPrinciple.ACCESS_TOKEN.getKey());
+		String refreshToken = jwtTokenProvider.resolveTokenFromCookie(request, JwtPrinciple.REFRESH_TOKEN.getKey());
 		boolean authenticated = false;
 
 		// 1. Access Token 검증
@@ -74,7 +75,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 						String newAccessToken = jwtTokenProvider.generateAccessToken(member);
 
 						// 쿠키에 새 토큰 세팅
-						setJwtCookie(response, "accessToken", newAccessToken,
+						setJwtCookie(response, JwtPrinciple.ACCESS_TOKEN.getKey(), newAccessToken,
 								jwtTokenProvider.getAccessTokenExpirationSec());
 						// (Refresh Token은 만료 전이면 그대로 둠, 만료 시 재발급 로직 추가 가능)
 
