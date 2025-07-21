@@ -9,11 +9,14 @@ import com.dapanda.plan.repository.PlanRepository;
 import com.dapanda.product.entity.MobileData;
 import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductState;
+import com.dapanda.product.entity.Wifi;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
+import com.dapanda.product.repository.WifiRepository;
 import com.dapanda.trade.dto.MobileDataScrap;
 import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
 import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
+import com.dapanda.trade.dto.request.TradeWifiRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
 import com.dapanda.trade.dto.response.TradeMobileDataResponse;
 import com.dapanda.trade.entity.Trade;
@@ -22,6 +25,7 @@ import com.dapanda.trade.entity.TradeType;
 import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
 import jakarta.transaction.Transactional;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -39,6 +43,7 @@ public class TradeService {
 	private final TradeRepository tradeRepository;
 	private final ProductRepository productRepository;
 	private final MobileDataRepository mobileDataRepository;
+	private final WifiRepository wifiRepository;
 	private final MemberRepository memberRepository;
 	private final TradeDetailsRepository tradeDetailsRepository;
 	private final PlanRepository planRepository;
@@ -339,6 +344,60 @@ public class TradeService {
 		// 6. 구매 데이터양 업데이트
 		buyer.addBuyingData(totalAmount);
 
+		return TradeMobileDataResponse.of(trade.getId());
+	}
+
+	/**
+	 * 와이파이 상품 구매
+	 */
+	@Transactional
+	public TradeMobileDataResponse purchaseWifi(Long buyerId, TradeWifiRequest request) {
+
+		// 1. 구매자 조회
+		Member buyer = memberRepository.findByIdForUpdate(buyerId).orElseThrow();
+
+		// 2. 상품 조회
+		Product product = productRepository.findByIdForUpdate(request.productId())
+				.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
+
+		// 3. 와이파이 정보 조회
+		Wifi wifi = wifiRepository.findById(request.wifiId())
+				.orElseThrow(() -> new GlobalException(ResultCode.WIFI_NOT_FOUND));
+
+		// 4. 시간/금액 검사
+		int timeAmount = (int) Duration.between(request.startTime(), request.endTime())
+				.toMinutes();
+		int totalPrice = product.getPrice() * timeAmount / 10;
+
+		// 5. 유효성 검사
+		if (request.startTime().isAfter(request.endTime())) {
+			throw new GlobalException(ResultCode.INVALID_TIME);
+		}
+		if (request.startTime().isBefore(wifi.getStartTime()) || request.endTime()
+				.isAfter(wifi.getEndTime())) {
+			throw new GlobalException(ResultCode.INVALID_WIFI_OPERATION_TIME);
+		}
+		if (product.getMember().getId().equals(buyerId)) {
+			throw new GlobalException(ResultCode.CANNOT_PURCHASE_OWN_PRODUCT);
+		}
+		if (buyer.getCash() < totalPrice) {
+			throw new GlobalException(ResultCode.INSUFFICIENT_CASH);
+		}
+		// 6. 거래 생성
+		Trade trade = Trade.of(timeAmount, totalPrice, TradeType.PURCHASE_SINGLE, buyer);
+		tradeRepository.save(trade);
+
+		// 7. 판매자/구매자 캐시 업데이트
+		Member seller = memberRepository.findByIdForUpdate(product.getMember().getId())
+				.orElseThrow();
+		seller.addCash(totalPrice);
+		buyer.deductCash(totalPrice);
+
+		// 8. 거래 상세 저장
+		TradeDetails tradeDetails = TradeDetails.of(product, trade);
+		tradeDetailsRepository.save(tradeDetails);
+
+		// 9. 응답 반환
 		return TradeMobileDataResponse.of(trade.getId());
 	}
 }
