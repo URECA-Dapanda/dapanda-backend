@@ -4,6 +4,7 @@ import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.CommonResponse;
 import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
 import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
+import com.dapanda.trade.dto.request.TradeWifiRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
 import com.dapanda.trade.dto.response.TradeMobileDataResponse;
 import com.dapanda.trade.service.TradeService;
@@ -47,5 +48,13 @@ public class TradeController {
 
 		return CommonResponse.success(
 				tradeService.scrapPurchaseMobileData(userDetails.getId(), request));
+	}
+
+	@PostMapping("/trades/wifi")
+	public CommonResponse<TradeMobileDataResponse> purchaseWifi(
+			@RequestBody @Valid TradeWifiRequest request,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		return CommonResponse.success(tradeService.purchaseWifi(userDetails.getId(), request));
 	}
 }
