@@ -12,6 +12,7 @@ import com.dapanda.review.dto.response.CreateReviewResponse;
 import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
 import com.dapanda.review.dto.response.ReadReviewResponse;
 import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
+import com.dapanda.review.dto.response.ReviewStatsResponse;
 import com.dapanda.review.dto.response.UpdateReviewResponse;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.repository.ReviewRepository;
@@ -100,11 +101,16 @@ public class ReviewService {
 
 		Member member = trade.getMember();
 
-		Object[] stats = reviewRepository.findReviewStatsByMember(member);
-		int reviewCount = ((Long) stats[0]).intValue();
-		double averageRating = (stats[1] != null) ? ((Double) stats[1]) : 0.0;
+		ReviewStatsResponse stats = findReviewStatsByMember(member);
+		int prevReviewCount = stats.reviewCount();
+		float prevAverageRating = stats.averageRating();
+		float newRating = request.rating();
 
-		member.updateReviewInfo(reviewCount, averageRating);
+		int newReviewCount = prevReviewCount + 1;
+		float newAverageRating =
+				((prevAverageRating * prevReviewCount) + newRating) / newReviewCount;
+
+		member.updateReviewInfo(newReviewCount, newAverageRating);
 		memberRepository.save(member);
 
 		Review review = Review.of(request.rating(), request.comment(), trade);
@@ -123,6 +129,21 @@ public class ReviewService {
 
 		validateReviewOwner(savedReview, memberId);
 
+		Member member = savedReview.getTrade().getMember();
+
+		List<Review> reviews = reviewRepository.findByTradeMember(member);
+
+		int reviewCount = reviews.size();
+		float averageRating = reviews.isEmpty()
+				? 0.0f
+				: (float) reviews.stream()
+						.mapToDouble(Review::getRating)
+						.average()
+						.orElse(0.0);
+
+		member.updateReviewInfo(reviewCount, averageRating);
+		memberRepository.save(member);
+
 		savedReview.updateReview(request);
 
 		return UpdateReviewResponse.from(savedReview.getId());
@@ -134,6 +155,23 @@ public class ReviewService {
 				.orElseThrow(() -> new GlobalException(ResultCode.REVIEW_NOT_FOUND));
 
 		validateReviewOwner(savedReview, memberId);
+
+		Member member = savedReview.getTrade().getMember();
+
+		int prevReviewCount = member.getReviewCount();
+		float prevAverageRating = member.getAverageRating();
+		float deletedRating = savedReview.getRating();
+
+		int newReviewCount = prevReviewCount - 1;
+		float newAverageRating = 0.0f;
+
+		if (newReviewCount > 0) {
+			newAverageRating =
+					((prevAverageRating * prevReviewCount) - deletedRating) / newReviewCount;
+		}
+
+		member.updateReviewInfo(newReviewCount, newAverageRating);
+		memberRepository.save(member);
 
 		reviewRepository.delete(savedReview);
 	}
@@ -159,4 +197,19 @@ public class ReviewService {
 			throw new GlobalException(ResultCode.OTHER_TRADE);
 		}
 	}
+
+	public ReviewStatsResponse findReviewStatsByMember(Member member) {
+		List<Review> reviews = reviewRepository.findByTradeMember(member);
+
+		int reviewCount = reviews.size();
+		float averageRating = reviews.isEmpty()
+				? 0.0f
+				: (float) reviews.stream()
+						.mapToDouble(Review::getRating)
+						.average()
+						.orElse(0.0);
+
+		return new ReviewStatsResponse(reviewCount, averageRating);
+	}
+
 }
