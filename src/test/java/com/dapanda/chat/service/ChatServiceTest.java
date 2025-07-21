@@ -1,10 +1,9 @@
 package com.dapanda.chat.service;
 
+import com.dapanda.chat.dto.request.CreateChatMessageRequest;
 import com.dapanda.chat.dto.response.CreateChatRoomResponse;
-import com.dapanda.chat.entity.ChatParticipant;
-import com.dapanda.chat.entity.ChatParticipantFixture;
-import com.dapanda.chat.entity.ChatRoom;
-import com.dapanda.chat.entity.ChatRoomFixture;
+import com.dapanda.chat.entity.*;
+import com.dapanda.chat.repository.ChatMessageRepository;
 import com.dapanda.chat.repository.ChatParticipantRepository;
 import com.dapanda.chat.repository.ChatRoomRepository;
 import com.dapanda.common.exception.GlobalException;
@@ -49,6 +48,9 @@ public class ChatServiceTest {
 
 	@Mock
 	private ChatParticipantRepository chatParticipantRepository;
+
+	@Mock
+	private ChatMessageRepository chatMessageRepository;
 
 	@Mock
 	private ChatRoomRepository chatRoomRepository;
@@ -152,6 +154,125 @@ public class ChatServiceTest {
 				assertThatThrownBy(() -> chatService.createChatRoom(PRODUCT_ID, BUYER_MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.CHAT_OWN_PRODUCT.getMessage());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("채팅 메시지 저장")
+	class CreateChatMessage {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("채팅 메시지가 저장된다")
+			public void createChatMessageTest() {
+
+				//given
+				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
+
+				Product product = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
+
+				ChatRoom chatRoom = ChatRoomFixture.createChatRoomWithId(product, CHAT_ROOM_ID);
+
+				CreateChatMessageRequest request = new CreateChatMessageRequest(buyer.getId(), CHAT_MESSAGE);
+
+				given(chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoom.getId(), buyer.getId())).willReturn(true);
+				given(chatRoomRepository.findById(chatRoom.getId())).willReturn(Optional.of(chatRoom));
+				given(memberRepository.findById(request.senderId())).willReturn(Optional.of(buyer));
+
+				//when
+				chatService.createChatMessage(chatRoom.getId(), request);
+
+				//then
+				verify(chatMessageRepository).save(any(ChatMessage.class));
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("채팅방 참가자가 아닐 경우 예외가 발생한다")
+			public void validateParticipantTest() {
+
+				//given
+				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
+
+				Product product = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
+
+				ChatRoom chatRoom = ChatRoomFixture.createChatRoomWithId(product, CHAT_ROOM_ID);
+
+				CreateChatMessageRequest request = new CreateChatMessageRequest(buyer.getId(), CHAT_MESSAGE);
+
+				given(chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoom.getId(), buyer.getId())).willReturn(false);
+
+
+				//when & then
+				assertThatThrownBy(() -> chatService.createChatMessage(chatRoom.getId(), request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.CHAT_ROOM_ACCESS_DENIED.getMessage());
+
+				//then
+				verify(chatMessageRepository, never()).save(any(ChatMessage.class));
+			}
+
+			@Test
+			@DisplayName("채팅방이 존재하지 않을 경우 예외가 발생한다")
+			public void validateChatRoomIdTest() {
+
+				//given
+				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
+
+				Product product = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
+
+				ChatRoom chatRoom = ChatRoomFixture.createChatRoomWithId(product, CHAT_ROOM_ID);
+
+				CreateChatMessageRequest request = new CreateChatMessageRequest(buyer.getId(), CHAT_MESSAGE);
+
+				given(chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoom.getId(), buyer.getId())).willReturn(true);
+				given(chatRoomRepository.findById(chatRoom.getId())).willReturn(Optional.empty());
+
+				//when & then
+				assertThatThrownBy(() -> chatService.createChatMessage(chatRoom.getId(), request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.CHAT_ROOM_NOT_FOUND.getMessage());
+
+				//then
+				verify(chatMessageRepository, never()).save(any(ChatMessage.class));
+			}
+
+			@Test
+			@DisplayName("회원이 존재하지 않을 경우 예외가 발생한다")
+			public void validateMemberIdTest() {
+
+				//given
+				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
+
+				Product product = ProductFixture.createProduct1WithId(seller, PRODUCT_ID);
+
+				ChatRoom chatRoom = ChatRoomFixture.createChatRoomWithId(product, CHAT_ROOM_ID);
+
+				CreateChatMessageRequest request = new CreateChatMessageRequest(buyer.getId(), CHAT_MESSAGE);
+
+				given(chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoom.getId(), buyer.getId())).willReturn(true);
+				given(chatRoomRepository.findById(chatRoom.getId())).willReturn(Optional.of(chatRoom));
+				given(memberRepository.findById(request.senderId())).willReturn(Optional.empty());
+
+				//when & then
+				assertThatThrownBy(() -> chatService.createChatMessage(chatRoom.getId(), request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.MEMBER_NOT_FOUND.getMessage());
+
+				//then
+				verify(chatMessageRepository, never()).save(any(ChatMessage.class));
 			}
 		}
 	}
