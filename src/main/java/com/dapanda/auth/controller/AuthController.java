@@ -8,6 +8,7 @@ import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.common.exception.CommonResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.jwt.JwtPrinciple;
 import com.dapanda.jwt.JwtTokenProvider;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.service.MemberService;
@@ -56,7 +57,7 @@ public class AuthController {
 	public CommonResponse<Void> logout(HttpServletRequest request,
 			HttpServletResponse response) {
 
-		String token = jwtTokenProvider.resolveToken(request);
+		String token = jwtTokenProvider.resolveTokenFromCookie(request, "accessToken");
 
 		if (token == null) {
 			throw new GlobalException(ResultCode.NOT_LOGGED_IN);
@@ -71,12 +72,19 @@ public class AuthController {
 
 		refreshTokenService.invalidateRefreshToken(member);
 
-		Cookie cookie = new Cookie("accessToken", null);
-		cookie.setHttpOnly(true);
-		cookie.setSecure(true);
-		cookie.setPath("/");
-		cookie.setMaxAge(0);
-		response.addCookie(cookie);
+		Cookie accessCookie = new Cookie(JwtPrinciple.ACCESS_TOKEN.getKey(), null);
+		accessCookie.setHttpOnly(true);
+		accessCookie.setSecure(true);
+		accessCookie.setPath("/");
+		accessCookie.setMaxAge(0);
+		response.addCookie(accessCookie);
+
+		Cookie refreshCookie = new Cookie(JwtPrinciple.REFRESH_TOKEN.getKey(), null);
+		refreshCookie.setHttpOnly(true);
+		refreshCookie.setSecure(true);
+		refreshCookie.setPath("/");
+		refreshCookie.setMaxAge(0);
+		response.addCookie(refreshCookie);
 
 		request.getSession().invalidate();
 
