@@ -27,6 +27,9 @@ public interface ProductCustomRepository {
 
 	public List<String> findWifiImages(Long wifiId);
 
+	public Float sumSoldMobileDataAmountByMemberId(Long memberId);
+
+
 	List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request);
 
 	List<MobileDataScrap> findMobileDataScrap(float dataAmount);

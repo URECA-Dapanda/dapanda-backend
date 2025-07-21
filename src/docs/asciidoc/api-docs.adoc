@@ -492,50 +492,6 @@ include::{snippets}/auth-login-invalid-password/http-request.adoc[]
 
 include::{snippets}/auth-login-invalid-password/http-response.adoc[]
 
-[[resources-auth-reissue]]
-==== 액세스 토큰 재발급
-
-`POST /api/auth/reissue`
-Refresh Token을 이용해 새로운 Access Token을 발급받습니다.
-
-===== 요청
-
-include::{snippets}/auth-reissue-success/http-request.adoc[]
-
-===== 응답
-
-include::{snippets}/auth-reissue-success/http-response.adoc[]
-
-===== 응답 필드
-
-include::{snippets}/auth-reissue-success/response-fields.adoc[]
-
-===== 실패 요청
-
-====== Refresh Token 헤더 없음
-
-include::{snippets}/auth-reissue-no-header/http-request.adoc[]
-
-include::{snippets}/auth-reissue-no-header/http-response.adoc[]
-
-====== Refresh Token 유효하지 않음
-
-include::{snippets}/auth-reissue-invalid-token/http-request.adoc[]
-
-include::{snippets}/auth-reissue-invalid-token/http-response.adoc[]
-
-====== 저장된 Refresh Token과 입력값 다름
-
-include::{snippets}/auth-reissue-token-mismatch/http-request.adoc[]
-
-include::{snippets}/auth-reissue-token-mismatch/http-response.adoc[]
-
-====== Refresh Token 상태가 INVALID 등일 때
-
-include::{snippets}/auth-reissue-invalid-state/http-request.adoc[]
-
-include::{snippets}/auth-reissue-invalid-state/http-response.adoc[]
-
 [[resources-auth-logout]]
 ==== 로그아웃
 
@@ -568,6 +524,79 @@ include::{snippets}/auth-logout-invalid-token/http-response.adoc[]
 
 [[resources-product]]
 === 상품
+
+==== 모바일 데이터 상품 등록
+
+`POST /api/products/mobile-data`
+
+모바일 데이터 상품을 등록합니다.
+
+===== 요청
+
+include::{snippets}/product/post-mobile-data-success/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/product/post-mobile-data-success/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/product/post-mobile-data-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/product/post-mobile-data-success/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 회원 인증 실패
+
+include::{snippets}/product/post-mobile-data-no-member-error/http-request.adoc[]
+include::{snippets}/product/post-mobile-data-no-member-error/http-response.adoc[]
+
+====== 데이터 전송량 초과
+
+include::{snippets}/product/post-mobile-data-over-limit-error/http-request.adoc[]
+include::{snippets}/product/post-mobile-data-over-limit-error/http-response.adoc[]
+
+====== 필수 입력값 누락
+
+include::{snippets}/product/post-mobile-data-missing-field-error/http-request.adoc[]
+include::{snippets}/product/post-mobile-data-missing-field-error/http-response.adoc[]
+
+==== 와이파이 상품 등록
+
+`POST /api/products/wifi`
+
+와이파이 상품을 등록합니다.
+
+===== 요청
+
+include::{snippets}/product/post-wifi-success/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/product/post-wifi-success/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/product/post-wifi-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/product/post-wifi-success/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 회원 인증 실패
+
+include::{snippets}/product/post-wifi-no-member-error/http-request.adoc[]
+include::{snippets}/product/post-wifi-no-member-error/http-response.adoc[]
+
+====== 필수 입력값 누락
+
+include::{snippets}/product/post-wifi-missing-field-error/http-request.adoc[]
+include::{snippets}/product/post-wifi-missing-field-error/http-response.adoc[]
 
 ==== 회원의 판매 상태에 따른 상품 목록 조회
 
@@ -984,3 +1013,42 @@ include::{snippets}/trade/post-mobile-data-scrap-insufficient-cash-error/http-re
 include::{snippets}/trade/post-mobile-data-scrap-insufficient-remain-amount-error/http-request.adoc[]
 
 include::{snippets}/trade/post-mobile-data-scrap-insufficient-remain-amount-error/http-response.adoc[]
+
+==== 와이파이 상품 구매
+
+`POST /api/trades/wifi`
+
+와이파이 상품 구매를 합니다.
+
+===== 요청
+
+include::{snippets}/trade/post-wifi/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/trade/post-wifi/request-fields.adoc[]
+
+====== 응답
+
+include::{snippets}/trade/post-wifi/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/trade/post-wifi/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 영업 시간 초과
+
+include::{snippets}/trade/post-wifi-invalid-operation-time-error/http-request.adoc[]
+
+include::{snippets}/trade/post-wifi-invalid-operation-time-error/http-response.adoc[]
+
+====== 존재하지 않는 와이파이 상품
+
+include::{snippets}/trade/post-wifi-not-found-error/http-request.adoc[]
+
+include::{snippets}/trade/post-wifi-not-found-error/http-response.adoc[]
+
+그 외의 에러는 데이터 상품과 동일합니다.
+(보유 캐시 부족, 자신이 등록한 상품)

@@ -179,6 +179,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						mobileData.pricePer100MB,
 						review.rating.avg().coalesce(DEFAULT_RATING),
 						review.rating.count().intValue(),
+						mobileData.isSplitType,
 						product.updatedAt
 				))
 				.from(product)
@@ -342,6 +343,23 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.limit(200) // 필요에 따라 조절
 				.fetch();
 	}
+
+	@Override
+	public Float sumSoldMobileDataAmountByMemberId(Long memberId) {
+
+		Float sum = queryFactory
+				.select(mobileData.dataAmount.sum())
+				.from(product)
+				.join(mobileData).on(product.itemId.eq(mobileData.id))
+				.where(
+						product.member.id.eq(memberId),
+						product.state.eq(ProductState.ACTIVE)
+				)
+				.fetchOne();
+
+		return sum != null ? sum : 0f;
+	}
+
 
 	private BooleanExpression isActiveProduct() {
 
