@@ -304,8 +304,8 @@ public class TradeService {
 		}
 
 		// 3. 거래 생성
-		Trade buyerTrade = Trade.of(totalAmount, null, totalPrice,
-				TradeType.MOBILE_PURCHASE_COMPOSITE, buyer);
+		Trade buyerTrade = Trade.of(totalAmount, totalPrice, TradeType.MOBILE_PURCHASE_COMPOSITE,
+				buyer);
 		tradeRepository.save(buyerTrade);
 
 		// 4. 각 상품 조합 순회
