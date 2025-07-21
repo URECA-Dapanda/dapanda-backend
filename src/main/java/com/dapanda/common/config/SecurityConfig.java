@@ -35,7 +35,6 @@ public class SecurityConfig {
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
 	private final OAuth2FailureHandler oAuth2FailureHandler;
-	private final CustomUserDetailsService userDetailsService;
 
 	@Bean
 	public JwtAuthenticationFilter jwtAuthenticationFilter(
@@ -94,16 +93,6 @@ public class SecurityConfig {
 			throws Exception {
 
 		return configuration.getAuthenticationManager();
-	}
-
-	@Bean
-	public AuthenticationProvider authenticationProvider() {
-
-		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-		provider.setUserDetailsService(userDetailsService);
-		provider.setPasswordEncoder(passwordEncoder());
-
-		return provider;
 	}
 
 	@Bean
