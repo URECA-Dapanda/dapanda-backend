@@ -2,8 +2,9 @@ package com.dapanda.trade.entity;
 
 public enum TradeType {
 
-	PURCHASE_SINGLE,
-	PURCHASE_COMPOSITE,
+	MOBILE_PURCHASE_SINGLE,
+	MOBILE_PURCHASE_COMPOSITE,
+	WIFI,
 	SALE,
 	CHARGE,
 	REFUND,
