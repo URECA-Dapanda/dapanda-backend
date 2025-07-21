@@ -1041,22 +1041,44 @@ include::{snippets}/trade/post-wifi-not-found-error/http-response.adoc[]
 
 ==== 상품 거래 내역 조회
 
-`GET /api/trades`
+`GET /api/trades/purchase-history`
 
 상품 거래 내역을 조회합니다.
 
 ===== 요청
 
-include::{snippets}/trade/get-trade-history/http-request.adoc[]
+include::{snippets}/trade/get-trade-purchase-history/http-request.adoc[]
 
 ===== 요청 파라미터
 
-include::{snippets}/trade/get-trade-history/query-parameters.adoc[]
+include::{snippets}/trade/get-trade-purchase-history/query-parameters.adoc[]
 
 ====== 응답
 
-include::{snippets}/trade/get-trade-history/http-response.adoc[]
+include::{snippets}/trade/get-trade-purchase-history/http-response.adoc[]
 
 ===== 응답 필드
 
-include::{snippets}/trade/get-trade-history/response-fields.adoc[]
+include::{snippets}/trade/get-trade-purchase-history/response-fields.adoc[]
+
+==== 캐시 내역 조회
+
+`GET /api/trades/cash-history`
+
+캐시 내역을 조회합니다.
+
+===== 요청
+
+include::{snippets}/trade/get-cash-history/http-request.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/trade/get-cash-history/query-parameters.adoc[]
+
+====== 응답
+
+include::{snippets}/trade/get-cash-history/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/trade/get-cash-history/response-fields.adoc[]
