@@ -2,7 +2,6 @@ package com.dapanda;
 
 import com.dapanda.report.entity.ReportTargetCategory;
 import com.dapanda.review.entity.ReviewSortOption;
-
 import java.time.LocalDateTime;
 
 public final class TestConstants {
@@ -53,6 +52,7 @@ public final class TestConstants {
 
 		public static final Long PRODUCT_ID = 1L;
 		public static final int NEW_PRICE_9000 = 9000;
+		public static final int PRICE_500 = 500;
 		public static final int PRICE_1500 = 1500;
 		public static final int PRICE_3000 = 3000;
 		public static final Long INVALID_PRODUCT_ID = 100L;
@@ -78,6 +78,7 @@ public final class TestConstants {
 
 	public static final class Wifi {
 
+		public static final Long WIFI_ID = 1L;
 		public static final String TITLE = "와이파이 팔아요";
 		public static final String CHANGED_TITLE = "와이파이 팝니당";
 		public static final String CONTENT = "서울시 강남구 할리스입니다";
