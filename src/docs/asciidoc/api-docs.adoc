@@ -83,11 +83,11 @@ DaPanda 서비스의 REST API 문서입니다.
 
 ==== WebSocket 프로토콜
 
-`/connect` : 연결
+`/conn` : 연결
 
-`/publish/{chatRoomId}` : chatRoomId 로 채팅 메시지 발행(pub)
+`/pub/{chatRoomId}` : chatRoomId 로 채팅 메시지 발행(pub)
 
-`/topic/{chatRoomId}` : chatRoomId 로 채팅 메시지 구독(sub)
+`/sub/{chatRoomId}` : chatRoomId 로 채팅 메시지 구독(sub)
 
 ==== 채팅방 생성
 
