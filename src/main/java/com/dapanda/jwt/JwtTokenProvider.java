@@ -1,5 +1,6 @@
 package com.dapanda.jwt;
 
+import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.auth.service.CustomUserDetailsService;
 import com.dapanda.member.entity.Member;
@@ -19,9 +20,6 @@ import java.security.Key;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -98,23 +96,9 @@ public class JwtTokenProvider {
 				.getBody();
 	}
 
-	public String resolveToken(HttpServletRequest request) {
+	public CustomUserDetails getAuthentication(String email, OAuthProvider provider) {
 
-		String bearer = request.getHeader("Authorization");
-		if (bearer != null && bearer.startsWith("Bearer ")) {
-
-			return bearer.substring(7);
-		}
-
-		return null;
-	}
-
-	public Authentication getAuthentication(String email, OAuthProvider provider) {
-
-		UserDetails userDetails = userDetailsService.loadUserByEmailAndProvider(email, provider);
-
-		return new UsernamePasswordAuthenticationToken(userDetails, "",
-				userDetails.getAuthorities());
+		return userDetailsService.loadUserByEmailAndProvider(email, provider);
 	}
 
 	public String getUserEmailFromToken(String token) {
