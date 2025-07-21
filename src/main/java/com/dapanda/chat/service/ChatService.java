@@ -108,6 +108,7 @@ public class ChatService {
 		}
 	}
 
+	@Transactional
 	public void createChatMessage(Long chatRoomId, CreateChatMessageRequest request) {
 
 		validateParticipant(chatRoomId, request.senderId());
@@ -120,7 +121,9 @@ public class ChatService {
 
 		ChatMessage chatMessage = ChatMessage.of(request.message(), chatRoom, sender);
 
-		chatMessageRepository.save(chatMessage);
+		ChatMessage savedChatMessage = chatMessageRepository.save(chatMessage);
+
+		chatRoom.updateLastMessage(savedChatMessage);
 	}
 
 	private void validateParticipant(Long chatRoomId, Long memberId){
