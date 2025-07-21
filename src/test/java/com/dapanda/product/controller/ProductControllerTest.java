@@ -154,13 +154,12 @@ class ProductControllerTest {
 	@DisplayName("상품 등록 API")
 	class CreateProduct {
 
-		private Member member;
 		private CustomUserDetails userDetails;
 
 		@BeforeEach
 		void setUp() {
-			// 모든 테스트에서 공통적으로 사용할 member, userDetails 준비
-			member = memberRepository.save(MemberFixture.createMember1());
+
+			Member member = memberRepository.save(MemberFixture.createMember1());
 			userDetails = CustomUserDetails.from(member);
 		}
 
@@ -171,6 +170,7 @@ class ProductControllerTest {
 			@Test
 			@DisplayName("정상적으로 모바일 데이터 상품을 등록한다")
 			void createMobileData_success() throws Exception {
+
 				CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2.0F, false);
 
 				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/mobile-data")
@@ -198,6 +198,7 @@ class ProductControllerTest {
 			@Test
 			@DisplayName("정상적으로 와이파이 상품을 등록한다")
 			void createWifi_success() throws Exception {
+
 				CreateWifiRequest request = new CreateWifiRequest(15000, "Test Wifi", "설명", 37.5,
 						127.0, LocalDateTime.now(), LocalDateTime.now().plusHours(2));
 
@@ -234,6 +235,7 @@ class ProductControllerTest {
 			@Test
 			@DisplayName("존재하지 않는 회원이면 예외를 반환한다 - 모바일 데이터")
 			void createMobileData_fail_noMember() throws Exception {
+
 				Member member = memberRepository.save(MemberFixture.createMember2());
 				Long memberId = member.getId(); // 실제 DB에서 발급된 id
 				CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2.0F, false);
@@ -260,6 +262,7 @@ class ProductControllerTest {
 			@Test
 			@DisplayName("데이터 총합이 2GB 초과시 예외를 반환한다 - 모바일 데이터")
 			void createMobileData_fail_overLimit() throws Exception {
+
 				// 이미 sellingData가 꽉 찬 상태로 설정
 				Member member = memberRepository.save(MemberFixture.createMember2());
 				// sellingData 필드를 강제로 세팅하려면 set 메소드 또는 ReflectionTestUtils 사용
@@ -300,7 +303,17 @@ class ProductControllerTest {
 			@Test
 			@DisplayName("필수 입력값이 누락되면 예외를 반환한다 - 모바일 데이터")
 			void createMobileData_fail_missingField() throws Exception {
-				String invalidJson = "{\"dataAmount\":2.0,\"isSplitType\":false}"; // price 누락
+
+				CreateMobileDataRequest incompleteRequest = new CreateMobileDataRequest(
+						null,     // price 누락
+						2.0F,
+						false
+				);
+
+				java.util.Map<String, Object> map = objectMapper.convertValue(incompleteRequest,
+						java.util.Map.class);
+
+				String invalidJson = objectMapper.writeValueAsString(map);
 
 				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/mobile-data")
 								.with(authentication(new UsernamePasswordAuthenticationToken(
@@ -324,6 +337,7 @@ class ProductControllerTest {
 			@Test
 			@DisplayName("존재하지 않는 회원이면 예외를 반환한다 - 와이파이")
 			void createWifi_fail_noMember() throws Exception {
+
 				CreateWifiRequest request = new CreateWifiRequest(15000, "Test Wifi", "설명", 37.5,
 						127.0, LocalDateTime.now(), LocalDateTime.now().plusHours(2));
 
@@ -351,7 +365,26 @@ class ProductControllerTest {
 			@Test
 			@DisplayName("필수 입력값이 누락되면 예외를 반환한다 - 와이파이")
 			void createWifi_fail_missingField() throws Exception {
-				String invalidJson = "{\"latitude\":37.5,\"longitude\":127.0,\"startTime\":\"2025-07-18T10:00:00\",\"endTime\":\"2025-07-18T20:00:00\"}";
+
+				CreateWifiRequest incompleteRequest = new CreateWifiRequest(
+						null,
+						null,
+						null,
+						37.5,
+						127.0,
+						LocalDateTime.parse("2025-07-18T10:00:00"),
+						LocalDateTime.parse("2025-07-18T20:00:00")
+				);
+
+				ObjectMapper mapper = objectMapper;
+				java.util.Map<String, Object> map = mapper.convertValue(incompleteRequest,
+						java.util.Map.class);
+
+				map.remove("title");
+				map.remove("content");
+				map.remove("price");
+
+				String invalidJson = mapper.writeValueAsString(map);
 
 				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/wifi")
 								.with(authentication(new UsernamePasswordAuthenticationToken(
