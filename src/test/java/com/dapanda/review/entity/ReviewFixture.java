@@ -5,10 +5,9 @@ import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
 import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
 import com.dapanda.trade.entity.Trade;
-import org.springframework.test.util.ReflectionTestUtils;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class ReviewFixture {
 
@@ -26,9 +25,25 @@ public class ReviewFixture {
 		return review;
 	}
 
-	public static ReadReviewRequest createReviewRequest(Long cursorId, int size, String reviewSortOption, Long memberId) {
+	public static Review createReview1WithIdAndRating(Trade trade, Long reviewId, Float rating) {
+
+		Review review = createReview1(trade);
+
+		ReflectionTestUtils.setField(review, "id", reviewId);
+
+		return review;
+	}
+
+	public static ReadReviewRequest createReviewRequest(Long cursorId, int size,
+			String reviewSortOption, Long memberId) {
 
 		return new ReadReviewRequest(cursorId, size, reviewSortOption, memberId);
+	}
+
+	public static Review createReviewWithRating(Trade trade, Long reviewId, float rating) {
+		Review review = Review.of(rating, "좋아요!", trade);
+		org.springframework.test.util.ReflectionTestUtils.setField(review, "id", reviewId);
+		return review;
 	}
 
 	public static List<ReadWrittenReviewResponse> create3WrittenReviewResponses() {
