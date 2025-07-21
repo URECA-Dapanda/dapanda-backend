@@ -1024,7 +1024,7 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data.tradeId").exists())
-						.andDo(document("trade/post-wifi",
+						.andDo(document("trade/post-wifi-",
 								requestFields(
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("wifiId").description("와이파이 아이디 (필수)"),
@@ -1091,7 +1091,7 @@ class TradeControllerTest {
 						.andExpect(
 								jsonPath("$.message").value(
 										ResultCode.INVALID_WIFI_OPERATION_TIME.getMessage()))
-						.andDo(document("trade/post-wifi",
+						.andDo(document("trade/post-wifi-invalid-operation-time-error",
 								requestFields(
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("wifiId").description("와이파이 아이디 (필수)"),
@@ -1143,7 +1143,7 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.WIFI_NOT_FOUND.getCode()))
 						.andExpect(
 								jsonPath("$.message").value(ResultCode.WIFI_NOT_FOUND.getMessage()))
-						.andDo(document("trade/post-wifi",
+						.andDo(document("trade/post-wifi-not-found-error",
 								requestFields(
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("wifiId").description("와이파이 아이디 (필수)"),
