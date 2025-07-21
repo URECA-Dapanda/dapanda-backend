@@ -1,6 +1,8 @@
 package com.dapanda.chat.service;
 
+import com.dapanda.chat.dto.request.CreateChatMessageRequest;
 import com.dapanda.chat.dto.response.CreateChatRoomResponse;
+import com.dapanda.chat.entity.ChatMessage;
 import com.dapanda.chat.entity.ChatParticipant;
 import com.dapanda.chat.entity.ChatRoom;
 import com.dapanda.chat.repository.ChatMessageRepository;
@@ -77,6 +79,29 @@ public class ChatService {
 		if (productRepository.existsByIdAndMember_Id(productId, memberId)) {
 
 			throw new GlobalException(ResultCode.CHAT_OWN_PRODUCT);
+		}
+	}
+
+	public void createChatMessage(Long chatRoomId, CreateChatMessageRequest request) {
+
+		validateParticipant(chatRoomId, request.senderId());
+
+		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+				.orElseThrow(() -> new GlobalException(ResultCode.CHAT_ROOM_NOT_FOUND));
+
+		Member sender = memberRepository.findById(request.senderId())
+				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+
+		ChatMessage chatMessage = ChatMessage.of(request.message(), chatRoom, sender);
+
+		chatMessageRepository.save(chatMessage);
+	}
+
+	private void validateParticipant(Long chatRoomId, Long memberId){
+
+		if (!chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoomId, memberId)){
+
+			throw new GlobalException(ResultCode.CHAT_ROOM_ACCESS_DENIED);
 		}
 	}
 }
