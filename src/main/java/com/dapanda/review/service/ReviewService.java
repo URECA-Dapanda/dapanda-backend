@@ -3,20 +3,26 @@ package com.dapanda.review.service;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
-import com.dapanda.review.dto.request.ReadReviewRequest;
+import com.dapanda.member.entity.Member;
+import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.review.dto.request.CreateReviewRequest;
+import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.dto.response.*;
+import com.dapanda.review.dto.response.CreateReviewResponse;
+import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
+import com.dapanda.review.dto.response.ReadReviewResponse;
+import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
+import com.dapanda.review.dto.response.ReviewStatsResponse;
+import com.dapanda.review.dto.response.UpdateReviewResponse;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.repository.ReviewRepository;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.repository.TradeRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Slf4j
 @Service
@@ -25,6 +31,7 @@ public class ReviewService {
 
 	private final ReviewRepository reviewRepository;
 	private final TradeRepository tradeRepository;
+	private final MemberRepository memberRepository;
 
 	public ReadReviewResponse readReview(Long reviewId, Long memberId) {
 
@@ -36,7 +43,8 @@ public class ReviewService {
 		return ReadReviewResponse.of(review.getId(), review.getRating(), review.getComment());
 	}
 
-	public CursorPageResponse<ReadWrittenReviewResponse> readWrittenReview(ReadReviewRequest request) {
+	public CursorPageResponse<ReadWrittenReviewResponse> readWrittenReview(
+			ReadReviewRequest request) {
 
 		List<ReadWrittenReviewResponse> reviews = reviewRepository.findWrittenReviews(request);
 
@@ -59,7 +67,8 @@ public class ReviewService {
 		return CursorPageResponse.of(reviews, pageInfo);
 	}
 
-	public CursorPageResponse<ReadReceivedReviewResponse> readReceivedReview(ReadReviewRequest request) {
+	public CursorPageResponse<ReadReceivedReviewResponse> readReceivedReview(
+			ReadReviewRequest request) {
 
 		List<ReadReceivedReviewResponse> reviews = reviewRepository.findReceivedReviews(request);
 
@@ -82,12 +91,27 @@ public class ReviewService {
 		return CursorPageResponse.of(reviews, pageInfo);
 	}
 
-	public CreateReviewResponse createReview(Long tradeId, CreateReviewRequest request, Long memberId) {
+	public CreateReviewResponse createReview(Long tradeId, CreateReviewRequest request,
+			Long memberId) {
 
 		Trade trade = tradeRepository.findById(tradeId)
 				.orElseThrow(() -> new GlobalException(ResultCode.TRADE_NOT_FOUND));
 
 		validateTradeOwner(trade, memberId);
+
+		Member member = trade.getMember();
+
+		ReviewStatsResponse stats = findReviewStatsByMember(member);
+		int prevReviewCount = stats.reviewCount();
+		float prevAverageRating = stats.averageRating();
+		float newRating = request.rating();
+
+		int newReviewCount = prevReviewCount + 1;
+		float newAverageRating =
+				((prevAverageRating * prevReviewCount) + newRating) / newReviewCount;
+
+		member.updateReviewInfo(newReviewCount, newAverageRating);
+		memberRepository.save(member);
 
 		Review review = Review.of(request.rating(), request.comment(), trade);
 
@@ -97,12 +121,28 @@ public class ReviewService {
 	}
 
 	@Transactional
-	public UpdateReviewResponse updateReview(Long reviewId, UpdateReviewRequest request, Long memberId){
+	public UpdateReviewResponse updateReview(Long reviewId, UpdateReviewRequest request,
+			Long memberId) {
 
 		Review savedReview = reviewRepository.findById(reviewId)
 				.orElseThrow(() -> new GlobalException(ResultCode.REVIEW_NOT_FOUND));
 
 		validateReviewOwner(savedReview, memberId);
+
+		Member member = savedReview.getTrade().getMember();
+
+		List<Review> reviews = reviewRepository.findByTradeMember(member);
+
+		int reviewCount = reviews.size();
+		float averageRating = reviews.isEmpty()
+				? 0.0f
+				: (float) reviews.stream()
+						.mapToDouble(Review::getRating)
+						.average()
+						.orElse(0.0);
+
+		member.updateReviewInfo(reviewCount, averageRating);
+		memberRepository.save(member);
 
 		savedReview.updateReview(request);
 
@@ -116,11 +156,28 @@ public class ReviewService {
 
 		validateReviewOwner(savedReview, memberId);
 
+		Member member = savedReview.getTrade().getMember();
+
+		int prevReviewCount = member.getReviewCount();
+		float prevAverageRating = member.getAverageRating();
+		float deletedRating = savedReview.getRating();
+
+		int newReviewCount = prevReviewCount - 1;
+		float newAverageRating = 0.0f;
+
+		if (newReviewCount > 0) {
+			newAverageRating =
+					((prevAverageRating * prevReviewCount) - deletedRating) / newReviewCount;
+		}
+
+		member.updateReviewInfo(newReviewCount, newAverageRating);
+		memberRepository.save(member);
+
 		reviewRepository.delete(savedReview);
 	}
 
 	/**
-	 *	리뷰 오너 검증
+	 * 리뷰 오너 검증
 	 */
 	private void validateReviewOwner(Review savedReview, Long memberId) {
 
@@ -140,4 +197,19 @@ public class ReviewService {
 			throw new GlobalException(ResultCode.OTHER_TRADE);
 		}
 	}
+
+	public ReviewStatsResponse findReviewStatsByMember(Member member) {
+		List<Review> reviews = reviewRepository.findByTradeMember(member);
+
+		int reviewCount = reviews.size();
+		float averageRating = reviews.isEmpty()
+				? 0.0f
+				: (float) reviews.stream()
+						.mapToDouble(Review::getRating)
+						.average()
+						.orElse(0.0);
+
+		return new ReviewStatsResponse(reviewCount, averageRating);
+	}
+
 }

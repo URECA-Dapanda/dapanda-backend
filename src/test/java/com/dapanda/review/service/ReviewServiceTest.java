@@ -10,8 +10,10 @@ import static com.dapanda.TestConstants.Review.COMMENT;
 import static com.dapanda.TestConstants.Review.RATING;
 import static com.dapanda.TestConstants.Review.REVIEW_ID;
 import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
+import static com.dapanda.TestConstants.Trade.TRADE_ID_2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
@@ -22,6 +24,7 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
+import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.review.dto.request.CreateReviewRequest;
 import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
@@ -56,6 +59,9 @@ class ReviewServiceTest {
 
 	@Mock
 	TradeRepository tradeRepository;
+
+	@Mock
+	MemberRepository memberRepository;
 
 	@InjectMocks
 	ReviewService reviewService;
@@ -94,6 +100,39 @@ class ReviewServiceTest {
 
 				verify(reviewRepository).save(any(Review.class));
 			}
+
+			@Test
+			@DisplayName("리뷰 등록시 평균 평점과 리뷰 개수가 올바르게 반영된다")
+			void updateMemberRatingOnCreateReview() {
+
+				//given
+				float prevAverage = 4.0f;
+				int prevCount = 2;
+				float newRating = 5.0f;
+
+				Member member = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				member.updateReviewInfo(prevCount, prevAverage);
+
+				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID_1);
+
+				CreateReviewRequest request = new CreateReviewRequest(newRating, COMMENT);
+				Review savedReview = ReviewFixture.createReview1WithId(trade, REVIEW_ID);
+
+				given(tradeRepository.findById(trade.getId())).willReturn(Optional.of(trade));
+				given(reviewRepository.save(any(Review.class))).willReturn(savedReview);
+				given(reviewRepository.findByTradeMember(member)).willReturn(List.of(
+						ReviewFixture.createReviewWithRating(trade, 1L, 4.0f),
+						ReviewFixture.createReviewWithRating(trade, 2L, 4.0f)
+				));
+
+				//when
+				reviewService.createReview(trade.getId(), request, BUYER_MEMBER_ID);
+
+				//then
+				// (4.0*2 + 5.0) / 3 = 4.33...
+				assertThat(member.getReviewCount()).isEqualTo(3);
+				assertThat(member.getAverageRating()).isCloseTo(4.33f, within(0.01f));
+			}
 		}
 
 		@DisplayName("실패 케이스")
@@ -107,11 +146,11 @@ class ReviewServiceTest {
 				//given
 				CreateReviewRequest request = new CreateReviewRequest(RATING, COMMENT);
 
-				given(tradeRepository.findById(TRADE_ID_1)).willReturn(Optional.empty());
+				given(tradeRepository.findById(TRADE_ID_2)).willReturn(Optional.empty());
 
 				//when & then
 				assertThatThrownBy(
-						() -> reviewService.createReview(TRADE_ID_1, request,
+						() -> reviewService.createReview(TRADE_ID_2, request,
 								USER_DETAILS_MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.TRADE_NOT_FOUND.getMessage());
@@ -168,6 +207,61 @@ class ReviewServiceTest {
 				//then
 				verify(reviewRepository).delete(review);
 			}
+
+			@Test
+			@DisplayName("리뷰 삭제시 평균 평점과 리뷰 개수가 올바르게 반영된다")
+			void updateMemberRatingOnDeleteReview() {
+
+				//given
+				float prevAverage = 4.5f;
+				int prevCount = 2;
+				float deletedRating = 5.0f;
+
+				Member member = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				member.updateReviewInfo(prevCount, prevAverage);
+
+				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID_1);
+				Review review = ReviewFixture.createReview1WithIdAndRating(trade, REVIEW_ID,
+						deletedRating);
+
+				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
+
+				//when
+				reviewService.deleteReview(REVIEW_ID, member.getId());
+
+				//then
+				// (4.5*2 - 5.0) / 1 = 4.0
+				assertThat(member.getReviewCount()).isEqualTo(1);
+				assertThat(member.getAverageRating()).isCloseTo(4.0f, within(0.01f));
+			}
+
+			@Test
+			@DisplayName("리뷰가 1개 남은 상태에서 삭제하면 리뷰 개수와 평균이 0이 된다")
+			void memberReviewBecomesZeroOnSingleDelete() {
+
+				//given
+				float prevAverage = 5.0f;
+				int prevCount = 1;
+				float deletedRating = 5.0f;
+
+				Member member = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				member.updateReviewInfo(prevCount, prevAverage);
+
+				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID_2);
+				Review review = ReviewFixture.createReview1WithIdAndRating(trade, REVIEW_ID,
+						deletedRating);
+
+				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
+
+				//when
+				reviewService.deleteReview(REVIEW_ID, member.getId());
+
+				//then
+				assertThat(member.getReviewCount()).isEqualTo(0);
+				assertThat(member.getAverageRating()).isEqualTo(0.0f);
+			}
+
+
 		}
 
 		@DisplayName("실패 케이스")
@@ -236,6 +330,41 @@ class ReviewServiceTest {
 				//then
 				assertThat(response.getReviewId()).isEqualTo(originalReview.getId());
 			}
+
+			@Test
+			@DisplayName("리뷰 수정시 평균 평점이 올바르게 반영된다")
+			void updateMemberRatingOnUpdateReview() {
+
+				//given
+				float prevAverage = 4.0f;
+				int reviewCount = 2;
+				float oldRating = 3.0f;
+				float newRating = 5.0f;
+
+				Member member = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				member.updateReviewInfo(reviewCount, prevAverage);
+
+				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID_2);
+				Review review = ReviewFixture.createReview1WithIdAndRating(trade, REVIEW_ID,
+						oldRating);
+				System.out.println(member == review.getTrade().getMember());
+				UpdateReviewRequest request = new UpdateReviewRequest(newRating, COMMENT);
+
+				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
+				given(reviewRepository.findByTradeMember(member)).willReturn(List.of(
+						ReviewFixture.createReviewWithRating(trade, 1L, newRating),
+						ReviewFixture.createReviewWithRating(trade, 2L, 5.0f)
+				));
+
+				//when
+				reviewService.updateReview(REVIEW_ID, request, member.getId());
+
+				//then
+				// ((4.0*2) - 3.0 + 5.0) / 2 = 5.0
+				assertThat(member.getReviewCount()).isEqualTo(2);
+				assertThat(member.getAverageRating()).isCloseTo(5.0f, within(0.01f));
+			}
+
 		}
 
 		@Nested
