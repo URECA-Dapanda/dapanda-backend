@@ -56,9 +56,9 @@ import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
 import com.dapanda.trade.dto.MobileDataScrap;
-import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
-import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
-import com.dapanda.trade.dto.request.TradeWifiRequest;
+import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
+import com.dapanda.trade.dto.request.PurchaseWifiRequest;
+import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeDetails;
@@ -180,7 +180,7 @@ class TradeControllerTest {
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								seller));
 
-				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						product.getId(), mobileData.getId(), null);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -254,7 +254,7 @@ class TradeControllerTest {
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								seller));
 
-				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						product.getId(), mobileData.getId(), DATA_AMOUNT_1);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -329,7 +329,7 @@ class TradeControllerTest {
 						ProductFixture.createMobileDataProductInactive(PRICE_3000,
 								mobileData.getId(), seller));
 
-				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						product.getId(), mobileData.getId(), null);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -379,7 +379,7 @@ class TradeControllerTest {
 						ProductFixture.createMobileDataProduct(PRICE_3000,
 								mobileData.getId(), seller));
 
-				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						product.getId(), mobileData.getId(), null);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -429,7 +429,7 @@ class TradeControllerTest {
 						ProductFixture.createMobileDataProduct(PRICE_3000,
 								mobileData.getId(), seller));
 
-				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						product.getId(), mobileData.getId(), null);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -486,7 +486,7 @@ class TradeControllerTest {
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								seller));
 
-				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						product.getId(), mobileData.getId(), DATA_AMOUNT_2);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -714,7 +714,8 @@ class TradeControllerTest {
 				List<MobileDataScrap> mobileDataScrapList = new ArrayList<>(
 						Arrays.asList(mobileDataScrap1, mobileDataScrap2));
 
-				TradeMobileDataScrapRequest request = new TradeMobileDataScrapRequest(DATA_AMOUNT_2,
+				ScrapPurchaseMobileDataRequest request = new ScrapPurchaseMobileDataRequest(
+						DATA_AMOUNT_2,
 						PRICE_1500 + PRICE_3000, mobileDataScrapList);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -833,7 +834,8 @@ class TradeControllerTest {
 				List<MobileDataScrap> mobileDataScrapList = new ArrayList<>(
 						Arrays.asList(mobileDataScrap1, mobileDataScrap2));
 
-				TradeMobileDataScrapRequest request = new TradeMobileDataScrapRequest(DATA_AMOUNT_2,
+				ScrapPurchaseMobileDataRequest request = new ScrapPurchaseMobileDataRequest(
+						DATA_AMOUNT_2,
 						PRICE_1500 + PRICE_3000, mobileDataScrapList);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -924,7 +926,8 @@ class TradeControllerTest {
 				List<MobileDataScrap> mobileDataScrapList = new ArrayList<>(
 						Arrays.asList(mobileDataScrap1, mobileDataScrap2));
 
-				TradeMobileDataScrapRequest request = new TradeMobileDataScrapRequest(DATA_AMOUNT_2,
+				ScrapPurchaseMobileDataRequest request = new ScrapPurchaseMobileDataRequest(
+						DATA_AMOUNT_2,
 						PRICE_1500 + PRICE_3000, mobileDataScrapList);
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -1013,7 +1016,7 @@ class TradeControllerTest {
 				Product product = ProductFixture.createWifiProduct(PRICE_500, wifi.getId(), seller);
 				productRepository.save(product);
 
-				TradeWifiRequest request = new TradeWifiRequest(product.getId(), wifi.getId(),
+				PurchaseWifiRequest request = new PurchaseWifiRequest(product.getId(), wifi.getId(),
 						LocalDateTime.of(2025, 3, 4, 10, 0), LocalDateTime.of(2025, 3, 4, 10, 30));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -1078,7 +1081,7 @@ class TradeControllerTest {
 				Product product = ProductFixture.createWifiProduct(PRICE_500, wifi.getId(), seller);
 				productRepository.save(product);
 
-				TradeWifiRequest request = new TradeWifiRequest(product.getId(), wifi.getId(),
+				PurchaseWifiRequest request = new PurchaseWifiRequest(product.getId(), wifi.getId(),
 						LocalDateTime.of(2025, 3, 4, 23, 0), LocalDateTime.of(2025, 3, 4, 23, 30));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -1132,7 +1135,8 @@ class TradeControllerTest {
 				Product product = ProductFixture.createWifiProduct(PRICE_500, wifi.getId(), seller);
 				productRepository.save(product);
 
-				TradeWifiRequest request = new TradeWifiRequest(product.getId(), wifi.getId() + 1,
+				PurchaseWifiRequest request = new PurchaseWifiRequest(product.getId(),
+						wifi.getId() + 1,
 						LocalDateTime.of(2025, 3, 4, 10, 0), LocalDateTime.of(2025, 3, 4, 10, 30));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);

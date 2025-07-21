@@ -3,7 +3,7 @@ package com.dapanda.trade.dto.request;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
-public record TradeWifiRequest(
+public record PurchaseWifiRequest(
 
 		@NotNull(message = "상품 아이디는 필수입니다.")
 		Long productId,

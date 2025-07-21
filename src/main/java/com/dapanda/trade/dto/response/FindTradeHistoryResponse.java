@@ -12,15 +12,15 @@ import lombok.NoArgsConstructor;
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class TradeHistoryResponse {
+public class FindTradeHistoryResponse {
 
 	private Long tradeCount;
 	private CursorPageResponse<TradeHistorySummary> trades;
 
-	public static TradeHistoryResponse of(Long tradeCount,
+	public static FindTradeHistoryResponse of(Long tradeCount,
 			CursorPageResponse<TradeHistorySummary> trades) {
 
-		return TradeHistoryResponse.builder()
+		return FindTradeHistoryResponse.builder()
 				.tradeCount(tradeCount)
 				.trades(trades)
 				.build();

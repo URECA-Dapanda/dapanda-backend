@@ -53,11 +53,11 @@ import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
 import com.dapanda.trade.dto.MobileDataScrap;
 import com.dapanda.trade.dto.TradeHistorySummary;
-import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
-import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
-import com.dapanda.trade.dto.request.TradeWifiRequest;
+import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
+import com.dapanda.trade.dto.request.PurchaseWifiRequest;
+import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
-import com.dapanda.trade.dto.response.TradeHistoryResponse;
+import com.dapanda.trade.dto.response.FindTradeHistoryResponse;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeFixture;
 import com.dapanda.trade.repository.TradeDetailsRepository;
@@ -122,7 +122,7 @@ class TradeServiceTest {
 				Product product = ProductFixture.createMobileDataProductWithId(
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
-				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						PRODUCT_ID, MOBILE_DATA_ID, null);
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
@@ -168,7 +168,7 @@ class TradeServiceTest {
 				Product product = ProductFixture.createMobileDataProductWithId(
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
-				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						PRODUCT_ID, MOBILE_DATA_ID, DATA_AMOUNT_1);
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
@@ -215,7 +215,7 @@ class TradeServiceTest {
 				Product product = ProductFixture.createMobileDataProductSoldOutWithId(
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
-				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						PRODUCT_ID, MOBILE_DATA_ID, null);
 
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
@@ -239,7 +239,7 @@ class TradeServiceTest {
 				Product product = ProductFixture.createMobileDataProductWithId(
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
-				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						PRODUCT_ID, MOBILE_DATA_ID, null);
 
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
@@ -268,7 +268,7 @@ class TradeServiceTest {
 				Product product = ProductFixture.createMobileDataProductWithId(
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
-				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						PRODUCT_ID, MOBILE_DATA_ID, null);
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
@@ -302,7 +302,7 @@ class TradeServiceTest {
 				Product product = ProductFixture.createMobileDataProductWithId(
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
-				TradeMobileDataDefaultRequest request = new TradeMobileDataDefaultRequest(
+				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						PRODUCT_ID, MOBILE_DATA_ID, DATA_AMOUNT_2);
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
@@ -449,7 +449,8 @@ class TradeServiceTest {
 				List<MobileDataScrap> mobileDataScrapList = new ArrayList<>(
 						Arrays.asList(mobileDataScrap1, mobileDataScrap2));
 
-				TradeMobileDataScrapRequest request = new TradeMobileDataScrapRequest(DATA_AMOUNT_2,
+				ScrapPurchaseMobileDataRequest request = new ScrapPurchaseMobileDataRequest(
+						DATA_AMOUNT_2,
 						PRICE_1500 + PRICE_3000, mobileDataScrapList);
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
@@ -516,7 +517,8 @@ class TradeServiceTest {
 				List<MobileDataScrap> mobileDataScrapList = new ArrayList<>(
 						Arrays.asList(mobileDataScrap1, mobileDataScrap2));
 
-				TradeMobileDataScrapRequest request = new TradeMobileDataScrapRequest(DATA_AMOUNT_2,
+				ScrapPurchaseMobileDataRequest request = new ScrapPurchaseMobileDataRequest(
+						DATA_AMOUNT_2,
 						PRICE_1500 + PRICE_3000, mobileDataScrapList);
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
@@ -555,7 +557,8 @@ class TradeServiceTest {
 				List<MobileDataScrap> mobileDataScrapList = new ArrayList<>(
 						Arrays.asList(mobileDataScrap1, mobileDataScrap2));
 
-				TradeMobileDataScrapRequest request = new TradeMobileDataScrapRequest(DATA_AMOUNT_2,
+				ScrapPurchaseMobileDataRequest request = new ScrapPurchaseMobileDataRequest(
+						DATA_AMOUNT_2,
 						PRICE_1500 + PRICE_3000, mobileDataScrapList);
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
@@ -600,7 +603,7 @@ class TradeServiceTest {
 				Product product = ProductFixture.createWifiProductWithId(
 						PRODUCT_ID, WIFI_ID, SELLER_MEMBER_ID, PRICE_500);
 
-				TradeWifiRequest request = new TradeWifiRequest(PRODUCT_ID, WIFI_ID,
+				PurchaseWifiRequest request = new PurchaseWifiRequest(PRODUCT_ID, WIFI_ID,
 						LocalDateTime.of(2025, 3, 4, 10, 0), LocalDateTime.of(2025, 3, 4, 10, 30));
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
@@ -640,7 +643,7 @@ class TradeServiceTest {
 				Product product = ProductFixture.createWifiProductWithId(
 						PRODUCT_ID, WIFI_ID, SELLER_MEMBER_ID, PRICE_500);
 
-				TradeWifiRequest request = new TradeWifiRequest(PRODUCT_ID, WIFI_ID,
+				PurchaseWifiRequest request = new PurchaseWifiRequest(PRODUCT_ID, WIFI_ID,
 						LocalDateTime.of(2025, 3, 4, 23, 0), LocalDateTime.of(2025, 3, 4, 23, 30));
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
@@ -671,7 +674,7 @@ class TradeServiceTest {
 				Product product = ProductFixture.createWifiProductWithId(
 						PRODUCT_ID, WIFI_ID, SELLER_MEMBER_ID, PRICE_500);
 
-				TradeWifiRequest request = new TradeWifiRequest(PRODUCT_ID, WIFI_ID + 1,
+				PurchaseWifiRequest request = new PurchaseWifiRequest(PRODUCT_ID, WIFI_ID + 1,
 						LocalDateTime.of(2025, 3, 4, 10, 0), LocalDateTime.of(2025, 3, 4, 10, 30));
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
@@ -731,7 +734,7 @@ class TradeServiceTest {
 				));
 
 				// when
-				TradeHistoryResponse response = tradeService.findTradeHistory(null,
+				FindTradeHistoryResponse response = tradeService.findTradeHistory(null,
 						DEFAULT_SIZE_2, BUYER_MEMBER_ID);
 
 				// then

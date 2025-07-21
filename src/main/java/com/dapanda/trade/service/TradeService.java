@@ -16,12 +16,12 @@ import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
 import com.dapanda.trade.dto.MobileDataScrap;
 import com.dapanda.trade.dto.TradeHistorySummary;
-import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
-import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
-import com.dapanda.trade.dto.request.TradeWifiRequest;
+import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
+import com.dapanda.trade.dto.request.PurchaseWifiRequest;
+import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
-import com.dapanda.trade.dto.response.TradeHistoryResponse;
-import com.dapanda.trade.dto.response.TradeMobileDataResponse;
+import com.dapanda.trade.dto.response.FindTradeHistoryResponse;
+import com.dapanda.trade.dto.response.TradeProductResponse;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeDetails;
 import com.dapanda.trade.entity.TradeType;
@@ -63,8 +63,8 @@ public class TradeService {
 	 * 9. Response: 구매 데이터양, 내 총 데이터양
 	 */
 	@Transactional
-	public TradeMobileDataResponse defaultPurchaseMobileData(
-			Long buyerId, TradeMobileDataDefaultRequest request) {
+	public TradeProductResponse defaultPurchaseMobileData(
+			Long buyerId, DefaultPurchaseMobileDataRequest request) {
 
 		Product product = productRepository.findByIdForUpdate(request.productId())
 				.orElseThrow();
@@ -93,7 +93,7 @@ public class TradeService {
 	/**
 	 * 데이터 통합 상품 일반 구매
 	 */
-	private TradeMobileDataResponse handleFullPurchaseProduct(Product product,
+	private TradeProductResponse handleFullPurchaseProduct(Product product,
 			MobileData mobileData, Long buyerId) {
 
 		// Lock 건 상태로 구매자, 판매자 조회
@@ -109,13 +109,13 @@ public class TradeService {
 
 		updateBuyerAndSellerData(buyer, seller, mobileData.getDataAmount());
 
-		return TradeMobileDataResponse.of(trade.getId());
+		return TradeProductResponse.of(trade.getId());
 	}
 
 	/**
 	 * 데이터 분할 상품 일반 구매
 	 */
-	private TradeMobileDataResponse handlePartialPurchaseProduct(Product product,
+	private TradeProductResponse handlePartialPurchaseProduct(Product product,
 			MobileData mobileData, Long buyerId, float dataAmount, int price) {
 
 		// Lock 건 상태로 구매자, 판매자 조회
@@ -130,7 +130,7 @@ public class TradeService {
 
 		updateBuyerAndSellerData(buyer, seller, dataAmount);
 
-		return TradeMobileDataResponse.of(trade.getId());
+		return TradeProductResponse.of(trade.getId());
 	}
 
 	private void deductBuyerCashAndUpdateState(Member buyer, Product product, MobileData mobileData,
@@ -288,8 +288,8 @@ public class TradeService {
 	 * 데이터 상품 자투리 구매
 	 */
 	@Transactional
-	public TradeMobileDataResponse scrapPurchaseMobileData(Long buyerId,
-			TradeMobileDataScrapRequest request) {
+	public TradeProductResponse scrapPurchaseMobileData(Long buyerId,
+			ScrapPurchaseMobileDataRequest request) {
 
 		float totalAmount = request.totalAmount();
 		int totalPrice = request.totalPrice();
@@ -347,7 +347,7 @@ public class TradeService {
 					TradeType.MOBILE_PURCHASE_COMPOSITE, seller);
 
 			tradeRepository.save(sellerTrade);
-			
+
 			TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
 			TradeDetails sellerTradeDetails = TradeDetails.of(product, sellerTrade);
 			tradeDetailsRepository.saveAll(
@@ -360,14 +360,14 @@ public class TradeService {
 		// 6. 구매 데이터양 업데이트
 		buyer.addBuyingData(totalAmount);
 
-		return TradeMobileDataResponse.of(buyerTrade.getId());
+		return TradeProductResponse.of(buyerTrade.getId());
 	}
 
 	/**
 	 * 와이파이 상품 구매
 	 */
 	@Transactional
-	public TradeMobileDataResponse purchaseWifi(Long buyerId, TradeWifiRequest request) {
+	public TradeProductResponse purchaseWifi(Long buyerId, PurchaseWifiRequest request) {
 
 		// 1. 구매자 조회
 		Member buyer = memberRepository.findByIdForUpdate(buyerId).orElseThrow();
@@ -414,11 +414,11 @@ public class TradeService {
 		tradeDetailsRepository.save(tradeDetails);
 
 		// 9. 응답 반환
-		return TradeMobileDataResponse.of(trade.getId());
+		return TradeProductResponse.of(trade.getId());
 	}
 
 
-	public TradeHistoryResponse findTradeHistory(Long cursorId, Integer size,
+	public FindTradeHistoryResponse findTradeHistory(Long cursorId, Integer size,
 			Long memberId) {
 
 		Long tradeCount = tradeRepository.countTradeHistoryByMemberId(memberId);
@@ -426,6 +426,6 @@ public class TradeService {
 		CursorPageResponse<TradeHistorySummary> tradeHistory = tradeRepository.findTradeHistoryByCursor(
 				cursorId, size, memberId);
 
-		return TradeHistoryResponse.of(tradeCount, tradeHistory);
+		return FindTradeHistoryResponse.of(tradeCount, tradeHistory);
 	}
 }

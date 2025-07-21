@@ -2,7 +2,7 @@ package com.dapanda.trade.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 
-public record TradeMobileDataDefaultRequest(
+public record DefaultPurchaseMobileDataRequest(
 
 		@NotNull(message = "상품 아이디는 필수입니다.")
 		Long productId,
