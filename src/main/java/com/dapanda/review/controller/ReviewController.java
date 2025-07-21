@@ -61,7 +61,7 @@ public class ReviewController {
 	}
 
 	/**
-	 * 회원이 작성한 리뷰 조회
+	 * 내가 작성한 리뷰 조회
 	 */
 	@GetMapping("/reviews/my/written")
 	public CommonResponse<CursorPageResponse<ReadWrittenReviewResponse>> readMyWrittenReview(
