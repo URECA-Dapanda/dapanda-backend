@@ -1,7 +1,6 @@
 package com.dapanda.chat.dto.response;
 
 import com.dapanda.product.entity.ItemType;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -26,49 +25,11 @@ public class ReadJoiningChatRoomResponse {
 	private Long itemId;
 	private ItemType itemType;
 
-	//Item
-
-	//mobileData
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private Float dataAmount;
-
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private Float remainAmount;
-
 	//wifi
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private LocalDateTime startTime;
-
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private LocalDateTime endTime;
 
-	public static ReadJoiningChatRoomResponse createMobileDataChatRoomResponse(
-			Long chatRoomId,
-			LocalDateTime createdAt,
-			LocalDateTime lastMessageAt,
-			Long senderId,
-			String senderName,
-			Long productId,
-			Long itemId,
-			ItemType itemType,
-			Float dataAmount,
-			Float remainAmount) {
-
-		return ReadJoiningChatRoomResponse.builder()
-				.chatRoomId(chatRoomId)
-				.createdAt(createdAt)
-				.lastMessageAt(lastMessageAt)
-				.senderId(senderId)
-				.senderName(senderName)
-				.productId(productId)
-				.itemId(itemId)
-				.itemType(itemType)
-				.dataAmount(dataAmount)
-				.remainAmount(remainAmount)
-				.build();
-	}
-
-	public static ReadJoiningChatRoomResponse createWifiChatRoomResponse(
+	public static ReadJoiningChatRoomResponse of(
 			Long chatRoomId,
 			LocalDateTime createdAt,
 			LocalDateTime lastMessageAt,

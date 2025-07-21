@@ -3,12 +3,9 @@ package com.dapanda.chat.repository;
 import com.dapanda.chat.dto.request.ReadJoiningChatRoomRequest;
 import com.dapanda.chat.dto.response.ReadJoiningChatRoomResponse;
 import com.dapanda.chat.entity.ChatRoomReadOption;
-import com.dapanda.common.exception.GlobalException;
-import com.dapanda.common.exception.ResultCode;
 import com.dapanda.product.entity.ItemType;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -18,7 +15,6 @@ import java.util.Optional;
 import static com.dapanda.chat.entity.QChatParticipant.chatParticipant;
 import static com.dapanda.chat.entity.QChatRoom.chatRoom;
 import static com.dapanda.member.entity.QMember.member;
-import static com.dapanda.product.entity.QMobileData.mobileData;
 import static com.dapanda.product.entity.QProduct.product;
 import static com.dapanda.product.entity.QWifi.wifi;
 
@@ -84,8 +80,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 						product.id,
 						product.itemId,
 						product.itemType,
-						mobileData.dataAmount,
-						mobileData.remainAmount,
 						wifi.startTime,
 						wifi.endTime
 				)
@@ -93,10 +87,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 				.join(chatParticipant.chatRoom, chatRoom)
 				.join(chatParticipant.member, member)
 				.join(chatRoom.product, product)
-				.leftJoin(mobileData).on(
-						product.itemId.eq(mobileData.id)
-								.and(product.itemType.eq(ItemType.MOBILE_DATA))
-				)
 				.leftJoin(wifi).on(
 						product.itemId.eq(wifi.id)
 								.and(product.itemType.eq(ItemType.WIFI))
@@ -107,44 +97,18 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 				.fetch();
 
 		return tuples.stream()
-				.map(tuple -> {
-
-					ItemType itemType = tuple.get(product.itemType);
-
-					if (itemType == null) {
-
-						throw new GlobalException(ResultCode.INTERNAL_ERROR);
-					}
-
-					if (itemType.equals(ItemType.MOBILE_DATA)) {
-
-						return ReadJoiningChatRoomResponse.createMobileDataChatRoomResponse(
-								tuple.get(chatRoom.id),
-								tuple.get(chatRoom.createdAt),
-								tuple.get(chatRoom.lastMessageAt),
-								tuple.get(member.id),
-								tuple.get(member.name),
-								tuple.get(product.id),
-								tuple.get(product.itemId),
-								itemType,
-								tuple.get(mobileData.dataAmount),
-								tuple.get(mobileData.remainAmount)
-						);
-					}
-
-					return ReadJoiningChatRoomResponse.createWifiChatRoomResponse(
-							tuple.get(chatRoom.id),
-							tuple.get(chatRoom.createdAt),
-							tuple.get(chatRoom.lastMessageAt),
-							tuple.get(member.id),
-							tuple.get(member.name),
-							tuple.get(product.id),
-							tuple.get(product.itemId),
-							itemType,
-							tuple.get(wifi.startTime),
-							tuple.get(wifi.endTime)
-					);
-				})
+				.map(tuple -> ReadJoiningChatRoomResponse.of(
+						tuple.get(chatRoom.id),
+						tuple.get(chatRoom.createdAt),
+						tuple.get(chatRoom.lastMessageAt),
+						tuple.get(member.id),
+						tuple.get(member.name),
+						tuple.get(product.id),
+						tuple.get(product.itemId),
+						tuple.get(product.itemType),
+						tuple.get(wifi.startTime),
+						tuple.get(wifi.endTime)
+				))
 				.toList();
 	}
 }
