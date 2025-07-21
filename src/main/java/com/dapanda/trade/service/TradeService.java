@@ -346,6 +346,8 @@ public class TradeService {
 			Trade sellerTrade = Trade.of(totalAmount, null, totalPrice,
 					TradeType.MOBILE_PURCHASE_COMPOSITE, seller);
 
+			tradeRepository.save(sellerTrade);
+			
 			TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
 			TradeDetails sellerTradeDetails = TradeDetails.of(product, sellerTrade);
 			tradeDetailsRepository.saveAll(
@@ -359,17 +361,6 @@ public class TradeService {
 		buyer.addBuyingData(totalAmount);
 
 		return TradeMobileDataResponse.of(buyerTrade.getId());
-	}
-
-	public TradeHistoryResponse findTradeHistory(Long cursorId, Integer size,
-			Long memberId) {
-
-		Long tradeCount = tradeRepository.countTradeHistoryByMemberId(memberId);
-
-		CursorPageResponse<TradeHistorySummary> tradeHistory = tradeRepository.findTradeHistoryByCursor(
-				cursorId, size, memberId);
-
-		return TradeHistoryResponse.of(tradeCount, tradeHistory);
 	}
 
 	/**
@@ -409,7 +400,7 @@ public class TradeService {
 			throw new GlobalException(ResultCode.INSUFFICIENT_CASH);
 		}
 		// 6. 거래 생성
-		Trade trade = Trade.of(timeAmount, totalPrice, TradeType.PURCHASE_SINGLE, buyer);
+		Trade trade = Trade.of(timeAmount, totalPrice, TradeType.MOBILE_PURCHASE_SINGLE, buyer);
 		tradeRepository.save(trade);
 
 		// 7. 판매자/구매자 캐시 업데이트
@@ -424,5 +415,17 @@ public class TradeService {
 
 		// 9. 응답 반환
 		return TradeMobileDataResponse.of(trade.getId());
+	}
+
+
+	public TradeHistoryResponse findTradeHistory(Long cursorId, Integer size,
+			Long memberId) {
+
+		Long tradeCount = tradeRepository.countTradeHistoryByMemberId(memberId);
+
+		CursorPageResponse<TradeHistorySummary> tradeHistory = tradeRepository.findTradeHistoryByCursor(
+				cursorId, size, memberId);
+
+		return TradeHistoryResponse.of(tradeCount, tradeHistory);
 	}
 }
