@@ -9,9 +9,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.dapanda.chat.dto.response.ReadJoiningChatRoomResponse.createMobileDataChatRoomResponse;
-import static com.dapanda.chat.dto.response.ReadJoiningChatRoomResponse.createWifiChatRoomResponse;
-
 public class ChatRoomFixture {
 
 	public static ChatRoom createChatRoomWithId(Product product, Long chatRoomId) {
@@ -39,7 +36,7 @@ public class ChatRoomFixture {
 
 		LocalDateTime now = LocalDateTime.now();
 
-		ReadJoiningChatRoomResponse mobileDataChatRoom = createMobileDataChatRoomResponse(
+		ReadJoiningChatRoomResponse mobileDataChatRoom = ReadJoiningChatRoomResponse.of(
 				1L,
 				now.minusDays(5),
 				now.minusMinutes(10),
@@ -48,11 +45,11 @@ public class ChatRoomFixture {
 				1000L,
 				2000L,
 				ItemType.MOBILE_DATA,
-				50.0F,
-				30.5F
+				now.plusHours(1),
+				now.plusHours(3)
 		);
 
-		ReadJoiningChatRoomResponse wifiChatRoom1 = createWifiChatRoomResponse(
+		ReadJoiningChatRoomResponse wifiChatRoom1 = ReadJoiningChatRoomResponse.of(
 				2L,
 				now.minusDays(3),
 				now.minusMinutes(5),
@@ -65,7 +62,7 @@ public class ChatRoomFixture {
 				now.plusHours(3)
 		);
 
-		ReadJoiningChatRoomResponse wifiChatRoom2 = createWifiChatRoomResponse(
+		ReadJoiningChatRoomResponse wifiChatRoom2 = ReadJoiningChatRoomResponse.of(
 				3L,
 				now.minusDays(4),
 				now.minusMinutes(6),
