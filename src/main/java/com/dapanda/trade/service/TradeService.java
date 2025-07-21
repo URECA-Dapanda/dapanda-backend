@@ -15,7 +15,7 @@ import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
 import com.dapanda.trade.dto.MobileDataScrap;
-import com.dapanda.trade.dto.TradeHistorySummary;
+import com.dapanda.trade.dto.PurchaseHistorySummary;
 import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
 import com.dapanda.trade.dto.request.PurchaseWifiRequest;
 import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
@@ -423,7 +423,7 @@ public class TradeService {
 
 		Long tradeCount = tradeRepository.countTradeHistoryByMemberId(memberId);
 
-		CursorPageResponse<TradeHistorySummary> tradeHistory = tradeRepository.findTradeHistoryByCursor(
+		CursorPageResponse<PurchaseHistorySummary> tradeHistory = tradeRepository.findTradeHistoryByCursor(
 				cursorId, size, memberId);
 
 		return FindTradeHistoryResponse.of(tradeCount, tradeHistory);

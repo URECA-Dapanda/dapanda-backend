@@ -52,7 +52,7 @@ import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
 import com.dapanda.trade.dto.MobileDataScrap;
-import com.dapanda.trade.dto.TradeHistorySummary;
+import com.dapanda.trade.dto.PurchaseHistorySummary;
 import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
 import com.dapanda.trade.dto.request.PurchaseWifiRequest;
 import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
@@ -709,7 +709,7 @@ class TradeServiceTest {
 				Trade trade1 = TradeFixture.createTradeWifi(buyer);
 				Trade trade2 = TradeFixture.createTradeWifi(buyer);
 
-				TradeHistorySummary summary1 = new TradeHistorySummary(
+				PurchaseHistorySummary summary1 = new PurchaseHistorySummary(
 
 						TRADE_ID_1,
 						WIFI,
@@ -718,7 +718,7 @@ class TradeServiceTest {
 						trade1.getCreatedAt()
 				);
 
-				TradeHistorySummary summary2 = new TradeHistorySummary(
+				PurchaseHistorySummary summary2 = new PurchaseHistorySummary(
 
 						TRADE_ID_2,
 						WIFI,
@@ -738,8 +738,8 @@ class TradeServiceTest {
 						DEFAULT_SIZE_2, BUYER_MEMBER_ID);
 
 				// then
-				TradeHistorySummary result1 = response.getTrades().getData().get(0);
-				TradeHistorySummary result2 = response.getTrades().getData().get(1);
+				PurchaseHistorySummary result1 = response.getTrades().getData().get(0);
+				PurchaseHistorySummary result2 = response.getTrades().getData().get(1);
 
 				assertThat(response.getTradeCount()).isEqualTo(DEFAULT_SIZE_2);
 				assertThat(response.getTrades().getData().size()).isEqualTo(DEFAULT_SIZE_2);

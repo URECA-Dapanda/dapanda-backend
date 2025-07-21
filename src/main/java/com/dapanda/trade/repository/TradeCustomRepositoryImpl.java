@@ -7,7 +7,7 @@ import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.entity.ItemType;
-import com.dapanda.trade.dto.TradeHistorySummary;
+import com.dapanda.trade.dto.PurchaseHistorySummary;
 import com.dapanda.trade.entity.TradeType;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -23,11 +23,11 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public CursorPageResponse<TradeHistorySummary> findTradeHistoryByCursor(Long cursorId,
+	public CursorPageResponse<PurchaseHistorySummary> findTradeHistoryByCursor(Long cursorId,
 			int size, Long memberId) {
 
-		List<TradeHistorySummary> content = queryFactory
-				.select(Projections.constructor(TradeHistorySummary.class,
+		List<PurchaseHistorySummary> content = queryFactory
+				.select(Projections.constructor(PurchaseHistorySummary.class,
 						trade.id,
 						trade.tradeType,
 						trade.dataAmount.coalesce(0f),
@@ -66,6 +66,7 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 				.where(eqMemberId(memberId), isValidTradeType())
 				.fetchOne();
 	}
+
 
 	private BooleanExpression ltCursorId(Long cursorId) {
 
