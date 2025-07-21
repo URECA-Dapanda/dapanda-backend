@@ -14,7 +14,15 @@ import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_2;
 import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
 import static com.dapanda.TestConstants.Product.PRICE_1500;
 import static com.dapanda.TestConstants.Product.PRICE_3000;
+import static com.dapanda.TestConstants.Product.PRICE_500;
 import static com.dapanda.TestConstants.Product.PRODUCT_ID;
+import static com.dapanda.TestConstants.Wifi.CONTENT;
+import static com.dapanda.TestConstants.Wifi.END_TIME;
+import static com.dapanda.TestConstants.Wifi.LATITUDE;
+import static com.dapanda.TestConstants.Wifi.LONGITUDE;
+import static com.dapanda.TestConstants.Wifi.START_TIME;
+import static com.dapanda.TestConstants.Wifi.TITLE;
+import static com.dapanda.TestConstants.Wifi.WIFI_ID;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
@@ -32,15 +40,20 @@ import com.dapanda.product.entity.MobileDataFixture;
 import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductFixture;
 import com.dapanda.product.entity.ProductState;
+import com.dapanda.product.entity.Wifi;
+import com.dapanda.product.entity.WifiFixture;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
+import com.dapanda.product.repository.WifiRepository;
 import com.dapanda.trade.dto.MobileDataScrap;
 import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
 import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
+import com.dapanda.trade.dto.request.TradeWifiRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
 import com.dapanda.trade.entity.TradeFixture;
 import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -64,6 +77,8 @@ class TradeServiceTest {
 	private ProductRepository productRepository;
 	@Mock
 	private MobileDataRepository mobileDataRepository;
+	@Mock
+	private WifiRepository wifiRepository;
 	@Mock
 	private MemberRepository memberRepository;
 	@Mock
@@ -548,6 +563,117 @@ class TradeServiceTest {
 						() -> tradeService.scrapPurchaseMobileData(BUYER_MEMBER_ID, request))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.INVALID_REMAIN_DATA_AMOUNT.getMessage());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("와이파이 상품 구매")
+	class PurchaseWifi {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("와이파이 상품 구매를 성공한다")
+			void purchaseWifi() {
+
+				// given
+				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
+
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
+						END_TIME);
+				ReflectionTestUtils.setField(wifi, "id", WIFI_ID);
+
+				Product product = ProductFixture.createWifiProductWithId(
+						PRODUCT_ID, WIFI_ID, SELLER_MEMBER_ID, PRICE_500);
+
+				TradeWifiRequest request = new TradeWifiRequest(PRODUCT_ID, WIFI_ID,
+						LocalDateTime.of(2025, 3, 4, 10, 0), LocalDateTime.of(2025, 3, 4, 10, 30));
+
+				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
+				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID)).willReturn(
+						Optional.of(seller));
+				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
+						Optional.of(product));
+				given(wifiRepository.findById(WIFI_ID)).willReturn(
+						Optional.of(wifi));
+
+				// when
+				tradeService.purchaseWifi(BUYER_MEMBER_ID, request);
+
+				// then
+				assertThat(buyer.getCash()).isEqualTo(CASH_5000 - PRICE_500 * 3);
+				assertThat(seller.getCash()).isEqualTo(PRICE_500 * 3);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("와이파이 상품 구매를 할 때 입력받은 시간이 영업 시간을 넘으면 예외를 던진다")
+			void throwExceptionWhenInvalidOperationTime() {
+
+				// given
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
+
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
+						END_TIME);
+				ReflectionTestUtils.setField(wifi, "id", WIFI_ID);
+
+				Product product = ProductFixture.createWifiProductWithId(
+						PRODUCT_ID, WIFI_ID, SELLER_MEMBER_ID, PRICE_500);
+
+				TradeWifiRequest request = new TradeWifiRequest(PRODUCT_ID, WIFI_ID,
+						LocalDateTime.of(2025, 3, 4, 23, 0), LocalDateTime.of(2025, 3, 4, 23, 30));
+
+				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
+				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
+						Optional.of(product));
+				given(wifiRepository.findById(WIFI_ID)).willReturn(
+						Optional.of(wifi));
+
+				// when & then
+				assertThatThrownBy(() -> tradeService.purchaseWifi(BUYER_MEMBER_ID, request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.INVALID_WIFI_OPERATION_TIME.getMessage());
+			}
+
+			@Test
+			@DisplayName("와이파이 상품이 존재하지 않으면 예외를 던진다")
+			void throwExceptionWhenNotFoundWifi() {
+
+				// given
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
+
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
+						END_TIME);
+				ReflectionTestUtils.setField(wifi, "id", WIFI_ID);
+
+				Product product = ProductFixture.createWifiProductWithId(
+						PRODUCT_ID, WIFI_ID, SELLER_MEMBER_ID, PRICE_500);
+
+				TradeWifiRequest request = new TradeWifiRequest(PRODUCT_ID, WIFI_ID + 1,
+						LocalDateTime.of(2025, 3, 4, 10, 0), LocalDateTime.of(2025, 3, 4, 10, 30));
+
+				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
+				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
+						Optional.of(product));
+				
+				// when & then
+				assertThatThrownBy(() -> tradeService.purchaseWifi(BUYER_MEMBER_ID, request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.WIFI_NOT_FOUND.getMessage());
 			}
 		}
 	}

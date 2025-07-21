@@ -3,11 +3,10 @@ package com.dapanda.product.entity;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.product.dto.response.ReadSellingProductResponse;
-import org.springframework.test.util.ReflectionTestUtils;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class ProductFixture {
 
@@ -47,7 +46,8 @@ public class ProductFixture {
 		);
 	}
 
-	public static Product createProductWithMobileData(Member member, MobileData mobileData, ProductState state) {
+	public static Product createProductWithMobileData(Member member, MobileData mobileData,
+			ProductState state) {
 
 		return Product.of(
 				state,
@@ -58,7 +58,8 @@ public class ProductFixture {
 		);
 	}
 
-	public static List<Product> createProductList(Member member, List<MobileData> mobileDataList, ProductState state) {
+	public static List<Product> createProductList(Member member, List<MobileData> mobileDataList,
+			ProductState state) {
 
 		List<Product> productList = new ArrayList<>();
 
@@ -172,14 +173,15 @@ public class ProductFixture {
 		);
 	}
 
-	public static Product createWifiProductWithId(Long productId, Long wifiId) {
+	public static Product createWifiProductWithId(Long productId, Long wifiId, Long memberId,
+			int price) {
 
 		Product product = Product.of(
 				ProductState.ACTIVE,
-				1000,
+				price,
 				wifiId,
 				ItemType.WIFI,
-				MemberFixture.createMember1()
+				MemberFixture.createMember1WithId(memberId)
 		);
 
 		ReflectionTestUtils.setField(product, "id", productId);
