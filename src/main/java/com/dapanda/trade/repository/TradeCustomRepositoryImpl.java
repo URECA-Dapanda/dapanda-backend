@@ -31,7 +31,7 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 						trade.id,
 						trade.tradeType,
 						trade.dataAmount.coalesce(0f),
-						wifi.title,
+						wifi.title.coalesce(""),
 						trade.createdAt
 				))
 				.from(trade)
