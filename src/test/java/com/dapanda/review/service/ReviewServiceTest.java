@@ -10,6 +10,7 @@ import static com.dapanda.TestConstants.Review.COMMENT;
 import static com.dapanda.TestConstants.Review.RATING;
 import static com.dapanda.TestConstants.Review.REVIEW_ID;
 import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
+import static com.dapanda.TestConstants.Trade.TRADE_ID_2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
@@ -112,7 +113,7 @@ class ReviewServiceTest {
 				Member member = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				member.updateReviewInfo(prevCount, prevAverage);
 
-				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID);
+				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID_1);
 
 				CreateReviewRequest request = new CreateReviewRequest(newRating, COMMENT);
 				Review savedReview = ReviewFixture.createReview1WithId(trade, REVIEW_ID);
@@ -145,11 +146,11 @@ class ReviewServiceTest {
 				//given
 				CreateReviewRequest request = new CreateReviewRequest(RATING, COMMENT);
 
-				given(tradeRepository.findById(TRADE_ID_1)).willReturn(Optional.empty());
+				given(tradeRepository.findById(TRADE_ID_2)).willReturn(Optional.empty());
 
 				//when & then
 				assertThatThrownBy(
-						() -> reviewService.createReview(TRADE_ID_1, request,
+						() -> reviewService.createReview(TRADE_ID_2, request,
 								USER_DETAILS_MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.TRADE_NOT_FOUND.getMessage());
@@ -219,7 +220,7 @@ class ReviewServiceTest {
 				Member member = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				member.updateReviewInfo(prevCount, prevAverage);
 
-				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID);
+				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID_1);
 				Review review = ReviewFixture.createReview1WithIdAndRating(trade, REVIEW_ID,
 						deletedRating);
 
@@ -246,7 +247,7 @@ class ReviewServiceTest {
 				Member member = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				member.updateReviewInfo(prevCount, prevAverage);
 
-				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID);
+				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID_2);
 				Review review = ReviewFixture.createReview1WithIdAndRating(trade, REVIEW_ID,
 						deletedRating);
 
@@ -343,7 +344,7 @@ class ReviewServiceTest {
 				Member member = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				member.updateReviewInfo(reviewCount, prevAverage);
 
-				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID);
+				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID_2);
 				Review review = ReviewFixture.createReview1WithIdAndRating(trade, REVIEW_ID,
 						oldRating);
 				System.out.println(member == review.getTrade().getMember());
