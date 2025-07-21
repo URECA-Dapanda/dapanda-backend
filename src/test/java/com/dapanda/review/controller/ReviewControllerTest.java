@@ -1,32 +1,5 @@
 package com.dapanda.review.controller;
 
-import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_REVIEW_SORT_OPTION;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
-import static com.dapanda.TestConstants.Review.COMMENT;
-import static com.dapanda.TestConstants.Review.NEW_COMMENT;
-import static com.dapanda.TestConstants.Review.NEW_RATING;
-import static com.dapanda.TestConstants.Review.RATING;
-import static com.dapanda.TestConstants.Review.REVIEW_ID;
-import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.mock;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
-import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
@@ -49,10 +22,6 @@ import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -70,6 +39,27 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_REVIEW_SORT_OPTION;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
+import static com.dapanda.TestConstants.Review.*;
+import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -334,6 +324,129 @@ class ReviewControllerTest {
 	}
 
 	@Nested
+	@DisplayName("내가 받은 리뷰 조회 API")
+	class ReadMyReceivedReview {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("기본 페이징 조건으로 내가 받은 리뷰를 조회한다")
+			public void readReceivedReviewTest() throws Exception {
+
+				//given
+				Member seller = memberRepository.save(MemberFixture.createMember1());
+
+				List<Member> members = memberRepository.saveAll(List.of(
+						MemberFixture.createMember2(),
+						MemberFixture.createMember3(),
+						MemberFixture.createMember4(),
+						MemberFixture.createMember5()
+				));
+
+				Product product = productRepository.save(
+						ProductFixture.createMobileDataProduct(10000, 1L, seller));
+
+				List<Trade> tradeFixtures = new ArrayList<>();
+
+				for (Member member : members) {
+					tradeFixtures.add(TradeFixture.createTradeMobileDataDefault(member));
+				}
+
+				List<Trade> trades = tradeRepository.saveAll(tradeFixtures);
+
+				// Save TradeDetails for each trade
+				List<TradeDetails> tradeDetailsFixtures = new ArrayList<>();
+				for (Trade trade : trades) {
+					tradeDetailsFixtures.add(
+							TradeDetailsFixture.createTradeDetails(product, trade));
+				}
+				tradeDetailsRepository.saveAll(tradeDetailsFixtures);
+
+				List<Review> reviewFixtures = new ArrayList<>();
+
+				for (Trade trade : trades) {
+					reviewFixtures.add(ReviewFixture.createReview1(trade));
+				}
+
+				List<Review> reviews = reviewRepository.saveAll(reviewFixtures);
+
+
+				CustomUserDetails userDetails = CustomUserDetails.from(seller);
+
+				//when & then
+				mockMvc.perform(get("/api/reviews/received")
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.data").exists())
+						.andExpect(jsonPath("$.data.data.length()").value(
+								Math.min(DEFAULT_SIZE_2, reviews.size())))
+						.andExpect(jsonPath("$.data.pageInfo").exists())
+						.andExpect(jsonPath("$.data.pageInfo.hasNext").isBoolean())
+						.andExpect(jsonPath("$.data.pageInfo.size").isNumber())
+						.andExpect(jsonPath("$.data.pageInfo.nextCursorId").isNumber())
+						.andDo(document("review/read-my-received-review",
+								queryParameters(
+										parameterWithName("cursorId").description("커서 아이디 (선택)")
+												.optional(),
+										parameterWithName("size").description(
+												"페이지 크기 (선택, 기본값 = 2, 최대 = 100)").optional(),
+										parameterWithName("reviewSortOption").description(
+														"리뷰 정렬 옵션 (선택, 기본값 = RECENT: 최신순, OLDEST: 오래된순)")
+												.optional()
+								),
+								responseFields(
+										fieldWithPath("code").description("응답 코드"),
+										fieldWithPath("message").description("응답 메시지"),
+										fieldWithPath("data").description("페이징 처리된 리뷰 데이터"),
+										// data.data[] 배열 내의 각 리뷰 객체 필드
+										fieldWithPath("data.data[]").description("조회된 리뷰 목록"),
+										fieldWithPath("data.data[].reviewId").description("리뷰 아이디"),
+										fieldWithPath("data.data[].rating").description("리뷰 평점"),
+										fieldWithPath("data.data[].comment").description("리뷰 코멘트"),
+										fieldWithPath("data.data[].createdAt").description(
+												"리뷰 생성 시간"),
+										fieldWithPath("data.data[].updatedAt").description(
+												"리뷰 최종 수정 시간"),
+										// Member 정보
+										fieldWithPath("data.data[].reviewerId").description(
+												"리뷰 작성자의 아이디"),
+										fieldWithPath("data.data[].reviewerName").description(
+												"리뷰 작성자의 이름"),
+										// Trade 정보
+										fieldWithPath("data.data[].tradeId").description(
+												"해당 리뷰가 연결된 거래 아이디"),
+										fieldWithPath("data.data[].dataAmount").description(
+														"거래된 데이터 양 (데이터 상품인 경우에만 존재)")
+												.type(JsonFieldType.NUMBER).optional(),
+										fieldWithPath("data.data[].timeAmount").description(
+														"거래된 시간 양 (시간 상품인 경우에만 존재)")
+												.type(JsonFieldType.NUMBER).optional(),
+										// Product 정보
+										fieldWithPath("data.data[].productId").description(
+												"리뷰가 작성된 상품 아이디"),
+										fieldWithPath("data.data[].itemType").description(
+												"상품 유형 (예: MOBILE_DATA, TIME 등)"),
+										// data.pageInfo 필드
+										fieldWithPath("data.pageInfo").description("페이지 정보"),
+										fieldWithPath("data.pageInfo.size").description(
+												"현재 페이지 크기"),
+										fieldWithPath("data.pageInfo.hasNext").description(
+												"다음 페이지 존재 여부"),
+										fieldWithPath("data.pageInfo.nextCursorId").description(
+												"다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)")
+								)
+						));
+			}
+		}
+	}
+
+	@Nested
 	@DisplayName("내가 작성한 리뷰 조회 API")
 	class ReadMyWrittenReview {
 
@@ -392,9 +505,7 @@ class ReviewControllerTest {
 				given(userDetails.getId()).willReturn(buyer.getId());
 
 				//when & then
-				mockMvc.perform(get("/api/reviews/my/written")
-								.param("size", String.valueOf(DEFAULT_SIZE_2))
-								.param("reviewSortOption", DEFAULT_REVIEW_SORT_OPTION)
+				mockMvc.perform(get("/api/reviews/wrote")
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, Collections.emptyList()
 								))))
@@ -408,7 +519,7 @@ class ReviewControllerTest {
 						.andExpect(jsonPath("$.data.pageInfo.hasNext").isBoolean())
 						.andExpect(jsonPath("$.data.pageInfo.size").isNumber())
 						.andExpect(jsonPath("$.data.pageInfo.nextCursorId").isNumber())
-						.andDo(document("review/read-written-review",
+						.andDo(document("review/read-my-wrote-review",
 								queryParameters(
 										parameterWithName("cursorId").description("커서 아이디 (선택)")
 												.optional(),
