@@ -11,11 +11,14 @@ import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_150;
 import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
 import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
 import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_2;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
 import static com.dapanda.TestConstants.Product.PRICE_1500;
 import static com.dapanda.TestConstants.Product.PRICE_3000;
 import static com.dapanda.TestConstants.Product.PRICE_500;
 import static com.dapanda.TestConstants.Product.PRODUCT_ID;
+import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
+import static com.dapanda.TestConstants.Trade.TRADE_ID_2;
 import static com.dapanda.TestConstants.Wifi.CONTENT;
 import static com.dapanda.TestConstants.Wifi.END_TIME;
 import static com.dapanda.TestConstants.Wifi.LATITUDE;
@@ -23,10 +26,13 @@ import static com.dapanda.TestConstants.Wifi.LONGITUDE;
 import static com.dapanda.TestConstants.Wifi.START_TIME;
 import static com.dapanda.TestConstants.Wifi.TITLE;
 import static com.dapanda.TestConstants.Wifi.WIFI_ID;
+import static com.dapanda.trade.entity.TradeType.WIFI;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
+import com.dapanda.common.dto.response.CursorPageResponse;
+import com.dapanda.common.dto.response.CursorPageResponse.PageInfo;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
@@ -46,10 +52,13 @@ import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
 import com.dapanda.trade.dto.MobileDataScrap;
+import com.dapanda.trade.dto.TradeHistorySummary;
 import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
 import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
 import com.dapanda.trade.dto.request.TradeWifiRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
+import com.dapanda.trade.dto.response.TradeHistoryResponse;
+import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeFixture;
 import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
@@ -669,11 +678,74 @@ class TradeServiceTest {
 						Optional.of(buyer));
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
 						Optional.of(product));
-				
+
 				// when & then
 				assertThatThrownBy(() -> tradeService.purchaseWifi(BUYER_MEMBER_ID, request))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.WIFI_NOT_FOUND.getMessage());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("상품 거래(구매) 내역 조회")
+	class FindTradeHistory {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("상품 거래(구매) 내역 조회를 성공한다")
+			void findTradeHistory() {
+
+				// given
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+				ReflectionTestUtils.setField(buyer, "cash", CASH_3000);
+
+				Trade trade1 = TradeFixture.createTradeWifi(buyer);
+				Trade trade2 = TradeFixture.createTradeWifi(buyer);
+
+				TradeHistorySummary summary1 = new TradeHistorySummary(
+
+						TRADE_ID_1,
+						WIFI,
+						0f,
+						TITLE,
+						trade1.getCreatedAt()
+				);
+
+				TradeHistorySummary summary2 = new TradeHistorySummary(
+
+						TRADE_ID_2,
+						WIFI,
+						0f,
+						TITLE + 1,
+						trade2.getCreatedAt()
+				);
+
+				given(tradeRepository.countTradeHistoryByMemberId(BUYER_MEMBER_ID)).willReturn(2L);
+				given(tradeRepository.findTradeHistoryByCursor(null, DEFAULT_SIZE_2,
+						BUYER_MEMBER_ID)).willReturn(CursorPageResponse.of(
+						List.of(summary1, summary2), PageInfo.of(null, false, 2)
+				));
+
+				// when
+				TradeHistoryResponse response = tradeService.findTradeHistory(null,
+						DEFAULT_SIZE_2, BUYER_MEMBER_ID);
+
+				// then
+				TradeHistorySummary result1 = response.getTrades().getData().get(0);
+				TradeHistorySummary result2 = response.getTrades().getData().get(1);
+
+				assertThat(response.getTradeCount()).isEqualTo(DEFAULT_SIZE_2);
+				assertThat(response.getTrades().getData().size()).isEqualTo(DEFAULT_SIZE_2);
+
+				assertThat(result1.getTradeType()).isEqualTo(WIFI);
+				assertThat(result1.getTitle()).isEqualTo(TITLE);
+
+				assertThat(result2.getTradeType()).isEqualTo(WIFI);
+				assertThat(result2.getTitle()).isEqualTo(TITLE + 1);
 			}
 		}
 	}
