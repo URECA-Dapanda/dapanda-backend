@@ -19,7 +19,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 
-		registry.addEndpoint(WebSocketPath.CONNECT.getPath())
+		registry.addEndpoint(WebSocketPath.CONN.getPath())
 				.setAllowedOrigins(AllowedOriginPath.LOCAL.getPath(), AllowedOriginPath.PROD.getPath())
 				.withSockJS();
 	}
@@ -28,10 +28,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 	public void configureMessageBroker(MessageBrokerRegistry registry) {
 
 		// @MessageMapping 메서드로 라우팅하기 위한 url 패턴 지정
-		registry.setApplicationDestinationPrefixes(WebSocketPath.PUBLISH.getPath());
+		registry.setApplicationDestinationPrefixes(WebSocketPath.PUB.getPath());
 
 		// 메시지를 수신(sub, 구독)하기 위한 url 패턴 지정
-		registry.enableSimpleBroker(WebSocketPath.TOPIC.getPath());
+		registry.enableSimpleBroker(WebSocketPath.SUB.getPath());
 	}
 
 	@Override
