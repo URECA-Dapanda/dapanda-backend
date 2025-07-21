@@ -1,11 +1,8 @@
 package com.dapanda.common.config;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 import com.dapanda.auth.handler.OAuth2FailureHandler;
 import com.dapanda.auth.handler.OAuth2SuccessHandler;
 import com.dapanda.auth.service.CustomOAuth2UserService;
-import com.dapanda.auth.service.CustomUserDetailsService;
 import com.dapanda.jwt.JwtAuthenticationFilter;
 import com.dapanda.jwt.JwtTokenProvider;
 import com.dapanda.member.service.MemberService;
@@ -14,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -23,10 +18,11 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @RequiredArgsConstructor
@@ -35,7 +31,6 @@ public class SecurityConfig {
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
 	private final OAuth2FailureHandler oAuth2FailureHandler;
-	private final CustomUserDetailsService userDetailsService;
 
 	@Bean
 	public JwtAuthenticationFilter jwtAuthenticationFilter(
@@ -51,7 +46,7 @@ public class SecurityConfig {
 			JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
 
 		http
-				.cors(withDefaults())
+				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 				.csrf(AbstractHttpConfigurer::disable)
 				.formLogin(AbstractHttpConfigurer::disable)
 				.logout(AbstractHttpConfigurer::disable)
@@ -77,7 +72,7 @@ public class SecurityConfig {
 
 		http.addFilterBefore(
 				jwtAuthenticationFilter,
-				UsernamePasswordAuthenticationFilter.class
+				OAuth2AuthorizationRequestRedirectFilter.class
 		);
 
 		return http.build();
@@ -97,30 +92,17 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public AuthenticationProvider authenticationProvider() {
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration(); // cors 설정
+		configuration.addAllowedOrigin(AllowedOriginPath.PROD.getPath());
+		configuration.addAllowedOrigin(AllowedOriginPath.LOCAL.getPath());
+		configuration.addAllowedMethod("*"); // 모든 HTTP 메소드 허용
+		configuration.addAllowedHeader("*"); // 모든 헤더 허용
+		configuration.setAllowCredentials(true); // 쿠키 허용
 
-		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-		provider.setUserDetailsService(userDetailsService);
-		provider.setPasswordEncoder(passwordEncoder());
-
-		return provider;
-	}
-
-	@Bean
-	public WebMvcConfigurer corsConfigurer() {
-
-		return new WebMvcConfigurer() {
-
-			@Override
-			public void addCorsMappings(CorsRegistry registry) {
-
-				registry.addMapping("/api/**")
-						.allowedOrigins("http://localhost:3000", "https://dapanda.org",
-								"https://www.dapanda.org")
-						.allowedMethods("*")
-						.allowCredentials(true);
-			}
-		};
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration); // 모든 경로에 대해 위 설정 적용
+		return source;
 	}
 
 }
