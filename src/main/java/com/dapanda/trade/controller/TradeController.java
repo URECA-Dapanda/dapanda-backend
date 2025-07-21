@@ -5,9 +5,11 @@ import com.dapanda.common.exception.CommonResponse;
 import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
 import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
+import com.dapanda.trade.dto.response.TradeHistoryResponse;
 import com.dapanda.trade.dto.response.TradeMobileDataResponse;
 import com.dapanda.trade.service.TradeService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,5 +49,15 @@ public class TradeController {
 
 		return CommonResponse.success(
 				tradeService.scrapPurchaseMobileData(userDetails.getId(), request));
+	}
+
+	@GetMapping("/trades")
+	public CommonResponse<TradeHistoryResponse> findTradeHistory(
+			@RequestParam(required = false) Long cursorId,
+			@RequestParam @Min(1) Integer size,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		return CommonResponse.success(
+				tradeService.findTradeHistory(cursorId, size, userDetails.getId()));
 	}
 }
