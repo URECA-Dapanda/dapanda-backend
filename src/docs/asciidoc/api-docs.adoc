@@ -962,3 +962,42 @@ include::{snippets}/trade/post-mobile-data-scrap-insufficient-cash-error/http-re
 include::{snippets}/trade/post-mobile-data-scrap-insufficient-remain-amount-error/http-request.adoc[]
 
 include::{snippets}/trade/post-mobile-data-scrap-insufficient-remain-amount-error/http-response.adoc[]
+
+==== 와이파이 상품 구매
+
+`POST /api/trades/wifi`
+
+와이파이 상품 구매를 합니다.
+
+===== 요청
+
+include::{snippets}/trade/post-wifi/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/trade/post-wifi/request-fields.adoc[]
+
+====== 응답
+
+include::{snippets}/trade/post-wifi/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/trade/post-wifi/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 영업 시간 초과
+
+include::{snippets}/trade/post-wifi-invalid-operation-time-error/http-request.adoc[]
+
+include::{snippets}/trade/post-wifi-invalid-operation-time-error/http-response.adoc[]
+
+====== 존재하지 않는 와이파이 상품
+
+include::{snippets}/trade/post-wifi-not-found-error/http-request.adoc[]
+
+include::{snippets}/trade/post-wifi-not-found-error/http-response.adoc[]
+
+그 외의 에러는 데이터 상품과 동일합니다.
+(보유 캐시 부족, 자신이 등록한 상품)
