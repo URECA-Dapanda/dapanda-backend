@@ -7,6 +7,7 @@ import com.dapanda.auth.dto.response.SignupResponse;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.jwt.JwtPrinciple;
 import com.dapanda.jwt.JwtTokenProvider;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberRole;
@@ -47,7 +48,7 @@ public class MemberService {
 
 		refreshTokenService.save(member, refreshToken);
 
-		Cookie cookie = new Cookie("accessToken", accessToken);
+		Cookie cookie = new Cookie(JwtPrinciple.ACCESS_TOKEN.getKey(), accessToken);
 		cookie.setHttpOnly(true);
 		cookie.setSecure(true);
 		cookie.setPath("/");
