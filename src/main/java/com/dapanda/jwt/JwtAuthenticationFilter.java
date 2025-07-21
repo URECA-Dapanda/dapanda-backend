@@ -40,18 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			HttpServletResponse response,
 			FilterChain filterChain) throws ServletException, IOException {
 
-		String accessToken = null;
-
-		// 1. Authorization 헤더 우선 체크
-		String bearerToken = request.getHeader("Authorization");
-		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-			accessToken = bearerToken.substring(7);
-		}
-		// 2. 쿠키에서 토큰(헤더 없을 때만)
-		if (accessToken == null) {
-			accessToken = jwtTokenProvider.resolveTokenFromCookie(request, "accessToken");
-		}
-
+		String accessToken = jwtTokenProvider.resolveTokenFromCookie(request, "accessToken");
 		String refreshToken = jwtTokenProvider.resolveTokenFromCookie(request, "refreshToken");
 		boolean authenticated = false;
 
