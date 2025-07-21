@@ -8,6 +8,7 @@ import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_150;
 import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
 import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
 import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_2;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
 import static com.dapanda.TestConstants.Product.PRICE_1500;
 import static com.dapanda.TestConstants.Product.PRICE_3000;
@@ -30,6 +31,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -42,6 +44,7 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.plan.entity.Plan;
 import com.dapanda.plan.repository.PlanRepository;
 import com.dapanda.plan.service.entity.PlanFixture;
+import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.MobileData;
 import com.dapanda.product.entity.MobileDataFixture;
 import com.dapanda.product.entity.Product;
@@ -57,7 +60,10 @@ import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
 import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
 import com.dapanda.trade.dto.request.TradeWifiRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
+import com.dapanda.trade.entity.Trade;
+import com.dapanda.trade.entity.TradeDetails;
 import com.dapanda.trade.entity.TradeFixture;
+import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
 import com.dapanda.trade.service.TradeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -110,6 +116,8 @@ class TradeControllerTest {
 	private WifiRepository wifiRepository;
 	@Autowired
 	private TradeRepository tradeRepository;
+	@Autowired
+	private TradeDetailsRepository tradeDetailsRepository;
 	@Autowired
 	private PlanRepository planRepository;
 	@Autowired
@@ -1024,7 +1032,7 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data.tradeId").exists())
-						.andDo(document("trade/post-wifi-",
+						.andDo(document("trade/post-wifi",
 								requestFields(
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("wifiId").description("와이파이 아이디 (필수)"),
@@ -1154,6 +1162,129 @@ class TradeControllerTest {
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
 										fieldWithPath("message").description("처리 결과 메시지")
+								))
+						);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("상품 거래(구매) 내역 조회")
+	class FindTradeHistory {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("상품 거래(구매) 내역 조회를 성공한다")
+			void findTradeHistory() throws Exception {
+
+				// given
+				Member buyer = MemberFixture.createMember1();
+				memberRepository.save(buyer);
+
+				Wifi wifi1 = WifiFixture.createWifi(TITLE + 1, CONTENT, LATITUDE, LONGITUDE,
+						START_TIME, END_TIME);
+				Wifi wifi2 = WifiFixture.createWifi(TITLE + 2, CONTENT, LATITUDE, LONGITUDE,
+						START_TIME, END_TIME);
+				wifiRepository.saveAll(new ArrayList<>(Arrays.asList(wifi1, wifi2)));
+
+				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
+				mobileDataRepository.save(mobileData);
+
+				Trade trade1 = TradeFixture.createTradeWifi(buyer);
+				Trade trade2 = TradeFixture.createTradeWifi(buyer);
+				Trade trade3 = TradeFixture.createTradeMobileDataDefault(buyer);
+
+				Product wifiProduct1 = productRepository.save(Product.of(
+						ProductState.ACTIVE,
+						5000,
+						wifi1.getId(),
+						ItemType.WIFI,
+						buyer
+				));
+				Product wifiProduct2 = productRepository.save(Product.of(
+						ProductState.ACTIVE,
+						5000,
+						wifi2.getId(),
+						ItemType.WIFI,
+						buyer
+				));
+				Product mobileDataProduct = productRepository.save(Product.of(
+						ProductState.ACTIVE,
+						5000,
+						mobileData.getId(),
+						ItemType.MOBILE_DATA,
+						buyer
+				));
+
+				tradeRepository.saveAll(new ArrayList<>(List.of(trade1, trade2, trade3)));
+				tradeDetailsRepository.save(TradeDetails.of(wifiProduct1, trade1));
+				tradeDetailsRepository.save(TradeDetails.of(wifiProduct2, trade2));
+				tradeDetailsRepository.save(TradeDetails.of(mobileDataProduct, trade3));
+
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
+
+				// when & then
+				mockMvc.perform(get("/api/trades")
+								.param("size", String.valueOf(DEFAULT_SIZE_2))
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").exists())
+						.andExpect(jsonPath("$.message").exists())
+						.andExpect(jsonPath("$.data").exists())
+						.andExpect(jsonPath("$.data.tradeCount").exists())
+						.andExpect(jsonPath("$.data.trades").exists())
+						.andExpect(jsonPath("$.data.trades.data").isArray())
+						.andExpect(jsonPath("$.data.trades.data[0].tradeId").exists())
+						.andExpect(jsonPath("$.data.trades.data[0].tradeType").exists())
+						.andExpect(jsonPath("$.data.trades.data[0].dataAmount").exists())
+						.andExpect(jsonPath("$.data.trades.data[0].title").exists())
+						.andExpect(jsonPath("$.data.trades.data[0].createdAt").exists())
+						.andExpect(jsonPath("$.data.trades.pageInfo").exists())
+						.andExpect(jsonPath("$.data.trades.pageInfo.size").exists())
+						.andExpect(jsonPath("$.data.trades.pageInfo.hasNext").exists())
+						.andExpect(jsonPath("$.data.trades.pageInfo.nextCursorId").exists())
+						.andDo(print())
+						.andDo(document("trade/get-trade-history",
+								queryParameters(
+										parameterWithName("cursorId").description("커서 아이디 (선택)")
+												.optional(),
+										parameterWithName("size").description(
+												"페이지 크기 (선택, 기본값 = 2, 최대 = 100)").optional()
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data").description("응답 데이터 (에러시 반환되지 않음)"),
+										fieldWithPath("data.tradeCount").description("총 거래 횟수"),
+										fieldWithPath("data.trades").description(
+												"거래 내역 조회 페이지네이션 결과"),
+										fieldWithPath("data.trades.data[]").description("거래 데이터"),
+										fieldWithPath("data.trades.data[].tradeId").description(
+												"거래 아이디"),
+										fieldWithPath("data.trades.data[].tradeType").description(
+												"거래 타입 (MOBILE_DATA_SINGLE (데이터 일반 구매), MOBILE_DATA_COMPOSITE (데이터 자투리 구매), WIFI (와이파이))"),
+										fieldWithPath("data.trades.data[].dataAmount").description(
+												"거래 데이터양 (데이터)"),
+										fieldWithPath("data.trades.data[].title").description(
+												"거래 상품 제목 (와이파이)"),
+										fieldWithPath("data.trades.data[].createdAt").description(
+												"거래 생성 시간"),
+										fieldWithPath("data.trades.pageInfo").description("페이지 정보"),
+										fieldWithPath("data.trades.pageInfo.size").description(
+												"현재 페이지 크기"),
+										fieldWithPath("data.trades.pageInfo.hasNext").description(
+												"다음 페이지 존재 여부"),
+										fieldWithPath(
+												"data.trades.pageInfo.nextCursorId").description(
+												"다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)")
 								))
 						);
 			}
