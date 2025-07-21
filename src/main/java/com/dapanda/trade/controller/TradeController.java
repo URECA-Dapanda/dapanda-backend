@@ -2,13 +2,16 @@ package com.dapanda.trade.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.CommonResponse;
-import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
-import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
-import com.dapanda.trade.dto.request.TradeWifiRequest;
+import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
+import com.dapanda.trade.dto.request.PurchaseWifiRequest;
+import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
-import com.dapanda.trade.dto.response.TradeMobileDataResponse;
+import com.dapanda.trade.dto.response.FindTradeHistoryResponse;
+import com.dapanda.trade.dto.response.TradeProductResponse;
 import com.dapanda.trade.service.TradeService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,8 +29,8 @@ public class TradeController {
 	private final TradeService tradeService;
 
 	@PostMapping("/trades/mobile-data/default")
-	public CommonResponse<TradeMobileDataResponse> defaultPurchaseMobileData(
-			@RequestBody @Valid TradeMobileDataDefaultRequest request,
+	public CommonResponse<TradeProductResponse> defaultPurchaseMobileData(
+			@RequestBody @Valid DefaultPurchaseMobileDataRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return CommonResponse.success(
@@ -42,8 +45,8 @@ public class TradeController {
 	}
 
 	@PostMapping("/trades/mobile-data/scrap")
-	public CommonResponse<TradeMobileDataResponse> scrapPurchaseMobileData(
-			@RequestBody @Valid TradeMobileDataScrapRequest request,
+	public CommonResponse<TradeProductResponse> scrapPurchaseMobileData(
+			@RequestBody @Valid ScrapPurchaseMobileDataRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return CommonResponse.success(
@@ -51,10 +54,20 @@ public class TradeController {
 	}
 
 	@PostMapping("/trades/wifi")
-	public CommonResponse<TradeMobileDataResponse> purchaseWifi(
-			@RequestBody @Valid TradeWifiRequest request,
+	public CommonResponse<TradeProductResponse> purchaseWifi(
+			@RequestBody @Valid PurchaseWifiRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return CommonResponse.success(tradeService.purchaseWifi(userDetails.getId(), request));
+	}
+
+	@GetMapping("/trades")
+	public CommonResponse<FindTradeHistoryResponse> findTradeHistory(
+			@RequestParam(required = false) Long cursorId,
+			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		return CommonResponse.success(
+				tradeService.findTradeHistory(cursorId, size, userDetails.getId()));
 	}
 }

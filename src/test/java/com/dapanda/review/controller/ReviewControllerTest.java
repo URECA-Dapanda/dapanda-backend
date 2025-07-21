@@ -2,13 +2,13 @@ package com.dapanda.review.controller;
 
 import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_REVIEW_SORT_OPTION;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Review.COMMENT;
 import static com.dapanda.TestConstants.Review.NEW_COMMENT;
 import static com.dapanda.TestConstants.Review.NEW_RATING;
 import static com.dapanda.TestConstants.Review.RATING;
 import static com.dapanda.TestConstants.Review.REVIEW_ID;
-import static com.dapanda.TestConstants.Trade.TRADE_ID;
+import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
@@ -200,7 +200,7 @@ class ReviewControllerTest {
 				CreateReviewRequest request = new CreateReviewRequest(null, null);
 
 				// when & then
-				mockMvc.perform(post("/api/trades/{tradeId}/reviews", TRADE_ID)
+				mockMvc.perform(post("/api/trades/{tradeId}/reviews", TRADE_ID_1)
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 						)
@@ -261,14 +261,14 @@ class ReviewControllerTest {
 
 				//when & then
 				mockMvc.perform(get("/api/members/{memberId}/reviews/received", seller.getId())
-								.param("size", String.valueOf(DEFAULT_SIZE))
+								.param("size", String.valueOf(DEFAULT_SIZE_2))
 								.param("reviewSortOption", DEFAULT_REVIEW_SORT_OPTION))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data.data").exists())
 						.andExpect(jsonPath("$.data.data.length()").value(
-								Math.min(DEFAULT_SIZE, reviews.size())))
+								Math.min(DEFAULT_SIZE_2, reviews.size())))
 						.andExpect(jsonPath("$.data.pageInfo").exists())
 						.andExpect(jsonPath("$.data.pageInfo.hasNext").isBoolean())
 						.andExpect(jsonPath("$.data.pageInfo.size").isNumber())
@@ -393,7 +393,7 @@ class ReviewControllerTest {
 
 				//when & then
 				mockMvc.perform(get("/api/reviews/my/written")
-								.param("size", String.valueOf(DEFAULT_SIZE))
+								.param("size", String.valueOf(DEFAULT_SIZE_2))
 								.param("reviewSortOption", DEFAULT_REVIEW_SORT_OPTION)
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, Collections.emptyList()
@@ -403,7 +403,7 @@ class ReviewControllerTest {
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data.data").exists())
 						.andExpect(jsonPath("$.data.data.length()").value(
-								Math.min(DEFAULT_SIZE, reviews.size())))
+								Math.min(DEFAULT_SIZE_2, reviews.size())))
 						.andExpect(jsonPath("$.data.pageInfo").exists())
 						.andExpect(jsonPath("$.data.pageInfo.hasNext").isBoolean())
 						.andExpect(jsonPath("$.data.pageInfo.size").isNumber())

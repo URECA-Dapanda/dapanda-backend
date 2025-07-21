@@ -1,5 +1,6 @@
 package com.dapanda.trade.service;
 
+import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
@@ -14,11 +15,13 @@ import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
 import com.dapanda.trade.dto.MobileDataScrap;
-import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
-import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
-import com.dapanda.trade.dto.request.TradeWifiRequest;
+import com.dapanda.trade.dto.TradeHistorySummary;
+import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
+import com.dapanda.trade.dto.request.PurchaseWifiRequest;
+import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
-import com.dapanda.trade.dto.response.TradeMobileDataResponse;
+import com.dapanda.trade.dto.response.FindTradeHistoryResponse;
+import com.dapanda.trade.dto.response.TradeProductResponse;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeDetails;
 import com.dapanda.trade.entity.TradeType;
@@ -60,8 +63,8 @@ public class TradeService {
 	 * 9. Response: 구매 데이터양, 내 총 데이터양
 	 */
 	@Transactional
-	public TradeMobileDataResponse defaultPurchaseMobileData(
-			Long buyerId, TradeMobileDataDefaultRequest request) {
+	public TradeProductResponse defaultPurchaseMobileData(
+			Long buyerId, DefaultPurchaseMobileDataRequest request) {
 
 		Product product = productRepository.findByIdForUpdate(request.productId())
 				.orElseThrow();
@@ -90,7 +93,7 @@ public class TradeService {
 	/**
 	 * 데이터 통합 상품 일반 구매
 	 */
-	private TradeMobileDataResponse handleFullPurchaseProduct(Product product,
+	private TradeProductResponse handleFullPurchaseProduct(Product product,
 			MobileData mobileData, Long buyerId) {
 
 		// Lock 건 상태로 구매자, 판매자 조회
@@ -101,17 +104,18 @@ public class TradeService {
 		deductBuyerCashAndUpdateState(buyer, product, mobileData, product.getPrice(),
 				mobileData.getDataAmount());
 
-		Trade trade = createTradeAndTradeDetails(product, mobileData, buyer, product.getPrice());
+		Trade trade = createTradeAndTradeDetails(product, mobileData, buyer, seller,
+				product.getPrice());
 
 		updateBuyerAndSellerData(buyer, seller, mobileData.getDataAmount());
 
-		return TradeMobileDataResponse.of(trade.getId());
+		return TradeProductResponse.of(trade.getId());
 	}
 
 	/**
 	 * 데이터 분할 상품 일반 구매
 	 */
-	private TradeMobileDataResponse handlePartialPurchaseProduct(Product product,
+	private TradeProductResponse handlePartialPurchaseProduct(Product product,
 			MobileData mobileData, Long buyerId, float dataAmount, int price) {
 
 		// Lock 건 상태로 구매자, 판매자 조회
@@ -121,11 +125,12 @@ public class TradeService {
 
 		deductBuyerCashAndUpdateState(buyer, product, mobileData, price, dataAmount);
 
-		Trade trade = createTradeAndTradeDetails(product, mobileData, buyer, product.getPrice());
+		Trade trade = createTradeAndTradeDetails(product, mobileData, buyer, seller,
+				product.getPrice());
 
 		updateBuyerAndSellerData(buyer, seller, dataAmount);
 
-		return TradeMobileDataResponse.of(trade.getId());
+		return TradeProductResponse.of(trade.getId());
 	}
 
 	private void deductBuyerCashAndUpdateState(Member buyer, Product product, MobileData mobileData,
@@ -147,15 +152,18 @@ public class TradeService {
 	}
 
 	private Trade createTradeAndTradeDetails(Product product, MobileData mobileData, Member buyer,
-			int price) {
+			Member seller, int price) {
 
-		Trade trade = Trade.of(mobileData.getDataAmount(), price, TradeType.PURCHASE_SINGLE,
-				buyer);
-		tradeRepository.save(trade);
-		TradeDetails tradeDetails = TradeDetails.of(product, trade);
-		tradeDetailsRepository.save(tradeDetails);
+		Trade buyerTrade = Trade.of(mobileData.getDataAmount(), price,
+				TradeType.MOBILE_PURCHASE_SINGLE, buyer);
+		Trade sellerTrade = Trade.of(mobileData.getDataAmount(), price, TradeType.SALE, seller);
+		tradeRepository.saveAll(new ArrayList<>(List.of(buyerTrade, sellerTrade)));
+		TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
+		TradeDetails sellerTradeDetails = TradeDetails.of(product, sellerTrade);
+		tradeDetailsRepository.saveAll(
+				new ArrayList<>(List.of(buyerTradeDetails, sellerTradeDetails)));
 
-		return trade;
+		return buyerTrade;
 	}
 
 	private void updateBuyerAndSellerData(Member buyer, Member seller, float dataAmount) {
@@ -280,8 +288,8 @@ public class TradeService {
 	 * 데이터 상품 자투리 구매
 	 */
 	@Transactional
-	public TradeMobileDataResponse scrapPurchaseMobileData(Long buyerId,
-			TradeMobileDataScrapRequest request) {
+	public TradeProductResponse scrapPurchaseMobileData(Long buyerId,
+			ScrapPurchaseMobileDataRequest request) {
 
 		float totalAmount = request.totalAmount();
 		int totalPrice = request.totalPrice();
@@ -296,8 +304,9 @@ public class TradeService {
 		}
 
 		// 3. 거래 생성
-		Trade trade = Trade.of(totalAmount, null, totalPrice, TradeType.PURCHASE_COMPOSITE, buyer);
-		tradeRepository.save(trade);
+		Trade buyerTrade = Trade.of(totalAmount, totalPrice, TradeType.MOBILE_PURCHASE_COMPOSITE,
+				buyer);
+		tradeRepository.save(buyerTrade);
 
 		// 4. 각 상품 조합 순회
 		for (MobileDataScrap scrap : request.combinations()) {
@@ -333,9 +342,16 @@ public class TradeService {
 				product.changeState(ProductState.SOLD_OUT);
 			}
 
-			// 4-7. 거래 상세 저장
-			TradeDetails tradeDetails = TradeDetails.of(product, trade);
-			tradeDetailsRepository.save(tradeDetails);
+			// 4-7. 거래 저장
+			Trade sellerTrade = Trade.of(totalAmount, null, totalPrice,
+					TradeType.MOBILE_PURCHASE_COMPOSITE, seller);
+
+			tradeRepository.save(sellerTrade);
+
+			TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
+			TradeDetails sellerTradeDetails = TradeDetails.of(product, sellerTrade);
+			tradeDetailsRepository.saveAll(
+					new ArrayList<>(List.of(buyerTradeDetails, sellerTradeDetails)));
 		}
 
 		// 5. 구매자 캐시 차감
@@ -344,14 +360,14 @@ public class TradeService {
 		// 6. 구매 데이터양 업데이트
 		buyer.addBuyingData(totalAmount);
 
-		return TradeMobileDataResponse.of(trade.getId());
+		return TradeProductResponse.of(buyerTrade.getId());
 	}
 
 	/**
 	 * 와이파이 상품 구매
 	 */
 	@Transactional
-	public TradeMobileDataResponse purchaseWifi(Long buyerId, TradeWifiRequest request) {
+	public TradeProductResponse purchaseWifi(Long buyerId, PurchaseWifiRequest request) {
 
 		// 1. 구매자 조회
 		Member buyer = memberRepository.findByIdForUpdate(buyerId).orElseThrow();
@@ -384,7 +400,7 @@ public class TradeService {
 			throw new GlobalException(ResultCode.INSUFFICIENT_CASH);
 		}
 		// 6. 거래 생성
-		Trade trade = Trade.of(timeAmount, totalPrice, TradeType.PURCHASE_SINGLE, buyer);
+		Trade trade = Trade.of(timeAmount, totalPrice, TradeType.MOBILE_PURCHASE_SINGLE, buyer);
 		tradeRepository.save(trade);
 
 		// 7. 판매자/구매자 캐시 업데이트
@@ -398,6 +414,18 @@ public class TradeService {
 		tradeDetailsRepository.save(tradeDetails);
 
 		// 9. 응답 반환
-		return TradeMobileDataResponse.of(trade.getId());
+		return TradeProductResponse.of(trade.getId());
+	}
+
+
+	public FindTradeHistoryResponse findTradeHistory(Long cursorId, Integer size,
+			Long memberId) {
+
+		Long tradeCount = tradeRepository.countTradeHistoryByMemberId(memberId);
+
+		CursorPageResponse<TradeHistorySummary> tradeHistory = tradeRepository.findTradeHistoryByCursor(
+				cursorId, size, memberId);
+
+		return FindTradeHistoryResponse.of(tradeCount, tradeHistory);
 	}
 }

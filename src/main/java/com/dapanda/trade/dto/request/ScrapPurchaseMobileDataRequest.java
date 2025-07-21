@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
-public record TradeMobileDataScrapRequest(
+public record ScrapPurchaseMobileDataRequest(
 
 		@NotNull(message = "총 데이터양은 필수입니다.")
 		Float totalAmount,

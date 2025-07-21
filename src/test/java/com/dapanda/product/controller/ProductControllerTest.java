@@ -10,7 +10,7 @@ import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
 import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
 import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
 import static com.dapanda.TestConstants.MobileData.SPLIT_TYPE;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Product.INVALID_PRODUCT_ID;
 import static com.dapanda.TestConstants.Product.NEW_PRICE_9000;
 import static com.dapanda.TestConstants.Product.PRICE_3000;
@@ -1453,7 +1453,7 @@ class ProductControllerTest {
 				//when & then
 				mockMvc.perform(get("/api/members/{memberId}/selling-products", seller.getId())
 								.param("productState", ProductState.ACTIVE.name())
-								.param("size", String.valueOf(DEFAULT_SIZE))
+								.param("size", String.valueOf(DEFAULT_SIZE_2))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, Collections.emptyList()
 								))))
@@ -1462,10 +1462,10 @@ class ProductControllerTest {
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data.data").exists())
 						.andExpect(jsonPath("$.data.data.length()").value(
-								Math.min(DEFAULT_SIZE, productActivList.size())))
+								Math.min(DEFAULT_SIZE_2, productActivList.size())))
 						.andExpect(jsonPath("$.data.pageInfo").exists())
 						.andExpect(jsonPath("$.data.pageInfo.hasNext").value(true))
-						.andExpect(jsonPath("$.data.pageInfo.size").value(DEFAULT_SIZE))
+						.andExpect(jsonPath("$.data.pageInfo.size").value(DEFAULT_SIZE_2))
 						.andExpect(jsonPath("$.data.pageInfo.nextCursorId").exists())
 						.andDo(document("product/read-selling-product",
 								pathParameters(

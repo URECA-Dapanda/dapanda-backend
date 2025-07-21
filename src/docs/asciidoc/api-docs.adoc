@@ -1038,3 +1038,25 @@ include::{snippets}/trade/post-wifi-not-found-error/http-response.adoc[]
 
 그 외의 에러는 데이터 상품과 동일합니다.
 (보유 캐시 부족, 자신이 등록한 상품)
+
+==== 상품 거래 내역 조회
+
+`GET /api/trades`
+
+상품 거래 내역을 조회합니다.
+
+===== 요청
+
+include::{snippets}/trade/get-trade-history/http-request.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/trade/get-trade-history/query-parameters.adoc[]
+
+====== 응답
+
+include::{snippets}/trade/get-trade-history/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/trade/get-trade-history/response-fields.adoc[]
