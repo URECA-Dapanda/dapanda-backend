@@ -550,8 +550,6 @@ include::{snippets}/product/post-mobile-data-over-limit-error/http-response.adoc
 include::{snippets}/product/post-mobile-data-missing-field-error/http-request.adoc[]
 include::{snippets}/product/post-mobile-data-missing-field-error/http-response.adoc[]
 
-----
-
 ==== 와이파이 상품 등록
 
 `POST /api/products/wifi`
