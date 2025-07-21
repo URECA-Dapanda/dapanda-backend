@@ -1,5 +1,6 @@
 package com.dapanda.trade.service;
 
+import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
@@ -12,9 +13,11 @@ import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.trade.dto.MobileDataScrap;
+import com.dapanda.trade.dto.TradeHistorySummary;
 import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
 import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
+import com.dapanda.trade.dto.response.TradeHistoryResponse;
 import com.dapanda.trade.dto.response.TradeMobileDataResponse;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeDetails;
@@ -96,7 +99,8 @@ public class TradeService {
 		deductBuyerCashAndUpdateState(buyer, product, mobileData, product.getPrice(),
 				mobileData.getDataAmount());
 
-		Trade trade = createTradeAndTradeDetails(product, mobileData, buyer, product.getPrice());
+		Trade trade = createTradeAndTradeDetails(product, mobileData, buyer, seller,
+				product.getPrice());
 
 		updateBuyerAndSellerData(buyer, seller, mobileData.getDataAmount());
 
@@ -116,7 +120,8 @@ public class TradeService {
 
 		deductBuyerCashAndUpdateState(buyer, product, mobileData, price, dataAmount);
 
-		Trade trade = createTradeAndTradeDetails(product, mobileData, buyer, product.getPrice());
+		Trade trade = createTradeAndTradeDetails(product, mobileData, buyer, seller,
+				product.getPrice());
 
 		updateBuyerAndSellerData(buyer, seller, dataAmount);
 
@@ -142,15 +147,18 @@ public class TradeService {
 	}
 
 	private Trade createTradeAndTradeDetails(Product product, MobileData mobileData, Member buyer,
-			int price) {
+			Member seller, int price) {
 
-		Trade trade = Trade.of(mobileData.getDataAmount(), price, TradeType.PURCHASE_SINGLE,
-				buyer);
-		tradeRepository.save(trade);
-		TradeDetails tradeDetails = TradeDetails.of(product, trade);
-		tradeDetailsRepository.save(tradeDetails);
+		Trade buyerTrade = Trade.of(mobileData.getDataAmount(), price,
+				TradeType.MOBILE_PURCHASE_SINGLE, buyer);
+		Trade sellerTrade = Trade.of(mobileData.getDataAmount(), price, TradeType.SALE, seller);
+		tradeRepository.saveAll(new ArrayList<>(List.of(buyerTrade, sellerTrade)));
+		TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
+		TradeDetails sellerTradeDetails = TradeDetails.of(product, sellerTrade);
+		tradeDetailsRepository.saveAll(
+				new ArrayList<>(List.of(buyerTradeDetails, sellerTradeDetails)));
 
-		return trade;
+		return buyerTrade;
 	}
 
 	private void updateBuyerAndSellerData(Member buyer, Member seller, float dataAmount) {
@@ -291,8 +299,9 @@ public class TradeService {
 		}
 
 		// 3. 거래 생성
-		Trade trade = Trade.of(totalAmount, null, totalPrice, TradeType.PURCHASE_COMPOSITE, buyer);
-		tradeRepository.save(trade);
+		Trade buyerTrade = Trade.of(totalAmount, null, totalPrice,
+				TradeType.MOBILE_PURCHASE_COMPOSITE, buyer);
+		tradeRepository.save(buyerTrade);
 
 		// 4. 각 상품 조합 순회
 		for (MobileDataScrap scrap : request.combinations()) {
@@ -328,9 +337,14 @@ public class TradeService {
 				product.changeState(ProductState.SOLD_OUT);
 			}
 
-			// 4-7. 거래 상세 저장
-			TradeDetails tradeDetails = TradeDetails.of(product, trade);
-			tradeDetailsRepository.save(tradeDetails);
+			// 4-7. 거래 저장
+			Trade sellerTrade = Trade.of(totalAmount, null, totalPrice,
+					TradeType.MOBILE_PURCHASE_COMPOSITE, seller);
+
+			TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
+			TradeDetails sellerTradeDetails = TradeDetails.of(product, sellerTrade);
+			tradeDetailsRepository.saveAll(
+					new ArrayList<>(List.of(buyerTradeDetails, sellerTradeDetails)));
 		}
 
 		// 5. 구매자 캐시 차감
@@ -339,6 +353,17 @@ public class TradeService {
 		// 6. 구매 데이터양 업데이트
 		buyer.addBuyingData(totalAmount);
 
-		return TradeMobileDataResponse.of(trade.getId());
+		return TradeMobileDataResponse.of(buyerTrade.getId());
+	}
+
+	public TradeHistoryResponse findTradeHistory(Long cursorId, Integer size,
+			Long memberId) {
+
+		Long tradeCount = tradeRepository.countTradeHistoryByMemberId(memberId);
+
+		CursorPageResponse<TradeHistorySummary> tradeHistory = tradeRepository.findTradeHistoryByCursor(
+				cursorId, size, memberId);
+
+		return TradeHistoryResponse.of(tradeCount, tradeHistory);
 	}
 }
