@@ -11,6 +11,13 @@ import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_2;
 import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
 import static com.dapanda.TestConstants.Product.PRICE_1500;
 import static com.dapanda.TestConstants.Product.PRICE_3000;
+import static com.dapanda.TestConstants.Product.PRICE_500;
+import static com.dapanda.TestConstants.Wifi.CONTENT;
+import static com.dapanda.TestConstants.Wifi.END_TIME;
+import static com.dapanda.TestConstants.Wifi.LATITUDE;
+import static com.dapanda.TestConstants.Wifi.LONGITUDE;
+import static com.dapanda.TestConstants.Wifi.START_TIME;
+import static com.dapanda.TestConstants.Wifi.TITLE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -40,18 +47,22 @@ import com.dapanda.product.entity.MobileDataFixture;
 import com.dapanda.product.entity.Product;
 import com.dapanda.product.entity.ProductFixture;
 import com.dapanda.product.entity.ProductState;
+import com.dapanda.product.entity.Wifi;
+import com.dapanda.product.entity.WifiFixture;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
 import com.dapanda.trade.dto.MobileDataScrap;
 import com.dapanda.trade.dto.request.TradeMobileDataDefaultRequest;
 import com.dapanda.trade.dto.request.TradeMobileDataScrapRequest;
+import com.dapanda.trade.dto.request.TradeWifiRequest;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
 import com.dapanda.trade.entity.TradeFixture;
 import com.dapanda.trade.repository.TradeRepository;
 import com.dapanda.trade.service.TradeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -958,6 +969,187 @@ class TradeControllerTest {
 										fieldWithPath("combinations[].updatedAt").description(
 												"수정된 날짜")
 
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지")
+								))
+						);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("와이파이 상품 구매 API")
+	class PurchaseWifi {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("와이파이 상품 구매를 성공한다")
+			void purchaseWifi() throws Exception {
+
+				// given
+				Member seller = MemberFixture.createMember1();
+				Member buyer = MemberFixture.createMember2();
+				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
+				List<Member> members = new ArrayList<>(Arrays.asList(seller, buyer));
+				memberRepository.saveAll(members);
+
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
+						END_TIME);
+				wifiRepository.save(wifi);
+
+				Product product = ProductFixture.createWifiProduct(PRICE_500, wifi.getId(), seller);
+				productRepository.save(product);
+
+				TradeWifiRequest request = new TradeWifiRequest(product.getId(), wifi.getId(),
+						LocalDateTime.of(2025, 3, 4, 10, 0), LocalDateTime.of(2025, 3, 4, 10, 30));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(buyer.getId());
+
+				// when & then
+				mockMvc.perform(post("/api/trades/wifi")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.tradeId").exists())
+						.andDo(document("trade/post-wifi",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)"),
+										fieldWithPath("wifiId").description("와이파이 아이디 (필수)"),
+										fieldWithPath("startTime").description(
+												"시작 시간 (필수, 10분 단위)"),
+										fieldWithPath("endTime").description("종료 시간 (필수, 10분 단위)")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data").description("응답 데이터 (에러시 반환되지 않음)"),
+										fieldWithPath("data.tradeId").description("생성된 거래 아이디")
+								))
+						);
+
+				Member updatedBuyer = memberRepository.findById(buyer.getId()).orElseThrow();
+				Member updatedSeller = memberRepository.findById(seller.getId()).orElseThrow();
+
+				assertThat(updatedBuyer.getCash()).isEqualTo(CASH_5000 - PRICE_500 * 3);
+				assertThat(updatedSeller.getCash()).isEqualTo(PRICE_500 * 3);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("와이파이 상품 구매를 할 때 입력받은 시간이 영업 시간을 넘으면 예외를 던진다")
+			void throwExceptionWhenInvalidOperationTime() throws Exception {
+
+				// given
+				Member seller = MemberFixture.createMember1();
+				Member buyer = MemberFixture.createMember2();
+				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
+				List<Member> members = new ArrayList<>(Arrays.asList(seller, buyer));
+				memberRepository.saveAll(members);
+
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
+						END_TIME);
+				wifiRepository.save(wifi);
+
+				Product product = ProductFixture.createWifiProduct(PRICE_500, wifi.getId(), seller);
+				productRepository.save(product);
+
+				TradeWifiRequest request = new TradeWifiRequest(product.getId(), wifi.getId(),
+						LocalDateTime.of(2025, 3, 4, 23, 0), LocalDateTime.of(2025, 3, 4, 23, 30));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(buyer.getId());
+
+				// when & then
+				mockMvc.perform(post("/api/trades/wifi")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andExpect(jsonPath("$.code").value(
+								ResultCode.INVALID_WIFI_OPERATION_TIME.getCode()))
+						.andExpect(
+								jsonPath("$.message").value(
+										ResultCode.INVALID_WIFI_OPERATION_TIME.getMessage()))
+						.andDo(document("trade/post-wifi",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)"),
+										fieldWithPath("wifiId").description("와이파이 아이디 (필수)"),
+										fieldWithPath("startTime").description(
+												"시작 시간 (필수, 10분 단위)"),
+										fieldWithPath("endTime").description("종료 시간 (필수, 10분 단위)")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지")
+								))
+						);
+			}
+
+			@Test
+			@DisplayName("와이파이 상품이 존재하지 않으면 예외를 던진다")
+			void throwExceptionWhenNotFoundWifi() throws Exception {
+
+				// given
+				Member seller = MemberFixture.createMember1();
+				Member buyer = MemberFixture.createMember2();
+				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
+				List<Member> members = new ArrayList<>(Arrays.asList(seller, buyer));
+				memberRepository.saveAll(members);
+
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
+						END_TIME);
+				wifiRepository.save(wifi);
+
+				Product product = ProductFixture.createWifiProduct(PRICE_500, wifi.getId(), seller);
+				productRepository.save(product);
+
+				TradeWifiRequest request = new TradeWifiRequest(product.getId(), wifi.getId() + 1,
+						LocalDateTime.of(2025, 3, 4, 10, 0), LocalDateTime.of(2025, 3, 4, 10, 30));
+
+				CustomUserDetails userDetails = mock(CustomUserDetails.class);
+
+				given(userDetails.getId()).willReturn(buyer.getId());
+
+				// when & then
+				mockMvc.perform(post("/api/trades/wifi")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, Collections.emptyList()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andExpect(jsonPath("$.code").value(ResultCode.WIFI_NOT_FOUND.getCode()))
+						.andExpect(
+								jsonPath("$.message").value(ResultCode.WIFI_NOT_FOUND.getMessage()))
+						.andDo(document("trade/post-wifi",
+								requestFields(
+										fieldWithPath("productId").description("상품 아이디 (필수)"),
+										fieldWithPath("wifiId").description("와이파이 아이디 (필수)"),
+										fieldWithPath("startTime").description(
+												"시작 시간 (필수, 10분 단위)"),
+										fieldWithPath("endTime").description("종료 시간 (필수, 10분 단위)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
