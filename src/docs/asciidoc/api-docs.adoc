@@ -89,6 +89,20 @@ DaPanda 서비스의 REST API 문서입니다.
 
 `/sub/{chatRoomId}` : chatRoomId 로 채팅 메시지 구독(sub)
 
+==== 채팅방 조회
+
+===== 요청 파라미터
+
+include::{snippets}/chat/read-chat-room/query-parameters.adoc[]
+
+===== 응답
+
+include::{snippets}/chat/read-chat-room/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/chat/read-chat-room/response-fields.adoc[]
+
 ==== 채팅방 생성
 
 `POST` 요청으로 채팅방을 생성할 수 있습니다.
