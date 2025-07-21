@@ -356,7 +356,6 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		return sum != null ? sum : 0f;
 	}
 
-
 	private BooleanExpression isActiveProduct() {
 
 		return product.state.eq(ProductState.ACTIVE);
