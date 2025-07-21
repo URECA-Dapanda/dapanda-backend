@@ -35,7 +35,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
 
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -217,7 +217,7 @@ class ChatControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data.data").exists())
-						.andExpect(jsonPath("$.data.data.length()").value(Math.min(DEFAULT_SIZE, chatRoomList.size())))
+						.andExpect(jsonPath("$.data.data.length()").value(Math.min(DEFAULT_SIZE_2, chatRoomList.size())))
 						.andExpect(jsonPath("$.data.pageInfo").exists())
 						.andExpect(jsonPath("$.data.pageInfo.hasNext").isBoolean())
 						.andExpect(jsonPath("$.data.pageInfo.size").isNumber())
@@ -276,7 +276,7 @@ class ChatControllerTest {
 						.andExpect(jsonPath("$.data.data.length()").value(0))
 						.andExpect(jsonPath("$.data.pageInfo").exists())
 						.andExpect(jsonPath("$.data.pageInfo.hasNext").value(false))
-						.andExpect(jsonPath("$.data.pageInfo.size").value(DEFAULT_SIZE))
+						.andExpect(jsonPath("$.data.pageInfo.size").value(DEFAULT_SIZE_2))
 						.andExpect(jsonPath("$.data.pageInfo.nextCursorId").doesNotExist())
 						.andDo(document("chat/read-chat-room-empty-list",
 								queryParameters(

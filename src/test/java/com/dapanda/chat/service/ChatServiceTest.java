@@ -30,7 +30,7 @@ import java.util.Optional;
 
 import static com.dapanda.TestConstants.Chat.*;
 import static com.dapanda.TestConstants.Member.*;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Product.PRODUCT_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -300,7 +300,7 @@ public class ChatServiceTest {
 				ReadJoiningChatRoomRequest request = new ReadJoiningChatRoomRequest(
 						null,
 						null,
-						DEFAULT_SIZE,
+						DEFAULT_SIZE_2,
 						ChatRoomReadOption.ALL,
 						USER_DETAILS_MEMBER_ID
 				);
@@ -314,13 +314,13 @@ public class ChatServiceTest {
 				CursorPageResponse<ReadJoiningChatRoomResponse> pageResponse = chatService.readChatRoom(request);
 
 				//then
-				assertThat(pageResponse.getData().size()).isEqualTo(DEFAULT_SIZE);
+				assertThat(pageResponse.getData().size()).isEqualTo(DEFAULT_SIZE_2);
 				assertThat(pageResponse.getData().get(0)).isEqualTo(response.get(0));
 				assertThat(pageResponse.getData().get(1)).isEqualTo(response.get(1));
 
 				assertThat(pageResponse.getPageInfo().isHasNext()).isTrue();
-				assertThat(pageResponse.getPageInfo().getNextCursorId()).isEqualTo(response.get(DEFAULT_SIZE - 1).getChatRoomId());
-				assertThat(pageResponse.getPageInfo().getSize()).isEqualTo(DEFAULT_SIZE);
+				assertThat(pageResponse.getPageInfo().getNextCursorId()).isEqualTo(response.get(DEFAULT_SIZE_2 - 1).getChatRoomId());
+				assertThat(pageResponse.getPageInfo().getSize()).isEqualTo(DEFAULT_SIZE_2);
 			}
 		}
 
