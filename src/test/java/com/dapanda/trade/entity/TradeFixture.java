@@ -14,7 +14,7 @@ public class TradeFixture {
 				0.5F,
 				null,
 				1000,
-				TradeType.PURCHASE_SINGLE,
+				TradeType.MOBILE_PURCHASE_SINGLE,
 				member
 		);
 	}
@@ -35,5 +35,16 @@ public class TradeFixture {
 				product.getMember().getName(), product.getPrice(), purchasePrice,
 				mobileData.getRemainAmount(), purchaseDataAmount, mobileData.getPricePer100MB(),
 				mobileData.isSplitType(), product.getUpdatedAt());
+	}
+
+	public static Trade createTradeWifi(Member member) {
+
+		return Trade.of(
+				0F,
+				30,
+				1000,
+				TradeType.WIFI,
+				member
+		);
 	}
 }

@@ -13,7 +13,7 @@ import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
 import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
 import static com.dapanda.TestConstants.MobileData.SPLIT_TYPE;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Product.NEW_PRICE_9000;
 import static com.dapanda.TestConstants.Product.PRICE_3000;
 import static com.dapanda.TestConstants.Product.PRODUCT_ID;
@@ -550,8 +550,8 @@ class ProductServiceTest {
 						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
 				MobileDataInfoResponse expectedResponse = new MobileDataInfoResponse(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member.getId(), member.getName(),
-						REMAIN_AMOUNT_1,
-						PRICE_PER_100MB_300, AVERAGE_RATE, REVIEW_COUNT, UPDATED_AT);
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_300, AVERAGE_RATE, REVIEW_COUNT, false,
+						UPDATED_AT);
 
 				given(productRepository.existsById(PRODUCT_ID))
 						.willReturn(true);
@@ -980,7 +980,7 @@ class ProductServiceTest {
 				//given
 				ReadSellingProductRequest request = new ReadSellingProductRequest(
 						DEFAULT_CURSOR_ID,
-						DEFAULT_SIZE,
+						DEFAULT_SIZE_2,
 						USER_DETAILS_MEMBER_ID,
 						ProductState.ACTIVE
 				);
@@ -995,7 +995,7 @@ class ProductServiceTest {
 						request);
 
 				//then
-				assertThat(response.getData()).hasSize(DEFAULT_SIZE);
+				assertThat(response.getData()).hasSize(DEFAULT_SIZE_2);
 
 				assertThat(response.getData()).isEqualTo(queryResponse);
 
@@ -1015,7 +1015,7 @@ class ProductServiceTest {
 				//given
 				ReadSellingProductRequest request = new ReadSellingProductRequest(
 						DEFAULT_CURSOR_ID,
-						DEFAULT_SIZE,
+						DEFAULT_SIZE_2,
 						USER_DETAILS_MEMBER_ID,
 						ProductState.ACTIVE
 				);
