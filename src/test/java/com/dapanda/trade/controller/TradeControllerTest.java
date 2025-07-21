@@ -1169,7 +1169,7 @@ class TradeControllerTest {
 	}
 
 	@Nested
-	@DisplayName("상품 거래(구매) 내역 조회")
+	@DisplayName("상품 거래(구매) 내역 조회 API")
 	class FindTradeHistory {
 
 		@Nested
