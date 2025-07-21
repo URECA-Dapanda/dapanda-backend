@@ -63,7 +63,7 @@ public class ReviewController {
 	/**
 	 * 내가 작성한 리뷰 조회
 	 */
-	@GetMapping("/reviews/my/written")
+	@GetMapping("/reviews/written")
 	public CommonResponse<CursorPageResponse<ReadWrittenReviewResponse>> readMyWrittenReview(
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@RequestParam(required = false) Long cursorId,
