@@ -28,6 +28,6 @@ public class WebSocketController {
 
 		chatService.createChatMessage(chatRoomId, request);
 
-		messageTemplate.convertAndSend(WebSocketPath.TOPIC.getPath() + WebSocketPath.SLASH.getPath() + chatRoomId, request.message());
+		messageTemplate.convertAndSend(WebSocketPath.SUB.getPath() + WebSocketPath.SLASH.getPath() + chatRoomId, request.message());
 	}
 }

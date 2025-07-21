@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum WebSocketPath {
 
-	PUBLISH("/publish"),
-	CONNECT("/connect"),
-	TOPIC("/topic"),
+	PUB("/pub"),
+	CONN("/conn"),
+	SUB("/sub"),
 	SLASH("/");
 
 	private final String path;

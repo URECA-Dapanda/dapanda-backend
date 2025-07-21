@@ -1,13 +1,16 @@
 package com.dapanda.chat.service;
 
 import com.dapanda.chat.dto.request.CreateChatMessageRequest;
+import com.dapanda.chat.dto.request.ReadJoiningChatRoomRequest;
 import com.dapanda.chat.dto.response.CreateChatRoomResponse;
+import com.dapanda.chat.dto.response.ReadJoiningChatRoomResponse;
 import com.dapanda.chat.entity.ChatMessage;
 import com.dapanda.chat.entity.ChatParticipant;
 import com.dapanda.chat.entity.ChatRoom;
 import com.dapanda.chat.repository.ChatMessageRepository;
 import com.dapanda.chat.repository.ChatParticipantRepository;
 import com.dapanda.chat.repository.ChatRoomRepository;
+import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
@@ -30,6 +33,29 @@ public class ChatService {
 	private final ChatParticipantRepository chatParticipantRepository;
 	private final ProductRepository productRepository;
 	private final MemberRepository memberRepository;
+
+	public CursorPageResponse<ReadJoiningChatRoomResponse> readChatRoom(ReadJoiningChatRoomRequest request) {
+
+		List<ReadJoiningChatRoomResponse> response = chatRoomRepository.findJoiningChatRoom(request);
+
+		boolean hasNext = response.size() > request.size();
+
+		if (hasNext) {
+			response = response.subList(0, request.size());
+		}
+
+		Long nextCursorId = hasNext && !response.isEmpty()
+				? response.get(response.size() - 1).getChatRoomId()
+				: null;
+
+		CursorPageResponse.PageInfo pageInfo = CursorPageResponse.PageInfo.of(
+				nextCursorId,
+				hasNext,
+				request.size()
+		);
+
+		return CursorPageResponse.of(response, pageInfo);
+	}
 
 	@Transactional
 	public CreateChatRoomResponse createChatRoom(Long productId, Long memberId) {
@@ -82,6 +108,7 @@ public class ChatService {
 		}
 	}
 
+	@Transactional
 	public void createChatMessage(Long chatRoomId, CreateChatMessageRequest request) {
 
 		validateParticipant(chatRoomId, request.senderId());
@@ -94,7 +121,9 @@ public class ChatService {
 
 		ChatMessage chatMessage = ChatMessage.of(request.message(), chatRoom, sender);
 
-		chatMessageRepository.save(chatMessage);
+		ChatMessage savedChatMessage = chatMessageRepository.save(chatMessage);
+
+		chatRoom.updateLastMessage(savedChatMessage);
 	}
 
 	private void validateParticipant(Long chatRoomId, Long memberId){

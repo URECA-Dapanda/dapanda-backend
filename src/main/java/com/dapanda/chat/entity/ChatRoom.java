@@ -5,6 +5,8 @@ import com.dapanda.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -23,11 +25,19 @@ public class ChatRoom extends CreatedAtEntity {
 	@JoinColumn(name = "product_id")
 	private Product product;
 
+	private LocalDateTime lastMessageAt;
+
 	public static ChatRoom of(Product product){
 
 		return ChatRoom.builder()
 				.state(ChatRoomState.OPENED)
 				.product(product)
+				.lastMessageAt(LocalDateTime.now())
 				.build();
+	}
+
+	public void updateLastMessage(ChatMessage chatMessage) {
+
+		this.lastMessageAt = chatMessage.getCreatedAt();
 	}
 }

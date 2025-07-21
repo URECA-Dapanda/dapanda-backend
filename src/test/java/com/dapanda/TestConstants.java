@@ -107,5 +107,6 @@ public final class TestConstants {
 		public static final Long CHAT_PARTICIPANT_ID_1 = 1L;
 		public static final Long CHAT_PARTICIPANT_ID_2 = 2L;
 		public static final String CHAT_MESSAGE = "안녕하세요~~";
+		public static final Long CHAT_MESSAGE_ID = 1L;
 	}
 }
