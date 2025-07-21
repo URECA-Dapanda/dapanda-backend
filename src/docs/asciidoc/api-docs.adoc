@@ -83,11 +83,25 @@ DaPanda 서비스의 REST API 문서입니다.
 
 ==== WebSocket 프로토콜
 
-`/connect` : 연결
+`/conn` : 연결
 
-`/publish/{chatRoomId}` : chatRoomId 로 채팅 메시지 발행(pub)
+`/pub/{chatRoomId}` : chatRoomId 로 채팅 메시지 발행(pub)
 
-`/topic/{chatRoomId}` : chatRoomId 로 채팅 메시지 구독(sub)
+`/sub/{chatRoomId}` : chatRoomId 로 채팅 메시지 구독(sub)
+
+==== 채팅방 조회
+
+===== 요청 파라미터
+
+include::{snippets}/chat/read-chat-room/query-parameters.adoc[]
+
+===== 응답
+
+include::{snippets}/chat/read-chat-room/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/chat/read-chat-room/response-fields.adoc[]
 
 ==== 채팅방 생성
 
@@ -257,9 +271,9 @@ include::{snippets}/confirm-payment-invalid-amount-error/http-response.adoc[]
 
 ==== 리뷰 조회
 
-`GET` 요청을 사용하여 내가 작성한 리뷰 또는 다른 회원이 받은 리뷰를 조회할 수 있습니다.
+===== 회원이 받은 리뷰 조회
 
-===== 회원이 받은 리뷰 요청
+`GET /api/members/{memberId}/reviews/received`
 
 include::{snippets}/review/read-received-review/path-parameters.adoc[]
 
@@ -275,7 +289,9 @@ include::{snippets}/review/read-received-review/http-response.adoc[]
 
 include::{snippets}/review/read-received-review/response-fields.adoc[]
 
-===== 내가 작성한 리뷰 요청
+===== 내가 작성한 리뷰 조회
+
+`GET /api/reviews/wrote`
 
 ====== 요청 파라미터
 
@@ -289,11 +305,27 @@ include::{snippets}/review/read-written-review/http-response.adoc[]
 
 include::{snippets}/review/read-written-review/response-fields.adoc[]
 
+===== 내가 받은 리뷰 조회
+
+`GET /api/reviews/received`
+
+====== 요청 파라미터
+
+include::{snippets}/review/read-received-review/query-parameters.adoc[]
+
+====== 응답
+
+include::{snippets}/review/read-received-review/http-response.adoc[]
+
+====== 응답 필드
+
+include::{snippets}/review/read-received-review/response-fields.adoc[]
+
 ==== 리뷰 등록
 
-`POST` 요청을 사용하여 새로운 리뷰를 등록할 수 있습니다.
-
 ===== 요청
+
+`POST /api/trades/{tradeId}/reviews`
 
 include::{snippets}/review/create-review/http-request.adoc[]
 
@@ -323,9 +355,9 @@ include::{snippets}/review/create-review/validation-error/http-response.adoc[]
 
 ==== 리뷰 수정
 
-`PATCH` 요청을 사용하여 리뷰를 수정할 수 있습니다.
-
 ===== 요청
+
+`PATCH /api/reviews/{reviewId}`
 
 include::{snippets}/review/update-review/http-request.adoc[]
 
@@ -355,9 +387,9 @@ include::{snippets}/review/update-review/validation-error/http-response.adoc[]
 
 ==== 리뷰 삭제
 
-`DELETE` 요청을 사용하여 리뷰를 삭제할 수 있습니다.
-
 ===== 요청
+
+`DELETE /api/reviews/{reviewId}`
 
 include::{snippets}/review/delete-review/http-request.adoc[]
 
