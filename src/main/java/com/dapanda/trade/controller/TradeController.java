@@ -5,6 +5,7 @@ import com.dapanda.common.exception.CommonResponse;
 import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
 import com.dapanda.trade.dto.request.PurchaseWifiRequest;
 import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
+import com.dapanda.trade.dto.response.FindCashHistoryResponse;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
 import com.dapanda.trade.dto.response.FindTradeHistoryResponse;
 import com.dapanda.trade.dto.response.TradeProductResponse;
@@ -61,7 +62,7 @@ public class TradeController {
 		return CommonResponse.success(tradeService.purchaseWifi(userDetails.getId(), request));
 	}
 
-	@GetMapping("/trades")
+	@GetMapping("/trades/purchase-history")
 	public CommonResponse<FindTradeHistoryResponse> findTradeHistory(
 			@RequestParam(required = false) Long cursorId,
 			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size,
@@ -69,5 +70,17 @@ public class TradeController {
 
 		return CommonResponse.success(
 				tradeService.findTradeHistory(cursorId, size, userDetails.getId()));
+	}
+
+	@GetMapping("/trades/cash-history")
+	public CommonResponse<FindCashHistoryResponse> cashHistory(
+			@RequestParam(required = false) Long cursorId,
+			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size,
+			@RequestParam Integer year,
+			@RequestParam Integer month,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		return CommonResponse.success(
+				tradeService.findCashHistory(cursorId, size, userDetails.getId(), year, month));
 	}
 }

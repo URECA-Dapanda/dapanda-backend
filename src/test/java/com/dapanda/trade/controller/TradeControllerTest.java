@@ -68,6 +68,7 @@ import com.dapanda.trade.repository.TradeRepository;
 import com.dapanda.trade.service.TradeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1232,7 +1233,7 @@ class TradeControllerTest {
 				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				// when & then
-				mockMvc.perform(get("/api/trades")
+				mockMvc.perform(get("/api/trades/purchase-history")
 								.param("size", String.valueOf(DEFAULT_SIZE_2))
 								.contentType(MediaType.APPLICATION_JSON)
 								.with(authentication(new UsernamePasswordAuthenticationToken(
@@ -1256,7 +1257,7 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.data.trades.pageInfo.hasNext").exists())
 						.andExpect(jsonPath("$.data.trades.pageInfo.nextCursorId").exists())
 						.andDo(print())
-						.andDo(document("trade/get-trade-history",
+						.andDo(document("trade/get-trade-purchase-history",
 								queryParameters(
 										parameterWithName("cursorId").description("커서 아이디 (선택)")
 												.optional(),
@@ -1291,6 +1292,137 @@ class TradeControllerTest {
 												"다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)")
 								))
 						);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("캐시 내역 조회 API")
+	class FindCashHistory {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("캐시 내역을 조회한다")
+			void findCashHistory() throws Exception {
+
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+
+				Trade wifiTrade = TradeFixture.createTradeWifi(member);
+				Trade mobileDataTrade = TradeFixture.createTradeMobileDataDefault(member);
+				Trade chargeTrade = TradeFixture.createTradeCharge(member);
+				Trade saleTrade = TradeFixture.createTradeSale(member);
+				tradeRepository.saveAll(
+						List.of(wifiTrade, mobileDataTrade, chargeTrade, saleTrade));
+
+				int year = LocalDate.now().getYear();
+				int month = LocalDate.now().getMonthValue();
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
+				// when & then
+				mockMvc.perform(get("/api/trades/cash-history")
+								.param("size", String.valueOf(4))
+								.param("year", String.valueOf(year))
+								.param("month", String.valueOf(month))
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.cashHistoryMonthlySummary").exists())
+						.andExpect(jsonPath("$.data.cashHistoryMonthlySummary.totalPurchase").value(
+								wifiTrade.getTradingPrice() + mobileDataTrade.getTradingPrice()))
+						.andExpect(jsonPath("$.data.cashHistoryMonthlySummary.totalSelling").value(
+								saleTrade.getTradingPrice()))
+						.andExpect(jsonPath("$.data.cashHistoryMonthlySummary.totalCharge").value(
+								chargeTrade.getTradingPrice()))
+						.andExpect(
+								jsonPath("$.data.cashHistoryMonthlySummary.totalRefund").value(0))
+						.andExpect(jsonPath("$.data.cashHistoryMonthlySummary.total").value(
+								chargeTrade.getTradingPrice() - wifiTrade.getTradingPrice()
+										- mobileDataTrade.getTradingPrice()
+										+ saleTrade.getTradingPrice()))
+						.andExpect(jsonPath("$.data.cashHistorySummary.data.length()").value(4))
+						.andExpect(jsonPath("$.data.cashHistorySummary.data[0].tradeId").exists())
+						.andExpect(jsonPath("$.data.cashHistorySummary.data[0].tradeType").exists())
+						.andExpect(jsonPath("$.data.cashHistorySummary.data[0].price").exists())
+						.andExpect(
+								jsonPath("$.data.cashHistorySummary.data[0].description").exists())
+						.andExpect(jsonPath("$.data.cashHistorySummary.data[0].createdAt").exists())
+						.andExpect(jsonPath("$.data.cashHistorySummary.pageInfo").exists())
+						.andDo(document("trade/get-cash-history",
+								queryParameters(
+										parameterWithName("cursorId").description("커서 아이디 (선택)")
+												.optional(),
+										parameterWithName("size").description(
+												"페이지 크기 (선택, 기본값 = 2, 최대 = 100)").optional(),
+										parameterWithName("year").description("조회 연도"),
+										parameterWithName("month").description("조회 월")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data").description("응답 데이터 (에러시 반환되지 않음)"),
+										// 월간 요약 (CashHistoryMonthlySummary)
+										fieldWithPath("data.cashHistoryMonthlySummary").description(
+												"월간 캐시 요약"),
+										fieldWithPath(
+												"data.cashHistoryMonthlySummary.totalPurchase").description(
+												"총 구매 지출 금액"),
+										fieldWithPath(
+												"data.cashHistoryMonthlySummary.totalSelling").description(
+												"총 판매 수입 금액"),
+										fieldWithPath(
+												"data.cashHistoryMonthlySummary.totalCharge").description(
+												"총 캐시 충전 금액"),
+										fieldWithPath(
+												"data.cashHistoryMonthlySummary.totalRefund").description(
+												"총 캐시 환불 금액"),
+										fieldWithPath(
+												"data.cashHistoryMonthlySummary.total").description(
+												"총 자산 변화 금액"),
+
+										// 거래 내역 (CursorPageResponse<CashHistorySummary>)
+										fieldWithPath("data.cashHistorySummary").description(
+												"캐시 사용 내역 페이지네이션 결과"),
+										fieldWithPath("data.cashHistorySummary.data[]").description(
+												"캐시 내역 리스트"),
+										fieldWithPath(
+												"data.cashHistorySummary.data[].tradeId").description(
+												"거래 아이디"),
+										fieldWithPath(
+												"data.cashHistorySummary.data[].tradeType").description(
+												"거래 타입"),
+										fieldWithPath(
+												"data.cashHistorySummary.data[].price").description(
+												"거래 금액"),
+										fieldWithPath(
+												"data.cashHistorySummary.data[].description").description(
+												"거래 설명"),
+										fieldWithPath(
+												"data.cashHistorySummary.data[].createdAt").description(
+												"거래 생성 시각"),
+
+										fieldWithPath(
+												"data.cashHistorySummary.pageInfo").description(
+												"페이지네이션 정보"),
+										fieldWithPath(
+												"data.cashHistorySummary.pageInfo.nextCursorId").description(
+												"다음 커서 ID (null이면 다음 없음)"),
+										fieldWithPath(
+												"data.cashHistorySummary.pageInfo.hasNext").description(
+												"다음 페이지 존재 여부"),
+										fieldWithPath(
+												"data.cashHistorySummary.pageInfo.size").description(
+												"페이지 크기")
+								)
+						));
 			}
 		}
 	}
