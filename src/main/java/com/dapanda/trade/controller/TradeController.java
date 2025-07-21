@@ -10,7 +10,7 @@ import com.dapanda.trade.dto.response.TradeHistoryResponse;
 import com.dapanda.trade.dto.response.TradeMobileDataResponse;
 import com.dapanda.trade.service.TradeService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -63,7 +63,7 @@ public class TradeController {
 	@GetMapping("/trades")
 	public CommonResponse<TradeHistoryResponse> findTradeHistory(
 			@RequestParam(required = false) Long cursorId,
-			@RequestParam @Min(1) Integer size,
+			@RequestParam(defaultValue = "2") @Max(100) Integer size,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return CommonResponse.success(
