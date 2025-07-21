@@ -1,6 +1,7 @@
 package com.dapanda.auth.handler;
 
 import com.dapanda.auth.entity.OAuthProvider;
+import com.dapanda.jwt.JwtPrinciple;
 import com.dapanda.jwt.JwtTokenProvider;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
@@ -9,6 +10,7 @@ import com.dapanda.refreshToken.service.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 	private final MemberRepository memberRepository;
 	private final PlanService planService;
 
+	@Transactional
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request,
 			HttpServletResponse response,
@@ -62,7 +65,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		boolean isLocal = (origin != null && origin.contains("localhost")) ||
 				(host != null && host.contains("localhost"));
 
-		Cookie accessCookie = new Cookie("accessToken", accessToken);
+		Cookie accessCookie = new Cookie(JwtPrinciple.ACCESS_TOKEN.getKey(), accessToken);
 		accessCookie.setHttpOnly(true);
 		accessCookie.setSecure(true);
 		accessCookie.setPath("/");
@@ -72,7 +75,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		}
 		response.addCookie(accessCookie);
 
-		Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+		Cookie refreshCookie = new Cookie(JwtPrinciple.REFRESH_TOKEN.getKey(), refreshToken);
 		refreshCookie.setHttpOnly(true);
 		refreshCookie.setSecure(true);
 		refreshCookie.setPath("/");
