@@ -119,7 +119,7 @@ class MemberControllerTest {
 	}
 
 	@Nested
-	@DisplayName("구매/판매 데이터양 조회")
+	@DisplayName("구매/판매 데이터양 조회 API")
 	class findPurchaseSaleData {
 
 		@Nested
