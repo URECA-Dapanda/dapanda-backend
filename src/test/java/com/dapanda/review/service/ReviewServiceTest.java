@@ -49,6 +49,9 @@ class ReviewServiceTest {
 	@Mock
 	TradeRepository tradeRepository;
 
+	@Mock
+	MemberRepository memberRepository;
+
 	@InjectMocks
 	ReviewService reviewService;
 
