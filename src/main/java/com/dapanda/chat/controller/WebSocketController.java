@@ -2,6 +2,7 @@ package com.dapanda.chat.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.chat.config.WebSocketPath;
+import com.dapanda.chat.dto.response.SendChatMessageResponse;
 import com.dapanda.chat.dto.request.CreateChatMessageRequest;
 import com.dapanda.chat.service.ChatService;
 import jakarta.validation.Valid;
@@ -29,8 +30,8 @@ public class WebSocketController {
 
 		log.info("Message : {}", request.message());
 
-		chatService.createChatMessage(chatRoomId, request, userDetails.getId());
+		SendChatMessageResponse response = chatService.createChatMessage(chatRoomId, request, userDetails.getId());
 
-		messageTemplate.convertAndSend(WebSocketPath.SUB.getPath() + WebSocketPath.SLASH.getPath() + chatRoomId, request);
+		messageTemplate.convertAndSend(WebSocketPath.SUB.getPath() + WebSocketPath.SLASH.getPath() + chatRoomId, response);
 	}
 }

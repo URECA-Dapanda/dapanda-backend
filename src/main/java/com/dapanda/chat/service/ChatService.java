@@ -4,6 +4,7 @@ import com.dapanda.chat.dto.request.CreateChatMessageRequest;
 import com.dapanda.chat.dto.request.ReadJoiningChatRoomRequest;
 import com.dapanda.chat.dto.response.CreateChatRoomResponse;
 import com.dapanda.chat.dto.response.ReadJoiningChatRoomResponse;
+import com.dapanda.chat.dto.response.SendChatMessageResponse;
 import com.dapanda.chat.entity.ChatMessage;
 import com.dapanda.chat.entity.ChatParticipant;
 import com.dapanda.chat.entity.ChatRoom;
@@ -109,7 +110,7 @@ public class ChatService {
 	}
 
 	@Transactional
-	public void createChatMessage(Long chatRoomId, CreateChatMessageRequest request, Long senderId) {
+	public SendChatMessageResponse createChatMessage(Long chatRoomId, CreateChatMessageRequest request, Long senderId) {
 
 		validateParticipant(chatRoomId, senderId);
 
@@ -124,6 +125,8 @@ public class ChatService {
 		ChatMessage savedChatMessage = chatMessageRepository.save(chatMessage);
 
 		chatRoom.updateLastMessage(savedChatMessage);
+
+		return SendChatMessageResponse.of(savedChatMessage.getId(), senderId, request.message(), savedChatMessage.getCreatedAt());
 	}
 
 	private void validateParticipant(Long chatRoomId, Long memberId){
