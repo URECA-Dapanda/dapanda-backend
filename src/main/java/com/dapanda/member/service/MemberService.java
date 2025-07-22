@@ -30,6 +30,12 @@ public class MemberService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RefreshTokenService refreshTokenService;
 
+	public Member findById(Long memberId) {
+
+		return memberRepository.findById(memberId)
+				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+	}
+
 	public LoginResponse login(LoginRequest request, HttpServletResponse response) {
 
 		Member member = memberRepository.findByEmail(request.email())

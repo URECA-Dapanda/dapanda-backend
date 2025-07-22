@@ -109,14 +109,14 @@ public class ChatService {
 	}
 
 	@Transactional
-	public void createChatMessage(Long chatRoomId, CreateChatMessageRequest request) {
+	public void createChatMessage(Long chatRoomId, CreateChatMessageRequest request, Long senderId) {
 
-		validateParticipant(chatRoomId, request.senderId());
+		validateParticipant(chatRoomId, senderId);
 
 		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
 				.orElseThrow(() -> new GlobalException(ResultCode.CHAT_ROOM_NOT_FOUND));
 
-		Member sender = memberRepository.findById(request.senderId())
+		Member sender = memberRepository.findById(senderId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
 		ChatMessage chatMessage = ChatMessage.of(request.message(), chatRoom, sender);
