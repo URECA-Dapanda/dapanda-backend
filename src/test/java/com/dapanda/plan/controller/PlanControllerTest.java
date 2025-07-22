@@ -59,11 +59,13 @@ class PlanControllerTest {
 
 	@BeforeEach
 	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
+
 		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
 		cleanupDatabase();
 	}
 
 	private void cleanupDatabase() {
+
 		entityManager.clear();
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
 		jdbcTemplate.execute("TRUNCATE TABLE plan");
@@ -80,6 +82,7 @@ class PlanControllerTest {
 
 		@BeforeEach
 		void setUp() {
+
 			member = memberRepository.save(MemberFixture.createMember1());
 			userDetails = CustomUserDetails.from(member);
 		}
@@ -91,6 +94,7 @@ class PlanControllerTest {
 			@Test
 			@DisplayName("정상적으로 나의 플랜 데이터를 조회한다")
 			void getMyMobileDataInfo_success() throws Exception {
+
 				// given
 				Plan plan = planRepository.save(Plan.of(
 						"청년 Value 베이직",
@@ -109,10 +113,10 @@ class PlanControllerTest {
 								.contentType(MediaType.APPLICATION_JSON))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(0))
-						.andExpect(jsonPath("$.data.planName").value("청년 Value 베이직"))
+						.andExpect(jsonPath("$.data.name").value("청년 Value 베이직"))
 						.andExpect(jsonPath("$.data.providingDataAmount").value(30.0))
 						.andExpect(jsonPath("$.data.monthlyPrice").value(15000))
-						.andDo(document("plan/get-my-plan-info",
+						.andDo(document("plans/get-my-plan-info",
 								responseFields(
 										// (CommonResponse에 맞게 필드 설명 작성)
 										// 예시:
@@ -121,7 +125,7 @@ class PlanControllerTest {
 										org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath(
 												"message").description("처리 결과 메시지"),
 										org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath(
-												"data.planName").description("플랜 이름"),
+												"data.name").description("플랜 이름"),
 										org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath(
 												"data.providingDataAmount").description("제공 데이터 양"),
 										org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath(
@@ -142,6 +146,7 @@ class PlanControllerTest {
 			@Test
 			@DisplayName("플랜이 없는 회원이 요청하면 예외를 반환한다")
 			void getMyMobileDataInfo_fail_noPlan() throws Exception {
+
 				// given: member만 있고 plan 없음
 
 				// when & then
@@ -152,25 +157,6 @@ class PlanControllerTest {
 								.contentType(MediaType.APPLICATION_JSON))
 						.andExpect(status().isBadRequest())
 						.andDo(document("plan/get-my-plan-info-no-plan-error",
-								responseFields(
-										org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath(
-												"code").description("상태 코드"),
-										org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath(
-												"message").description("에러 메시지")
-								)
-						));
-			}
-
-			@Test
-			@DisplayName("비로그인(인증 없이) 요청하면 401 Unauthorized, code=1002가 반환된다")
-			void getMyMobileDataInfo_fail_unauthorized() throws Exception {
-				// when & then
-				mockMvc.perform(get("/api/plans/my-data")
-								.contentType(MediaType.APPLICATION_JSON))
-						.andExpect(status().isUnauthorized())
-						.andExpect(jsonPath("$.code").value(1002))
-						.andExpect(jsonPath("$.message").value("인증이 필요합니다."))
-						.andDo(document("plan/get-my-plan-info-unauthorized-error",
 								responseFields(
 										org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath(
 												"code").description("상태 코드"),

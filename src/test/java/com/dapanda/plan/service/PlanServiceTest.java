@@ -123,7 +123,7 @@ class PlanServiceTest {
 
 				// then
 				assertThat(result).isNotNull();
-				assertThat(result.getPlanName()).isEqualTo("프리미엄");
+				assertThat(result.getName()).isEqualTo("프리미엄");
 				assertThat(result.getProvidingDataAmount()).isEqualTo(30.0f);
 				assertThat(result.getMonthlyPrice()).isEqualTo(25000);
 				verify(planRepository, times(1)).findByMemberId(memberId);
