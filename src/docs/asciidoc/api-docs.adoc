@@ -88,6 +88,25 @@ DaPanda 서비스의 REST API 문서입니다.
 [[resources]]
 == API 목록
 
+[[resources-member]]
+=== 회원
+
+==== 캐시 조회
+
+`GET` 회원이 보유한 캐시 조회
+
+===== 요청
+
+include::{snippets}/member/get-cash/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/member/get-cash/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/member/get-cash/response-fields.adoc[]
+
 === 채팅
 
 ==== WebSocket 프로토콜
