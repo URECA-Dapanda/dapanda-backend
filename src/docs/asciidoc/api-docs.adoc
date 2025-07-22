@@ -66,15 +66,24 @@ DaPanda 서비스의 REST API 문서입니다.
 [[overview-errors]]
 === 오류
 
-에러 응답이 발생했을 때 (상태 코드 >= 400), 본문에 해당 문제를 기술한 JSON 객체가 담겨있다.
+에러 응답이 발생했을 때 (커스텀 상태 코드 >= 1000), 본문에 해당 문제를 기술한 메시지가 담겨있다.
 
 ==== 에러 응답 구조
 
-// include::{snippets}/error-example/response-fields.adoc[]
-
+```
+{
+    "code": {커스텀 상태 코드}
+    "message": {에러 발생 이유}
+}
+```
 ==== 에러 응답 예시
 
-// include::{snippets}/error-example/http-response.adoc[]
+```
+{
+    "code": 9000,
+    "message": "회원을 찾을 수 없습니다."
+}
+```
 
 [[resources]]
 == API 목록
@@ -657,9 +666,9 @@ include::{snippets}/product/market-price/http-response.adoc[]
 
 include::{snippets}/product/market-price/response-fields.adoc[]
 
-==== 회원의 판매 상태에 따른 상품 목록 조회
+==== 회원의 판매 상품 목록 조회
 
-`GET` 요청을 통해 커서 기반으로 조회합니다.
+`GET /api/members/{memberId}selling-product`
 
 ===== 요청 파라미터
 
@@ -677,6 +686,27 @@ include::{snippets}/product/read-selling-product/http-response.adoc[]
 ===== 응답 필드
 
 include::{snippets}/product/read-selling-product/response-fields.adoc[]
+
+==== 나의 판매 상품 목록 조회
+
+`GET /api/selling-product`
+
+===== 요청 파라미터
+
+include::{snippets}/product/read-my-selling-product/query-parameters.adoc[]
+
+===== 요청
+
+include::{snippets}/product/read-my-selling-product/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/product/read-my-selling-product/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/product/read-my-selling-product/response-fields.adoc[]
+
 
 ==== 모바일 데이터 상품 목록 조회
 
