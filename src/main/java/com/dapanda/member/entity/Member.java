@@ -54,8 +54,6 @@ public class Member extends BaseEntity {
 
 	private int cash;
 
-	private int point;
-
 	private boolean isBlocked;
 
 	private int reportedCount;
