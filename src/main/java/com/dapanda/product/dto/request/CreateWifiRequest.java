@@ -10,6 +10,7 @@ public class CreateWifiRequest extends CreateProductRequest {
 	private final String content;
 	private final Double latitude;
 	private final Double longitude;
+	private final String address;
 	private final LocalDateTime startTime;
 	private final LocalDateTime endTime;
 
@@ -18,7 +19,7 @@ public class CreateWifiRequest extends CreateProductRequest {
 			String title,
 			String content,
 			Double latitude,
-			Double longitude,
+			Double longitude, String address,
 			LocalDateTime startTime,
 			LocalDateTime endTime
 	) {
@@ -27,6 +28,7 @@ public class CreateWifiRequest extends CreateProductRequest {
 		this.content = content;
 		this.latitude = latitude;
 		this.longitude = longitude;
+		this.address = address;
 		this.startTime = startTime;
 		this.endTime = endTime;
 	}

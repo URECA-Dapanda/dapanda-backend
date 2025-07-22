@@ -21,6 +21,7 @@ import static com.dapanda.TestConstants.Product.PRICE_500;
 import static com.dapanda.TestConstants.Product.PRODUCT_ID;
 import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
 import static com.dapanda.TestConstants.Trade.TRADE_ID_2;
+import static com.dapanda.TestConstants.Wifi.ADDRESS;
 import static com.dapanda.TestConstants.Wifi.CONTENT;
 import static com.dapanda.TestConstants.Wifi.END_TIME;
 import static com.dapanda.TestConstants.Wifi.LATITUDE;
@@ -602,8 +603,8 @@ class TradeServiceTest {
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 
-				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
-						END_TIME);
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+						START_TIME, END_TIME);
 				ReflectionTestUtils.setField(wifi, "id", WIFI_ID);
 
 				Product product = ProductFixture.createWifiProductWithId(
@@ -642,8 +643,8 @@ class TradeServiceTest {
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 
-				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
-						END_TIME);
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+						START_TIME, END_TIME);
 				ReflectionTestUtils.setField(wifi, "id", WIFI_ID);
 
 				Product product = ProductFixture.createWifiProductWithId(
@@ -673,8 +674,8 @@ class TradeServiceTest {
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 
-				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
-						END_TIME);
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+						START_TIME, END_TIME);
 				ReflectionTestUtils.setField(wifi, "id", WIFI_ID);
 
 				Product product = ProductFixture.createWifiProductWithId(
