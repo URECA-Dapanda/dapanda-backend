@@ -1,4 +1,4 @@
-package com.dapanda.member;
+package com.dapanda.member.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.CommonResponse;
