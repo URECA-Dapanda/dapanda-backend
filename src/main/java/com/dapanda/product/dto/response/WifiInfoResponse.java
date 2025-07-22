@@ -32,7 +32,7 @@ public class WifiInfoResponse {
 
 	public WifiInfoResponse withImageUrls(List<String> imageUrls) {
 
-		return this.toBuilder()
+		return WifiInfoResponse.builder()
 				.imageUrls(imageUrls)
 				.build();
 	}
