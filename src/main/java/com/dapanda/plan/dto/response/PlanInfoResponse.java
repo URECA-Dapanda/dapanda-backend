@@ -13,16 +13,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PlanInfoResponse {
 
-	private String planName;
+	private String name;
 	private float providingDataAmount;
 	private int monthlyPrice;
 
 	public static PlanInfoResponse of(Plan plan) {
 
-		return new PlanInfoResponse(
-				plan.getName(),
-				plan.getProvidingDataAmount(),
-				plan.getMonthlyPrice()
-		);
+		return PlanInfoResponse.builder().
+				name(plan.getName()).
+				providingDataAmount(plan.getProvidingDataAmount()).
+				monthlyPrice(plan.getMonthlyPrice()).
+				build();
 	}
 }
