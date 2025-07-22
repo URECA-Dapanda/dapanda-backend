@@ -1,6 +1,8 @@
 package com.dapanda.member;
 
+import static com.dapanda.TestConstants.Member.BUYING_DATA;
 import static com.dapanda.TestConstants.Member.CASH_5000;
+import static com.dapanda.TestConstants.Member.SELLING_DATA;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
@@ -15,7 +17,6 @@ import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.member.service.MemberService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -111,6 +112,80 @@ class MemberControllerTest {
 										fieldWithPath("message").description("처리 결과 메시지"),
 										fieldWithPath("data").description("응답 데이터 (에러시 반환되지 않음)"),
 										fieldWithPath("data.cash").description("회원이 보유한 캐시")
+								))
+						);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("구매/판매 데이터양 조회")
+	class findPurchaseSaleData {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("회원의 구매 데이터양 조회를 성공한다")
+			void findBuyingCash() throws Exception {
+
+				// given
+				Member member = MemberFixture.createMember1();
+				ReflectionTestUtils.setField(member, "buyingData", BUYING_DATA);
+				memberRepository.save(member);
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
+				// when & then
+				mockMvc.perform(get("/api/members/buying-data")
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.data").value(BUYING_DATA))
+						.andDo(document("member/get-buying-data",
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data").description("응답 데이터 (에러시 반환되지 않음)"),
+										fieldWithPath("data.data").description("회원이 구매한 데이터양")
+								))
+						);
+			}
+
+			@Test
+			@DisplayName("회원의 판매 데이터양 조회를 성공한다")
+			void findSellingCash() throws Exception {
+
+				// given
+				Member member = MemberFixture.createMember1();
+				ReflectionTestUtils.setField(member, "sellingData", SELLING_DATA);
+				memberRepository.save(member);
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
+				// when & then
+				mockMvc.perform(get("/api/members/selling-data")
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.data").value(SELLING_DATA))
+						.andDo(document("member/get-selling-data",
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data").description("응답 데이터 (에러시 반환되지 않음)"),
+										fieldWithPath("data.data").description("회원이 판매한 데이터양")
 								))
 						);
 			}
