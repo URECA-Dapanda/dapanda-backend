@@ -89,7 +89,9 @@ DaPanda 서비스의 REST API 문서입니다.
 
 `/sub/{chatRoomId}` : chatRoomId 로 채팅 메시지 구독(sub)
 
-==== 채팅방 조회
+==== 내가 참여한 채팅방 조회
+
+`GET /api/chat-room`
 
 ===== 요청 파라미터
 
