@@ -113,6 +113,9 @@ class ReviewControllerTest {
 
 		jdbcTemplate.execute("TRUNCATE TABLE review");
 		jdbcTemplate.execute("TRUNCATE TABLE member");
+		jdbcTemplate.execute("TRUNCATE TABLE trade");
+		jdbcTemplate.execute("TRUNCATE TABLE product");
+		jdbcTemplate.execute("TRUNCATE TABLE trade_details");
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
@@ -477,7 +480,8 @@ class ReviewControllerTest {
 				List<Product> products = productRepository.saveAll(productFixtures);
 
 				List<Trade> tradesFixture = new ArrayList<>();
-				for (Product product : products) {
+
+				for (int i = 0; i < products.size(); i++) {
 
 					tradesFixture.add(TradeFixture.createTradeMobileDataDefault(buyer));
 				}
@@ -486,6 +490,7 @@ class ReviewControllerTest {
 
 				// Save TradeDetails for each trade and product
 				List<TradeDetails> tradeDetailsFixtures = new ArrayList<>();
+
 				for (int i = 0; i < trades.size(); i++) {
 					tradeDetailsFixtures.add(
 							TradeDetailsFixture.createTradeDetails(products.get(i), trades.get(i)));
@@ -500,14 +505,12 @@ class ReviewControllerTest {
 
 				List<Review> reviews = reviewRepository.saveAll(reviewFixtures);
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				//when & then
 				mockMvc.perform(get("/api/reviews/wrote")
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								))))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))

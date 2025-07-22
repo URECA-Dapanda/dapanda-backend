@@ -13,7 +13,7 @@ public class TradeFixture {
 		return Trade.of(
 				0.5F,
 				1000,
-				TradeType.MOBILE_PURCHASE_SINGLE,
+				TradeType.WIFI,
 				member
 		);
 	}
