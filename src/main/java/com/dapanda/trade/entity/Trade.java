@@ -73,4 +73,13 @@ public class Trade extends CreatedAtEntity {
 				.member(member)
 				.build();
 	}
+
+	public static Trade of(int tradingPrice, TradeType tradeType, Member member) {
+
+		return Trade.builder()
+				.tradingPrice(tradingPrice)
+				.tradeType(tradeType)
+				.member(member)
+				.build();
+	}
 }

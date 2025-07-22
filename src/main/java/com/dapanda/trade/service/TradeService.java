@@ -14,11 +14,14 @@ import com.dapanda.product.entity.Wifi;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
+import com.dapanda.trade.dto.CashHistoryMonthlySummary;
+import com.dapanda.trade.dto.CashHistorySummary;
 import com.dapanda.trade.dto.MobileDataScrap;
-import com.dapanda.trade.dto.TradeHistorySummary;
+import com.dapanda.trade.dto.PurchaseHistorySummary;
 import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
 import com.dapanda.trade.dto.request.PurchaseWifiRequest;
 import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
+import com.dapanda.trade.dto.response.FindCashHistoryResponse;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
 import com.dapanda.trade.dto.response.FindTradeHistoryResponse;
 import com.dapanda.trade.dto.response.TradeProductResponse;
@@ -423,9 +426,21 @@ public class TradeService {
 
 		Long tradeCount = tradeRepository.countTradeHistoryByMemberId(memberId);
 
-		CursorPageResponse<TradeHistorySummary> tradeHistory = tradeRepository.findTradeHistoryByCursor(
+		CursorPageResponse<PurchaseHistorySummary> purchaseHistory = tradeRepository.findTradeHistoryByCursor(
 				cursorId, size, memberId);
 
-		return FindTradeHistoryResponse.of(tradeCount, tradeHistory);
+		return FindTradeHistoryResponse.of(tradeCount, purchaseHistory);
+	}
+
+	public FindCashHistoryResponse findCashHistory(Long cursorId, Integer size,
+			Long memberId, int year, int month) {
+
+		CursorPageResponse<CashHistorySummary> cashHistorySummary = tradeRepository.findCashHistoryByCursor(
+				cursorId, size, memberId, year, month);
+
+		CashHistoryMonthlySummary monthlySummary = tradeRepository.calculateMonthlySummary(memberId,
+				year, month);
+
+		return FindCashHistoryResponse.of(monthlySummary, cashHistorySummary);
 	}
 }
