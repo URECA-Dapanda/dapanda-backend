@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.dapanda.member.entity.Member;
+import com.dapanda.plan.dto.response.PlanInfoResponse;
 import com.dapanda.plan.entity.AgeGroup;
 import com.dapanda.plan.entity.Plan;
 import com.dapanda.plan.entity.PlanCategory;
@@ -96,4 +97,59 @@ class PlanServiceTest {
 			}
 		}
 	}
+
+	@Nested
+	@DisplayName("findMobileDataInfoByMemberId")
+	class FindMobileDataInfoByMemberIdTest {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("해당 memberId에 요금제가 있으면 PlanInfoResponse를 반환한다")
+			void shouldReturnPlanInfoResponseWhenPlanExists() {
+				// given
+				Long memberId = 1L;
+				Plan plan = mock(Plan.class);
+
+				when(planRepository.findByMemberId(memberId)).thenReturn(Optional.of(plan));
+				when(plan.getName()).thenReturn("프리미엄");
+				when(plan.getProvidingDataAmount()).thenReturn(30.0f);
+				when(plan.getMonthlyPrice()).thenReturn(25000);
+
+				// when
+				PlanInfoResponse result = planService.findMobileDataInfoByMemberId(memberId);
+
+				// then
+				assertThat(result).isNotNull();
+				assertThat(result.getPlanName()).isEqualTo("프리미엄");
+				assertThat(result.getProvidingDataAmount()).isEqualTo(30.0f);
+				assertThat(result.getMonthlyPrice()).isEqualTo(25000);
+				verify(planRepository, times(1)).findByMemberId(memberId);
+			}
+
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("해당 memberId에 요금제가 없으면 예외(GlobalException)를 던진다")
+			void shouldThrowExceptionWhenPlanNotExists() {
+				// given
+				Long memberId = 2L;
+				when(planRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
+
+				// when & then
+				org.junit.jupiter.api.Assertions.assertThrows(
+						com.dapanda.common.exception.GlobalException.class,
+						() -> planService.findMobileDataInfoByMemberId(memberId)
+				);
+				verify(planRepository, times(1)).findByMemberId(memberId);
+			}
+		}
+	}
+
 }
