@@ -53,8 +53,6 @@ class MemberControllerTest {
 	private EntityManager entityManager;
 	@Autowired
 	private MemberRepository memberRepository;
-	@Autowired
-	private MemberService memberService;
 
 	private MockMvc mockMvc;
 
@@ -79,7 +77,7 @@ class MemberControllerTest {
 
 	@Nested
 	@DisplayName("캐시 조회 API")
-	class MobileDataFullDefaultPurchase {
+	class FindCash {
 
 		@Nested
 		@DisplayName("성공 케이스")
