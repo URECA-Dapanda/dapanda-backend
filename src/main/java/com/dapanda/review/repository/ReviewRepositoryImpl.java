@@ -1,7 +1,5 @@
 package com.dapanda.review.repository;
 
-import static com.dapanda.review.entity.QReview.review;
-
 import com.dapanda.member.entity.QMember;
 import com.dapanda.product.entity.QProduct;
 import com.dapanda.review.dto.request.ReadReviewRequest;
@@ -15,9 +13,12 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+import static com.dapanda.review.entity.QReview.review;
 
 @Repository
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
 	private final static String BUYER = "buyer";
 	private final static String SELLER = "seller";
+	private final static Long DEFAULT_CURSOR_ID = 0L;
 
 	private final JPAQueryFactory queryFactory;
 
@@ -48,7 +50,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 						buyer.id,
 						buyer.name,
 						trade.id,
-						trade.dataAmount,
 						trade.timeAmount,
 						product.id,
 						product.itemType
@@ -85,7 +86,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 						seller.id,
 						seller.name,
 						trade.id,
-						trade.dataAmount,
 						trade.timeAmount,
 						product.id,
 						product.itemType
@@ -107,7 +107,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
 		whereClause.and(member.id.eq(request.memberId()));
 
-		if (request.cursorId() != null) {
+		if (request.cursorId() != null && !request.cursorId().equals(DEFAULT_CURSOR_ID)) {
 			whereClause.and(buildCursorCondition(request.cursorId(),
 					ReviewSortOption.valueOf(request.reviewSortOption())));
 		}
@@ -120,43 +120,9 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
 		switch (sortOption) {
 			case RECENT -> condition.and(review.id.lt(cursorId));
-
 			case OLDEST -> condition.and(review.id.gt(cursorId));
-
-			case RATING_DESC -> {
-
-				Float cursorRating = getCursorRating(cursorId);
-
-				if (cursorRating != null) {
-					condition.and(
-							review.rating.lt(cursorRating)
-									.or(review.rating.eq(cursorRating).and(review.id.lt(cursorId)))
-					);
-				}
-			}
-
-			case RATING_ASC -> {
-
-				Float cursorRating = getCursorRating(cursorId);
-
-				if (cursorRating != null) {
-					condition.and(
-							review.rating.gt(cursorRating)
-									.or(review.rating.eq(cursorRating).and(review.id.gt(cursorId)))
-					);
-				}
-			}
 		}
-
 		return condition;
-	}
-
-	private Float getCursorRating(Long cursorId) {
-		return queryFactory
-				.select(review.rating)
-				.from(review)
-				.where(review.id.eq(cursorId))
-				.fetchOne();
 	}
 
 	private OrderSpecifier<?>[] getOrderSpecifier(ReviewSortOption sortOption) {
