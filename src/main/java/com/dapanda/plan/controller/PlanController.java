@@ -2,8 +2,6 @@ package com.dapanda.plan.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.CommonResponse;
-import com.dapanda.common.exception.GlobalException;
-import com.dapanda.common.exception.ResultCode;
 import com.dapanda.plan.dto.response.PlanInfoResponse;
 import com.dapanda.plan.service.PlanService;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +22,6 @@ public class PlanController {
 	@GetMapping("/plans/my-data")
 	public CommonResponse<PlanInfoResponse> getMyMobileDataInfo(
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
-
-		if (userDetails == null) {
-			throw new GlobalException(ResultCode.UNAUTHORIZED);
-		}
 
 		return CommonResponse.success(
 				planService.findMobileDataInfoByMemberId(userDetails.getId()));
