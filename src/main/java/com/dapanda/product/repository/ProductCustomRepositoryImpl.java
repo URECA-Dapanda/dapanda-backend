@@ -1,12 +1,5 @@
 package com.dapanda.product.repository;
 
-import static com.dapanda.product.entity.QMobileData.mobileData;
-import static com.dapanda.product.entity.QProduct.product;
-import static com.dapanda.product.entity.QProductImage.productImage;
-import static com.dapanda.product.entity.QWifi.wifi;
-import static com.dapanda.review.entity.QReview.review;
-import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
-
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
@@ -20,6 +13,7 @@ import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.entity.QProductImage;
 import com.dapanda.trade.dto.MobileDataScrap;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -27,10 +21,18 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static com.dapanda.product.entity.QMobileData.mobileData;
+import static com.dapanda.product.entity.QProduct.product;
+import static com.dapanda.product.entity.QProductImage.productImage;
+import static com.dapanda.product.entity.QWifi.wifi;
+import static com.dapanda.review.entity.QReview.review;
+import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
 
 @Repository
 @RequiredArgsConstructor
@@ -251,6 +253,13 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	@Override
 	public List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request) {
 
+		BooleanBuilder cursorCondition = new BooleanBuilder();
+
+		if (request.cursorId() != null && request.cursorId() != 0L) {
+
+			cursorCondition.and((product.id.lt(request.cursorId())));
+		}
+
 		List<Tuple> tuples = queryFactory
 				.select(
 						product.id,
@@ -269,14 +278,13 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 								.and(product.itemType.eq(ItemType.MOBILE_DATA))
 				)
 				.leftJoin(wifi).on(
-						product.member.id.eq(request.memberId()),
-						request.productState() != null ? product.state.eq(request.productState())
-								: null
+						product.itemId.eq(wifi.id)
+								.and(product.itemType.eq(ItemType.WIFI))
 				)
 				.where(
 						product.member.id.eq(request.memberId()),
-						request.productState() != null ? product.state.eq(request.productState())
-								: null
+						request.productState() != null ? product.state.eq(request.productState()) : null,
+						cursorCondition
 				)
 				.orderBy(product.createdAt.desc())
 				.limit(request.size() + 1)
