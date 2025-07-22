@@ -1,5 +1,6 @@
 package com.dapanda.jwt;
 
+import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.service.MemberService;
@@ -41,8 +42,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			HttpServletResponse response,
 			FilterChain filterChain) throws ServletException, IOException {
 
-		String accessToken = jwtTokenProvider.resolveTokenFromCookie(request, JwtPrinciple.ACCESS_TOKEN.getKey());
-		String refreshToken = jwtTokenProvider.resolveTokenFromCookie(request, JwtPrinciple.REFRESH_TOKEN.getKey());
+		String accessToken = jwtTokenProvider.resolveTokenFromCookie(request,
+				JwtPrinciple.ACCESS_TOKEN.getKey());
+		String refreshToken = jwtTokenProvider.resolveTokenFromCookie(request,
+				JwtPrinciple.REFRESH_TOKEN.getKey());
 		boolean authenticated = false;
 
 		// 1. Access Token 검증
@@ -100,9 +103,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String email = jwtTokenProvider.getUserEmailFromToken(accessToken);
 		OAuthProvider provider = jwtTokenProvider.getProviderFromToken(accessToken);
 
-		var userDetails = jwtTokenProvider.getAuthentication(email, provider);
-		var auth = new UsernamePasswordAuthenticationToken(userDetails, null,
-				userDetails.getAuthorities());
+		CustomUserDetails userDetails = jwtTokenProvider.getAuthentication(email, provider);
+		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+				userDetails, null, userDetails.getAuthorities());
 
 		auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 		SecurityContextHolder.getContext().setAuthentication(auth);

@@ -42,7 +42,8 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+	public SecurityFilterChain filterChain(HttpSecurity http,
+			JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
 
 		http
 				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -69,7 +70,7 @@ public class SecurityConfig {
 						.failureHandler(oAuth2FailureHandler)
 				);
 
-		http.addFilterAfter(
+		http.addFilterBefore(
 				jwtAuthenticationFilter,
 				OAuth2AuthorizationRequestRedirectFilter.class
 		);

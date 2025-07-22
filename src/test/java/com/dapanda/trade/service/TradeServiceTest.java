@@ -3,6 +3,7 @@ package com.dapanda.trade.service;
 import static com.dapanda.TestConstants.Member.BUYER_MEMBER_ID;
 import static com.dapanda.TestConstants.Member.CASH_3000;
 import static com.dapanda.TestConstants.Member.CASH_5000;
+import static com.dapanda.TestConstants.Member.MEMBER_ID;
 import static com.dapanda.TestConstants.Member.SELLER_MEMBER_ID;
 import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
 import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_2;
@@ -11,6 +12,7 @@ import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_150;
 import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
 import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
 import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_2;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
 import static com.dapanda.TestConstants.Product.PRICE_1500;
@@ -51,17 +53,21 @@ import com.dapanda.product.entity.WifiFixture;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
+import com.dapanda.trade.dto.CashHistoryMonthlySummary;
+import com.dapanda.trade.dto.CashHistorySummary;
 import com.dapanda.trade.dto.MobileDataScrap;
-import com.dapanda.trade.dto.TradeHistorySummary;
+import com.dapanda.trade.dto.PurchaseHistorySummary;
 import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
 import com.dapanda.trade.dto.request.PurchaseWifiRequest;
 import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
+import com.dapanda.trade.dto.response.FindCashHistoryResponse;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
 import com.dapanda.trade.dto.response.FindTradeHistoryResponse;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeFixture;
 import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -692,7 +698,7 @@ class TradeServiceTest {
 
 	@Nested
 	@DisplayName("상품 거래(구매) 내역 조회")
-	class FindTradeHistory {
+	class FindPurchaseHistory {
 
 		@Nested
 		@DisplayName("성공 케이스")
@@ -700,7 +706,7 @@ class TradeServiceTest {
 
 			@Test
 			@DisplayName("상품 거래(구매) 내역 조회를 성공한다")
-			void findTradeHistory() {
+			void findPurchaseHistory() {
 
 				// given
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
@@ -709,7 +715,7 @@ class TradeServiceTest {
 				Trade trade1 = TradeFixture.createTradeWifi(buyer);
 				Trade trade2 = TradeFixture.createTradeWifi(buyer);
 
-				TradeHistorySummary summary1 = new TradeHistorySummary(
+				PurchaseHistorySummary summary1 = new PurchaseHistorySummary(
 
 						TRADE_ID_1,
 						WIFI,
@@ -718,7 +724,7 @@ class TradeServiceTest {
 						trade1.getCreatedAt()
 				);
 
-				TradeHistorySummary summary2 = new TradeHistorySummary(
+				PurchaseHistorySummary summary2 = new PurchaseHistorySummary(
 
 						TRADE_ID_2,
 						WIFI,
@@ -738,8 +744,8 @@ class TradeServiceTest {
 						DEFAULT_SIZE_2, BUYER_MEMBER_ID);
 
 				// then
-				TradeHistorySummary result1 = response.getTrades().getData().get(0);
-				TradeHistorySummary result2 = response.getTrades().getData().get(1);
+				PurchaseHistorySummary result1 = response.getTrades().getData().get(0);
+				PurchaseHistorySummary result2 = response.getTrades().getData().get(1);
 
 				assertThat(response.getTradeCount()).isEqualTo(DEFAULT_SIZE_2);
 				assertThat(response.getTrades().getData().size()).isEqualTo(DEFAULT_SIZE_2);
@@ -749,6 +755,62 @@ class TradeServiceTest {
 
 				assertThat(result2.getTradeType()).isEqualTo(WIFI);
 				assertThat(result2.getTitle()).isEqualTo(TITLE + 1);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("캐시 내역 조회")
+	class FindCashHistory {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("캐시 내역 조회를 성공한다")
+			void findCashHistory() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+
+				Trade wifiTrade = TradeFixture.createTradeWifi(member);
+				Trade mobileDataTrade = TradeFixture.createTradeMobileDataDefault(member);
+				Trade chargeTrade = TradeFixture.createTradeCharge(member);
+				Trade saleTrade = TradeFixture.createTradeSale(member);
+
+				int year = LocalDate.now().getYear();
+				int month = LocalDate.now().getMonthValue();
+
+				CursorPageResponse<CashHistorySummary> mockPageResponse =
+						CursorPageResponse.of(
+								List.of(
+										new CashHistorySummary(TRADE_ID_1, wifiTrade.getTradeType(),
+												wifiTrade.getTradingPrice(), "0.5GB",
+												LocalDateTime.now()),
+										new CashHistorySummary(TRADE_ID_2,
+												chargeTrade.getTradeType(),
+												wifiTrade.getTradingPrice(), "60분",
+												LocalDateTime.now())
+								),
+								PageInfo.of(null, false, 2)
+						);
+
+				CashHistoryMonthlySummary mockMonthlySummary =
+						new CashHistoryMonthlySummary(3500, 4000, 1000, 500, 1000);
+
+				given(tradeRepository.findCashHistoryByCursor(DEFAULT_CURSOR_ID, DEFAULT_SIZE_2,
+						MEMBER_ID, year, month)).willReturn(mockPageResponse);
+				given(tradeRepository.calculateMonthlySummary(MEMBER_ID, year, month))
+						.willReturn(mockMonthlySummary);
+
+				// when
+				FindCashHistoryResponse response = tradeService.findCashHistory(null,
+						DEFAULT_SIZE_2, MEMBER_ID, year, month);
+
+				// then
+				assertThat(response.getCashHistoryMonthlySummary()).isEqualTo(mockMonthlySummary);
+				assertThat(response.getCashHistorySummary()).isEqualTo(mockPageResponse);
 			}
 		}
 	}

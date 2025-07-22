@@ -1,7 +1,7 @@
 package com.dapanda.trade.dto.response;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
-import com.dapanda.trade.dto.TradeHistorySummary;
+import com.dapanda.trade.dto.PurchaseHistorySummary;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,10 +15,10 @@ import lombok.NoArgsConstructor;
 public class FindTradeHistoryResponse {
 
 	private Long tradeCount;
-	private CursorPageResponse<TradeHistorySummary> trades;
+	private CursorPageResponse<PurchaseHistorySummary> trades;
 
 	public static FindTradeHistoryResponse of(Long tradeCount,
-			CursorPageResponse<TradeHistorySummary> trades) {
+			CursorPageResponse<PurchaseHistorySummary> trades) {
 
 		return FindTradeHistoryResponse.builder()
 				.tradeCount(tradeCount)

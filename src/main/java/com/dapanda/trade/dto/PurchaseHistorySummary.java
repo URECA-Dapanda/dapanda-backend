@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TradeHistorySummary {
+public class PurchaseHistorySummary {
 
 	private Long tradeId;
 	private TradeType tradeType;

@@ -32,7 +32,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 				.build();
 	}
 
-	public UserDetails loadUserByEmailAndProvider(String email, OAuthProvider provider) {
+	public CustomUserDetails loadUserByEmailAndProvider(String email, OAuthProvider provider) {
 
 		Member member = memberRepository.findByEmailAndProvider(email, provider)
 				.orElseThrow(() -> new UsernameNotFoundException(

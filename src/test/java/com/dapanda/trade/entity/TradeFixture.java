@@ -12,7 +12,6 @@ public class TradeFixture {
 
 		return Trade.of(
 				0.5F,
-				null,
 				1000,
 				TradeType.MOBILE_PURCHASE_SINGLE,
 				member
@@ -40,10 +39,27 @@ public class TradeFixture {
 	public static Trade createTradeWifi(Member member) {
 
 		return Trade.of(
-				0F,
 				30,
 				1000,
 				TradeType.WIFI,
+				member
+		);
+	}
+
+	public static Trade createTradeCharge(Member member) {
+
+		return Trade.of(
+				10000,
+				TradeType.CHARGE,
+				member
+		);
+	}
+
+	public static Trade createTradeSale(Member member) {
+
+		return Trade.of(
+				1000,
+				TradeType.SALE,
 				member
 		);
 	}
