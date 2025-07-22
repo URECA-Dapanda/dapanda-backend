@@ -25,6 +25,7 @@ import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.entity.Wifi;
 import com.dapanda.product.repository.MobileDataRepository;
+import com.dapanda.product.repository.ProductImageRepository;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.product.repository.WifiRepository;
 import jakarta.transaction.Transactional;
@@ -40,6 +41,8 @@ import org.springframework.stereotype.Service;
 public class ProductService {
 
 	private final ProductRepository productRepository;
+
+	private final ProductImageRepository productImageRepository;
 
 	private final MobileDataRepository mobileDataRepository;
 
