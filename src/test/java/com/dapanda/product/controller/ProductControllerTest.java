@@ -1,16 +1,79 @@
 package com.dapanda.product.controller;
 
+import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
+import static com.dapanda.TestConstants.MobileData.BEFORE_DATA_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.BEFORE_REMAIN_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
+import static com.dapanda.TestConstants.MobileData.EXCEED_CHANGED_AMOUNT;
+import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_150;
+import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
+import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
+import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
+import static com.dapanda.TestConstants.MobileData.SPLIT_TYPE;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
+import static com.dapanda.TestConstants.Product.INVALID_PRODUCT_ID;
+import static com.dapanda.TestConstants.Product.NEW_PRICE_9000;
+import static com.dapanda.TestConstants.Product.PRICE_1500;
+import static com.dapanda.TestConstants.Product.PRICE_3000;
+import static com.dapanda.TestConstants.Product.PRODUCT_ID;
+import static com.dapanda.TestConstants.Wifi.ADDRESS;
+import static com.dapanda.TestConstants.Wifi.CHANGED_CONTENT;
+import static com.dapanda.TestConstants.Wifi.CHANGED_LATITUDE;
+import static com.dapanda.TestConstants.Wifi.CHANGED_LONGITUDE;
+import static com.dapanda.TestConstants.Wifi.CHANGED_TITLE;
+import static com.dapanda.TestConstants.Wifi.CONTENT;
+import static com.dapanda.TestConstants.Wifi.END_TIME;
+import static com.dapanda.TestConstants.Wifi.IMAGE_URL_1;
+import static com.dapanda.TestConstants.Wifi.IMAGE_URL_2;
+import static com.dapanda.TestConstants.Wifi.LATITUDE;
+import static com.dapanda.TestConstants.Wifi.LONGITUDE;
+import static com.dapanda.TestConstants.Wifi.START_TIME;
+import static com.dapanda.TestConstants.Wifi.TITLE;
+import static com.dapanda.TestConstants.Wifi.WRONG_END_TIME;
+import static com.dapanda.TestConstants.Wifi.WRONG_START_TIME;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.product.dto.request.*;
+import com.dapanda.product.dto.request.CreateMobileDataRequest;
+import com.dapanda.product.dto.request.CreateWifiRequest;
+import com.dapanda.product.dto.request.MobileDataCursorRequest;
+import com.dapanda.product.dto.request.UpdateMobileDataRequest;
+import com.dapanda.product.dto.request.UpdateWifiRequest;
 import com.dapanda.product.dto.response.FindMarketPriceResponse;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
-import com.dapanda.product.entity.*;
+import com.dapanda.product.entity.ItemType;
+import com.dapanda.product.entity.MobileData;
+import com.dapanda.product.entity.MobileDataFixture;
+import com.dapanda.product.entity.Product;
+import com.dapanda.product.entity.ProductFixture;
+import com.dapanda.product.entity.ProductImage;
+import com.dapanda.product.entity.ProductImageFixture;
+import com.dapanda.product.entity.ProductState;
+import com.dapanda.product.entity.Wifi;
+import com.dapanda.product.entity.WifiFixture;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductImageRepository;
 import com.dapanda.product.repository.ProductRepository;
@@ -18,6 +81,10 @@ import com.dapanda.product.repository.WifiRepository;
 import com.dapanda.product.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -36,31 +103,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
-import static com.dapanda.TestConstants.MobileData.*;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
-import static com.dapanda.TestConstants.Product.*;
-import static com.dapanda.TestConstants.Wifi.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -163,7 +205,7 @@ class ProductControllerTest {
 			void createWifi_success() throws Exception {
 
 				CreateWifiRequest request = new CreateWifiRequest(15000, "Test Wifi", "설명", 37.5,
-						127.0, LocalDateTime.now(), LocalDateTime.now().plusHours(2));
+						127.0, "서울특별시 강남구", LocalDateTime.now(), LocalDateTime.now().plusHours(2));
 
 				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/wifi")
 								.with(authentication(new UsernamePasswordAuthenticationToken(
@@ -180,6 +222,7 @@ class ProductControllerTest {
 										fieldWithPath("content").description("상세 설명"),
 										fieldWithPath("latitude").description("위도"),
 										fieldWithPath("longitude").description("경도"),
+										fieldWithPath("address").description("주소"),
 										fieldWithPath("startTime").description("시작 시간"),
 										fieldWithPath("endTime").description("종료 시간")
 								),
@@ -303,7 +346,7 @@ class ProductControllerTest {
 			void createWifi_fail_noMember() throws Exception {
 
 				CreateWifiRequest request = new CreateWifiRequest(15000, "Test Wifi", "설명", 37.5,
-						127.0, LocalDateTime.now(), LocalDateTime.now().plusHours(2));
+						127.0, "서울특별시 강남구", LocalDateTime.now(), LocalDateTime.now().plusHours(2));
 
 				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/wifi")
 								.contentType(MediaType.APPLICATION_JSON)
@@ -316,6 +359,7 @@ class ProductControllerTest {
 										fieldWithPath("content").description("상세 설명"),
 										fieldWithPath("latitude").description("위도"),
 										fieldWithPath("longitude").description("경도"),
+										fieldWithPath("address").description("주소"),
 										fieldWithPath("startTime").description("시작 시간"),
 										fieldWithPath("endTime").description("종료 시간")
 								),
@@ -336,6 +380,7 @@ class ProductControllerTest {
 						null,
 						37.5,
 						127.0,
+						"서울특별시 강남구",
 						LocalDateTime.parse("2025-07-18T10:00:00"),
 						LocalDateTime.parse("2025-07-18T20:00:00")
 				);
@@ -361,6 +406,7 @@ class ProductControllerTest {
 								requestFields(
 										fieldWithPath("latitude").description("위도"),
 										fieldWithPath("longitude").description("경도"),
+										fieldWithPath("address").description("주소"),
 										fieldWithPath("startTime").description("시작 시간"),
 										fieldWithPath("endTime").description("종료 시간")
 								),
@@ -530,13 +576,13 @@ class ProductControllerTest {
 
 				Member member = memberRepository.save(MemberFixture.createMember1());
 
-				Wifi wifi1 = WifiFixture.createWifi("제목1", "내용1", 30.0, 126.0,
+				Wifi wifi1 = WifiFixture.createWifi("제목1", "내용1", 30.0, 126.0, ADDRESS,
 						LocalDateTime.of(2025, 7, 14, 10, 0),
 						LocalDateTime.of(2025, 7, 14, 18, 0));
-				Wifi wifi2 = WifiFixture.createWifi("제목2", "내용2", 30.0, 126.0,
+				Wifi wifi2 = WifiFixture.createWifi("제목2", "내용2", 30.0, 126.0, ADDRESS,
 						LocalDateTime.of(2025, 7, 14, 10, 0),
 						LocalDateTime.of(2025, 7, 14, 18, 0));
-				Wifi wifi3 = WifiFixture.createWifi("제목3", "내용3", 30.0, 126.0,
+				Wifi wifi3 = WifiFixture.createWifi("제목3", "내용3", 30.0, 126.0, ADDRESS,
 						LocalDateTime.of(2025, 7, 14, 10, 0),
 						LocalDateTime.of(2025, 7, 14, 18, 0));
 				wifiRepository.saveAll(List.of(wifi1, wifi2, wifi3));
@@ -596,10 +642,12 @@ class ProductControllerTest {
 												"대표 이미지 URL").optional(),
 										fieldWithPath("data.data[].latitude").description("위도"),
 										fieldWithPath("data.data[].longitude").description("경도"),
+										fieldWithPath("data.data[].address").description("주소"),
 										fieldWithPath("data.data[].averageRate").description(
 												"평균 평점"),
 										fieldWithPath("data.data[].distanceKm").description(
 												"현 위치로부터 거리 (km)"),
+										fieldWithPath("data.data[].open").description("영업중 여부"),
 										fieldWithPath("data.data[].updatedAt").description(
 												"수정된 날짜"),
 										fieldWithPath("data.pageInfo.nextCursorId").description(
@@ -789,7 +837,7 @@ class ProductControllerTest {
 				Member member = memberRepository.save(MemberFixture.createMember1());
 
 				Wifi wifi = wifiRepository.save(
-						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE,
+						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
 								START_TIME, END_TIME));
 
 				productRepository.save(
@@ -813,12 +861,14 @@ class ProductControllerTest {
 						.andExpect(jsonPath("$.data.content").value(CONTENT))
 						.andExpect(jsonPath("$.data.latitude").value(LATITUDE))
 						.andExpect(jsonPath("$.data.longitude").value(LONGITUDE))
+						.andExpect(jsonPath("$.data.address").value(ADDRESS))
 						.andExpect(jsonPath("$.data.content").value(CONTENT))
 						.andExpect(jsonPath("$.data.averageRate").exists())
 						.andExpect(jsonPath("$.data.reviewCount").exists())
 						.andExpect(jsonPath("$.data.imageUrls").exists())
 						.andExpect(jsonPath("$.data.startTime").exists())
 						.andExpect(jsonPath("$.data.endTime").exists())
+						.andExpect(jsonPath("$.data.open").exists())
 						.andExpect(jsonPath("$.data.updatedAt").exists())
 						.andDo(document("product/get-wifi-info",
 								responseFields(
@@ -835,12 +885,14 @@ class ProductControllerTest {
 										fieldWithPath("data.content").description("게시물 내용"),
 										fieldWithPath("data.latitude").description("위도"),
 										fieldWithPath("data.longitude").description("경도"),
+										fieldWithPath("data.address").description("주소"),
 										fieldWithPath("data.averageRate").description("평균 별점"),
 										fieldWithPath("data.reviewCount").description("리뷰 수"),
 										fieldWithPath("data.imageUrls[]").description(
 												"이미지 URL (우선순위 높은순)"),
 										fieldWithPath("data.startTime").description("시작 시간"),
 										fieldWithPath("data.endTime").description("종료 시간"),
+										fieldWithPath("data.open").description("영업중 여부"),
 										fieldWithPath("data.updatedAt").description("수정된 시간")
 								))
 						);
@@ -881,7 +933,7 @@ class ProductControllerTest {
 
 				Wifi wifi = wifiRepository.save(
 						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE,
-								START_TIME, END_TIME));
+								ADDRESS, START_TIME, END_TIME));
 
 				productRepository.save(
 						ProductFixture.createWifiProductInactive(PRICE_3000, wifi.getId(), member));
@@ -932,7 +984,7 @@ class ProductControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isOk())
@@ -994,7 +1046,7 @@ class ProductControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -1038,7 +1090,7 @@ class ProductControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -1082,7 +1134,7 @@ class ProductControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -1118,8 +1170,8 @@ class ProductControllerTest {
 				// given
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				Wifi wifi = wifiRepository.save(
-						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
-								END_TIME));
+						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+								START_TIME, END_TIME));
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
 
@@ -1128,14 +1180,14 @@ class ProductControllerTest {
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						START_TIME, END_TIME);
+						ADDRESS, START_TIME, END_TIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isOk())
@@ -1148,6 +1200,7 @@ class ProductControllerTest {
 										fieldWithPath("content").description("상품 본문 (필수)"),
 										fieldWithPath("latitude").description("위도 (필수)"),
 										fieldWithPath("longitude").description("경도 (필수)"),
+										fieldWithPath("address").description("지도 (필수)"),
 										fieldWithPath("startTime").description("시작 시간 (필수)"),
 										fieldWithPath("endTime").description("종료 시간 (필수)")
 								),
@@ -1183,8 +1236,8 @@ class ProductControllerTest {
 				Member member1 = memberRepository.save(MemberFixture.createMember1());
 				Member member2 = memberRepository.save(MemberFixture.createMember2());
 				Wifi wifi = wifiRepository.save(
-						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
-								END_TIME));
+						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+								START_TIME, END_TIME));
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member1));
 
@@ -1193,14 +1246,14 @@ class ProductControllerTest {
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						START_TIME, END_TIME);
+						ADDRESS, START_TIME, END_TIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -1212,6 +1265,7 @@ class ProductControllerTest {
 										fieldWithPath("content").description("상품 본문 (필수)"),
 										fieldWithPath("latitude").description("위도 (필수)"),
 										fieldWithPath("longitude").description("경도 (필수)"),
+										fieldWithPath("address").description("주소 (필수)"),
 										fieldWithPath("startTime").description("시작 시간 (필수)"),
 										fieldWithPath("endTime").description("종료 시간 (필수)")
 								),
@@ -1229,8 +1283,8 @@ class ProductControllerTest {
 				// given
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				Wifi wifi = wifiRepository.save(
-						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
-								END_TIME));
+						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+								START_TIME, END_TIME));
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
 
@@ -1239,14 +1293,14 @@ class ProductControllerTest {
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						WRONG_START_TIME, WRONG_END_TIME);
+						ADDRESS, WRONG_START_TIME, WRONG_END_TIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -1258,6 +1312,7 @@ class ProductControllerTest {
 										fieldWithPath("content").description("상품 본문 (필수)"),
 										fieldWithPath("latitude").description("위도 (필수)"),
 										fieldWithPath("longitude").description("경도 (필수)"),
+										fieldWithPath("address").description("주소 (필수)"),
 										fieldWithPath("startTime").description("시작 시간 (필수)"),
 										fieldWithPath("endTime").description("종료 시간 (필수)")
 								),
@@ -1298,7 +1353,7 @@ class ProductControllerTest {
 				mockMvc.perform(delete("/api/products/{productId}", PRODUCT_ID)
 								.contentType(MediaType.APPLICATION_JSON)
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isOk())
@@ -1339,7 +1394,7 @@ class ProductControllerTest {
 				mockMvc.perform(delete("/api/products/{productId}", INVALID_PRODUCT_ID)
 								.contentType(MediaType.APPLICATION_JSON)
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -1371,7 +1426,7 @@ class ProductControllerTest {
 				mockMvc.perform(delete("/api/products/{productId}", PRODUCT_ID)
 								.contentType(MediaType.APPLICATION_JSON)
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -1418,7 +1473,7 @@ class ProductControllerTest {
 								.param("productState", ProductState.ACTIVE.name())
 								.param("size", String.valueOf(DEFAULT_SIZE_2))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								))))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
