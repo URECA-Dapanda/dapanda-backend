@@ -135,7 +135,7 @@ class ReviewControllerTest {
 				//given
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
 				Trade trade = tradeRepository.save(
-						TradeFixture.createTradeMobileDataDefault(buyer));
+						TradeFixture.createTradeWifi(buyer));
 
 				CreateReviewRequest request = new CreateReviewRequest(RATING, COMMENT);
 
@@ -231,7 +231,7 @@ class ReviewControllerTest {
 				List<Trade> tradeFixtures = new ArrayList<>();
 
 				for (Member member : members) {
-					tradeFixtures.add(TradeFixture.createTradeMobileDataDefault(member));
+					tradeFixtures.add(TradeFixture.createTradeWifi(member));
 				}
 
 				List<Trade> trades = tradeRepository.saveAll(tradeFixtures);
@@ -354,7 +354,7 @@ class ReviewControllerTest {
 				List<Trade> tradeFixtures = new ArrayList<>();
 
 				for (Member member : members) {
-					tradeFixtures.add(TradeFixture.createTradeMobileDataDefault(member));
+					tradeFixtures.add(TradeFixture.createTradeWifi(member));
 				}
 
 				List<Trade> trades = tradeRepository.saveAll(tradeFixtures);
@@ -483,12 +483,11 @@ class ReviewControllerTest {
 
 				for (int i = 0; i < products.size(); i++) {
 
-					tradesFixture.add(TradeFixture.createTradeMobileDataDefault(buyer));
+					tradesFixture.add(TradeFixture.createTradeWifi(buyer));
 				}
 
 				List<Trade> trades = tradeRepository.saveAll(tradesFixture);
 
-				// Save TradeDetails for each trade and product
 				List<TradeDetails> tradeDetailsFixtures = new ArrayList<>();
 
 				for (int i = 0; i < trades.size(); i++) {
@@ -592,8 +591,7 @@ class ReviewControllerTest {
 
 				//given
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
-				Trade trade = tradeRepository.save(
-						TradeFixture.createTradeMobileDataDefault(buyer));
+				Trade trade = tradeRepository.save(TradeFixture.createTradeWifi(buyer));
 				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -643,8 +641,7 @@ class ReviewControllerTest {
 				//given
 				Member seller = memberRepository.save(MemberFixture.createMember1());
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
-				Trade trade = tradeRepository.save(
-						TradeFixture.createTradeMobileDataDefault(buyer));
+				Trade trade = tradeRepository.save(TradeFixture.createTradeWifi(buyer));
 				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -714,8 +711,7 @@ class ReviewControllerTest {
 				//given
 				Member seller = memberRepository.save(MemberFixture.createMember1());
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
-				Trade trade = tradeRepository.save(
-						TradeFixture.createTradeMobileDataDefault(buyer));
+				Trade trade = tradeRepository.save(TradeFixture.createTradeWifi(buyer));
 				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
 
 				UpdateReviewRequest request = new UpdateReviewRequest(NEW_RATING, NEW_COMMENT);
