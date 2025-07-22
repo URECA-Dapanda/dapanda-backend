@@ -50,6 +50,7 @@ public enum ResultCode {
 	ALREADY_DELETED_PRODUCT(HttpStatus.BAD_REQUEST, 3008, "이미 삭제된 상품은 삭제할 수 없습니다."),
 	MOBILE_DATA_NOT_FOUND(HttpStatus.BAD_REQUEST, 3009, "존재하지 않는 데이터 상품입니다."),
 	WIFI_NOT_FOUND(HttpStatus.BAD_REQUEST, 3010, "존재하지 않는 와이파이 상품입니다."),
+	NOT_FOUND_PLAN(HttpStatus.BAD_REQUEST, 3011, "회원의 요금제 정보가 존재하지 않습니다."),
 
 	// 거래 4000번대
 	TRADE_NOT_FOUND(HttpStatus.BAD_REQUEST, 4000, "거래 이력을 찾을 수 없습니다."),

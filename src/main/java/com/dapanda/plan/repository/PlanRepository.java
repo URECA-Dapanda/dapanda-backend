@@ -10,4 +10,7 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
 	boolean existsByMember(Member member);
 
 	Optional<Plan> findByMember(Member member);
+
+	Optional<Plan> findByMemberId(Long memberId);
+
 }

@@ -1,6 +1,9 @@
 package com.dapanda.plan.service;
 
+import com.dapanda.common.exception.GlobalException;
+import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
+import com.dapanda.plan.dto.response.PlanInfoResponse;
 import com.dapanda.plan.entity.AgeGroup;
 import com.dapanda.plan.entity.Plan;
 import com.dapanda.plan.entity.PlanCategory;
@@ -80,6 +83,14 @@ public class PlanService {
 		AgeGroup[] groups = AgeGroup.values();
 
 		return groups[new Random().nextInt(groups.length)];
+	}
+
+	public PlanInfoResponse findMobileDataInfoByMemberId(Long memberId) {
+
+		Plan plan = planRepository.findByMemberId(memberId)
+				.orElseThrow(() -> new GlobalException(ResultCode.NOT_FOUND_PLAN));
+
+		return PlanInfoResponse.of(plan);
 	}
 
 }
