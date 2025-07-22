@@ -1,9 +1,17 @@
 package com.dapanda.product.repository;
 
+import static com.dapanda.product.entity.QMobileData.mobileData;
+import static com.dapanda.product.entity.QProduct.product;
+import static com.dapanda.product.entity.QProductImage.productImage;
+import static com.dapanda.product.entity.QWifi.wifi;
+import static com.dapanda.review.entity.QReview.review;
+import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
+
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.ReadSellingProductRequest;
+import com.dapanda.product.dto.response.FindMarketPriceResponse;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.ReadSellingProductResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
@@ -19,18 +27,10 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static com.dapanda.product.entity.QMobileData.mobileData;
-import static com.dapanda.product.entity.QProduct.product;
-import static com.dapanda.product.entity.QProductImage.productImage;
-import static com.dapanda.product.entity.QWifi.wifi;
-import static com.dapanda.review.entity.QReview.review;
-import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
@@ -379,4 +379,70 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 		return isOpen ? wifi.startTime.loe(now).and(wifi.endTime.goe(now)) : null;
 	}
+
+	public FindMarketPriceResponse findMarketPrice(ItemType itemType) {
+
+		LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+
+		// 데이터 상품
+		if (itemType == ItemType.MOBILE_DATA) {
+			Integer recentPricePer100MB = queryFactory
+					.select(mobileData.pricePer100MB)
+					.from(product)
+					.join(mobileData).on(product.itemId.eq(mobileData.id))
+					.where(
+							product.itemType.eq(itemType),
+							product.updatedAt.after(oneMonthAgo),
+							product.state.eq(ProductState.SOLD_OUT)
+					)
+					.orderBy(product.updatedAt.desc())
+					.limit(1)
+					.fetchOne();
+
+			Double averagePricePer100MB = queryFactory
+					.select(mobileData.pricePer100MB.avg())
+					.from(product)
+					.join(mobileData).on(product.itemId.eq(mobileData.id))
+					.where(
+							product.itemType.eq(itemType),
+							product.updatedAt.after(oneMonthAgo),
+							product.state.eq(ProductState.SOLD_OUT)
+					)
+					.fetchOne();
+
+			return FindMarketPriceResponse.of(
+					recentPricePer100MB != null ? recentPricePer100MB : 0,
+					averagePricePer100MB != null ? averagePricePer100MB.intValue() : 0
+			);
+		}
+
+		// 와이파이 상품
+		Integer recentPrice = queryFactory
+				.select(product.price)
+				.from(product)
+				.where(
+						product.itemType.eq(itemType),
+						product.updatedAt.after(oneMonthAgo),
+						product.state.eq(ProductState.SOLD_OUT)
+				)
+				.orderBy(product.updatedAt.desc())
+				.limit(1)
+				.fetchOne();
+
+		Double averagePrice = queryFactory
+				.select(product.price.avg())
+				.from(product)
+				.where(
+						product.itemType.eq(itemType),
+						product.updatedAt.after(oneMonthAgo),
+						product.state.eq(ProductState.SOLD_OUT)
+				)
+				.fetchOne();
+
+		return FindMarketPriceResponse.of(
+				recentPrice != null ? recentPrice : 0,
+				averagePrice != null ? averagePrice.intValue() : 0
+		);
+	}
+
 }
