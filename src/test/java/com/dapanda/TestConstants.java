@@ -15,6 +15,8 @@ public final class TestConstants {
 		public static final Long OTHER_MEMBER_ID = 2L;
 		public static final int CASH_3000 = 3000;
 		public static final int CASH_5000 = 5000;
+		public static final float BUYING_DATA = 1F;
+		public static final float SELLING_DATA = 1F;
 	}
 
 	public static final class Pagination {
