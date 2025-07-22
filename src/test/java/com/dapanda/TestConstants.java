@@ -31,7 +31,7 @@ public final class TestConstants {
 		public static final String COMMENT = "좋아요";
 		public static final float NEW_RATING = 1.0f;
 		public static final String NEW_COMMENT = "별로에요";
-		public static final double AVERAGE_RATE = 3.5;
+		public static final float AVERAGE_RATE = 3.5F;
 		public static final int REVIEW_COUNT = 3;
 	}
 

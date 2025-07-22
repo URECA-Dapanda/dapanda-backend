@@ -1,5 +1,6 @@
 package com.dapanda.product.repository;
 
+import static com.dapanda.member.entity.QMember.member;
 import static com.dapanda.product.entity.QMobileData.mobileData;
 import static com.dapanda.product.entity.QProduct.product;
 import static com.dapanda.product.entity.QProductImage.productImage;
@@ -177,19 +178,14 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.member.name,
 						mobileData.remainAmount,
 						mobileData.pricePer100MB,
-						review.rating.avg().coalesce(DEFAULT_RATING),
-						review.rating.count().intValue(),
+						member.averageRating,
+						member.reviewCount,
 						mobileData.isSplitType,
 						product.updatedAt
 				))
 				.from(product)
 				.join(mobileData).on(product.itemId.eq(mobileData.id))
-				.leftJoin(review).on(review.trade.id.eq(
-						JPAExpressions
-								.select(tradeDetails.trade.id)
-								.from(tradeDetails)
-								.where(tradeDetails.product.id.eq(product.id))
-				))
+				.leftJoin(member).on(product.member.id.eq(member.id))
 				.where(isActiveProduct(),
 						product.itemId.eq(mobileData.id),
 						product.id.eq(productId)
