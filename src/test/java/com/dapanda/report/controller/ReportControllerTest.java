@@ -32,12 +32,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Collections;
-
 import static com.dapanda.TestConstants.Report.REASON;
 import static com.dapanda.TestConstants.Report.REPORT_TARGET_CATEGORY_PRODUCT;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
@@ -118,16 +114,14 @@ class ReportControllerTest {
 
 				Product product = productRepository.save(ProductFixture.createProduct1(reportedMember));
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(reporter.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(reporter);
 
 				//when & then
 				mockMvc.perform(post("/api/report/{targetId}", product.getId())
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isOk())
@@ -173,16 +167,14 @@ class ReportControllerTest {
 
 				reportRepository.save(report);
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(reporter.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(reporter);
 
 				//when & then
 				mockMvc.perform(post("/api/report/{targetId}", product.getId())
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isConflict())
@@ -201,16 +193,14 @@ class ReportControllerTest {
 
 				Product product = productRepository.save(ProductFixture.createProduct1(reportedMember));
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(reporter.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(reporter);
 
 				//when & then
 				mockMvc.perform(post("/api/report/{targetId}", product.getId())
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())

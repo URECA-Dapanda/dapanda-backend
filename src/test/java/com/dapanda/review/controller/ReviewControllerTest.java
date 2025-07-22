@@ -113,6 +113,9 @@ class ReviewControllerTest {
 
 		jdbcTemplate.execute("TRUNCATE TABLE review");
 		jdbcTemplate.execute("TRUNCATE TABLE member");
+		jdbcTemplate.execute("TRUNCATE TABLE trade");
+		jdbcTemplate.execute("TRUNCATE TABLE product");
+		jdbcTemplate.execute("TRUNCATE TABLE trade_details");
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
@@ -132,7 +135,7 @@ class ReviewControllerTest {
 				//given
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
 				Trade trade = tradeRepository.save(
-						TradeFixture.createTradeMobileDataDefault(buyer));
+						TradeFixture.createTradeWifi(buyer));
 
 				CreateReviewRequest request = new CreateReviewRequest(RATING, COMMENT);
 
@@ -228,7 +231,7 @@ class ReviewControllerTest {
 				List<Trade> tradeFixtures = new ArrayList<>();
 
 				for (Member member : members) {
-					tradeFixtures.add(TradeFixture.createTradeMobileDataDefault(member));
+					tradeFixtures.add(TradeFixture.createTradeWifi(member));
 				}
 
 				List<Trade> trades = tradeRepository.saveAll(tradeFixtures);
@@ -351,7 +354,7 @@ class ReviewControllerTest {
 				List<Trade> tradeFixtures = new ArrayList<>();
 
 				for (Member member : members) {
-					tradeFixtures.add(TradeFixture.createTradeMobileDataDefault(member));
+					tradeFixtures.add(TradeFixture.createTradeWifi(member));
 				}
 
 				List<Trade> trades = tradeRepository.saveAll(tradeFixtures);
@@ -477,15 +480,16 @@ class ReviewControllerTest {
 				List<Product> products = productRepository.saveAll(productFixtures);
 
 				List<Trade> tradesFixture = new ArrayList<>();
-				for (Product product : products) {
 
-					tradesFixture.add(TradeFixture.createTradeMobileDataDefault(buyer));
+				for (int i = 0; i < products.size(); i++) {
+
+					tradesFixture.add(TradeFixture.createTradeWifi(buyer));
 				}
 
 				List<Trade> trades = tradeRepository.saveAll(tradesFixture);
 
-				// Save TradeDetails for each trade and product
 				List<TradeDetails> tradeDetailsFixtures = new ArrayList<>();
+
 				for (int i = 0; i < trades.size(); i++) {
 					tradeDetailsFixtures.add(
 							TradeDetailsFixture.createTradeDetails(products.get(i), trades.get(i)));
@@ -500,14 +504,12 @@ class ReviewControllerTest {
 
 				List<Review> reviews = reviewRepository.saveAll(reviewFixtures);
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				//when & then
 				mockMvc.perform(get("/api/reviews/wrote")
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								))))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
@@ -589,8 +591,7 @@ class ReviewControllerTest {
 
 				//given
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
-				Trade trade = tradeRepository.save(
-						TradeFixture.createTradeMobileDataDefault(buyer));
+				Trade trade = tradeRepository.save(TradeFixture.createTradeWifi(buyer));
 				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -640,8 +641,7 @@ class ReviewControllerTest {
 				//given
 				Member seller = memberRepository.save(MemberFixture.createMember1());
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
-				Trade trade = tradeRepository.save(
-						TradeFixture.createTradeMobileDataDefault(buyer));
+				Trade trade = tradeRepository.save(TradeFixture.createTradeWifi(buyer));
 				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
@@ -711,8 +711,7 @@ class ReviewControllerTest {
 				//given
 				Member seller = memberRepository.save(MemberFixture.createMember1());
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
-				Trade trade = tradeRepository.save(
-						TradeFixture.createTradeMobileDataDefault(buyer));
+				Trade trade = tradeRepository.save(TradeFixture.createTradeWifi(buyer));
 				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
 
 				UpdateReviewRequest request = new UpdateReviewRequest(NEW_RATING, NEW_COMMENT);

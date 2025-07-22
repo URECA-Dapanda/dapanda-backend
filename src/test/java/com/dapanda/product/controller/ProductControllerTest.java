@@ -7,6 +7,7 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.request.*;
+import com.dapanda.product.dto.response.FindMarketPriceResponse;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
 import com.dapanda.product.entity.*;
@@ -37,6 +38,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -1473,6 +1476,66 @@ class ProductControllerTest {
 												"다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)")
 								)
 						));
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("판매 시세 조회")
+	class FindMarketPrice {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("판매 시세(최근거래가, 평균거래가)를 조회한다")
+			public void findMarketPrice() throws Exception {
+
+				// given
+				Member seller = MemberFixture.createMember1();
+				memberRepository.save(seller);
+
+				MobileData mobile1 = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
+				MobileData mobile2 = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_150);
+				mobileDataRepository.saveAll(new ArrayList<>(Arrays.asList(mobile1, mobile2)));
+
+				Product product1 = ProductFixture.createMobileDataProductInactive(PRICE_3000,
+						mobile1.getId(), seller);
+				Product product2 = ProductFixture.createMobileDataProductInactive(PRICE_1500,
+						mobile2.getId(), seller);
+				productRepository.saveAll(new ArrayList<>(Arrays.asList(product1, product2)));
+
+				// when & then
+				mockMvc.perform(get("/api/products/market-price")
+								.param("productType", "MOBILE_DATA"))
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.recentPrice").exists())
+						.andExpect(jsonPath("$.data.averagePrice").exists())
+						.andDo(document("product/market-price",
+								queryParameters(
+										parameterWithName("productType").description(
+												"상품 타입 (필수, (MOBILE_DATA: 데이터, WIFI: 와이파이))")
+								),
+								responseFields(
+										fieldWithPath("code").description("응답 코드"),
+										fieldWithPath("message").description("응답 메시지"),
+										fieldWithPath("data.recentPrice").description("최근 거래가"),
+										fieldWithPath("data.averagePrice").description("평균 거래가")
+								)
+						));
+
+				FindMarketPriceResponse response = productService.findMarketPrice("MOBILE_DATA");
+
+				int expectedRecentRate = 150; // 150
+				int expectedAverageRate = 225; // (150 + 300) / 2
+
+				assertThat(response.getRecentPrice()).isEqualTo(expectedRecentRate);
+				assertThat(response.getAveragePrice()).isEqualTo(expectedAverageRate);
 			}
 		}
 	}

@@ -1,24 +1,5 @@
 package com.dapanda.review.service;
 
-import static com.dapanda.TestConstants.Member.BUYER_MEMBER_ID;
-import static com.dapanda.TestConstants.Member.SELLER_MEMBER_ID;
-import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_REVIEW_SORT_OPTION;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
-import static com.dapanda.TestConstants.Review.COMMENT;
-import static com.dapanda.TestConstants.Review.RATING;
-import static com.dapanda.TestConstants.Review.REVIEW_ID;
-import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
-import static com.dapanda.TestConstants.Trade.TRADE_ID_2;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.within;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
@@ -28,20 +9,13 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.review.dto.request.CreateReviewRequest;
 import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.dto.response.CreateReviewResponse;
-import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
-import com.dapanda.review.dto.response.ReadReviewResponse;
-import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
-import com.dapanda.review.dto.response.UpdateReviewResponse;
+import com.dapanda.review.dto.response.*;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.entity.ReviewFixture;
 import com.dapanda.review.repository.ReviewRepository;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeFixture;
 import com.dapanda.trade.repository.TradeRepository;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -49,6 +23,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import static com.dapanda.TestConstants.Member.*;
+import static com.dapanda.TestConstants.Pagination.*;
+import static com.dapanda.TestConstants.Review.*;
+import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
+import static com.dapanda.TestConstants.Trade.TRADE_ID_2;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("리뷰 서비스 테스트")
@@ -221,7 +210,7 @@ class ReviewServiceTest {
 				member.updateReviewInfo(prevCount, prevAverage);
 
 				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID_1);
-				Review review = ReviewFixture.createReview1WithIdAndRating(trade, REVIEW_ID,
+				Review review = ReviewFixture.createReviewWithRating(trade, REVIEW_ID,
 						deletedRating);
 
 				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
@@ -248,7 +237,7 @@ class ReviewServiceTest {
 				member.updateReviewInfo(prevCount, prevAverage);
 
 				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID_2);
-				Review review = ReviewFixture.createReview1WithIdAndRating(trade, REVIEW_ID,
+				Review review = ReviewFixture.createReviewWithRating(trade, REVIEW_ID,
 						deletedRating);
 
 				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
@@ -345,7 +334,7 @@ class ReviewServiceTest {
 				member.updateReviewInfo(reviewCount, prevAverage);
 
 				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID_2);
-				Review review = ReviewFixture.createReview1WithIdAndRating(trade, REVIEW_ID,
+				Review review = ReviewFixture.createReviewWithRating(trade, REVIEW_ID,
 						oldRating);
 				System.out.println(member == review.getTrade().getMember());
 				UpdateReviewRequest request = new UpdateReviewRequest(newRating, COMMENT);

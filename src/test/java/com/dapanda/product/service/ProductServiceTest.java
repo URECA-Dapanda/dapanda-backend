@@ -53,6 +53,7 @@ import com.dapanda.product.dto.request.CreateWifiRequest;
 import com.dapanda.product.dto.request.ReadSellingProductRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
+import com.dapanda.product.dto.response.FindMarketPriceResponse;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.ReadSellingProductResponse;
 import com.dapanda.product.dto.response.UpdateMobileDataResponse;
@@ -1024,6 +1025,39 @@ class ProductServiceTest {
 				assertThatThrownBy(() -> productService.readSellingProduct(request))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.MEMBER_NOT_FOUND.getMessage());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("판매 시세 조회")
+	class FindMarketPrice {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("판매 시세(최근거래가, 평균거래가)를 조회한다")
+			public void findMarketPrice() {
+
+				// given
+				String itemTypeString = "MOBILE_DATA";
+				ItemType itemType = ItemType.MOBILE_DATA;
+				int expectedRecentPrice = 200;
+				int expectedAveragePrice = 3000;
+
+				FindMarketPriceResponse response = FindMarketPriceResponse.of(expectedRecentPrice,
+						expectedAveragePrice);
+
+				given(productRepository.findMarketPrice(itemType)).willReturn(response);
+
+				// when
+				FindMarketPriceResponse result = productService.findMarketPrice(itemTypeString);
+
+				// then
+				assertThat(result.getRecentPrice()).isEqualTo(expectedRecentPrice);
+				assertThat(result.getAveragePrice()).isEqualTo(expectedAveragePrice);
 			}
 		}
 	}

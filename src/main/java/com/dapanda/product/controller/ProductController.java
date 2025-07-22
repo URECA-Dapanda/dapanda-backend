@@ -151,4 +151,11 @@ public class ProductController {
 
 		return CommonResponse.success(null);
 	}
+
+	@GetMapping("/products/market-price")
+	public CommonResponse<FindMarketPriceResponse> getMarketPrice(
+			@RequestParam String productType) {
+
+		return CommonResponse.success(productService.findMarketPrice(productType));
+	}
 }

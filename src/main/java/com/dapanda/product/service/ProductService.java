@@ -12,6 +12,7 @@ import com.dapanda.product.dto.request.CreateWifiRequest;
 import com.dapanda.product.dto.request.ReadSellingProductRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
+import com.dapanda.product.dto.response.FindMarketPriceResponse;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.ReadSellingProductResponse;
 import com.dapanda.product.dto.response.UpdateMobileDataResponse;
@@ -286,5 +287,10 @@ public class ProductService {
 
 			throw new GlobalException(ResultCode.MEMBER_NOT_FOUND);
 		}
+	}
+
+	public FindMarketPriceResponse findMarketPrice(String productType) {
+
+		return productRepository.findMarketPrice(ItemType.valueOf(productType));
 	}
 }

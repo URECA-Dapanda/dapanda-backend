@@ -63,7 +63,7 @@ public class TradeController {
 	}
 
 	@GetMapping("/trades/purchase-history")
-	public CommonResponse<FindTradeHistoryResponse> findTradeHistory(
+	public CommonResponse<FindTradeHistoryResponse> getTradeHistory(
 			@RequestParam(required = false) Long cursorId,
 			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
