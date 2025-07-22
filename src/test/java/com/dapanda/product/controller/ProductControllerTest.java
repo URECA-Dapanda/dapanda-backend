@@ -1,75 +1,15 @@
 package com.dapanda.product.controller;
 
-import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
-import static com.dapanda.TestConstants.MobileData.BEFORE_DATA_AMOUNT;
-import static com.dapanda.TestConstants.MobileData.BEFORE_REMAIN_AMOUNT;
-import static com.dapanda.TestConstants.MobileData.CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
-import static com.dapanda.TestConstants.MobileData.EXCEED_CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
-import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
-import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
-import static com.dapanda.TestConstants.MobileData.SPLIT_TYPE;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
-import static com.dapanda.TestConstants.Product.INVALID_PRODUCT_ID;
-import static com.dapanda.TestConstants.Product.NEW_PRICE_9000;
-import static com.dapanda.TestConstants.Product.PRICE_3000;
-import static com.dapanda.TestConstants.Product.PRODUCT_ID;
-import static com.dapanda.TestConstants.Wifi.CHANGED_CONTENT;
-import static com.dapanda.TestConstants.Wifi.CHANGED_LATITUDE;
-import static com.dapanda.TestConstants.Wifi.CHANGED_LONGITUDE;
-import static com.dapanda.TestConstants.Wifi.CHANGED_TITLE;
-import static com.dapanda.TestConstants.Wifi.CONTENT;
-import static com.dapanda.TestConstants.Wifi.END_TIME;
-import static com.dapanda.TestConstants.Wifi.IMAGE_URL_1;
-import static com.dapanda.TestConstants.Wifi.IMAGE_URL_2;
-import static com.dapanda.TestConstants.Wifi.LATITUDE;
-import static com.dapanda.TestConstants.Wifi.LONGITUDE;
-import static com.dapanda.TestConstants.Wifi.START_TIME;
-import static com.dapanda.TestConstants.Wifi.TITLE;
-import static com.dapanda.TestConstants.Wifi.WRONG_END_TIME;
-import static com.dapanda.TestConstants.Wifi.WRONG_START_TIME;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
-import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.product.dto.request.CreateMobileDataRequest;
-import com.dapanda.product.dto.request.CreateWifiRequest;
-import com.dapanda.product.dto.request.MobileDataCursorRequest;
-import com.dapanda.product.dto.request.UpdateMobileDataRequest;
-import com.dapanda.product.dto.request.UpdateWifiRequest;
+import com.dapanda.product.dto.request.*;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
-import com.dapanda.product.entity.ItemType;
-import com.dapanda.product.entity.MobileData;
-import com.dapanda.product.entity.MobileDataFixture;
-import com.dapanda.product.entity.Product;
-import com.dapanda.product.entity.ProductFixture;
-import com.dapanda.product.entity.ProductImage;
-import com.dapanda.product.entity.ProductImageFixture;
-import com.dapanda.product.entity.ProductState;
-import com.dapanda.product.entity.Wifi;
-import com.dapanda.product.entity.WifiFixture;
+import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductImageRepository;
 import com.dapanda.product.repository.ProductRepository;
@@ -77,9 +17,6 @@ import com.dapanda.product.repository.WifiRepository;
 import com.dapanda.product.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -98,6 +35,29 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+
+import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
+import static com.dapanda.TestConstants.MobileData.*;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
+import static com.dapanda.TestConstants.Product.*;
+import static com.dapanda.TestConstants.Wifi.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -1472,6 +1432,95 @@ class ProductControllerTest {
 										parameterWithName("memberId").description(
 												"조회할 회원의 아이디 (필수)")
 								),
+								queryParameters(
+										parameterWithName("productState").description(
+												"조회할 판매 상품의 상태 (필수) (ACTIVE / SOLD_OUT)"),
+										parameterWithName("cursorId").description("커서 아이디 (선택)")
+												.optional(),
+										parameterWithName("size").description(
+												"페이지 크기 (선택, 기본값 = 2, 최대 = 100)").optional()
+								),
+								responseFields(
+										fieldWithPath("code").description("응답 코드"),
+										fieldWithPath("message").description("응답 메시지"),
+										fieldWithPath("data").description("페이징 처리된 리뷰 데이터"),
+										fieldWithPath("data.data[]").description("조회된 판매 상품 목록"),
+										fieldWithPath("data.data[].productId").description(
+												"상품 아이디"),
+										fieldWithPath("data.data[].type").description("상품 타입"),
+										fieldWithPath("data.data[].state").description("상품 상태"),
+										fieldWithPath("data.data[].dataAmount").description(
+														"모바일 데이터 전체량").type(JsonFieldType.NUMBER)
+												.optional(),
+										fieldWithPath("data.data[].remainAmount").description(
+												"모바일 데이터 잔량").type(JsonFieldType.NUMBER).optional(),
+										fieldWithPath("data.data[].startTime").description(
+														"와이파이 판매 시작 시간").type(JsonFieldType.NUMBER)
+												.optional(),
+										fieldWithPath("data.data[].endTime").description(
+												"와이파이 판매 종료 시간").type(
+												JsonFieldType.NUMBER).optional(),
+										fieldWithPath("data.data[].createdAt").description(
+												"상품 등록 시간"),
+										fieldWithPath("data.data[].updatedAt").description(
+												"상품 수정 시간"),
+										fieldWithPath("data.pageInfo").description("페이지 정보"),
+										fieldWithPath("data.pageInfo.size").description(
+												"현재 페이지 크기"),
+										fieldWithPath("data.pageInfo.hasNext").description(
+												"다음 페이지 존재 여부"),
+										fieldWithPath("data.pageInfo.nextCursorId").description(
+												"다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)")
+								)
+						));
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("나의 판매 상품 조회 API")
+	class ReadMySellingProduct {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("나의 상품의 상태가 ACTIVE 인 판매 상품을 조회한다")
+			public void readMySellingProductTest() throws Exception {
+
+				//given
+				Member seller = memberRepository.save(MemberFixture.createMember1());
+
+				List<MobileData> mobileDataList = mobileDataRepository.saveAll(
+						MobileDataFixture.createMobileDataList());
+
+				List<Product> productActivList = productRepository.saveAll(
+						ProductFixture.createProductList(seller, mobileDataList,
+								ProductState.ACTIVE));
+				productRepository.saveAll(ProductFixture.createProductList(seller, mobileDataList,
+						ProductState.SOLD_OUT));
+
+				CustomUserDetails userDetails = CustomUserDetails.from(seller);
+
+				//when & then
+				mockMvc.perform(get("/api/selling-products", seller.getId())
+								.param("productState", ProductState.ACTIVE.name())
+								.param("size", String.valueOf(DEFAULT_SIZE_2))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.data").exists())
+						.andExpect(jsonPath("$.data.data.length()").value(
+								Math.min(DEFAULT_SIZE_2, productActivList.size())))
+						.andExpect(jsonPath("$.data.pageInfo").exists())
+						.andExpect(jsonPath("$.data.pageInfo.hasNext").value(true))
+						.andExpect(jsonPath("$.data.pageInfo.size").value(DEFAULT_SIZE_2))
+						.andExpect(jsonPath("$.data.pageInfo.nextCursorId").exists())
+						.andDo(document("product/read-my-selling-product",
 								queryParameters(
 										parameterWithName("productState").description(
 												"조회할 판매 상품의 상태 (필수) (ACTIVE / SOLD_OUT)"),
