@@ -27,9 +27,6 @@ public class ReadWrittenReviewResponse {
 	private String revieweeName;
 	//Trade
 	private Long tradeId;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private Float dataAmount;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private Integer timeAmount;
 	//Product
 	private Long productId;
@@ -44,7 +41,6 @@ public class ReadWrittenReviewResponse {
 			Long revieweeId,
 			String revieweeName,
 			Long tradeId,
-			Float dataAmount,
 			Integer timeAmount,
 			Long productId,
 			ItemType itemType
@@ -59,7 +55,6 @@ public class ReadWrittenReviewResponse {
 				.revieweeId(revieweeId)
 				.revieweeName(revieweeName)
 				.tradeId(tradeId)
-				.dataAmount(dataAmount)
 				.timeAmount(timeAmount)
 				.productId(productId)
 				.itemType(itemType)
