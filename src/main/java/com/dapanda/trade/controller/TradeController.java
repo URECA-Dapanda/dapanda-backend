@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,57 +31,59 @@ public class TradeController {
 	private final TradeService tradeService;
 
 	@PostMapping("/trades/mobile-data/default")
-	public CommonResponse<TradeProductResponse> defaultPurchaseMobileData(
+	public ResponseEntity<CommonResponse<TradeProductResponse>> defaultPurchaseMobileData(
 			@RequestBody @Valid DefaultPurchaseMobileDataRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		return CommonResponse.success(
-				tradeService.defaultPurchaseMobileData(userDetails.getId(), request));
+		return ResponseEntity.ok(CommonResponse.success(
+				tradeService.defaultPurchaseMobileData(userDetails.getId(), request)));
 	}
 
 	@GetMapping("/trades/mobile-data/scrap")
-	public CommonResponse<FindMobileDataScrapResponse> defaultPurchaseMobileData(
+	public ResponseEntity<CommonResponse<FindMobileDataScrapResponse>> defaultPurchaseMobileData(
 			@RequestParam Float dataAmount) {
 
-		return CommonResponse.success(tradeService.findMobileDataScrap(dataAmount));
+		return ResponseEntity.ok(
+				CommonResponse.success(tradeService.findMobileDataScrap(dataAmount)));
 	}
 
 	@PostMapping("/trades/mobile-data/scrap")
-	public CommonResponse<TradeProductResponse> scrapPurchaseMobileData(
+	public ResponseEntity<CommonResponse<TradeProductResponse>> scrapPurchaseMobileData(
 			@RequestBody @Valid ScrapPurchaseMobileDataRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		return CommonResponse.success(
-				tradeService.scrapPurchaseMobileData(userDetails.getId(), request));
+		return ResponseEntity.ok(CommonResponse.success(
+				tradeService.scrapPurchaseMobileData(userDetails.getId(), request)));
 	}
 
 	@PostMapping("/trades/wifi")
-	public CommonResponse<TradeProductResponse> purchaseWifi(
+	public ResponseEntity<CommonResponse<TradeProductResponse>> purchaseWifi(
 			@RequestBody @Valid PurchaseWifiRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		return CommonResponse.success(tradeService.purchaseWifi(userDetails.getId(), request));
+		return ResponseEntity.ok(
+				CommonResponse.success(tradeService.purchaseWifi(userDetails.getId(), request)));
 	}
 
 	@GetMapping("/trades/purchase-history")
-	public CommonResponse<FindTradeHistoryResponse> getTradeHistory(
+	public ResponseEntity<CommonResponse<FindTradeHistoryResponse>> getTradeHistory(
 			@RequestParam(required = false) Long cursorId,
 			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		return CommonResponse.success(
-				tradeService.findTradeHistory(cursorId, size, userDetails.getId()));
+		return ResponseEntity.ok(CommonResponse.success(
+				tradeService.findTradeHistory(cursorId, size, userDetails.getId())));
 	}
 
 	@GetMapping("/trades/cash-history")
-	public CommonResponse<FindCashHistoryResponse> cashHistory(
+	public ResponseEntity<CommonResponse<FindCashHistoryResponse>> cashHistory(
 			@RequestParam(required = false) Long cursorId,
 			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size,
 			@RequestParam Integer year,
 			@RequestParam Integer month,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		return CommonResponse.success(
-				tradeService.findCashHistory(cursorId, size, userDetails.getId(), year, month));
+		return ResponseEntity.ok(CommonResponse.success(
+				tradeService.findCashHistory(cursorId, size, userDetails.getId(), year, month)));
 	}
 }

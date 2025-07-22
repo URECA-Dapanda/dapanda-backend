@@ -193,7 +193,7 @@ class PaymentControllerTest {
 								.session(session)
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
-						.andExpect(status().isOk())
+						.andExpect(status().isBadRequest())
 						.andExpect(jsonPath("$.code").value(
 								ResultCode.PAYMENT_AMOUNT_MISMATCH.getCode()))
 						.andExpect(jsonPath("$.message").value(

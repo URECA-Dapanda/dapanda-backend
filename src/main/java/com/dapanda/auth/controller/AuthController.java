@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,27 +35,26 @@ public class AuthController {
 	private final MemberService memberService;
 
 	@PostMapping("/auth/signup")
-	public CommonResponse<SignupResponse> signup(
+	public ResponseEntity<CommonResponse<SignupResponse>> signup(
 			@RequestBody SignupRequest request) {
 
 		SignupResponse result = memberService.registerUser(request);
 
-		return CommonResponse.success(result);
+		return ResponseEntity.ok(CommonResponse.success(result));
 	}
 
 	@PostMapping("/auth/login")
-	public CommonResponse<LoginResponse> login(
+	public ResponseEntity<CommonResponse<LoginResponse>> login(
 			@RequestBody LoginRequest request,
-			HttpServletResponse response
-	) {
+			HttpServletResponse response) {
 
 		LoginResponse result = memberService.login(request, response);
 
-		return CommonResponse.success(result);
+		return ResponseEntity.ok(CommonResponse.success(result));
 	}
 
 	@PostMapping("/auth/logout")
-	public CommonResponse<Void> logout(HttpServletRequest request,
+	public ResponseEntity<CommonResponse<Void>> logout(HttpServletRequest request,
 			HttpServletResponse response) {
 
 		String token = jwtTokenProvider.resolveTokenFromCookie(request, "accessToken");
@@ -88,6 +88,6 @@ public class AuthController {
 
 		request.getSession().invalidate();
 
-		return CommonResponse.success(null);
+		return ResponseEntity.ok(CommonResponse.success(null));
 	}
 }
