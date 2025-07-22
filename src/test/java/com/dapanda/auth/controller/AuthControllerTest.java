@@ -18,6 +18,7 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.refreshToken.entity.RefreshToken;
 import com.dapanda.refreshToken.entity.TokenState;
 import com.dapanda.refreshToken.repository.RefreshTokenRepository;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -330,7 +331,7 @@ class AuthControllerTest {
 				refreshTokenRepository.save(token);
 
 				mockMvc.perform(post("/api/auth/logout")
-								.header("Authorization", "Bearer " + jwt))
+								.cookie(new Cookie("accessToken", jwt)))
 						.andExpect(status().isOk())
 						.andDo(document("auth-logout-success"));
 			}
