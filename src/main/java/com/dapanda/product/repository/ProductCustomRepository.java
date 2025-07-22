@@ -4,9 +4,11 @@ import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.ReadSellingProductRequest;
+import com.dapanda.product.dto.response.FindMarketPriceResponse;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.ReadSellingProductResponse;
 import com.dapanda.product.dto.response.WifiInfoResponse;
+import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.trade.dto.MobileDataScrap;
 import java.util.List;
@@ -29,8 +31,9 @@ public interface ProductCustomRepository {
 
 	public Float sumSoldMobileDataAmountByMemberId(Long memberId);
 
-
 	List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request);
 
 	List<MobileDataScrap> findMobileDataScrap(float dataAmount);
+
+	FindMarketPriceResponse findMarketPrice(ItemType itemType);
 }
