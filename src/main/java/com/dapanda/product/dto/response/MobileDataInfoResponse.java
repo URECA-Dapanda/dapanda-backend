@@ -15,7 +15,7 @@ public class MobileDataInfoResponse {
 	private String memberName;
 	private float remainAmount;
 	private int pricePer100MB;
-	private double averageRate;
+	private float averageRate;
 	private int reviewCount;
 	private boolean splitType;
 	private LocalDateTime updatedAt;

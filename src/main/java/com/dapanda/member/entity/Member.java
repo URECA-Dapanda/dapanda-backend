@@ -54,15 +54,13 @@ public class Member extends BaseEntity {
 
 	private int cash;
 
-	private int point;
-
 	private boolean isBlocked;
 
 	private int reportedCount;
 
-	private int reviewCount = 0;
+	private int reviewCount;
 
-	private float averageRating = 0.0f;
+	private float averageRating;
 
 	public static Member ofOAuthMember(String email, String name,
 			OAuthProvider provider, MemberRole role) {

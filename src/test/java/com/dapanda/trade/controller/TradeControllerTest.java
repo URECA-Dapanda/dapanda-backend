@@ -42,8 +42,8 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.plan.entity.Plan;
+import com.dapanda.plan.entity.PlanFixture;
 import com.dapanda.plan.repository.PlanRepository;
-import com.dapanda.plan.service.entity.PlanFixture;
 import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.MobileData;
 import com.dapanda.product.entity.MobileDataFixture;
@@ -1356,6 +1356,7 @@ class TradeControllerTest {
 								jsonPath("$.data.cashHistorySummary.data[0].description").exists())
 						.andExpect(jsonPath("$.data.cashHistorySummary.data[0].createdAt").exists())
 						.andExpect(jsonPath("$.data.cashHistorySummary.pageInfo").exists())
+						.andDo(print())
 						.andDo(document("trade/get-cash-history",
 								queryParameters(
 										parameterWithName("cursorId").description("커서 아이디 (선택)")
