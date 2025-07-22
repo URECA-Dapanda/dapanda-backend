@@ -184,15 +184,15 @@ public class ChatServiceTest {
 
 				ChatMessage chatMessage = ChatMessageFixture.createChatMessageWithId(chatRoom, buyer, CHAT_MESSAGE_ID);
 
-				CreateChatMessageRequest request = new CreateChatMessageRequest(buyer.getId(), CHAT_MESSAGE);
+				CreateChatMessageRequest request = new CreateChatMessageRequest(CHAT_MESSAGE);
 
 				given(chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoom.getId(), buyer.getId())).willReturn(true);
 				given(chatRoomRepository.findById(chatRoom.getId())).willReturn(Optional.of(chatRoom));
-				given(memberRepository.findById(request.senderId())).willReturn(Optional.of(buyer));
+				given(memberRepository.findById(buyer.getId())).willReturn(Optional.of(buyer));
 				given(chatMessageRepository.save(any(ChatMessage.class))).willReturn(chatMessage);
 
 				//when
-				chatService.createChatMessage(chatRoom.getId(), request);
+				chatService.createChatMessage(chatRoom.getId(), request, buyer.getId());
 
 				//then
 				verify(chatMessageRepository).save(any(ChatMessage.class));
@@ -215,13 +215,13 @@ public class ChatServiceTest {
 
 				ChatRoom chatRoom = ChatRoomFixture.createChatRoomWithId(product, CHAT_ROOM_ID);
 
-				CreateChatMessageRequest request = new CreateChatMessageRequest(buyer.getId(), CHAT_MESSAGE);
+				CreateChatMessageRequest request = new CreateChatMessageRequest(CHAT_MESSAGE);
 
 				given(chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoom.getId(), buyer.getId())).willReturn(false);
 
 
 				//when & then
-				assertThatThrownBy(() -> chatService.createChatMessage(chatRoom.getId(), request))
+				assertThatThrownBy(() -> chatService.createChatMessage(chatRoom.getId(), request, buyer.getId()))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.CHAT_ROOM_ACCESS_DENIED.getMessage());
 
@@ -241,13 +241,13 @@ public class ChatServiceTest {
 
 				ChatRoom chatRoom = ChatRoomFixture.createChatRoomWithId(product, CHAT_ROOM_ID);
 
-				CreateChatMessageRequest request = new CreateChatMessageRequest(buyer.getId(), CHAT_MESSAGE);
+				CreateChatMessageRequest request = new CreateChatMessageRequest(CHAT_MESSAGE);
 
 				given(chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoom.getId(), buyer.getId())).willReturn(true);
 				given(chatRoomRepository.findById(chatRoom.getId())).willReturn(Optional.empty());
 
 				//when & then
-				assertThatThrownBy(() -> chatService.createChatMessage(chatRoom.getId(), request))
+				assertThatThrownBy(() -> chatService.createChatMessage(chatRoom.getId(), request, buyer.getId()))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.CHAT_ROOM_NOT_FOUND.getMessage());
 
@@ -267,14 +267,14 @@ public class ChatServiceTest {
 
 				ChatRoom chatRoom = ChatRoomFixture.createChatRoomWithId(product, CHAT_ROOM_ID);
 
-				CreateChatMessageRequest request = new CreateChatMessageRequest(buyer.getId(), CHAT_MESSAGE);
+				CreateChatMessageRequest request = new CreateChatMessageRequest(CHAT_MESSAGE);
 
 				given(chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoom.getId(), buyer.getId())).willReturn(true);
 				given(chatRoomRepository.findById(chatRoom.getId())).willReturn(Optional.of(chatRoom));
-				given(memberRepository.findById(request.senderId())).willReturn(Optional.empty());
+				given(memberRepository.findById(seller.getId())).willReturn(Optional.empty());
 
 				//when & then
-				assertThatThrownBy(() -> chatService.createChatMessage(chatRoom.getId(), request))
+				assertThatThrownBy(() -> chatService.createChatMessage(chatRoom.getId(), request, buyer.getId()))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.MEMBER_NOT_FOUND.getMessage());
 
