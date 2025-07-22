@@ -297,15 +297,15 @@ include::{snippets}/review/read-received-review/response-fields.adoc[]
 
 ====== 요청 파라미터
 
-include::{snippets}/review/read-written-review/query-parameters.adoc[]
+include::{snippets}/review/read-my-wrote-review/query-parameters.adoc[]
 
 ====== 응답
 
-include::{snippets}/review/read-written-review/http-response.adoc[]
+include::{snippets}/review/read-my-wrote-review/http-response.adoc[]
 
 ====== 응답 필드
 
-include::{snippets}/review/read-written-review/response-fields.adoc[]
+include::{snippets}/review/read-my-wrote-review/response-fields.adoc[]
 
 ===== 내가 받은 리뷰 조회
 
@@ -313,15 +313,15 @@ include::{snippets}/review/read-written-review/response-fields.adoc[]
 
 ====== 요청 파라미터
 
-include::{snippets}/review/read-received-review/query-parameters.adoc[]
+include::{snippets}/review/read-my-received-review/query-parameters.adoc[]
 
 ====== 응답
 
-include::{snippets}/review/read-received-review/http-response.adoc[]
+include::{snippets}/review/read-my-received-review/http-response.adoc[]
 
 ====== 응답 필드
 
-include::{snippets}/review/read-received-review/response-fields.adoc[]
+include::{snippets}/review/read-my-received-review/response-fields.adoc[]
 
 ==== 리뷰 등록
 
