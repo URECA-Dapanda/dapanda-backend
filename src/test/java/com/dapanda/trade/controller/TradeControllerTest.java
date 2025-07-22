@@ -1356,6 +1356,7 @@ class TradeControllerTest {
 								jsonPath("$.data.cashHistorySummary.data[0].description").exists())
 						.andExpect(jsonPath("$.data.cashHistorySummary.data[0].createdAt").exists())
 						.andExpect(jsonPath("$.data.cashHistorySummary.pageInfo").exists())
+						.andDo(print())
 						.andDo(document("trade/get-cash-history",
 								queryParameters(
 										parameterWithName("cursorId").description("커서 아이디 (선택)")

@@ -25,15 +25,6 @@ public class ReviewFixture {
 		return review;
 	}
 
-	public static Review createReview1WithIdAndRating(Trade trade, Long reviewId, Float rating) {
-
-		Review review = createReview1(trade);
-
-		ReflectionTestUtils.setField(review, "id", reviewId);
-
-		return review;
-	}
-
 	public static ReadReviewRequest createReviewRequest(Long cursorId, int size,
 			String reviewSortOption, Long memberId) {
 
@@ -60,10 +51,9 @@ public class ReviewFixture {
 						101L,
 						"김철수",
 						1L,
-						100.0f,
-						null,
+						100,
 						1L,
-						ItemType.MOBILE_DATA
+						ItemType.WIFI
 				),
 				ReadWrittenReviewResponse.of(
 						2L,
@@ -74,7 +64,6 @@ public class ReviewFixture {
 						102L,
 						"이영희",
 						2L,
-						null,
 						2,
 						2L,
 						ItemType.WIFI
@@ -88,10 +77,9 @@ public class ReviewFixture {
 						103L,
 						"박민수",
 						3L,
-						250.5f,
-						null,
+						250,
 						3L,
-						ItemType.MOBILE_DATA
+						ItemType.WIFI
 				)
 		);
 	}
@@ -110,7 +98,6 @@ public class ReviewFixture {
 						102L,
 						"이영희",
 						2L,
-						null,
 						2,
 						2L,
 						ItemType.WIFI
@@ -124,10 +111,9 @@ public class ReviewFixture {
 						103L,
 						"박민수",
 						3L,
-						250.5f,
-						null,
+						250,
 						3L,
-						ItemType.MOBILE_DATA
+						ItemType.WIFI
 				),
 				ReadWrittenReviewResponse.of(
 						4L,
@@ -138,7 +124,6 @@ public class ReviewFixture {
 						104L,
 						"최지혜",
 						4L,
-						null,
 						1,
 						4L,
 						ItemType.WIFI
@@ -152,10 +137,9 @@ public class ReviewFixture {
 						105L,
 						"정태웅",
 						5L,
-						75.8f,
-						null,
+						75,
 						5L,
-						ItemType.MOBILE_DATA
+						ItemType.WIFI
 				)
 		);
 	}
@@ -174,10 +158,9 @@ public class ReviewFixture {
 						101L,
 						"김철수",
 						1L,
-						100.0f,
-						null,
+						100,
 						1L,
-						ItemType.MOBILE_DATA
+						ItemType.WIFI
 				),
 				ReadReceivedReviewResponse.of(
 						2L,
@@ -188,7 +171,6 @@ public class ReviewFixture {
 						102L,
 						"이영희",
 						2L,
-						null,
 						2,
 						2L,
 						ItemType.WIFI
@@ -202,10 +184,9 @@ public class ReviewFixture {
 						103L,
 						"박민수",
 						3L,
-						250.5f,
-						null,
+						250,
 						3L,
-						ItemType.MOBILE_DATA
+						ItemType.WIFI
 				)
 		);
 	}
@@ -224,7 +205,6 @@ public class ReviewFixture {
 						102L,
 						"이영희",
 						2L,
-						null,
 						2,
 						2L,
 						ItemType.WIFI
@@ -238,10 +218,9 @@ public class ReviewFixture {
 						103L,
 						"박민수",
 						3L,
-						250.5f,
-						null,
+						250,
 						3L,
-						ItemType.MOBILE_DATA
+						ItemType.WIFI
 				),
 				ReadReceivedReviewResponse.of(
 						4L,
@@ -252,7 +231,6 @@ public class ReviewFixture {
 						104L,
 						"최지혜",
 						4L,
-						null,
 						1,
 						4L,
 						ItemType.WIFI
@@ -266,10 +244,9 @@ public class ReviewFixture {
 						105L,
 						"정태웅",
 						5L,
-						75.8f,
-						null,
+						75,
 						5L,
-						ItemType.MOBILE_DATA
+						ItemType.WIFI
 				)
 		);
 	}

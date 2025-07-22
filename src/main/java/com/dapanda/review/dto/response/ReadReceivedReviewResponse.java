@@ -1,7 +1,6 @@
 package com.dapanda.review.dto.response;
 
 import com.dapanda.product.entity.ItemType;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,9 +26,6 @@ public class ReadReceivedReviewResponse {
 	private String reviewerName;
 	//Trade
 	private Long tradeId;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private Float dataAmount;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private Integer timeAmount;
 	//Product
 	private Long productId;
@@ -44,7 +40,6 @@ public class ReadReceivedReviewResponse {
 			Long reviewerId,
 			String reviewerName,
 			Long tradeId,
-			Float dataAmount,
 			Integer timeAmount,
 			Long productId,
 			ItemType itemType
@@ -59,7 +54,6 @@ public class ReadReceivedReviewResponse {
 				.reviewerId(reviewerId)
 				.reviewerName(reviewerName)
 				.tradeId(tradeId)
-				.dataAmount(dataAmount)
 				.timeAmount(timeAmount)
 				.productId(productId)
 				.itemType(itemType)
