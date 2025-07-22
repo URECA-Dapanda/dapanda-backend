@@ -1,83 +1,70 @@
 package com.dapanda.chat.config;
 
-import com.dapanda.jwt.JwtPrinciple;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
+import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.common.exception.GlobalException;
+import com.dapanda.common.exception.ResultCode;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.Objects;
 
 @Slf4j
 @Component
 public class WebSocketHandler implements ChannelInterceptor {
-
-	@Value("${jwt.secret}")
-	private String secretKey;
-
-	private Key getSigningKey() {
-
-		byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
-
-		return Keys.hmacShaKeyFor(keyBytes);
-	}
 
 	@Override
 	public Message<?> preSend(Message<?> message, MessageChannel channel) {
 
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-		if (StompCommand.CONNECT.equals(accessor.getCommand())){
+		CustomUserDetails userDetails = null;
 
-			ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+		Authentication authentication = (Authentication) accessor.getUser();
 
-			if (attributes != null){
+		if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
 
-				HttpServletRequest request = attributes.getRequest();
-				Cookie[] cookies = request.getCookies();
+			userDetails = (CustomUserDetails) authentication.getPrincipal();
+		}
 
-				if (cookies != null){
+		if (userDetails == null) {
 
-					Optional<Cookie> jwtCookie = Arrays.stream(cookies)
-							.filter(cookie -> JwtPrinciple.ACCESS_TOKEN.getKey().equals(cookie.getName()))
-							.findFirst();
+			log.warn("[WebSocketHandler] userDetails == null");
 
-					if (jwtCookie.isPresent()){
+			throw new GlobalException(ResultCode.STOMP_UNAUTHORIZED);
 
-						String accessToken = jwtCookie.get().getValue();
+		} else {
 
-						log.info("accessToken : {}", accessToken);
+			log.debug("[WebSocketHandler] memberId = {}, memberName = {}", userDetails.getId(), userDetails.getUsername());
+		}
 
-						try{
-							Jwts.parserBuilder()
-									.setSigningKey(getSigningKey())
-									.build()
-									.parseClaimsJws(accessToken);
+		switch (Objects.requireNonNull(accessor.getCommand())) {
+			case CONNECT -> {
+				log.info("STOMP CONNECT");
 
-							log.info("accessToken 인증 완료");
-						}catch (Exception e){
+				log.info("User {} ({}) connected.", userDetails.getUsername(), userDetails.getId());
 
-							log.warn("토큰이 유효하지 않습니다. : {}", e.getMessage());
-						}
+				log.debug("Connect Headers: {}", accessor.getMessageHeaders());
+			}
+			case SUBSCRIBE -> {
+				String subscribeDestination = accessor.getDestination();
 
-					}else log.warn("쿠키를 찾을 수 없습니다.");
+				log.info("STOMP SUBSCRIBE received. Destination: {}", subscribeDestination);
 
-				}else log.warn("HTTP 요청에 쿠키가 없습니다.");
+				log.info("User {} ({}) attempting to SUBSCRIBE to {}", userDetails.getUsername(), userDetails.getId(), subscribeDestination);
 
-			}else log.warn("RequestContextHolder 에서 RequestAttributes 를 찾을 수 없습니다.");
+				//TODO SUBSCRIBE 권한 검증 로직 추가
+			}
+			case DISCONNECT -> {
+
+				log.info("STOMP DISCONNECT received. Session ID: {}", accessor.getSessionId());
+
+				log.info("User {} ({}) disconnected.", userDetails.getUsername(), userDetails.getId());
+			}
 		}
 
 		return message;

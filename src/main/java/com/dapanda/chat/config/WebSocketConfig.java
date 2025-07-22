@@ -14,12 +14,14 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+	private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
 	private final WebSocketHandler webSocketHandler;
 
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 
 		registry.addEndpoint(WebSocketPath.CONN.getPath())
+				.addInterceptors(jwtHandshakeInterceptor)
 				.setAllowedOrigins(AllowedOriginPath.LOCAL.getPath(), AllowedOriginPath.PROD.getPath())
 				.withSockJS();
 	}
