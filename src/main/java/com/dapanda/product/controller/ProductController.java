@@ -12,6 +12,7 @@ import com.dapanda.product.dto.request.CreateWifiRequest;
 import com.dapanda.product.dto.request.ReadSellingProductRequest;
 import com.dapanda.product.dto.request.UpdateMobileDataRequest;
 import com.dapanda.product.dto.request.UpdateWifiRequest;
+import com.dapanda.product.dto.response.FindMarketPriceResponse;
 import com.dapanda.product.dto.response.MobileDataInfoResponse;
 import com.dapanda.product.dto.response.ReadSellingProductResponse;
 import com.dapanda.product.dto.response.UpdateMobileDataResponse;
@@ -153,5 +154,12 @@ public class ProductController {
 		productService.deleteProduct(productId, userDetails.getId());
 
 		return CommonResponse.success(null);
+	}
+
+	@GetMapping("/products/market-price")
+	public CommonResponse<FindMarketPriceResponse> getMarketPrice(
+			@RequestParam String productType) {
+
+		return CommonResponse.success(productService.findMarketPrice(productType));
 	}
 }
