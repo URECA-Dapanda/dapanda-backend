@@ -786,11 +786,11 @@ class TradeServiceTest {
 						CursorPageResponse.of(
 								List.of(
 										new CashHistorySummary(TRADE_ID_1, wifiTrade.getTradeType(),
-												wifiTrade.getTradingPrice(), "0.5GB",
+												wifiTrade.getTradingPrice(), "0.5",
 												LocalDateTime.now()),
 										new CashHistorySummary(TRADE_ID_2,
 												chargeTrade.getTradeType(),
-												wifiTrade.getTradingPrice(), "60분",
+												wifiTrade.getTradingPrice(), "60",
 												LocalDateTime.now())
 								),
 								PageInfo.of(null, false, 2)
