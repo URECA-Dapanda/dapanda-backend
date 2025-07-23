@@ -104,6 +104,8 @@ public class TradeService {
 		Member seller = memberRepository.findByIdForUpdate(product.getMember().getId())
 				.orElseThrow();
 
+		validatePurchaseLimit(buyer, mobileData.getDataAmount());
+
 		deductBuyerCashAndUpdateState(buyer, product, mobileData, product.getPrice(),
 				mobileData.getDataAmount());
 
@@ -126,6 +128,8 @@ public class TradeService {
 		Member seller = memberRepository.findByIdForUpdate(product.getMember().getId())
 				.orElseThrow();
 
+		validatePurchaseLimit(buyer, dataAmount);
+
 		deductBuyerCashAndUpdateState(buyer, product, mobileData, price, dataAmount);
 
 		Trade trade = createTradeAndTradeDetails(product, mobileData, buyer, seller,
@@ -134,6 +138,13 @@ public class TradeService {
 		updateBuyerAndSellerData(buyer, seller, dataAmount);
 
 		return TradeProductResponse.of(trade.getId());
+	}
+
+	private void validatePurchaseLimit(Member buyer, float dataAmount) {
+
+		if (buyer.getBuyingData() + dataAmount > MobileData.MAX_TRANSFERABLE_DATA_AMOUNT) {
+			throw new GlobalException(ResultCode.EXCEEDED_PURCHASE_LIMIT);
+		}
 	}
 
 	private void deductBuyerCashAndUpdateState(Member buyer, Product product, MobileData mobileData,

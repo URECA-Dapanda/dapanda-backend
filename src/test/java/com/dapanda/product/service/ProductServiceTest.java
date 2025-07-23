@@ -1,5 +1,6 @@
 package com.dapanda.product.service;
 
+import static com.dapanda.TestConstants.Member.SELLING_DATA;
 import static com.dapanda.TestConstants.Member.*;
 import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
@@ -133,10 +134,10 @@ class ProductServiceTest {
 			Long memberId = 1L;
 			Member member = MemberFixture.createMember1WithId(memberId);
 			CreateWifiRequest request = new CreateWifiRequest(15000, "와이파이", "설명", 37.5, 127.0,
-					LocalDateTime.now().plusMinutes(1), LocalDateTime.now().plusHours(5),
+					ADDRESS, LocalDateTime.now(), LocalDateTime.now().plusHours(5),
 					Collections.singletonList("ImageUrl.jpg"));
 			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
-			Wifi wifi = Wifi.of("와이파이", "설명", 37.5, 127.0, request.getStartTime(),
+			Wifi wifi = Wifi.of("와이파이", "설명", 37.5, 127.0, ADDRESS, request.getStartTime(),
 					request.getEndTime());
 			given(wifiRepository.save(any())).willReturn(wifi);
 
@@ -155,7 +156,7 @@ class ProductServiceTest {
 			// given
 			Long memberId = 999L;
 			CreateWifiRequest request = new CreateWifiRequest(15000, "와이파이", "설명", 37.5, 127.0,
-					LocalDateTime.now(), LocalDateTime.now().plusHours(5),
+					ADDRESS, LocalDateTime.now(), LocalDateTime.now().plusHours(5),
 					Collections.singletonList("ImageUrl"));
 			given(memberRepository.findById(memberId)).willReturn(Optional.empty());
 
@@ -352,8 +353,8 @@ class ProductServiceTest {
 				for (int i = 1; i <= 3; i++) {
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 100 + i, (long) i,
-									"회원" + i, "상품제목" + i, 37.0 + i, 127.0 + i, i * 10.0, i,
-									UPDATED_AT));
+									"회원" + i, "상품제목" + i, 37.0 + i, 127.0 + i, ADDRESS, i * 10.0, i,
+									true, UPDATED_AT));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -386,8 +387,10 @@ class ProductServiceTest {
 							"상품제목" + i,
 							37.0 + i,
 							127.0 + i,
+							ADDRESS,
 							i * 10.0,
 							i % 2 == 0 ? 2 : 1,
+							true,
 							UPDATED_AT
 					));
 				}
@@ -420,8 +423,8 @@ class ProductServiceTest {
 					int idx = 4 - i;
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 1000, (long) i,
-									"회원" + i, "상품제목" + idx, 37.0 + idx, 127.0 + idx, 5.0 - idx,
-									idx, UPDATED_AT));
+									"회원" + i, "상품제목" + idx, 37.0 + idx, 127.0 + idx, ADDRESS,
+									5.0 - idx, idx, true, UPDATED_AT));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -447,10 +450,10 @@ class ProductServiceTest {
 				List<WifiSummary> summaries = new ArrayList<>();
 				summaries.add(
 						new WifiSummary(1L, 1000, 1L, "회원1", "상품제목1", "imageUrl", 37.0, 127.0,
-								5, 5, UPDATED_AT));
+								ADDRESS, 5, 5, true, UPDATED_AT));
 				summaries.add(
 						new WifiSummary(2L, 2000, 2L, "회원2", "상품제목2", "imageUrl", 37.1, 127.1,
-								10, 10, UPDATED_AT));
+								ADDRESS, 10, 10, true, UPDATED_AT));
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(2L, false, 2));
 
@@ -573,11 +576,11 @@ class ProductServiceTest {
 				// given
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE,
-						START_TIME, END_TIME);
+						ADDRESS, START_TIME, END_TIME);
 				WifiInfoResponse expectedResponse = new WifiInfoResponse(PRODUCT_ID,
 						wifi.getId(), PRICE_3000, member.getId(), member.getName(), TITLE, CONTENT,
-						LATITUDE, LONGITUDE, AVERAGE_RATE, REVIEW_COUNT, null, START_TIME, END_TIME,
-						UPDATED_AT);
+						LATITUDE, LONGITUDE, ADDRESS, AVERAGE_RATE, REVIEW_COUNT, null, START_TIME,
+						END_TIME, true, UPDATED_AT);
 
 				given(productRepository.existsById(PRODUCT_ID))
 						.willReturn(true);
@@ -768,11 +771,11 @@ class ProductServiceTest {
 				// given
 				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						START_TIME, END_TIME);
+						ADDRESS, START_TIME, END_TIME);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
-				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
-						END_TIME);
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+						START_TIME, END_TIME);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						wifi.getId(), PRICE_3000, member);
 
@@ -805,11 +808,11 @@ class ProductServiceTest {
 				// given
 				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						START_TIME, END_TIME);
+						ADDRESS, START_TIME, END_TIME);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
-				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
-						END_TIME);
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+						START_TIME, END_TIME);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						wifi.getId(), PRICE_3000, member);
 
@@ -830,11 +833,11 @@ class ProductServiceTest {
 				// given
 				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						WRONG_START_TIME, WRONG_END_TIME);
+						ADDRESS, WRONG_START_TIME, WRONG_END_TIME);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
-				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
-						END_TIME);
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+						START_TIME, END_TIME);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						wifi.getId(), PRICE_3000, member);
 

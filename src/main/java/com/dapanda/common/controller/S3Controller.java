@@ -58,6 +58,7 @@ public class S3Controller {
 					key
 			));
 		}
+
 		return CommonResponse.success(results);
 	}
 

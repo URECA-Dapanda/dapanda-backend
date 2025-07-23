@@ -108,6 +108,40 @@ include::{snippets}/member/get-cash/http-response.adoc[]
 
 include::{snippets}/member/get-cash/response-fields.adoc[]
 
+==== 구매 데이터양 조회
+
+`GET` 회원이 구매한 데이터양 조회
+
+===== 요청
+
+include::{snippets}/member/get-buying-data/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/member/get-buying-data/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/member/get-buying-data/response-fields.adoc[]
+
+==== 캐시 조회
+
+`GET` 회원이 판매한 데이터양 조회
+
+===== 요청
+
+include::{snippets}/member/get-selling-data/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/member/get-selling-data/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/member/get-selling-data/response-fields.adoc[]
+
+---
+
 === 채팅
 
 ==== WebSocket 프로토콜

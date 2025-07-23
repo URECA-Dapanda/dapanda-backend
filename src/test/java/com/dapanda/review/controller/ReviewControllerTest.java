@@ -1,5 +1,32 @@
 package com.dapanda.review.controller;
 
+import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_REVIEW_SORT_OPTION;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
+import static com.dapanda.TestConstants.Review.COMMENT;
+import static com.dapanda.TestConstants.Review.NEW_COMMENT;
+import static com.dapanda.TestConstants.Review.NEW_RATING;
+import static com.dapanda.TestConstants.Review.RATING;
+import static com.dapanda.TestConstants.Review.REVIEW_ID;
+import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
@@ -22,6 +49,9 @@ import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -39,27 +69,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_REVIEW_SORT_OPTION;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
-import static com.dapanda.TestConstants.Review.*;
-import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.mock;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -139,16 +148,14 @@ class ReviewControllerTest {
 
 				CreateReviewRequest request = new CreateReviewRequest(RATING, COMMENT);
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				//when & then
 				mockMvc.perform(post("/api/trades/{tradeId}/reviews", trade.getId())
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isOk())
@@ -375,7 +382,6 @@ class ReviewControllerTest {
 
 				List<Review> reviews = reviewRepository.saveAll(reviewFixtures);
 
-
 				CustomUserDetails userDetails = CustomUserDetails.from(seller);
 
 				//when & then
@@ -594,14 +600,12 @@ class ReviewControllerTest {
 				Trade trade = tradeRepository.save(TradeFixture.createTradeWifi(buyer));
 				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				//when & then
 				mockMvc.perform(get("/api/reviews/{reviewId}", review.getId())
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								))))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
@@ -644,15 +648,13 @@ class ReviewControllerTest {
 				Trade trade = tradeRepository.save(TradeFixture.createTradeWifi(buyer));
 				Review review = reviewRepository.save(ReviewFixture.createReview1(trade));
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				//when & then
 				mockMvc.perform(delete("/api/reviews/{reviewId}", review.getId())
 								.contentType(MediaType.APPLICATION_JSON)
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isOk())
@@ -687,7 +689,7 @@ class ReviewControllerTest {
 				mockMvc.perform(delete("/api/reviews/{reviewId}", REVIEW_ID)
 								.contentType(MediaType.APPLICATION_JSON)
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -716,16 +718,14 @@ class ReviewControllerTest {
 
 				UpdateReviewRequest request = new UpdateReviewRequest(NEW_RATING, NEW_COMMENT);
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				//when & then
 				mockMvc.perform(patch("/api/reviews/{reviewId}", review.getId())
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isOk())
