@@ -30,30 +30,34 @@ public class Wifi {
 
 	private double longitude; // 경도
 
+	private String address;
+
 	private LocalDateTime startTime;
 
 	private LocalDateTime endTime;
 
 	public static Wifi of(String title, String content, double latitude, double longitude,
-			LocalDateTime startTime, LocalDateTime endTime) {
+			String address, LocalDateTime startTime, LocalDateTime endTime) {
 
 		return Wifi.builder()
 				.title(title)
 				.content(content)
 				.latitude(latitude)
 				.longitude(longitude)
+				.address(address)
 				.startTime(startTime)
 				.endTime(endTime)
 				.build();
 	}
 
 	public void updateWifi(String title, String content, double latitude, double longitude,
-			LocalDateTime startTime, LocalDateTime endTime) {
+			String address, LocalDateTime startTime, LocalDateTime endTime) {
 
 		this.title = title;
 		this.content = content;
 		this.latitude = latitude;
 		this.longitude = longitude;
+		this.address = address;
 		this.startTime = startTime;
 		this.endTime = endTime;
 	}

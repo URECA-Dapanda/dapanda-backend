@@ -29,18 +29,10 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static com.dapanda.product.entity.QMobileData.mobileData;
-import static com.dapanda.product.entity.QProduct.product;
-import static com.dapanda.product.entity.QProductImage.productImage;
-import static com.dapanda.product.entity.QWifi.wifi;
-import static com.dapanda.review.entity.QReview.review;
-import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
@@ -112,8 +104,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 		// 거리 계산
 		NumberExpression<Double> distance = Expressions.numberTemplate(Double.class,
-				DISTANCE_TEMPLATE,
-				longitude, latitude, wifi.longitude, wifi.latitude);
+				DISTANCE_TEMPLATE, longitude, latitude, wifi.longitude, wifi.latitude);
 
 		List<WifiSummary> content = queryFactory
 				.select(Projections.constructor(WifiSummary.class,
@@ -125,8 +116,13 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						Expressions.stringTemplate("MIN({0})", productImage.imageUrl),
 						wifi.latitude,
 						wifi.longitude,
+						wifi.address,
 						review.rating.avg().coalesce(DEFAULT_RATING),
 						distance.divide(METER_TO_KILOMETER),
+						Expressions.booleanTemplate(
+								"CURRENT_TIMESTAMP BETWEEN {0} AND {1}", wifi.startTime,
+								wifi.endTime
+						),
 						product.updatedAt
 				))
 				.from(product)
@@ -218,11 +214,16 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						wifi.content,
 						wifi.latitude,
 						wifi.longitude,
+						wifi.address,
 						review.rating.avg().coalesce(DEFAULT_RATING),
 						review.rating.count().intValue(),
 						Expressions.nullExpression(List.class),
 						wifi.startTime,
 						wifi.endTime,
+						Expressions.booleanTemplate(
+								"CURRENT_TIMESTAMP BETWEEN {0} AND {1}", wifi.startTime,
+								wifi.endTime
+						),
 						product.updatedAt
 				))
 				.from(product)
@@ -238,8 +239,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.id.eq(productId)
 				)
 				.groupBy(product.id, wifi.id, product.price, product.member, wifi.title,
-						wifi.content, wifi.latitude, wifi.longitude, wifi.startTime, wifi.endTime,
-						product.updatedAt)
+						wifi.content, wifi.latitude, wifi.longitude, wifi.address, wifi.startTime,
+						wifi.endTime, product.updatedAt)
 				.fetchOne();
 	}
 
@@ -286,7 +287,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				)
 				.where(
 						product.member.id.eq(request.memberId()),
-						request.productState() != null ? product.state.eq(request.productState()) : null,
+						request.productState() != null ? product.state.eq(request.productState())
+								: null,
 						cursorCondition
 				)
 				.orderBy(product.createdAt.desc())
