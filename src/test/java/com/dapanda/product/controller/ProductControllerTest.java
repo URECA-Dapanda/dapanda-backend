@@ -1,48 +1,5 @@
 package com.dapanda.product.controller;
 
-import com.dapanda.TestConfig;
-import com.dapanda.auth.entity.CustomUserDetails;
-import com.dapanda.common.exception.ResultCode;
-import com.dapanda.member.entity.Member;
-import com.dapanda.member.entity.MemberFixture;
-import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.product.dto.request.*;
-import com.dapanda.product.dto.response.FindMarketPriceResponse;
-import com.dapanda.product.dto.response.MobileDataInfoResponse;
-import com.dapanda.product.dto.response.WifiInfoResponse;
-import com.dapanda.product.entity.*;
-import com.dapanda.product.repository.MobileDataRepository;
-import com.dapanda.product.repository.ProductImageRepository;
-import com.dapanda.product.repository.ProductRepository;
-import com.dapanda.product.repository.WifiRepository;
-import com.dapanda.product.service.ProductService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
 import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
@@ -61,6 +18,37 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.dapanda.TestConfig;
+import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.common.exception.ResultCode;
+import com.dapanda.member.entity.Member;
+import com.dapanda.member.entity.MemberFixture;
+import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.product.dto.request.*;
+import com.dapanda.product.dto.response.*;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.*;
+import com.dapanda.product.service.ProductService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import java.time.LocalDateTime;
+import java.util.*;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -162,8 +150,21 @@ class ProductControllerTest {
 			@DisplayName("정상적으로 와이파이 상품을 등록한다")
 			void createWifi_success() throws Exception {
 
-				CreateWifiRequest request = new CreateWifiRequest(15000, "Test Wifi", "설명", 37.5,
-						127.0, LocalDateTime.now(), LocalDateTime.now().plusHours(2));
+				List<String> images = List.of(
+						"이미지리스트1.jpg",
+						"이미지리스트2.jpg"
+				);
+
+				CreateWifiRequest request = new CreateWifiRequest(
+						15000,
+						"Test Wifi",
+						"설명",
+						37.5,
+						127.0,
+						LocalDateTime.now().plusMinutes(5),
+						LocalDateTime.now().plusHours(2),
+						images
+				);
 
 				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/wifi")
 								.with(authentication(new UsernamePasswordAuthenticationToken(
@@ -181,7 +182,8 @@ class ProductControllerTest {
 										fieldWithPath("latitude").description("위도"),
 										fieldWithPath("longitude").description("경도"),
 										fieldWithPath("startTime").description("시작 시간"),
-										fieldWithPath("endTime").description("종료 시간")
+										fieldWithPath("endTime").description("종료 시간"),
+										fieldWithPath("images").description("이미지 Url 리스트")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -194,33 +196,6 @@ class ProductControllerTest {
 		@Nested
 		@DisplayName("실패 케이스")
 		class Fail {
-
-			@Test
-			@DisplayName("존재하지 않는 회원이면 예외를 반환한다 - 모바일 데이터")
-			void createMobileData_fail_noMember() throws Exception {
-
-				Member member = memberRepository.save(MemberFixture.createMember2());
-				Long memberId = member.getId(); // 실제 DB에서 발급된 id
-				CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2.0F, false);
-
-				CustomUserDetails userDetails = CustomUserDetails.from(member);
-
-				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/mobile-data")
-								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request)))
-						.andExpect(status().isUnauthorized())
-						.andDo(document("product/post-mobile-data-no-member-error",
-								requestFields(
-										fieldWithPath("price").description("상품 가격"),
-										fieldWithPath("dataAmount").description("데이터 용량(MB 단위)"),
-										fieldWithPath("isSplitType").description("분할 판매 여부")
-								),
-								responseFields(
-										fieldWithPath("code").description("상태 코드"),
-										fieldWithPath("message").description("에러 메시지")
-								)
-						));
-			}
 
 			@Test
 			@DisplayName("데이터 총합이 2GB 초과시 예외를 반환한다 - 모바일 데이터")
@@ -299,36 +274,13 @@ class ProductControllerTest {
 			}
 
 			@Test
-			@DisplayName("존재하지 않는 회원이면 예외를 반환한다 - 와이파이")
-			void createWifi_fail_noMember() throws Exception {
-
-				CreateWifiRequest request = new CreateWifiRequest(15000, "Test Wifi", "설명", 37.5,
-						127.0, LocalDateTime.now(), LocalDateTime.now().plusHours(2));
-
-				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/wifi")
-								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request)))
-						.andExpect(status().isUnauthorized())
-						.andDo(document("product/post-wifi-no-member-error",
-								requestFields(
-										fieldWithPath("price").description("상품 가격"),
-										fieldWithPath("title").description("와이파이 이름"),
-										fieldWithPath("content").description("상세 설명"),
-										fieldWithPath("latitude").description("위도"),
-										fieldWithPath("longitude").description("경도"),
-										fieldWithPath("startTime").description("시작 시간"),
-										fieldWithPath("endTime").description("종료 시간")
-								),
-								responseFields(
-										fieldWithPath("code").description("상태 코드"),
-										fieldWithPath("message").description("에러 메시지")
-								)
-						));
-			}
-
-			@Test
 			@DisplayName("필수 입력값이 누락되면 예외를 반환한다 - 와이파이")
 			void createWifi_fail_missingField() throws Exception {
+
+				List<String> images = List.of(
+						"이미지리스트1.jpg",
+						"이미지리스트2.jpg"
+				);
 
 				CreateWifiRequest incompleteRequest = new CreateWifiRequest(
 						null,
@@ -336,8 +288,9 @@ class ProductControllerTest {
 						null,
 						37.5,
 						127.0,
-						LocalDateTime.parse("2025-07-18T10:00:00"),
-						LocalDateTime.parse("2025-07-18T20:00:00")
+						LocalDateTime.now(),
+						LocalDateTime.now().plusHours(2),
+						images
 				);
 
 				ObjectMapper mapper = objectMapper;
@@ -362,7 +315,8 @@ class ProductControllerTest {
 										fieldWithPath("latitude").description("위도"),
 										fieldWithPath("longitude").description("경도"),
 										fieldWithPath("startTime").description("시작 시간"),
-										fieldWithPath("endTime").description("종료 시간")
+										fieldWithPath("endTime").description("종료 시간"),
+										fieldWithPath("images").description("이미지 Url 리스트")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
