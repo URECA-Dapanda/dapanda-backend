@@ -1,5 +1,6 @@
 package com.dapanda.product.service;
 
+import com.dapanda.common.dto.response.CountCursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
@@ -12,11 +13,12 @@ import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
 import jakarta.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -33,12 +35,14 @@ public class ProductService {
 
 	private final MemberRepository memberRepository;
 
-	public CursorPageResponse<ReadSellingProductResponse> readSellingProduct(
+	public CountCursorPageResponse<ReadSellingProductResponse> readSellingProduct(
 			ReadSellingProductRequest request) {
 
 		validateMemberId(request.memberId());
 
 		List<ReadSellingProductResponse> response = productRepository.findSellingProduct(request);
+
+		Long count = productRepository.countSellingProduct(request);
 
 		boolean hasNext = response.size() > request.size();
 
@@ -50,17 +54,14 @@ public class ProductService {
 				? response.get(response.size() - 1).getProductId()
 				: null;
 
-		CursorPageResponse.PageInfo pageInfo = CursorPageResponse.PageInfo.of(
+		CountCursorPageResponse.PageInfo pageInfo = CountCursorPageResponse.PageInfo.of(
 				nextCursorId,
 				hasNext,
 				request.size()
 		);
 
-		return CursorPageResponse.of(response, pageInfo);
+		return CountCursorPageResponse.of(response, pageInfo, count);
 	}
-
-//	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(
-//			MobileDataCursorRequest request) {
 
 	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, Integer size,
 			String productSortOption, Float dataAmount) {
