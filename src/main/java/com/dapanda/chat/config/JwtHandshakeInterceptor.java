@@ -29,6 +29,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
+	private static final String SPRING_SECURITY_PRINCIPAL = "SPRING_SECURITY_PRINCIPAL";
+
 	@Value("${jwt.secret}")
 	private String secretKey;
 
@@ -42,8 +44,6 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 	@Override
 	public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
 
-		log.info("beforeHandshake 로그");
-
 		if (request instanceof ServletServerHttpRequest) {
 
 			HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
@@ -51,6 +51,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 			Cookie[] cookies = servletRequest.getCookies();
 
 			if (cookies != null) {
+
 				Optional<Cookie> jwtCookie = Arrays.stream(cookies)
 						.filter(cookie -> JwtPrinciple.ACCESS_TOKEN.getKey().equals(cookie.getName()))
 						.findFirst();
@@ -60,6 +61,8 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 					log.info("Handshake - accessToken from cookie: {}", accessToken);
 
 					try {
+						//TODO JWT 검증 로직 중복 문제 리팩터링 필요
+
 						Jws<Claims> claimsJws = Jwts.parserBuilder()
 								.setSigningKey(getSigningKey())
 								.build()
@@ -71,8 +74,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
 						Member member = memberService.findById(memberId);
 
-						// Principal 생성 및 attributes에 저장 -> 웹소켓 세션에서 Principal로 사용 가능
-						CustomUserDetails userDetails = CustomUserDetails.from(member); // member 객체로 CustomUserDetails 생성
+						CustomUserDetails userDetails = CustomUserDetails.from(member);
 
 						UsernamePasswordAuthenticationToken authentication =
 								new UsernamePasswordAuthenticationToken(
@@ -81,8 +83,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 										userDetails.getAuthorities()
 								);
 
-						SecurityContextHolder.getContext().setAuthentication(authentication);
-						attributes.put("SPRING_SECURITY_PRINCIPAL", authentication);
+						attributes.put(SPRING_SECURITY_PRINCIPAL, authentication);
 
 						log.info("Handshake - AccessToken authenticated. Member ID: {}", memberId);
 						return true; // 핸드셰이크 계속 진행
@@ -102,7 +103,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 		} else {
 			log.warn("Handshake - Not a ServletServerHttpRequest.");
 		}
-		return false; // 인증 실패 시 핸드셰이크 거부
+		return false;
 	}
 
 	@Override

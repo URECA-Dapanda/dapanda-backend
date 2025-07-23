@@ -13,12 +13,11 @@ import java.util.Map;
 @Component
 public class CustomHandshakeHandler extends DefaultHandshakeHandler {
 
+	private static final String SPRING_SECURITY_PRINCIPAL = "SPRING_SECURITY_PRINCIPAL";
+
 	@Override
 	protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler, Map<String, Object> attributes) {
 
-		log.info("request.getPrincipal() = {}", request.getPrincipal());
-		log.info("(Principal) attributes.get(\"SPRING_SECURITY_PRINCIPAL\") = {}", attributes.get("SPRING_SECURITY_PRINCIPAL"));
-
-		return (Principal) attributes.get("SPRING_SECURITY_PRINCIPAL");
+		return (Principal) attributes.get(SPRING_SECURITY_PRINCIPAL);
 	}
 }

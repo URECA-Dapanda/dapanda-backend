@@ -5,8 +5,6 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -20,13 +18,11 @@ public class WebSocketHandler implements ChannelInterceptor {
 
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		log.info("accessor.getMessageHeaders() : {}", accessor.getMessageHeaders());
+		log.info("accessor.getUser() : {}", accessor.getUser());
+		log.info("accessor.getSessionAttributes() : {}", accessor.getSessionAttributes());
 
-		if (authentication != null && accessor.getCommand() != null) {
-
-			log.info("accessor 에 인증 객체 등록");
-			accessor.setUser(authentication);
-		}
+		//TODO 메시지 전송 전 유효성 검증 로직 고도화
 
 		return message;
 	}
