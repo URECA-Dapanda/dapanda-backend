@@ -5,10 +5,7 @@ import com.dapanda.jwt.JwtClaim;
 import com.dapanda.jwt.JwtPrinciple;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.service.MemberService;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.Cookie;
@@ -16,9 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.server.ServerHttpRequest;
-import org.springframework.http.server.ServerHttpResponse;
-import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.http.server.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
@@ -26,9 +21,7 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -87,7 +80,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 										userDetails.getAuthorities()
 								);
 
-						attributes.put("principal", authentication); // 웹소켓 세션에 principal 저장
+						attributes.put("SPRING_SECURITY_PRINCIPAL", authentication);
 
 						log.info("Handshake - AccessToken authenticated. Member ID: {}", memberId);
 						return true; // 핸드셰이크 계속 진행

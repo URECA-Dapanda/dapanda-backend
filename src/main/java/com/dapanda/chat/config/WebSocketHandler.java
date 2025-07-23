@@ -9,6 +9,7 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -20,11 +21,30 @@ public class WebSocketHandler implements ChannelInterceptor {
 	@Override
 	public Message<?> preSend(Message<?> message, MessageChannel channel) {
 
+		log.info("preSend 로그");
+
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-		CustomUserDetails userDetails = null;
+		log.info("accessor.getUser = {}", accessor.getUser());
+		log.info("accessor.getSessionAttributes = {}", accessor.getSessionAttributes());
+		log.info("accessor : {}", accessor);
+
+		if (accessor.getUser() == null && accessor.getSessionAttributes() != null) {
+
+			Authentication authentication = (Authentication) accessor.getSessionAttributes().get("SPRING_SECURITY_PRINCIPAL");
+
+			log.info("authentication = {}", authentication);
+
+			if (authentication != null) {
+				accessor.setUser(authentication);
+				SecurityContextHolder.getContext().setAuthentication(authentication);
+			}
+		}
+
 
 		Authentication authentication = (Authentication) accessor.getUser();
+
+		CustomUserDetails userDetails = null;
 
 		if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
 
