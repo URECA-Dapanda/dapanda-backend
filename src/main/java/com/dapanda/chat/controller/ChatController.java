@@ -1,6 +1,7 @@
 package com.dapanda.chat.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.chat.dto.request.ReadChatMessageHistoryRequest;
 import com.dapanda.chat.dto.request.ReadJoiningChatRoomRequest;
 import com.dapanda.chat.dto.response.CreateChatRoomResponse;
 import com.dapanda.chat.dto.response.ReadJoiningChatRoomResponse;
@@ -52,6 +53,8 @@ public class ChatController {
 			@RequestParam(required = false) Long cursorId,
 			@RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
 
-		return CommonResponse.success(null);
+		ReadChatMessageHistoryRequest request = new ReadChatMessageHistoryRequest(cursorId, size, userDetails.getId(), chatRoomId);
+
+		return CommonResponse.success(chatService.readChatMessageHistory(request));
 	}
 }

@@ -1,16 +1,9 @@
 package com.dapanda.chat.service;
 
-import com.dapanda.chat.dto.request.CreateChatMessageRequest;
-import com.dapanda.chat.dto.request.ReadJoiningChatRoomRequest;
-import com.dapanda.chat.dto.response.CreateChatRoomResponse;
-import com.dapanda.chat.dto.response.ReadJoiningChatRoomResponse;
-import com.dapanda.chat.dto.response.SendChatMessageResponse;
-import com.dapanda.chat.entity.ChatMessage;
-import com.dapanda.chat.entity.ChatParticipant;
-import com.dapanda.chat.entity.ChatRoom;
-import com.dapanda.chat.repository.ChatMessageRepository;
-import com.dapanda.chat.repository.ChatParticipantRepository;
-import com.dapanda.chat.repository.ChatRoomRepository;
+import com.dapanda.chat.dto.request.*;
+import com.dapanda.chat.dto.response.*;
+import com.dapanda.chat.entity.*;
+import com.dapanda.chat.repository.*;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
@@ -36,6 +29,30 @@ public class ChatService {
 	private final MemberRepository memberRepository;
 
 	//TODO 채팅 이력 조회 쿼리 페이징
+	public CursorPageResponse<SendChatMessageResponse> readChatMessageHistory(ReadChatMessageHistoryRequest request) {
+
+		validateParticipant(request.chatRoomId(), request.memberId());
+
+		List<SendChatMessageResponse> response = chatMessageRepository.findChatMessageHistory(request);
+
+		boolean hasNext = response.size() > request.size();
+
+		if (hasNext) {
+			response = response.subList(0, request.size());
+		}
+
+		Long nextCursorId = hasNext && !response.isEmpty()
+				? response.get(response.size() - 1).getChatMessageId()
+				: null;
+
+		CursorPageResponse.PageInfo pageInfo = CursorPageResponse.PageInfo.of(
+				nextCursorId,
+				hasNext,
+				request.size()
+		);
+
+		return CursorPageResponse.of(response, pageInfo);
+	}
 
 	public CursorPageResponse<ReadJoiningChatRoomResponse> readChatRoom(ReadJoiningChatRoomRequest request) {
 
