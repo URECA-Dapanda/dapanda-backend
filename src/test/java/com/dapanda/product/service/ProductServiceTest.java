@@ -1,7 +1,7 @@
 package com.dapanda.product.service;
 
-import static com.dapanda.TestConstants.Member.SELLING_DATA;
 import static com.dapanda.TestConstants.Member.*;
+import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
 import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
@@ -134,7 +134,7 @@ class ProductServiceTest {
 			Long memberId = 1L;
 			Member member = MemberFixture.createMember1WithId(memberId);
 			CreateWifiRequest request = new CreateWifiRequest(15000, "와이파이", "설명", 37.5, 127.0,
-					ADDRESS, LocalDateTime.now(), LocalDateTime.now().plusHours(5),
+					ADDRESS, LocalDateTime.now().plusMinutes(5), LocalDateTime.now().plusHours(5),
 					Collections.singletonList("ImageUrl.jpg"));
 			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 			Wifi wifi = Wifi.of("와이파이", "설명", 37.5, 127.0, ADDRESS, request.getStartTime(),
