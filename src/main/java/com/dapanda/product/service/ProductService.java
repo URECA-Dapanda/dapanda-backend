@@ -167,6 +167,7 @@ public class ProductService {
 						request.getContent(),
 						request.getLatitude(),
 						request.getLongitude(),
+						request.getAddress(),
 						request.getStartTime(),
 						request.getEndTime()
 				)
@@ -224,7 +225,7 @@ public class ProductService {
 
 		savedProduct.updatePrice(request.price());
 		savedWifi.updateWifi(request.title(), request.content(), request.latitude(),
-				request.longitude(), request.startTime(), request.endTime());
+				request.longitude(), request.address(), request.startTime(), request.endTime());
 
 		return UpdateWifiResponse.from(savedProduct.getId());
 	}

@@ -13,6 +13,7 @@ import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
 import static com.dapanda.TestConstants.Product.PRICE_1500;
 import static com.dapanda.TestConstants.Product.PRICE_3000;
 import static com.dapanda.TestConstants.Product.PRICE_500;
+import static com.dapanda.TestConstants.Wifi.ADDRESS;
 import static com.dapanda.TestConstants.Wifi.CONTENT;
 import static com.dapanda.TestConstants.Wifi.END_TIME;
 import static com.dapanda.TestConstants.Wifi.LATITUDE;
@@ -1010,8 +1011,8 @@ class TradeControllerTest {
 				List<Member> members = new ArrayList<>(Arrays.asList(seller, buyer));
 				memberRepository.saveAll(members);
 
-				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
-						END_TIME);
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+						START_TIME, END_TIME);
 				wifiRepository.save(wifi);
 
 				Product product = ProductFixture.createWifiProduct(PRICE_500, wifi.getId(), seller);
@@ -1075,7 +1076,8 @@ class TradeControllerTest {
 				List<Member> members = new ArrayList<>(Arrays.asList(seller, buyer));
 				memberRepository.saveAll(members);
 
-				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+						START_TIME,
 						END_TIME);
 				wifiRepository.save(wifi);
 
@@ -1129,7 +1131,8 @@ class TradeControllerTest {
 				List<Member> members = new ArrayList<>(Arrays.asList(seller, buyer));
 				memberRepository.saveAll(members);
 
-				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+						START_TIME,
 						END_TIME);
 				wifiRepository.save(wifi);
 
@@ -1190,9 +1193,9 @@ class TradeControllerTest {
 				memberRepository.save(buyer);
 
 				Wifi wifi1 = WifiFixture.createWifi(TITLE + 1, CONTENT, LATITUDE, LONGITUDE,
-						START_TIME, END_TIME);
+						ADDRESS, START_TIME, END_TIME);
 				Wifi wifi2 = WifiFixture.createWifi(TITLE + 2, CONTENT, LATITUDE, LONGITUDE,
-						START_TIME, END_TIME);
+						ADDRESS, START_TIME, END_TIME);
 				wifiRepository.saveAll(new ArrayList<>(Arrays.asList(wifi1, wifi2)));
 
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
@@ -1405,7 +1408,7 @@ class TradeControllerTest {
 												"거래 금액"),
 										fieldWithPath(
 												"data.cashHistorySummary.data[].description").description(
-												"거래 설명"),
+												"거래 설명 (데이터: GB, 와이파이: 분, 나머지: '-')"),
 										fieldWithPath(
 												"data.cashHistorySummary.data[].createdAt").description(
 												"거래 생성 시각"),
