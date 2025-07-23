@@ -133,68 +133,64 @@ class S3ControllerTest {
 						));
 			}
 
-			@Nested
-			@DisplayName("S3 PresignedUrl 여러 개 발급")
-			class GetPresignedUrlsBulk {
+			@Test
+			@DisplayName("여러 개 presignedUrl을 한 번에 발급받는다")
+			void getPresignedUrls_success() throws Exception {
 
-				@Test
-				@DisplayName("여러 개 presignedUrl을 한 번에 발급받는다")
-				void getPresignedUrls_success() throws Exception {
+				// given
+				var filenames = List.of("a.jpg", "b.png", "c.jpeg");
+				PreSignRequest requestDto = new PreSignRequest(filenames);
+				var bucket = "dpd-bucket";
+				var basePresignedUrl = "https://example.com/presigned-url";
+				var userId = userDetails.getId();
 
-					// given
-					var filenames = List.of("a.jpg", "b.png", "c.jpeg");
-					PreSignRequest requestDto = new PreSignRequest(filenames);
-					var bucket = "dpd-bucket";
-					var basePresignedUrl = "https://example.com/presigned-url";
-					var userId = userDetails.getId();
+				// S3 Mocking: 여러 번 호출될 때마다 presignedUrl을 반환
+				Mockito.when(amazonS3.generatePresignedUrl(
+								Mockito.any(GeneratePresignedUrlRequest.class)))
+						.thenReturn(
+								new URL(basePresignedUrl + "?1"),
+								new URL(basePresignedUrl + "?2"),
+								new URL(basePresignedUrl + "?3")
+						);
 
-					// S3 Mocking: 여러 번 호출될 때마다 presignedUrl을 반환
-					Mockito.when(amazonS3.generatePresignedUrl(
-									Mockito.any(GeneratePresignedUrlRequest.class)))
-							.thenReturn(
-									new URL(basePresignedUrl + "?1"),
-									new URL(basePresignedUrl + "?2"),
-									new URL(basePresignedUrl + "?3")
-							);
+				var requestBody = Map.of("filenames", filenames);
 
-					var requestBody = Map.of("filenames", filenames);
+				mockMvc.perform(post("/api/images/presign")
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(requestDto)))
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").exists())
+						.andExpect(jsonPath("$.message").exists())
+						.andExpect(jsonPath("$.data").isArray())
+						.andExpect(jsonPath("$.data.length()").value(3))
+						.andExpect(jsonPath("$.data[0].filename").value("a.jpg"))
+						.andExpect(jsonPath("$.data[0].url").value(basePresignedUrl + "?1"))
+						.andExpect(jsonPath("$.data[1].filename").value("b.png"))
+						.andExpect(jsonPath("$.data[1].url").value(basePresignedUrl + "?2"))
+						.andExpect(jsonPath("$.data[2].filename").value("c.jpeg"))
+						.andExpect(jsonPath("$.data[2].url").value(basePresignedUrl + "?3"))
+						.andDo(document("s3/post-presigned-url-bulk",
+								requestFields(
+										fieldWithPath("filenames[]").description(
+												"여러 개 presign을 요청할 파일 이름 리스트")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data[].filename").description(
+												"요청한 파일 이름"),
+										fieldWithPath("data[].url").description(
+												"Presigned PUT URL (S3 업로드용)"),
+										fieldWithPath("data[].publicUrl").description(
+												"S3 공개 URL"),
+										fieldWithPath("data[].key").description(
+												"실제 S3에 업로드되는 객체의 Key")
+								)
+						));
 
-					mockMvc.perform(post("/api/images/presign")
-									.with(authentication(new UsernamePasswordAuthenticationToken(
-											userDetails, null, userDetails.getAuthorities()
-									)))
-									.contentType(MediaType.APPLICATION_JSON)
-									.content(objectMapper.writeValueAsString(requestDto)))
-							.andExpect(status().isOk())
-							.andExpect(jsonPath("$.code").exists())
-							.andExpect(jsonPath("$.message").exists())
-							.andExpect(jsonPath("$.data").isArray())
-							.andExpect(jsonPath("$.data.length()").value(3))
-							.andExpect(jsonPath("$.data[0].filename").value("a.jpg"))
-							.andExpect(jsonPath("$.data[0].url").value(basePresignedUrl + "?1"))
-							.andExpect(jsonPath("$.data[1].filename").value("b.png"))
-							.andExpect(jsonPath("$.data[1].url").value(basePresignedUrl + "?2"))
-							.andExpect(jsonPath("$.data[2].filename").value("c.jpeg"))
-							.andExpect(jsonPath("$.data[2].url").value(basePresignedUrl + "?3"))
-							.andDo(document("s3/post-presigned-url-bulk",
-									requestFields(
-											fieldWithPath("filenames[]").description(
-													"여러 개 presign을 요청할 파일 이름 리스트")
-									),
-									responseFields(
-											fieldWithPath("code").description("상태 코드"),
-											fieldWithPath("message").description("처리 결과 메시지"),
-											fieldWithPath("data[].filename").description(
-													"요청한 파일 이름"),
-											fieldWithPath("data[].url").description(
-													"Presigned PUT URL (S3 업로드용)"),
-											fieldWithPath("data[].publicUrl").description(
-													"S3 공개 URL"),
-											fieldWithPath("data[].key").description(
-													"실제 S3에 업로드되는 객체의 Key")
-									)
-							));
-				}
 
 			}
 

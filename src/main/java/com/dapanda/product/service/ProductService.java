@@ -13,12 +13,11 @@ import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -288,7 +287,6 @@ public class ProductService {
 			throw new GlobalException(ResultCode.OTHER_PRODUCT);
 		}
 	}
-
 
 	private void validateMemberId(Long memberId) {
 
