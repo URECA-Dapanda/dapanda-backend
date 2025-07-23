@@ -67,6 +67,10 @@ public enum ResultCode {
 	FAIL_PAYMENT_APPROVAL(HttpStatus.BAD_REQUEST, 5001, "결제 승인에 실패했습니다."),
 	INVALID_PAYMENT_AMOUNT(HttpStatus.BAD_REQUEST, 5002, "결제 금액이 유효하지 않습니다."),
 	PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, 5003, "결제 요청 금액과 일치하지 않습니다."),
+	INVALID_CASH_AMOUNT(HttpStatus.BAD_REQUEST, 5004, "환불 요청한 캐시가 보유한 캐시보다 많습니다."),
+	INVALID_REQUEST_ID(HttpStatus.BAD_REQUEST, 5005, "유효하지 않은 요청 아이디입니다."),
+	DUPLICATE_REQUEST(HttpStatus.BAD_REQUEST, 5006, "이미 처리된 요청입니다."),
+	REQUEST_TIMEOUT(HttpStatus.BAD_REQUEST, 5007, "요청이 지연되었습니다. 잠시 후 다시 시도해주세요."),
 
 	// 리뷰 6000번대
 	SELF_REVIEW(HttpStatus.BAD_REQUEST, 6000, "자신에게 리뷰를 작성할 수 없습니다."),
