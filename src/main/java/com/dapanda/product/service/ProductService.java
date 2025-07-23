@@ -13,12 +13,11 @@ import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -26,6 +25,8 @@ import java.util.List;
 public class ProductService {
 
 	private final ProductRepository productRepository;
+
+	private final ProductImageRepository productImageRepository;
 
 	private final MobileDataRepository mobileDataRepository;
 
@@ -146,6 +147,10 @@ public class ProductService {
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
+		if (request.getStartTime().isBefore(LocalDateTime.now())) {
+			throw new GlobalException(ResultCode.START_TIME_BEFORE_NOW);
+		}
+
 		Wifi savedWifi = wifiRepository.save(
 				Wifi.of(
 						request.getTitle(),
@@ -167,6 +172,23 @@ public class ProductService {
 						member
 				)
 		);
+
+		List<String> images = request.getImages();
+		if (images != null && !images.isEmpty()) {
+			int idx = 0;
+			for (String imgUrl : images) {
+				// 확장자 체크 (jpg, jpeg, png만 허용)
+				if (!isValidImageExtension(imgUrl)) {
+					throw new GlobalException(ResultCode.INVALID_IMAGE_FORMAT);
+				}
+				ProductImage productImage = ProductImage.of(
+						imgUrl,
+						idx++, // 리스트 순서가 priority
+						savedWifi.getId()
+				);
+				productImageRepository.save(productImage);
+			}
+		}
 
 		validateProductOwner(savedProduct, memberId);
 	}
@@ -266,7 +288,6 @@ public class ProductService {
 		}
 	}
 
-
 	private void validateMemberId(Long memberId) {
 
 		if (!memberRepository.existsById(memberId)) {
@@ -278,5 +299,10 @@ public class ProductService {
 	public FindMarketPriceResponse findMarketPrice(String productType) {
 
 		return productRepository.findMarketPrice(ItemType.valueOf(productType));
+	}
+
+	private boolean isValidImageExtension(String imageUrl) {
+
+		return ImageExtension.isValid(imageUrl);
 	}
 }

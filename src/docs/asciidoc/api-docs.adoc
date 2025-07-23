@@ -632,11 +632,6 @@ include::{snippets}/product/post-mobile-data-success/response-fields.adoc[]
 
 ===== 실패 요청
 
-====== 회원 인증 실패
-
-include::{snippets}/product/post-mobile-data-no-member-error/http-request.adoc[]
-include::{snippets}/product/post-mobile-data-no-member-error/http-response.adoc[]
-
 ====== 데이터 전송량 초과
 
 include::{snippets}/product/post-mobile-data-over-limit-error/http-request.adoc[]
@@ -671,15 +666,45 @@ include::{snippets}/product/post-wifi-success/response-fields.adoc[]
 
 ===== 실패 요청
 
-====== 회원 인증 실패
-
-include::{snippets}/product/post-wifi-no-member-error/http-request.adoc[]
-include::{snippets}/product/post-wifi-no-member-error/http-response.adoc[]
-
 ====== 필수 입력값 누락
 
 include::{snippets}/product/post-wifi-missing-field-error/http-request.adoc[]
 include::{snippets}/product/post-wifi-missing-field-error/http-response.adoc[]
+
+=== 파일 업로드 Presigned URL 발급
+
+S3 Presigned URL을 발급받아 클라이언트가 직접 S3로 파일을 업로드할 수 있도록 합니다.
+
+==== Presigned URL 단건/복수 발급
+
+`POST /api/images/presign`
+
+클라이언트가 파일 업로드를 위해 미리 S3 Presigned URL을 요청할 수 있습니다.
+복수 파일 요청 시 여러 Presigned URL을 한 번에 발급받을 수 있습니다.
+
+===== 요청
+
+include::{snippets}/s3/post-presigned-url/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/s3/post-presigned-url/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/s3/post-presigned-url/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/s3/post-presigned-url/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 필수 입력값 누락
+
+include::{snippets}/s3/post-presigned-url/validation-error/http-request.adoc[]
+
+include::{snippets}/s3/post-presigned-url/validation-error/http-response.adoc[]
 
 ==== 판매 시세 조회
 

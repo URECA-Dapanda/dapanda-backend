@@ -1,6 +1,7 @@
 package com.dapanda.product.dto.request;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.Getter;
 
 @Getter
@@ -13,6 +14,7 @@ public class CreateWifiRequest extends CreateProductRequest {
 	private final String address;
 	private final LocalDateTime startTime;
 	private final LocalDateTime endTime;
+	private final List<String> images;
 
 	public CreateWifiRequest(
 			Integer price,
@@ -21,8 +23,9 @@ public class CreateWifiRequest extends CreateProductRequest {
 			Double latitude,
 			Double longitude, String address,
 			LocalDateTime startTime,
-			LocalDateTime endTime
+			LocalDateTime endTime, List<String> images
 	) {
+
 		super(price);
 		this.title = title;
 		this.content = content;
@@ -31,5 +34,6 @@ public class CreateWifiRequest extends CreateProductRequest {
 		this.address = address;
 		this.startTime = startTime;
 		this.endTime = endTime;
+		this.images = images;
 	}
 }
