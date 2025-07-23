@@ -303,10 +303,7 @@ public class ProductService {
 	}
 
 	private boolean isValidImageExtension(String imageUrl) {
-		if (imageUrl == null) {
-			return false;
-		}
-		String lowered = imageUrl.toLowerCase();
-		return lowered.endsWith(".jpg") || lowered.endsWith(".jpeg") || lowered.endsWith(".png");
+
+		return ImageExtension.isValid(imageUrl);
 	}
 }
