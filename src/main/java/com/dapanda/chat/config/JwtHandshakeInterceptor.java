@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.server.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
@@ -80,6 +81,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 										userDetails.getAuthorities()
 								);
 
+						SecurityContextHolder.getContext().setAuthentication(authentication);
 						attributes.put("SPRING_SECURITY_PRINCIPAL", authentication);
 
 						log.info("Handshake - AccessToken authenticated. Member ID: {}", memberId);

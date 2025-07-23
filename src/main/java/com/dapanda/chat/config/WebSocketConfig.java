@@ -22,7 +22,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 		registry.addEndpoint(WebSocketPath.CONN.getPath())
 				.addInterceptors(jwtHandshakeInterceptor)
-				.setAllowedOrigins(AllowedOriginPath.LOCAL.getPath(), AllowedOriginPath.PROD.getPath())
+				.setAllowedOrigins("*")
 				.withSockJS();
 	}
 
