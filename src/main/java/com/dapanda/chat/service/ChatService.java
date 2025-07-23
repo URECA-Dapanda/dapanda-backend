@@ -35,6 +35,8 @@ public class ChatService {
 	private final ProductRepository productRepository;
 	private final MemberRepository memberRepository;
 
+	//TODO 채팅 이력 조회 쿼리 페이징
+
 	public CursorPageResponse<ReadJoiningChatRoomResponse> readChatRoom(ReadJoiningChatRoomRequest request) {
 
 		List<ReadJoiningChatRoomResponse> response = chatRoomRepository.findJoiningChatRoom(request);

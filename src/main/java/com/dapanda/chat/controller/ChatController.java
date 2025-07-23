@@ -4,6 +4,7 @@ import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.chat.dto.request.ReadJoiningChatRoomRequest;
 import com.dapanda.chat.dto.response.CreateChatRoomResponse;
 import com.dapanda.chat.dto.response.ReadJoiningChatRoomResponse;
+import com.dapanda.chat.dto.response.SendChatMessageResponse;
 import com.dapanda.chat.entity.ChatRoomReadOption;
 import com.dapanda.chat.service.ChatService;
 import com.dapanda.common.dto.response.CursorPageResponse;
@@ -42,5 +43,15 @@ public class ChatController {
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
 		return CommonResponse.success(chatService.createChatRoom(productId, userDetails.getId()));
+	}
+
+	@GetMapping("/chat-room/{chatRoomId}/history")
+	public CommonResponse<CursorPageResponse<SendChatMessageResponse>> readChatHistory(
+			@PathVariable Long chatRoomId,
+			@AuthenticationPrincipal CustomUserDetails userDetails,
+			@RequestParam(required = false) Long cursorId,
+			@RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+
+		return CommonResponse.success(null);
 	}
 }
