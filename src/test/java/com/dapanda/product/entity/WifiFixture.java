@@ -14,6 +14,7 @@ public class WifiFixture {
 				"콘텐츠1",
 				123d,
 				1234d,
+				"주소1",
 				LocalDateTime.now(),
 				LocalDateTime.now()
 		);
@@ -61,6 +62,7 @@ public class WifiFixture {
 				"콘텐츠1",
 				123d,
 				1234d,
+				"주소1",
 				LocalDateTime.now(),
 				LocalDateTime.now()
 		);
