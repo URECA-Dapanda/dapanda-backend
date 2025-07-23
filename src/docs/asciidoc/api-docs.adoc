@@ -105,6 +105,26 @@ include::{snippets}/chat/read-chat-room/http-response.adoc[]
 
 include::{snippets}/chat/read-chat-room/response-fields.adoc[]
 
+==== 이전 채팅 이력 조회
+
+`GET /api/chat-room/{chatRoomId}/history`
+
+===== PathParameter
+
+include::{snippets}/chat/read-chat-message-history/path-parameters.adoc[]
+
+===== QueryParameter
+
+include::{snippets}/chat/read-chat-message-history/query-parameters.adoc[]
+
+===== Response
+
+include::{snippets}/chat/read-chat-message-history/http-response.adoc[]
+
+===== Response Field
+
+include::{snippets}/chat/read-chat-message-history/response-fields.adoc[]
+
 ==== 채팅방 생성
 
 `POST` 요청으로 채팅방을 생성할 수 있습니다.
