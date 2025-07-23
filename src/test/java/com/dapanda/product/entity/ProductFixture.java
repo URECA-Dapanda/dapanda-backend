@@ -185,6 +185,15 @@ public class ProductFixture {
 		);
 	}
 
+	public static Product createWifiProductWithId(Wifi wifi, Member seller, Long productId) {
+
+		Product product = Product.of(ProductState.ACTIVE, 1000, wifi.getId(), ItemType.WIFI, seller);
+
+		ReflectionTestUtils.setField(product, "id", productId);
+
+		return product;
+	}
+
 	public static Product createWifiProductWithId(Long productId, Long wifiId, Long memberId,
 			int price) {
 

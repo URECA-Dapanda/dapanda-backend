@@ -1,37 +1,31 @@
 package com.dapanda.chat.service;
 
-import com.dapanda.chat.dto.request.CreateChatMessageRequest;
-import com.dapanda.chat.dto.request.ReadJoiningChatRoomRequest;
-import com.dapanda.chat.dto.response.CreateChatRoomResponse;
-import com.dapanda.chat.dto.response.ReadJoiningChatRoomResponse;
+import com.dapanda.chat.dto.request.*;
+import com.dapanda.chat.dto.response.*;
 import com.dapanda.chat.entity.*;
-import com.dapanda.chat.repository.ChatMessageRepository;
-import com.dapanda.chat.repository.ChatParticipantRepository;
-import com.dapanda.chat.repository.ChatRoomRepository;
+import com.dapanda.chat.repository.*;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.product.entity.Product;
-import com.dapanda.product.entity.ProductFixture;
+import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.ProductRepository;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static com.dapanda.TestConstants.Chat.*;
 import static com.dapanda.TestConstants.Member.*;
+import static com.dapanda.TestConstants.Pagination.CHAT_MESSAGE_HISTORY_DEFAULT_SIZE;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Product.PRODUCT_ID;
+import static com.dapanda.TestConstants.Wifi.WIFI_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -324,5 +318,95 @@ public class ChatServiceTest {
 			}
 		}
 
+	}
+
+	@Nested
+	@DisplayName("채팅 이력 조회")
+	class ReadChatMessageHistory {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("커서 기반 페이징 응답을 반환한다")
+			public void readChatRoomTest() {
+
+				//given
+				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+
+				Wifi wifi = WifiFixture.createWifiWithId(WIFI_ID);
+				Product product = ProductFixture.createWifiProductWithId(wifi, seller, PRODUCT_ID);
+				ChatRoom chatRoom = ChatRoomFixture.createChatRoomWithId(product, CHAT_ROOM_ID);
+				List<ChatMessage> chatMessageList = ChatMessageFixture.createChatMessageListWithId(chatRoom, buyer, seller);
+
+				ReadChatMessageHistoryRequest request = new ReadChatMessageHistoryRequest(
+						null,
+						CHAT_MESSAGE_HISTORY_DEFAULT_SIZE,
+						buyer.getId(),
+						chatRoom.getId()
+				);
+
+				List<SendChatMessageResponse> response = new ArrayList<>();
+
+				for (ChatMessage chatMessage : chatMessageList) {
+
+					response.add(SendChatMessageResponse.of(
+							chatMessage.getId(),
+							chatMessage.getMember().getId(),
+							chatMessage.getMessage(),
+							chatMessage.getCreatedAt())
+					);
+				}
+
+				given(chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoom.getId(), buyer.getId())).willReturn(true);
+				given(chatMessageRepository.findChatMessageHistory(request)).willReturn(response);
+
+				//when
+				CursorPageResponse<SendChatMessageResponse> pageResponse = chatService.readChatMessageHistory(request);
+
+				//then
+				assertThat(pageResponse.getData().size()).isEqualTo(CHAT_MESSAGE_HISTORY_DEFAULT_SIZE);
+				assertThat(pageResponse.getData().get(0)).isEqualTo(response.get(0));
+				assertThat(pageResponse.getData().get(1)).isEqualTo(response.get(1));
+
+				assertThat(pageResponse.getPageInfo().isHasNext()).isTrue();
+				assertThat(pageResponse.getPageInfo().getNextCursorId()).isEqualTo(response.get(CHAT_MESSAGE_HISTORY_DEFAULT_SIZE - 1).getChatMessageId());
+				assertThat(pageResponse.getPageInfo().getSize()).isEqualTo(CHAT_MESSAGE_HISTORY_DEFAULT_SIZE);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("채팅 이력을 조회할 채팅방의 참가자가 아닌 경우 예외가 발생한다")
+			public void validateParticipantTest() {
+
+				//given
+				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+
+				Wifi wifi = WifiFixture.createWifiWithId(WIFI_ID);
+				Product product = ProductFixture.createWifiProductWithId(wifi, seller, PRODUCT_ID);
+				ChatRoom chatRoom = ChatRoomFixture.createChatRoomWithId(product, CHAT_ROOM_ID);
+
+				ReadChatMessageHistoryRequest request = new ReadChatMessageHistoryRequest(
+						null,
+						CHAT_MESSAGE_HISTORY_DEFAULT_SIZE,
+						buyer.getId(),
+						chatRoom.getId()
+				);
+
+				given(chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoom.getId(), buyer.getId())).willReturn(false);
+
+				//when & then
+				assertThatThrownBy(() -> chatService.readChatMessageHistory(request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.CHAT_ROOM_ACCESS_DENIED.getMessage());
+			}
+		}
 	}
 }

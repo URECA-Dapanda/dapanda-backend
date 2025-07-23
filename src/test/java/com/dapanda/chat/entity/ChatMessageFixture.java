@@ -40,4 +40,28 @@ public class ChatMessageFixture {
 
 		return chatMessagesList;
 	}
+
+	public static List<ChatMessage> createChatMessageListWithId(ChatRoom chatRoom, Member buyer, Member seller) {
+
+		String testMessage = "테스트 메시지 입니다~!@#$%^&*()_+";
+
+		List<ChatMessage> chatMessagesList = new ArrayList<>();
+
+		for (int i = 0; i < 100; i = i + 2) {
+
+			chatMessagesList.add(createChatMessageWithId(chatRoom, seller, testMessage + i, (long) i));
+			chatMessagesList.add(createChatMessageWithId(chatRoom, buyer, testMessage + i + 1, (long) i));
+		}
+
+		return chatMessagesList;
+	}
+
+	public static ChatMessage createChatMessageWithId(ChatRoom chatRoom, Member seller, String message, Long chatMessageId) {
+
+		ChatMessage chatMessage = ChatMessage.of(message, chatRoom, seller);
+
+		ReflectionTestUtils.setField(chatMessage, "id", chatMessageId);
+
+		return chatMessage;
+	}
 }
