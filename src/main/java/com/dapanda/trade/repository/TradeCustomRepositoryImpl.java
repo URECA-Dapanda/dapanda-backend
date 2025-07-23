@@ -88,15 +88,15 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 						trade.id,
 						trade.tradeType,
 						trade.tradingPrice,
-						// description: MOBILE -> dataAmount + "GB", WIFI -> timeAmount + "시간"
 						new CaseBuilder()
 								.when(trade.tradeType.in(TradeType.MOBILE_PURCHASE_SINGLE,
 										TradeType.MOBILE_PURCHASE_COMPOSITE))
-								.then(Expressions.stringTemplate("concat({0}, 'GB')",
-										trade.dataAmount))
+								// SQL 문자열 연결 연산자 이용
+								.then(Expressions.stringTemplate("'' || {0}",
+										trade.dataAmount.coalesce(0F)))
 								.when(trade.tradeType.eq(TradeType.WIFI))
-								.then(Expressions.stringTemplate("concat({0}, '분')",
-										trade.timeAmount))
+								.then(Expressions.stringTemplate("'' || {0}",
+										trade.timeAmount.coalesce(0)))
 								.otherwise("-"),
 						trade.createdAt
 				))

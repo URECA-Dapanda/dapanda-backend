@@ -1405,7 +1405,7 @@ class TradeControllerTest {
 												"거래 금액"),
 										fieldWithPath(
 												"data.cashHistorySummary.data[].description").description(
-												"거래 설명"),
+												"거래 설명 (데이터: GB, 와이파이: 분, 나머지: '-')"),
 										fieldWithPath(
 												"data.cashHistorySummary.data[].createdAt").description(
 												"거래 생성 시각"),
