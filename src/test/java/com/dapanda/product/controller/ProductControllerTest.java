@@ -1486,7 +1486,8 @@ class ProductControllerTest {
 										fieldWithPath("data.pageInfo.hasNext").description(
 												"다음 페이지 존재 여부"),
 										fieldWithPath("data.pageInfo.nextCursorId").description(
-												"다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)")
+												"다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)"),
+										fieldWithPath("data.count").description("조회된 전체 갯수")
 								)
 						));
 			}
@@ -1635,7 +1636,8 @@ class ProductControllerTest {
 										fieldWithPath("data.pageInfo.hasNext").description(
 												"다음 페이지 존재 여부"),
 										fieldWithPath("data.pageInfo.nextCursorId").description(
-												"다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)")
+												"다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)"),
+										fieldWithPath("data.count").description("조회된 전체 갯수")
 								)
 						));
 			}

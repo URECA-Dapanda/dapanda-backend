@@ -41,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+import com.dapanda.common.dto.response.CountCursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
@@ -994,7 +995,7 @@ class ProductServiceTest {
 				given(productRepository.findSellingProduct(request)).willReturn(queryResponse);
 
 				//when
-				CursorPageResponse<ReadSellingProductResponse> response = productService.readSellingProduct(
+				CountCursorPageResponse<ReadSellingProductResponse> response = productService.readSellingProduct(
 						request);
 
 				//then
