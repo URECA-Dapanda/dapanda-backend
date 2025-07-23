@@ -1,6 +1,7 @@
 package com.dapanda.product.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.common.dto.response.CountCursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.CommonResponse;
 import com.dapanda.common.exception.GlobalException;
@@ -28,7 +29,7 @@ public class ProductController {
 	private final ProductService productService;
 
 	@GetMapping("/members/{memberId}/selling-products")
-	public CommonResponse<CursorPageResponse<ReadSellingProductResponse>> readSellingProductHistory(
+	public CommonResponse<CountCursorPageResponse<ReadSellingProductResponse>> readSellingProductHistory(
 
 			@PathVariable Long memberId,
 			@RequestParam ProductState productState,
@@ -42,7 +43,7 @@ public class ProductController {
 	}
 
 	@GetMapping("/selling-products")
-	public CommonResponse<CursorPageResponse<ReadSellingProductResponse>> readMySellingProductHistory(
+	public CommonResponse<CountCursorPageResponse<ReadSellingProductResponse>> readMySellingProductHistory(
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@RequestParam ProductState productState,
 			@RequestParam(required = false) Long cursorId,
