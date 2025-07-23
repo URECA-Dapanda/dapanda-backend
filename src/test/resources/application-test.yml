@@ -39,3 +39,5 @@ jwt:
 
 toss:
   secret-key: test-secret-key
+
+AWS_REGION: KOREA

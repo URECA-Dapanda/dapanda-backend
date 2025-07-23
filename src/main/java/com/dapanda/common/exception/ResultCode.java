@@ -51,6 +51,8 @@ public enum ResultCode {
 	MOBILE_DATA_NOT_FOUND(HttpStatus.BAD_REQUEST, 3009, "존재하지 않는 데이터 상품입니다."),
 	WIFI_NOT_FOUND(HttpStatus.BAD_REQUEST, 3010, "존재하지 않는 와이파이 상품입니다."),
 	NOT_FOUND_PLAN(HttpStatus.BAD_REQUEST, 3011, "회원의 요금제 정보가 존재하지 않습니다."),
+	START_TIME_BEFORE_NOW(HttpStatus.BAD_REQUEST, 3012, "현재보다 더 일찍 시작할 수 없습니다."),
+	INVALID_IMAGE_FORMAT(HttpStatus.BAD_REQUEST, 3013, "허용되지 않은 이미지 형식입니다."),
 
 	// 거래 4000번대
 	TRADE_NOT_FOUND(HttpStatus.BAD_REQUEST, 4000, "거래 이력을 찾을 수 없습니다."),

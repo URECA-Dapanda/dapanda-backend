@@ -1,14 +1,22 @@
 package com.dapanda.product.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.common.dto.response.CountCursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.CommonResponse;
-import com.dapanda.common.exception.GlobalException;
-import com.dapanda.common.exception.ResultCode;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
-import com.dapanda.product.dto.request.*;
-import com.dapanda.product.dto.response.*;
+import com.dapanda.product.dto.request.CreateMobileDataRequest;
+import com.dapanda.product.dto.request.CreateWifiRequest;
+import com.dapanda.product.dto.request.ReadSellingProductRequest;
+import com.dapanda.product.dto.request.UpdateMobileDataRequest;
+import com.dapanda.product.dto.request.UpdateWifiRequest;
+import com.dapanda.product.dto.response.FindMarketPriceResponse;
+import com.dapanda.product.dto.response.MobileDataInfoResponse;
+import com.dapanda.product.dto.response.ReadSellingProductResponse;
+import com.dapanda.product.dto.response.UpdateMobileDataResponse;
+import com.dapanda.product.dto.response.UpdateWifiResponse;
+import com.dapanda.product.dto.response.WifiInfoResponse;
 import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.service.ProductService;
 import jakarta.validation.Valid;
@@ -17,7 +25,15 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
@@ -28,7 +44,7 @@ public class ProductController {
 	private final ProductService productService;
 
 	@GetMapping("/members/{memberId}/selling-products")
-	public CommonResponse<CursorPageResponse<ReadSellingProductResponse>> readSellingProductHistory(
+	public CommonResponse<CountCursorPageResponse<ReadSellingProductResponse>> readSellingProductHistory(
 
 			@PathVariable Long memberId,
 			@RequestParam ProductState productState,
@@ -42,13 +58,14 @@ public class ProductController {
 	}
 
 	@GetMapping("/selling-products")
-	public CommonResponse<CursorPageResponse<ReadSellingProductResponse>> readMySellingProductHistory(
+	public CommonResponse<CountCursorPageResponse<ReadSellingProductResponse>> readMySellingProductHistory(
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@RequestParam ProductState productState,
 			@RequestParam(required = false) Long cursorId,
 			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size) {
 
-		ReadSellingProductRequest request = new ReadSellingProductRequest(cursorId, size, userDetails.getId(),
+		ReadSellingProductRequest request = new ReadSellingProductRequest(cursorId, size,
+				userDetails.getId(),
 				productState);
 
 		return CommonResponse.success(productService.readSellingProduct(request));
@@ -100,10 +117,6 @@ public class ProductController {
 			@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
 
-		if (userDetails == null) {
-			throw new GlobalException(ResultCode.UNAUTHORIZED);
-		}
-
 		productService.createMobileData(request, userDetails.getId());
 
 		return CommonResponse.success(null);
@@ -114,10 +127,6 @@ public class ProductController {
 			@RequestBody @Valid CreateWifiRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-
-		if (userDetails == null) {
-			throw new GlobalException(ResultCode.UNAUTHORIZED);
-		}
 
 		productService.createWifi(request, userDetails.getId());
 

@@ -1,46 +1,21 @@
 package com.dapanda.product.service;
 
-import static com.dapanda.TestConstants.Member.MEMBER_ID;
-import static com.dapanda.TestConstants.Member.OTHER_MEMBER_ID;
-import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
-import static com.dapanda.TestConstants.MobileData.BEFORE_DATA_AMOUNT;
-import static com.dapanda.TestConstants.MobileData.BEFORE_REMAIN_AMOUNT;
-import static com.dapanda.TestConstants.MobileData.CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
-import static com.dapanda.TestConstants.MobileData.EXCEED_CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
-import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
+import static com.dapanda.TestConstants.Member.*;
 import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
-import static com.dapanda.TestConstants.MobileData.SPLIT_TYPE;
+import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
-import static com.dapanda.TestConstants.Product.NEW_PRICE_9000;
-import static com.dapanda.TestConstants.Product.PRICE_3000;
-import static com.dapanda.TestConstants.Product.PRODUCT_ID;
-import static com.dapanda.TestConstants.Product.UPDATED_AT;
+import static com.dapanda.TestConstants.Product.*;
 import static com.dapanda.TestConstants.Review.AVERAGE_RATE;
 import static com.dapanda.TestConstants.Review.REVIEW_COUNT;
-import static com.dapanda.TestConstants.Wifi.ADDRESS;
-import static com.dapanda.TestConstants.Wifi.CHANGED_CONTENT;
-import static com.dapanda.TestConstants.Wifi.CHANGED_LATITUDE;
-import static com.dapanda.TestConstants.Wifi.CHANGED_LONGITUDE;
-import static com.dapanda.TestConstants.Wifi.CHANGED_TITLE;
-import static com.dapanda.TestConstants.Wifi.CONTENT;
-import static com.dapanda.TestConstants.Wifi.END_TIME;
-import static com.dapanda.TestConstants.Wifi.LATITUDE;
-import static com.dapanda.TestConstants.Wifi.LONGITUDE;
-import static com.dapanda.TestConstants.Wifi.START_TIME;
-import static com.dapanda.TestConstants.Wifi.TITLE;
-import static com.dapanda.TestConstants.Wifi.WRONG_END_TIME;
-import static com.dapanda.TestConstants.Wifi.WRONG_START_TIME;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static com.dapanda.TestConstants.Wifi.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+import com.dapanda.common.dto.response.CountCursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
@@ -49,36 +24,13 @@ import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
-import com.dapanda.product.dto.request.CreateMobileDataRequest;
-import com.dapanda.product.dto.request.CreateWifiRequest;
-import com.dapanda.product.dto.request.ReadSellingProductRequest;
-import com.dapanda.product.dto.request.UpdateMobileDataRequest;
-import com.dapanda.product.dto.request.UpdateWifiRequest;
-import com.dapanda.product.dto.response.FindMarketPriceResponse;
-import com.dapanda.product.dto.response.MobileDataInfoResponse;
-import com.dapanda.product.dto.response.ReadSellingProductResponse;
-import com.dapanda.product.dto.response.UpdateMobileDataResponse;
-import com.dapanda.product.dto.response.UpdateWifiResponse;
-import com.dapanda.product.dto.response.WifiInfoResponse;
-import com.dapanda.product.entity.ItemType;
-import com.dapanda.product.entity.MobileData;
-import com.dapanda.product.entity.MobileDataFixture;
-import com.dapanda.product.entity.Product;
-import com.dapanda.product.entity.ProductFixture;
-import com.dapanda.product.entity.ProductSortOption;
-import com.dapanda.product.entity.ProductState;
-import com.dapanda.product.entity.Wifi;
-import com.dapanda.product.entity.WifiFixture;
-import com.dapanda.product.repository.MobileDataRepository;
-import com.dapanda.product.repository.ProductRepository;
-import com.dapanda.product.repository.WifiRepository;
+import com.dapanda.product.dto.request.*;
+import com.dapanda.product.dto.response.*;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import java.util.*;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -90,6 +42,9 @@ class ProductServiceTest {
 
 	@Mock
 	private ProductRepository productRepository;
+
+	@Mock
+	private ProductImageRepository productImageRepository;
 
 	@Mock
 	private MobileDataRepository mobileDataRepository;
@@ -180,7 +135,8 @@ class ProductServiceTest {
 			Long memberId = 1L;
 			Member member = MemberFixture.createMember1WithId(memberId);
 			CreateWifiRequest request = new CreateWifiRequest(15000, "와이파이", "설명", 37.5, 127.0,
-					ADDRESS, LocalDateTime.now(), LocalDateTime.now().plusHours(5));
+					ADDRESS, LocalDateTime.now().plusMinutes(5), LocalDateTime.now().plusHours(5),
+					Collections.singletonList("ImageUrl.jpg"));
 			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 			Wifi wifi = Wifi.of("와이파이", "설명", 37.5, 127.0, ADDRESS, request.getStartTime(),
 					request.getEndTime());
@@ -201,7 +157,8 @@ class ProductServiceTest {
 			// given
 			Long memberId = 999L;
 			CreateWifiRequest request = new CreateWifiRequest(15000, "와이파이", "설명", 37.5, 127.0,
-					ADDRESS, LocalDateTime.now(), LocalDateTime.now().plusHours(5));
+					ADDRESS, LocalDateTime.now(), LocalDateTime.now().plusHours(5),
+					Collections.singletonList("ImageUrl"));
 			given(memberRepository.findById(memberId)).willReturn(Optional.empty());
 
 			// when/then
@@ -994,7 +951,7 @@ class ProductServiceTest {
 				given(productRepository.findSellingProduct(request)).willReturn(queryResponse);
 
 				//when
-				CursorPageResponse<ReadSellingProductResponse> response = productService.readSellingProduct(
+				CountCursorPageResponse<ReadSellingProductResponse> response = productService.readSellingProduct(
 						request);
 
 				//then
