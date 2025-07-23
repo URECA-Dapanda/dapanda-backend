@@ -1,14 +1,7 @@
 package com.dapanda.product.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Getter
@@ -40,7 +33,7 @@ public class MobileData {
 
 	public static MobileData singleOf(float dataAmount, int totalPrice, boolean isSplitType) {
 
-		int pricePer100MB = (int) Math.ceil(totalPrice / dataAmount * 100);
+		int pricePer100MB = (int) Math.ceil(totalPrice / dataAmount * 10);
 
 		return MobileData.builder()
 				.dataAmount(dataAmount)
