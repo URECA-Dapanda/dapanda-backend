@@ -23,11 +23,13 @@ public class WifiInfoResponse {
 	private String content;
 	private double latitude;
 	private double longitude;
+	private String address;
 	private double averageRate;
 	private int reviewCount;
 	private List<String> imageUrls;
 	private LocalDateTime startTime;
 	private LocalDateTime endTime;
+	private boolean open;
 	private LocalDateTime updatedAt;
 
 	public WifiInfoResponse withImageUrls(List<String> imageUrls) {

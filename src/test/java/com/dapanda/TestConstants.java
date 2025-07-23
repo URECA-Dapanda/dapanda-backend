@@ -15,6 +15,8 @@ public final class TestConstants {
 		public static final Long OTHER_MEMBER_ID = 2L;
 		public static final int CASH_3000 = 3000;
 		public static final int CASH_5000 = 5000;
+		public static final float BUYING_DATA = 1F;
+		public static final float SELLING_DATA = 1F;
 	}
 
 	public static final class Pagination {
@@ -88,6 +90,7 @@ public final class TestConstants {
 		public static final double CHANGED_LATITUDE = 35F;
 		public static final double LONGITUDE = 126F;
 		public static final double CHANGED_LONGITUDE = 150;
+		public static final String ADDRESS = "서울특별시 강남구";
 		public static final String IMAGE_URL_1 = "image1";
 		public static final String IMAGE_URL_2 = "image2";
 		public static final LocalDateTime START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0);

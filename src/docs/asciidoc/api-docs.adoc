@@ -76,6 +76,7 @@ DaPanda 서비스의 REST API 문서입니다.
     "message": {에러 발생 이유}
 }
 ```
+
 ==== 에러 응답 예시
 
 ```
@@ -106,6 +107,40 @@ include::{snippets}/member/get-cash/http-response.adoc[]
 ===== 응답 필드
 
 include::{snippets}/member/get-cash/response-fields.adoc[]
+
+==== 구매 데이터양 조회
+
+`GET` 회원이 구매한 데이터양 조회
+
+===== 요청
+
+include::{snippets}/member/get-buying-data/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/member/get-buying-data/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/member/get-buying-data/response-fields.adoc[]
+
+==== 캐시 조회
+
+`GET` 회원이 판매한 데이터양 조회
+
+===== 요청
+
+include::{snippets}/member/get-selling-data/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/member/get-selling-data/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/member/get-selling-data/response-fields.adoc[]
+
+---
 
 === 채팅
 
@@ -706,7 +741,6 @@ include::{snippets}/product/read-my-selling-product/http-response.adoc[]
 ===== 응답 필드
 
 include::{snippets}/product/read-my-selling-product/response-fields.adoc[]
-
 
 ==== 모바일 데이터 상품 목록 조회
 

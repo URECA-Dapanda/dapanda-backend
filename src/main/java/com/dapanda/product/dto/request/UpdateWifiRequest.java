@@ -24,6 +24,9 @@ public record UpdateWifiRequest(
 		@NotNull(message = "경도는 필수입니다.")
 		double longitude,
 
+		@NotNull(message = "주소는 필수입니다.")
+		String address,
+
 		@NotNull(message = "시작 시간은 필수입니다.")
 		LocalDateTime startTime,
 

@@ -1,11 +1,14 @@
 package com.dapanda.member.service;
 
+import static com.dapanda.TestConstants.Member.BUYING_DATA;
 import static com.dapanda.TestConstants.Member.CASH_5000;
 import static com.dapanda.TestConstants.Member.MEMBER_ID;
+import static com.dapanda.TestConstants.Member.SELLING_DATA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
 import com.dapanda.member.dto.response.FindCashResponse;
+import com.dapanda.member.dto.response.FindDataResponse;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
@@ -31,7 +34,7 @@ class MemberServiceTest {
 
 	@Nested
 	@DisplayName("캐시 조회")
-	class MobileDataFullDefaultPurchase {
+	class FindCash {
 
 		@Nested
 		@DisplayName("성공 케이스")
@@ -52,6 +55,50 @@ class MemberServiceTest {
 
 				// then
 				assertThat(response.getCash()).isEqualTo(CASH_5000);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("구매/판매 데이터양 조회")
+	class findPurchaseSaleData {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("회원의 구매 데이터양 조회를 성공한다")
+			void findBuyingCash() throws Exception {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				ReflectionTestUtils.setField(member, "buyingData", BUYING_DATA);
+
+				given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
+
+				// when
+				FindDataResponse response = memberService.findBuyingData(MEMBER_ID);
+
+				// then
+				assertThat(response.getData()).isEqualTo(BUYING_DATA);
+			}
+
+			@Test
+			@DisplayName("회원의 판매 데이터양 조회를 성공한다")
+			void findSellingCash() throws Exception {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				ReflectionTestUtils.setField(member, "sellingData", SELLING_DATA);
+
+				given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
+
+				// when
+				FindDataResponse response = memberService.findSellingData(MEMBER_ID);
+
+				// then
+				assertThat(response.getData()).isEqualTo(SELLING_DATA);
 			}
 		}
 	}
