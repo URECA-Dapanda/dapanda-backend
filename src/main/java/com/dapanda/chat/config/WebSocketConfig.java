@@ -16,13 +16,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 	private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
 	private final WebSocketHandler webSocketHandler;
+	private final CustomHandshakeHandler customHandshakeHandler;
 
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 
 		registry.addEndpoint(WebSocketPath.CONN.getPath())
 				.addInterceptors(jwtHandshakeInterceptor)
-				.setAllowedOrigins("*")
+				.setHandshakeHandler(customHandshakeHandler)
+				.setAllowedOrigins(AllowedOriginPath.LOCAL.getPath(), AllowedOriginPath.PROD.getPath())
 				.withSockJS();
 	}
 

@@ -14,6 +14,8 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
+
 @Slf4j
 @Controller
 @RequiredArgsConstructor
@@ -26,11 +28,22 @@ public class WebSocketController {
 	public void sendMessage(
 			@DestinationVariable Long chatRoomId,
 			@Valid CreateChatMessageRequest request,
-			Authentication authentication) {
+			Principal principal) {
 
 		log.info("Message : {}", request.message());
 
-		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+		// principal이 Authentication인 경우만 캐스팅
+		CustomUserDetails userDetails = null;
+		if (principal instanceof Authentication) {
+			userDetails = (CustomUserDetails) ((Authentication)principal).getPrincipal();
+		}
+
+		// 예외처리 - 인증객체가 없거나, principal이 기대 타입 아닐 때
+		if (userDetails == null) {
+			log.error("UserDetails 주입 실패");
+			throw new IllegalStateException("인증 정보 불일치");
+		}
+
 		SendChatMessageResponse response = chatService.createChatMessage(chatRoomId, request, userDetails.getId());
 
 		messageTemplate.convertAndSend(WebSocketPath.SUB.getPath() + WebSocketPath.SLASH.getPath() + chatRoomId, response);
