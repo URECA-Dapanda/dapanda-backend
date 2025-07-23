@@ -20,6 +20,11 @@ public class ChatRoomFixture {
 		return chatRoom;
 	}
 
+	public static ChatRoom createChatRoom(Product product) {
+
+		return ChatRoom.of(product);
+	}
+
 	public static List<ChatRoom> createChatRoomList(List<Product> productList){
 
 		List<ChatRoom> chatRoomList = new ArrayList<>();

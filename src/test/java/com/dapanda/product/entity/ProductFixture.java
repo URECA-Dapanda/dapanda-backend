@@ -3,10 +3,11 @@ package com.dapanda.product.entity;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.product.dto.response.ReadSellingProductResponse;
+import org.springframework.test.util.ReflectionTestUtils;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.test.util.ReflectionTestUtils;
 
 public class ProductFixture {
 
@@ -42,6 +43,17 @@ public class ProductFixture {
 				1000,
 				1L,
 				ItemType.MOBILE_DATA,
+				member
+		);
+	}
+
+	public static Product createWifiProduct(Member member, Wifi wifi) {
+
+		return Product.of(
+				ProductState.ACTIVE,
+				1000,
+				wifi.getId(),
+				ItemType.WIFI,
 				member
 		);
 	}
