@@ -48,6 +48,8 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 	@Override
 	public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
 
+		log.info("beforeHandshake 로그");
+
 		if (request instanceof ServletServerHttpRequest) {
 
 			HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
@@ -111,5 +113,6 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 	@Override
 	public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
 
+		log.info("afterHandshake 로그");
 	}
 }
