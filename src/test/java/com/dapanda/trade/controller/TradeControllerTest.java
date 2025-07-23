@@ -73,7 +73,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -185,16 +184,14 @@ class TradeControllerTest {
 				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						product.getId(), mobileData.getId(), null);
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				// when & then
 				mockMvc.perform(post("/api/trades/mobile-data/default")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isOk())
@@ -259,16 +256,14 @@ class TradeControllerTest {
 				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						product.getId(), mobileData.getId(), DATA_AMOUNT_1);
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				// when & then
 				mockMvc.perform(post("/api/trades/mobile-data/default")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isOk())
@@ -334,16 +329,14 @@ class TradeControllerTest {
 				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						product.getId(), mobileData.getId(), null);
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				// when & then
 				mockMvc.perform(post("/api/trades/mobile-data/default")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -384,16 +377,14 @@ class TradeControllerTest {
 				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						product.getId(), mobileData.getId(), null);
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				// when & then
 				mockMvc.perform(post("/api/trades/mobile-data/default")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -443,7 +434,7 @@ class TradeControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -491,16 +482,14 @@ class TradeControllerTest {
 				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						product.getId(), mobileData.getId(), DATA_AMOUNT_2);
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				// when & then
 				mockMvc.perform(post("/api/trades/mobile-data/default")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -720,16 +709,14 @@ class TradeControllerTest {
 						DATA_AMOUNT_2,
 						PRICE_1500 + PRICE_3000, mobileDataScrapList);
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				// when & then
 				mockMvc.perform(post("/api/trades/mobile-data/scrap")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isOk())
@@ -840,16 +827,14 @@ class TradeControllerTest {
 						DATA_AMOUNT_2,
 						PRICE_1500 + PRICE_3000, mobileDataScrapList);
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				// when & then
 				mockMvc.perform(post("/api/trades/mobile-data/scrap")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -932,16 +917,14 @@ class TradeControllerTest {
 						DATA_AMOUNT_2,
 						PRICE_1500 + PRICE_3000, mobileDataScrapList);
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				// when & then
 				mockMvc.perform(post("/api/trades/mobile-data/scrap")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -1021,16 +1004,14 @@ class TradeControllerTest {
 				PurchaseWifiRequest request = new PurchaseWifiRequest(product.getId(), wifi.getId(),
 						LocalDateTime.of(2025, 3, 4, 10, 0), LocalDateTime.of(2025, 3, 4, 10, 30));
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				// when & then
 				mockMvc.perform(post("/api/trades/wifi")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isOk())
@@ -1087,16 +1068,14 @@ class TradeControllerTest {
 				PurchaseWifiRequest request = new PurchaseWifiRequest(product.getId(), wifi.getId(),
 						LocalDateTime.of(2025, 3, 4, 23, 0), LocalDateTime.of(2025, 3, 4, 23, 30));
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				// when & then
 				mockMvc.perform(post("/api/trades/wifi")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
@@ -1143,16 +1122,14 @@ class TradeControllerTest {
 						wifi.getId() + 1,
 						LocalDateTime.of(2025, 3, 4, 10, 0), LocalDateTime.of(2025, 3, 4, 10, 30));
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-
-				given(userDetails.getId()).willReturn(buyer.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				// when & then
 				mockMvc.perform(post("/api/trades/wifi")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, Collections.emptyList()
+										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
 						.andExpect(status().isBadRequest())
