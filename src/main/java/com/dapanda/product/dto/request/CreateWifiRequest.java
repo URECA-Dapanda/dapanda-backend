@@ -13,7 +13,7 @@ public class CreateWifiRequest extends CreateProductRequest {
 	private final Double longitude;
 	private final LocalDateTime startTime;
 	private final LocalDateTime endTime;
-	private final List<CreateProductImageRequest> images;
+	private final List<String> images;
 
 	public CreateWifiRequest(
 			Integer price,
@@ -22,9 +22,9 @@ public class CreateWifiRequest extends CreateProductRequest {
 			Double latitude,
 			Double longitude,
 			LocalDateTime startTime,
-			LocalDateTime endTime,
-			List<CreateProductImageRequest> images
+			LocalDateTime endTime, List<String> images
 	) {
+
 		super(price);
 		this.title = title;
 		this.content = content;

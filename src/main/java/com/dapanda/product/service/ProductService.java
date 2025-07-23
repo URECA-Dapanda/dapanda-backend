@@ -7,27 +7,10 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
-import com.dapanda.product.dto.request.CreateMobileDataRequest;
-import com.dapanda.product.dto.request.CreateWifiRequest;
-import com.dapanda.product.dto.request.ReadSellingProductRequest;
-import com.dapanda.product.dto.request.UpdateMobileDataRequest;
-import com.dapanda.product.dto.request.UpdateWifiRequest;
-import com.dapanda.product.dto.response.FindMarketPriceResponse;
-import com.dapanda.product.dto.response.MobileDataInfoResponse;
-import com.dapanda.product.dto.response.ReadSellingProductResponse;
-import com.dapanda.product.dto.response.UpdateMobileDataResponse;
-import com.dapanda.product.dto.response.UpdateWifiResponse;
-import com.dapanda.product.dto.response.WifiInfoResponse;
-import com.dapanda.product.entity.ItemType;
-import com.dapanda.product.entity.MobileData;
-import com.dapanda.product.entity.Product;
-import com.dapanda.product.entity.ProductSortOption;
-import com.dapanda.product.entity.ProductState;
-import com.dapanda.product.entity.Wifi;
-import com.dapanda.product.repository.MobileDataRepository;
-import com.dapanda.product.repository.ProductImageRepository;
-import com.dapanda.product.repository.ProductRepository;
-import com.dapanda.product.repository.WifiRepository;
+import com.dapanda.product.dto.request.*;
+import com.dapanda.product.dto.response.*;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.*;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -164,6 +147,10 @@ public class ProductService {
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
+		if (request.getStartTime().isBefore(LocalDateTime.now())) {
+			throw new GlobalException(ResultCode.START_TIME_BEFORE_NOW);
+		}
+
 		Wifi savedWifi = wifiRepository.save(
 				Wifi.of(
 						request.getTitle(),
@@ -184,6 +171,23 @@ public class ProductService {
 						member
 				)
 		);
+
+		List<String> images = request.getImages();
+		if (images != null && !images.isEmpty()) {
+			int idx = 0;
+			for (String imgUrl : images) {
+				// 확장자 체크 (jpg, jpeg, png만 허용)
+				if (!isValidImageExtension(imgUrl)) {
+					throw new GlobalException(ResultCode.INVALID_IMAGE_FORMAT);
+				}
+				ProductImage productImage = ProductImage.of(
+						imgUrl,
+						idx++, // 리스트 순서가 priority
+						savedWifi.getId()
+				);
+				productImageRepository.save(productImage);
+			}
+		}
 
 		validateProductOwner(savedProduct, memberId);
 	}
@@ -295,5 +299,13 @@ public class ProductService {
 	public FindMarketPriceResponse findMarketPrice(String productType) {
 
 		return productRepository.findMarketPrice(ItemType.valueOf(productType));
+	}
+
+	private boolean isValidImageExtension(String imageUrl) {
+		if (imageUrl == null) {
+			return false;
+		}
+		String lowered = imageUrl.toLowerCase();
+		return lowered.endsWith(".jpg") || lowered.endsWith(".jpeg") || lowered.endsWith(".png");
 	}
 }
