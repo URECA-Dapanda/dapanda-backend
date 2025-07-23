@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import java.net.URL;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,8 @@ public class S3Controller {
 
 	private final AmazonS3 amazonS3;
 	private final String bucket = "dpd-bucket";
+	@Value("${AWS_REGION}")
+	private String region;
 
 	@PostMapping("/images/presign")
 	public CommonResponse<List<PreSignedFileResponse>> getPresignedUrl(
@@ -54,7 +57,7 @@ public class S3Controller {
 			results.add(new PreSignedFileResponse(
 					originalFilename,
 					url.toString(),
-					"https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + key,
+					"https://" + bucket + ".s3." + region + ".amazonaws.com/" + key,
 					key
 			));
 		}
