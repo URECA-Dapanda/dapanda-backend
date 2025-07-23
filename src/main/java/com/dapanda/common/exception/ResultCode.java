@@ -50,6 +50,7 @@ public enum ResultCode {
 	ALREADY_DELETED_PRODUCT(HttpStatus.BAD_REQUEST, 3008, "이미 삭제된 상품은 삭제할 수 없습니다."),
 	MOBILE_DATA_NOT_FOUND(HttpStatus.BAD_REQUEST, 3009, "존재하지 않는 데이터 상품입니다."),
 	WIFI_NOT_FOUND(HttpStatus.BAD_REQUEST, 3010, "존재하지 않는 와이파이 상품입니다."),
+	NOT_FOUND_PLAN(HttpStatus.BAD_REQUEST, 3011, "회원의 요금제 정보가 존재하지 않습니다."),
 
 	// 거래 4000번대
 	TRADE_NOT_FOUND(HttpStatus.BAD_REQUEST, 4000, "거래 이력을 찾을 수 없습니다."),
@@ -59,6 +60,7 @@ public enum ResultCode {
 	INSUFFICIENT_CASH(HttpStatus.BAD_REQUEST, 4004, "보유 캐시가 부족합니다"),
 	INVALID_REMAIN_DATA_AMOUNT(HttpStatus.BAD_REQUEST, 4005, "남은 데이터양이 유효하지 않습니다."),
 	INVALID_WIFI_OPERATION_TIME(HttpStatus.BAD_REQUEST, 4006, "와이파이 상품의 운영시간이 아닙니다."),
+	EXCEEDED_PURCHASE_LIMIT(HttpStatus.BAD_REQUEST, 4007, "구매 가능한 데이터양을 초과했습니다."),
 
 	// 결제 5000번대
 	FAIL_PAYMENT_PROCESSING(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "내부 오류로 결제 처리에 실패했습니다."),

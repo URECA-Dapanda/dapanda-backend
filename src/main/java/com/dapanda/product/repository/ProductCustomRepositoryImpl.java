@@ -1,5 +1,6 @@
 package com.dapanda.product.repository;
 
+import static com.dapanda.member.entity.QMember.member;
 import static com.dapanda.product.entity.QMobileData.mobileData;
 import static com.dapanda.product.entity.QProduct.product;
 import static com.dapanda.product.entity.QProductImage.productImage;
@@ -20,6 +21,7 @@ import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.entity.QProductImage;
 import com.dapanda.trade.dto.MobileDataScrap;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -102,8 +104,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 		// 거리 계산
 		NumberExpression<Double> distance = Expressions.numberTemplate(Double.class,
-				DISTANCE_TEMPLATE,
-				longitude, latitude, wifi.longitude, wifi.latitude);
+				DISTANCE_TEMPLATE, longitude, latitude, wifi.longitude, wifi.latitude);
 
 		List<WifiSummary> content = queryFactory
 				.select(Projections.constructor(WifiSummary.class,
@@ -115,8 +116,13 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						Expressions.stringTemplate("MIN({0})", productImage.imageUrl),
 						wifi.latitude,
 						wifi.longitude,
+						wifi.address,
 						review.rating.avg().coalesce(DEFAULT_RATING),
 						distance.divide(METER_TO_KILOMETER),
+						Expressions.booleanTemplate(
+								"CURRENT_TIMESTAMP BETWEEN {0} AND {1}", wifi.startTime,
+								wifi.endTime
+						),
 						product.updatedAt
 				))
 				.from(product)
@@ -177,19 +183,14 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.member.name,
 						mobileData.remainAmount,
 						mobileData.pricePer100MB,
-						review.rating.avg().coalesce(DEFAULT_RATING),
-						review.rating.count().intValue(),
+						member.averageRating,
+						member.reviewCount,
 						mobileData.isSplitType,
 						product.updatedAt
 				))
 				.from(product)
 				.join(mobileData).on(product.itemId.eq(mobileData.id))
-				.leftJoin(review).on(review.trade.id.eq(
-						JPAExpressions
-								.select(tradeDetails.trade.id)
-								.from(tradeDetails)
-								.where(tradeDetails.product.id.eq(product.id))
-				))
+				.leftJoin(member).on(product.member.id.eq(member.id))
 				.where(isActiveProduct(),
 						product.itemId.eq(mobileData.id),
 						product.id.eq(productId)
@@ -213,11 +214,16 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						wifi.content,
 						wifi.latitude,
 						wifi.longitude,
+						wifi.address,
 						review.rating.avg().coalesce(DEFAULT_RATING),
 						review.rating.count().intValue(),
 						Expressions.nullExpression(List.class),
 						wifi.startTime,
 						wifi.endTime,
+						Expressions.booleanTemplate(
+								"CURRENT_TIMESTAMP BETWEEN {0} AND {1}", wifi.startTime,
+								wifi.endTime
+						),
 						product.updatedAt
 				))
 				.from(product)
@@ -233,8 +239,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.id.eq(productId)
 				)
 				.groupBy(product.id, wifi.id, product.price, product.member, wifi.title,
-						wifi.content, wifi.latitude, wifi.longitude, wifi.startTime, wifi.endTime,
-						product.updatedAt)
+						wifi.content, wifi.latitude, wifi.longitude, wifi.address, wifi.startTime,
+						wifi.endTime, product.updatedAt)
 				.fetchOne();
 	}
 
@@ -250,6 +256,13 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 	@Override
 	public List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request) {
+
+		BooleanBuilder cursorCondition = new BooleanBuilder();
+
+		if (request.cursorId() != null && request.cursorId() != 0L) {
+
+			cursorCondition.and((product.id.lt(request.cursorId())));
+		}
 
 		List<Tuple> tuples = queryFactory
 				.select(
@@ -269,14 +282,14 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 								.and(product.itemType.eq(ItemType.MOBILE_DATA))
 				)
 				.leftJoin(wifi).on(
-						product.member.id.eq(request.memberId()),
-						request.productState() != null ? product.state.eq(request.productState())
-								: null
+						product.itemId.eq(wifi.id)
+								.and(product.itemType.eq(ItemType.WIFI))
 				)
 				.where(
 						product.member.id.eq(request.memberId()),
 						request.productState() != null ? product.state.eq(request.productState())
-								: null
+								: null,
+						cursorCondition
 				)
 				.orderBy(product.createdAt.desc())
 				.limit(request.size() + 1)

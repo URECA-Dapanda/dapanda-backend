@@ -9,6 +9,8 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.jwt.JwtPrinciple;
 import com.dapanda.jwt.JwtTokenProvider;
+import com.dapanda.member.dto.response.FindCashResponse;
+import com.dapanda.member.dto.response.FindDataResponse;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberRole;
 import com.dapanda.member.repository.MemberRepository;
@@ -123,5 +125,26 @@ public class MemberService {
 
 		return memberRepository.findByEmailAndProvider(email, provider)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+	}
+
+	public FindCashResponse findCash(Long memberId) {
+
+		int cash = memberRepository.findById(memberId).orElseThrow().getCash();
+
+		return FindCashResponse.of(cash);
+	}
+
+	public FindDataResponse findBuyingData(Long memberId) {
+
+		float buyingData = memberRepository.findById(memberId).orElseThrow().getBuyingData();
+
+		return FindDataResponse.of(buyingData);
+	}
+
+	public FindDataResponse findSellingData(Long memberId) {
+
+		float sellingData = memberRepository.findById(memberId).orElseThrow().getSellingData();
+
+		return FindDataResponse.of(sellingData);
 	}
 }

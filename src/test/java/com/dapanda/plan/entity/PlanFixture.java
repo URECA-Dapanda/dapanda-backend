@@ -1,9 +1,6 @@
-package com.dapanda.plan.service.entity;
+package com.dapanda.plan.entity;
 
 import com.dapanda.member.entity.Member;
-import com.dapanda.plan.entity.AgeGroup;
-import com.dapanda.plan.entity.Plan;
-import com.dapanda.plan.entity.PlanCategory;
 
 public class PlanFixture {
 

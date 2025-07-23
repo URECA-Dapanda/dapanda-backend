@@ -20,21 +20,22 @@ public class WifiFixture {
 	}
 
 	public static Wifi createWifi(String title, String content, double latitude, double longitude,
-			LocalDateTime startTime, LocalDateTime endTime) {
+			String address, LocalDateTime startTime, LocalDateTime endTime) {
 
 		return Wifi.of(
 				title,
 				content,
 				latitude,
 				longitude,
+				address,
 				startTime,
 				endTime
 		);
 	}
 
 	public static WifiSummary createWifiSummary(Long id, int price, Long itemId, String memberName,
-			String title, double latitude, double longitude, double averageRate,
-			double distanceKm, LocalDateTime updatedAt) {
+			String title, double latitude, double longitude, String address, double averageRate,
+			double distanceKm, boolean isOpen, LocalDateTime updatedAt) {
 
 		return new WifiSummary(
 				id,
@@ -45,8 +46,10 @@ public class WifiFixture {
 				"imageUrl",
 				latitude,
 				longitude,
+				address,
 				averageRate,
 				distanceKm,
+				isOpen,
 				updatedAt
 		);
 	}

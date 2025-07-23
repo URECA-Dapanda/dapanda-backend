@@ -21,6 +21,7 @@ import static com.dapanda.TestConstants.Product.PRICE_500;
 import static com.dapanda.TestConstants.Product.PRODUCT_ID;
 import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
 import static com.dapanda.TestConstants.Trade.TRADE_ID_2;
+import static com.dapanda.TestConstants.Wifi.ADDRESS;
 import static com.dapanda.TestConstants.Wifi.CONTENT;
 import static com.dapanda.TestConstants.Wifi.END_TIME;
 import static com.dapanda.TestConstants.Wifi.LATITUDE;
@@ -41,8 +42,8 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.plan.entity.Plan;
+import com.dapanda.plan.entity.PlanFixture;
 import com.dapanda.plan.repository.PlanRepository;
-import com.dapanda.plan.service.entity.PlanFixture;
 import com.dapanda.product.entity.MobileData;
 import com.dapanda.product.entity.MobileDataFixture;
 import com.dapanda.product.entity.Product;
@@ -602,8 +603,8 @@ class TradeServiceTest {
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 
-				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
-						END_TIME);
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+						START_TIME, END_TIME);
 				ReflectionTestUtils.setField(wifi, "id", WIFI_ID);
 
 				Product product = ProductFixture.createWifiProductWithId(
@@ -642,8 +643,8 @@ class TradeServiceTest {
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 
-				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
-						END_TIME);
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+						START_TIME, END_TIME);
 				ReflectionTestUtils.setField(wifi, "id", WIFI_ID);
 
 				Product product = ProductFixture.createWifiProductWithId(
@@ -673,8 +674,8 @@ class TradeServiceTest {
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 
-				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, START_TIME,
-						END_TIME);
+				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+						START_TIME, END_TIME);
 				ReflectionTestUtils.setField(wifi, "id", WIFI_ID);
 
 				Product product = ProductFixture.createWifiProductWithId(
@@ -786,11 +787,11 @@ class TradeServiceTest {
 						CursorPageResponse.of(
 								List.of(
 										new CashHistorySummary(TRADE_ID_1, wifiTrade.getTradeType(),
-												wifiTrade.getTradingPrice(), "0.5GB",
+												wifiTrade.getTradingPrice(), "0.5",
 												LocalDateTime.now()),
 										new CashHistorySummary(TRADE_ID_2,
 												chargeTrade.getTradeType(),
-												wifiTrade.getTradingPrice(), "60분",
+												wifiTrade.getTradingPrice(), "60",
 												LocalDateTime.now())
 								),
 								PageInfo.of(null, false, 2)
