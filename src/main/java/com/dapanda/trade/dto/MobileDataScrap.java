@@ -1,9 +1,8 @@
 package com.dapanda.trade.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @NoArgsConstructor
@@ -15,8 +14,8 @@ public class MobileDataScrap {
 	private String memberName;
 	private int price;
 	private int purchasePrice;
-	private float remainAmount;
-	private float purchaseAmount;
+	private BigDecimal remainAmount;
+	private BigDecimal purchaseAmount;
 	private int pricePer100MB;
 	private boolean splitType;
 	private LocalDateTime updatedAt;

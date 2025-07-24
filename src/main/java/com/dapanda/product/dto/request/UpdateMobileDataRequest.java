@@ -2,6 +2,7 @@ package com.dapanda.product.dto.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 public record UpdateMobileDataRequest(
 
@@ -13,7 +14,7 @@ public record UpdateMobileDataRequest(
 		int price,
 
 		@NotNull(message = "변경된 데이터양은 필수입니다.")
-		float changedAmount,
+		BigDecimal changedAmount,
 
 		@NotNull(message = "분할 여부는 필수입니다.")
 		boolean isSplitType) {

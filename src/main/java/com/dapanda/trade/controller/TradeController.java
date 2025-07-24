@@ -8,6 +8,7 @@ import com.dapanda.trade.service.TradeService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,7 @@ public class TradeController {
 	@GetMapping("/trades/mobile-data/scrap")
 	public CommonResponse<FindMobileDataScrapResponse> defaultPurchaseMobileData(
 			@AuthenticationPrincipal CustomUserDetails userDetails,
-			@RequestParam Float dataAmount) {
+			@RequestParam BigDecimal dataAmount) {
 
 		return CommonResponse.success(
 				tradeService.findMobileDataScrap(dataAmount, userDetails.getId()));

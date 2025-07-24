@@ -1,11 +1,8 @@
 package com.dapanda.plan.dto.response;
 
 import com.dapanda.plan.entity.Plan;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
+import lombok.*;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -14,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class PlanInfoResponse {
 
 	private String name;
-	private float providingDataAmount;
+	private BigDecimal providingDataAmount;
 	private int monthlyPrice;
 
 	public static PlanInfoResponse of(Plan plan) {
