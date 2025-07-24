@@ -403,9 +403,9 @@ class ProductControllerTest {
 										fieldWithPath("data.data[].itemId").description(
 												"모바일 데이터 아이디"),
 										fieldWithPath("data.data[].memberName").description(
-												"등록한 회원 이름"),
+												"상품을 등록한 회원 이름"),
 										fieldWithPath("data.data[].profileImageUrl").description(
-												"등록한 회원의 프로필 이미지 URL"),
+												"상품을 등록한 회원의 프로필 이미지 URL"),
 										fieldWithPath("data.data[].remainAmount").description(
 												"데이터 잔여량"),
 										fieldWithPath("data.data[].pricePer100MB").description(
@@ -554,9 +554,9 @@ class ProductControllerTest {
 										fieldWithPath("data.data[].itemId").description(
 												"와이파이 아이디"),
 										fieldWithPath("data.data[].memberName").description(
-												"등록한 회원 이름"),
+												"상품을 등록한 회원 이름"),
 										fieldWithPath("data.data[].profileImageUrl").description(
-												"등록한 회원의 프로필 이미지 URL"),
+												"상품을 등록한 회원의 프로필 이미지 URL"),
 										fieldWithPath("data.data[].title").description("게시물 제목"),
 										fieldWithPath("data.data[].imageUrl").description(
 												"대표 이미지 URL").optional(),
@@ -679,7 +679,7 @@ class ProductControllerTest {
 										fieldWithPath("data.memberName").description(
 												"상품을 등록한 회원의 이름"),
 										fieldWithPath("data.profileImageUrl").description(
-												"등록한 회원의 프로필 이미지 URL"),
+												"상품을 등록한 회원의 프로필 이미지 URL"),
 										fieldWithPath("data.remainAmount").description("남은 데이터양"),
 										fieldWithPath("data.pricePer100MB").description(
 												"100MB 당 가격"),
@@ -832,7 +832,7 @@ class ProductControllerTest {
 										fieldWithPath("data.memberName").description(
 												"상품을 등록한 회원의 이름"),
 										fieldWithPath("data.profileImageUrl").description(
-												"등록한 회원의 프로필 이미지 URL"),
+												"상품을 등록한 회원의 프로필 이미지 URL"),
 										fieldWithPath("data.title").description("게시물 제목"),
 										fieldWithPath("data.content").description("게시물 내용"),
 										fieldWithPath("data.latitude").description("위도"),
