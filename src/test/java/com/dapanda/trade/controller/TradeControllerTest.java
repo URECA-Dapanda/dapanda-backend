@@ -170,7 +170,7 @@ class TradeControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
 										fieldWithPath("dataAmount").description(
-												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
+												"구매할 데이터양 (선택, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -242,7 +242,7 @@ class TradeControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
 										fieldWithPath("dataAmount").description(
-												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
+												"구매할 데이터양 (선택, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -315,7 +315,7 @@ class TradeControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
 										fieldWithPath("dataAmount").description(
-												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
+												"구매할 데이터양 (선택, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -363,7 +363,7 @@ class TradeControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
 										fieldWithPath("dataAmount").description(
-												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
+												"구매할 데이터양 (선택, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -414,7 +414,7 @@ class TradeControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
 										fieldWithPath("dataAmount").description(
-												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
+												"구매할 데이터양 (선택, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -470,7 +470,7 @@ class TradeControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
 										fieldWithPath("dataAmount").description(
-												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
+												"구매할 데이터양 (선택, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),

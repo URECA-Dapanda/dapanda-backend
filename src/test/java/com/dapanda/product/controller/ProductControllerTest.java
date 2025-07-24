@@ -383,12 +383,12 @@ class ProductControllerTest {
 						.andDo(document("product/get-products-mobile-data",
 								queryParameters(
 										parameterWithName("cursorId").description(
-												"마지막 커서 아이디 (필수 X)").optional(),
+												"마지막 커서 아이디 (선택)").optional(),
 										parameterWithName("size").description(
 												"페이지 사이즈 (필수, 1 이상 정수)"),
 										parameterWithName("productSortOption").description(
-												"정렬 조건 (필수 X, 기본값: 최신순) - RECENT(최신순), PRICE_ASC(가격 낮은순), AMOUNT_ASC(데이터 용량 적은순), AMOUNT_DESC(데이터 용량 많은순"),
-										parameterWithName("dataAmount").description("데이터 양 (필수 X)")
+												"정렬 조건 (필수, 기본값: 최신순) - RECENT(최신순), PRICE_ASC(가격 낮은순), AMOUNT_ASC(데이터 용량 적은순), AMOUNT_DESC(데이터 용량 많은순"),
+										parameterWithName("dataAmount").description("데이터 양 (선택)")
 												.optional()
 								),
 								responseFields(
@@ -533,12 +533,12 @@ class ProductControllerTest {
 						.andDo(document("product/get-products-wifi",
 								queryParameters(
 										parameterWithName("cursorId").description(
-												"마지막 커서 아이디 (필수 X)"),
+												"마지막 커서 아이디 (선택)"),
 										parameterWithName("size").description(
 												"페이지 사이즈 (필수, 1 이상 정수)"),
 										parameterWithName("productSortOption").description(
-												"정렬 조건 (필수 X) - PRICE_ASC(가격 낮은순), AVERAGE_RATE_DESC(평점 높은순)"),
-										parameterWithName("open").description("영업중 여부 (필수 X)"),
+												"정렬 조건 (필수) - PRICE_ASC(가격 낮은순), AVERAGE_RATE_DESC(평점 높은순), DISTANCE_ASC(거리 가까운순)"),
+										parameterWithName("open").description("영업중 여부 (선택)"),
 										parameterWithName("latitude").description("사용자의 위도 (필수 O)"),
 										parameterWithName("longitude").description("사용자의 경도 (필수 O)")
 								),
