@@ -1,8 +1,8 @@
 package com.dapanda.product.service;
 
 import static com.dapanda.TestConstants.Member.*;
-import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
 import static com.dapanda.TestConstants.MobileData.*;
+import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Product.*;
@@ -296,10 +296,10 @@ class ProductServiceTest {
 
 				// given
 				List<MobileDataSummary> summaries = new ArrayList<>();
-				summaries.add(new MobileDataSummary(1L, 1000, 1L, "회원1", 5.0F, 200,
+				summaries.add(new MobileDataSummary(1L, 1000, 1L, "회원1", "profile.jpg", 5.0F, 200,
 						false, UPDATED_AT));
 				summaries.add(
-						new MobileDataSummary(2L, 2000, 2L, "회원2", 10, 200,
+						new MobileDataSummary(2L, 2000, 2L, "회원2", "profile.jpg", 10, 200,
 								false, UPDATED_AT));
 				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(2L, false, 2));
@@ -450,10 +450,12 @@ class ProductServiceTest {
 				// given
 				List<WifiSummary> summaries = new ArrayList<>();
 				summaries.add(
-						new WifiSummary(1L, 1000, 1L, "회원1", "상품제목1", "imageUrl", 37.0, 127.0,
+						new WifiSummary(1L, 1000, 1L, "회원1", "image.jpg",
+								"상품제목1", "imageUrl", 37.0, 127.0,
 								ADDRESS, 5, 5, true, UPDATED_AT));
 				summaries.add(
-						new WifiSummary(2L, 2000, 2L, "회원2", "상품제목2", "imageUrl", 37.1, 127.1,
+						new WifiSummary(2L, 2000, 2L, "회원2", "image.jpg",
+								"상품제목2", "imageUrl", 37.1, 127.1,
 								ADDRESS, 10, 10, true, UPDATED_AT));
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(2L, false, 2));
@@ -510,7 +512,8 @@ class ProductServiceTest {
 						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
 				MobileDataInfoResponse expectedResponse = new MobileDataInfoResponse(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member.getId(), member.getName(),
-						REMAIN_AMOUNT_1, PRICE_PER_100MB_300, AVERAGE_RATE, REVIEW_COUNT, false,
+						PROFILE_IMAGE_URL, REMAIN_AMOUNT_1, PRICE_PER_100MB_300, AVERAGE_RATE,
+						REVIEW_COUNT, false,
 						UPDATED_AT);
 
 				given(productRepository.existsById(PRODUCT_ID))
@@ -579,8 +582,9 @@ class ProductServiceTest {
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE,
 						ADDRESS, START_TIME, END_TIME);
 				WifiInfoResponse expectedResponse = new WifiInfoResponse(PRODUCT_ID,
-						wifi.getId(), PRICE_3000, member.getId(), member.getName(), TITLE, CONTENT,
-						LATITUDE, LONGITUDE, ADDRESS, AVERAGE_RATE, REVIEW_COUNT, null, START_TIME,
+						wifi.getId(), PRICE_3000, member.getId(), member.getName(),
+						PROFILE_IMAGE_URL, TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+						AVERAGE_RATE, REVIEW_COUNT, null, START_TIME,
 						END_TIME, true, UPDATED_AT);
 
 				given(productRepository.existsById(PRODUCT_ID))

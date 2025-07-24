@@ -50,31 +50,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
-import static com.dapanda.TestConstants.MobileData.*;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
-import static com.dapanda.TestConstants.Product.*;
-import static com.dapanda.TestConstants.Wifi.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @SpringBootTest
 @Import(TestConfig.class)
 @ActiveProfiles("test")
@@ -429,6 +404,8 @@ class ProductControllerTest {
 												"모바일 데이터 아이디"),
 										fieldWithPath("data.data[].memberName").description(
 												"등록한 회원 이름"),
+										fieldWithPath("data.data[].profileImageUrl").description(
+												"등록한 회원의 프로필 이미지 URL"),
 										fieldWithPath("data.data[].remainAmount").description(
 												"데이터 잔여량"),
 										fieldWithPath("data.data[].pricePer100MB").description(
@@ -574,6 +551,8 @@ class ProductControllerTest {
 												"와이파이 아이디"),
 										fieldWithPath("data.data[].memberName").description(
 												"등록한 회원 이름"),
+										fieldWithPath("data.data[].profileImageUrl").description(
+												"등록한 회원의 프로필 이미지 URL"),
 										fieldWithPath("data.data[].title").description("게시물 제목"),
 										fieldWithPath("data.data[].imageUrl").description(
 												"대표 이미지 URL").optional(),
@@ -671,6 +650,7 @@ class ProductControllerTest {
 						.andExpect(jsonPath("$.data.price").value(PRICE_3000))
 						.andExpect(jsonPath("$.data.memberId").value(member.getId()))
 						.andExpect(jsonPath("$.data.memberName").value(member.getName()))
+						.andExpect(jsonPath("$.data.profileImageUrl").value(""))
 						.andExpect(jsonPath("$.data.remainAmount").value(REMAIN_AMOUNT_1))
 						.andExpect(jsonPath("$.data.pricePer100MB").value(PRICE_PER_100MB_300))
 						.andExpect(jsonPath("$.data.averageRate").exists())
@@ -688,6 +668,8 @@ class ProductControllerTest {
 												"상품을 등록한 회원의 아이디"),
 										fieldWithPath("data.memberName").description(
 												"상품을 등록한 회원의 이름"),
+										fieldWithPath("data.profileImageUrl").description(
+												"등록한 회원의 프로필 이미지 URL"),
 										fieldWithPath("data.remainAmount").description("남은 데이터양"),
 										fieldWithPath("data.pricePer100MB").description(
 												"100MB 당 가격"),
@@ -794,6 +776,7 @@ class ProductControllerTest {
 						.andExpect(jsonPath("$.data.price").value(PRICE_3000))
 						.andExpect(jsonPath("$.data.memberId").value(member.getId()))
 						.andExpect(jsonPath("$.data.memberName").value(member.getName()))
+						.andExpect(jsonPath("$.data.profileImageUrl").value(""))
 						.andExpect(jsonPath("$.data.title").value(TITLE))
 						.andExpect(jsonPath("$.data.content").value(CONTENT))
 						.andExpect(jsonPath("$.data.latitude").value(LATITUDE))
@@ -818,6 +801,8 @@ class ProductControllerTest {
 												"상품을 등록한 회원의 아이디"),
 										fieldWithPath("data.memberName").description(
 												"상품을 등록한 회원의 이름"),
+										fieldWithPath("data.profileImageUrl").description(
+												"등록한 회원의 프로필 이미지 URL"),
 										fieldWithPath("data.title").description("게시물 제목"),
 										fieldWithPath("data.content").description("게시물 내용"),
 										fieldWithPath("data.latitude").description("위도"),

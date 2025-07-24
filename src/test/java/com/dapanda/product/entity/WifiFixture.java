@@ -28,6 +28,7 @@ public class WifiFixture {
 				price,
 				itemId,
 				memberName,
+				"image.jpg",
 				title,
 				"imageUrl",
 				latitude,
