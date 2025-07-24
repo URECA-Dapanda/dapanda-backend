@@ -306,5 +306,138 @@ class MemberControllerTest {
 		}
 	}
 
-}
+	@Nested
+	@DisplayName("회원 정보 조회")
+	class GetMemberInfo {
 
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("내 정보 조회 (memberId 없음)")
+			void getMyMemberInfo() throws Exception {
+
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+				ReflectionTestUtils.setField(member, "profileImageUrl",
+						"https://dapanda.org/profile/test2.jpg");
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+				memberRepository.save(member);
+				// when & then
+				mockMvc.perform(get("/api/members/info")
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").exists())
+						.andExpect(jsonPath("$.message").exists())
+						.andExpect(jsonPath("$.data.name").value(member.getName()))
+						.andExpect(
+								jsonPath("$.data.profileImageUrl").value(
+										member.getProfileImageUrl()))
+						.andExpect(jsonPath("$.data.joinedAt").exists())
+						.andExpect(
+								jsonPath("$.data.averageRating").value(member.getAverageRating()))
+						.andExpect(jsonPath("$.data.reviewCount").value(member.getReviewCount()))
+						.andExpect(jsonPath("$.data.tradeCount").isNumber())
+						.andDo(document("member/get-my-info",
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data.name").description("회원 이름"),
+										fieldWithPath("data.profileImageUrl").description(
+												"프로필 이미지 URL"),
+										fieldWithPath("data.joinedAt").description("가입일"),
+										fieldWithPath("data.averageRating").description("받은 별점"),
+										fieldWithPath("data.reviewCount").description("받은 리뷰 수"),
+										fieldWithPath("data.tradeCount").description("거래 수")
+								)
+						));
+			}
+
+			@Test
+			@DisplayName("다른 회원 정보 조회 (memberId 전달)")
+			void getOtherMemberInfo() throws Exception {
+
+				// given
+				Member me = memberRepository.save(MemberFixture.createMember1());
+				Member other = memberRepository.save(MemberFixture.createMember2());
+				ReflectionTestUtils.setField(other, "profileImageUrl",
+						"https://dapanda.org/profile/test2.jpg");
+				other = memberRepository.save(other);
+				CustomUserDetails userDetails = CustomUserDetails.from(me);
+
+				// when & then
+				mockMvc.perform(get("/api/members/info")
+								.param("memberId", String.valueOf(other.getId()))
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").exists())
+						.andExpect(jsonPath("$.message").exists())
+						.andExpect(jsonPath("$.data.name").value(other.getName()))
+						.andExpect(jsonPath("$.data.profileImageUrl").value(
+								other.getProfileImageUrl()))
+						.andExpect(jsonPath("$.data.joinedAt").exists())
+						.andExpect(jsonPath("$.data.averageRating").value(other.getAverageRating()))
+						.andExpect(jsonPath("$.data.reviewCount").value(other.getReviewCount()))
+						.andExpect(jsonPath("$.data.tradeCount").isNumber())
+						.andDo(document("member/get-other-info",
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data.name").description("회원 이름"),
+										fieldWithPath("data.profileImageUrl").description(
+												"프로필 이미지 URL"),
+										fieldWithPath("data.joinedAt").description("가입일"),
+										fieldWithPath("data.averageRating").description("받은 별점"),
+										fieldWithPath("data.reviewCount").description("받은 리뷰 수"),
+										fieldWithPath("data.tradeCount").description("거래 수")
+								)
+						));
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("memberId로 조회 시 회원이 존재하지 않으면 400 반환")
+			void getOtherMemberInfo_notFound() throws Exception {
+
+				// given
+				Member me = memberRepository.save(MemberFixture.createMember1());
+				CustomUserDetails userDetails = CustomUserDetails.from(me);
+				Long notExistMemberId = 99999L;
+
+				// when & then
+				mockMvc.perform(get("/api/members/info")
+								.param("memberId", String.valueOf(notExistMemberId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
+						)
+						.andExpect(status().isBadRequest())
+						.andExpect(jsonPath("$.code").exists())
+						.andExpect(jsonPath("$.message").value("존재하지 않는 사용자입니다."))
+						.andDo(document("member/get-member-info-notfound",
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("에러 메시지")
+								)
+						));
+			}
+
+		}
+
+	}
+
+}
