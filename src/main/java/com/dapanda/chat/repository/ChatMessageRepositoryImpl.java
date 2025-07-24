@@ -1,9 +1,10 @@
 package com.dapanda.chat.repository;
 
 import com.dapanda.chat.dto.request.ReadChatMessageHistoryRequest;
-import com.dapanda.chat.dto.response.SendChatMessageResponse;
+import com.dapanda.chat.dto.response.ReadChatMessageHistoryResponse;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -18,7 +19,7 @@ public class ChatMessageRepositoryImpl implements ChatMessageRepositoryCustom {
 	private final JPAQueryFactory jpaQueryFactory;
 
 	@Override
-	public List<SendChatMessageResponse> findChatMessageHistory(ReadChatMessageHistoryRequest request) {
+	public List<ReadChatMessageHistoryResponse> findChatMessageHistory(ReadChatMessageHistoryRequest request) {
 
 		BooleanBuilder whereClause = new BooleanBuilder();
 
@@ -29,11 +30,14 @@ public class ChatMessageRepositoryImpl implements ChatMessageRepositoryCustom {
 		}
 
 		return jpaQueryFactory
-				.select(Projections.constructor(SendChatMessageResponse.class,
+				.select(Projections.constructor(ReadChatMessageHistoryResponse.class,
 						chatMessage.id,
-						chatMessage.member.id,
 						chatMessage.message,
-						chatMessage.createdAt
+						chatMessage.createdAt,
+						new CaseBuilder()
+								.when(chatMessage.member.id.eq(request.memberId()))
+								.then(true)
+								.otherwise(false)
 				))
 				.from(chatMessage)
 				.join(chatMessage.chatRoom, chatRoom)
