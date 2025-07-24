@@ -155,8 +155,4 @@ public class ChatService {
 			throw new GlobalException(ResultCode.CHAT_ROOM_ACCESS_DENIED);
 		}
 	}
-
-	public void findChatMessageSenderId(Long chatMessageId) {
-
-	}
 }
