@@ -141,6 +141,8 @@ public class TradeService {
 		buyer.deductCash(price);
 		buyer.addBuyingData(dataAmount);
 		mobileData.deductRemainAmount(dataAmount);
+		product.updatePrice(product.getPrice() - price);
+		mobileData.update100MBPerPrice(price, mobileData.getRemainAmount());
 		if (mobileData.getRemainAmount() == 0) {
 			product.changeState(ProductState.SOLD_OUT);
 		}
