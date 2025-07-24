@@ -69,12 +69,12 @@ class ProductServiceTest {
 			// given
 			Long memberId = 1L;
 			Member member = MemberFixture.createMember1WithId(memberId);
-			CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2.0F, false);
+			CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 1.0F, false);
 
 			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 			given(productRepository.sumSoldMobileDataAmountByMemberId(memberId)).willReturn(1.0F);
 
-			MobileData mobileData = MobileData.singleOf(2.0F, 12000, false);
+			MobileData mobileData = MobileData.singleOf(1.0F, 12000, false);
 			given(mobileDataRepository.save(any())).willReturn(mobileData);
 
 			Product product = Product.of(ProductState.ACTIVE, 12000, 1L, ItemType.MOBILE_DATA,
