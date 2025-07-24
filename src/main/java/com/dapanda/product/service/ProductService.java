@@ -120,7 +120,7 @@ public class ProductService {
 		}
 
 		float willSellAmount = request.getDataAmount();
-		if (soldAmount + willSellAmount > MobileData.MAX_TRANSFERABLE_DATA_AMOUNT * 1000) {
+		if (soldAmount + willSellAmount > MobileData.MAX_TRANSFERABLE_DATA_AMOUNT) {
 			throw new GlobalException(ResultCode.EXCEEDED_TRANSFER_LIMIT);
 		}
 
