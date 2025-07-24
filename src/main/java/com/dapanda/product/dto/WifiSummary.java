@@ -18,11 +18,12 @@ public class WifiSummary extends ProductSummary {
 	private boolean open;
 	private LocalDateTime updatedAt;
 
-	public WifiSummary(Long id, int price, Long itemId, String memberName, String title,
+	public WifiSummary(Long id, int price, Long itemId, String memberName, String profileImageUrl,
+			String title,
 			String imageUrl, double latitude, double longitude, String address, double averageRate,
 			double distanceKm, boolean open, LocalDateTime updatedAt) {
 
-		super(id, price, itemId, memberName);
+		super(id, price, itemId, memberName, profileImageUrl);
 		this.title = title;
 		this.imageUrl = imageUrl;
 		this.latitude = latitude;

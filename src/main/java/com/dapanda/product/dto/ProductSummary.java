@@ -1,8 +1,6 @@
 package com.dapanda.product.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @NoArgsConstructor
@@ -13,4 +11,5 @@ public class ProductSummary {
 	private int price;
 	private Long itemId;
 	private String memberName;
+	private String profileImageUrl;
 }

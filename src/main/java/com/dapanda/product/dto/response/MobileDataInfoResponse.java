@@ -13,6 +13,7 @@ public class MobileDataInfoResponse {
 	private int price;
 	private Long memberId;
 	private String memberName;
+	private String profileImageUrl;
 	private float remainAmount;
 	private int pricePer100MB;
 	private float averageRate;

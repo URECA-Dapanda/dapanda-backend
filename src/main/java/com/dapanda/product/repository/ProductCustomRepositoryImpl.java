@@ -1,5 +1,12 @@
 package com.dapanda.product.repository;
 
+import static com.dapanda.member.entity.QMember.member;
+import static com.dapanda.product.entity.QMobileData.mobileData;
+import static com.dapanda.product.entity.QProduct.product;
+import static com.dapanda.product.entity.QProductImage.productImage;
+import static com.dapanda.product.entity.QWifi.wifi;
+import static com.dapanda.review.entity.QReview.review;
+
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
@@ -13,19 +20,10 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static com.dapanda.member.entity.QMember.member;
-import static com.dapanda.product.entity.QMobileData.mobileData;
-import static com.dapanda.product.entity.QProduct.product;
-import static com.dapanda.product.entity.QProductImage.productImage;
-import static com.dapanda.product.entity.QWifi.wifi;
-import static com.dapanda.review.entity.QReview.review;
-import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
@@ -52,6 +50,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.price,
 						product.itemId,
 						product.member.name,
+						product.member.profileImageUrl.coalesce(""),
 						mobileData.remainAmount,
 						mobileData.pricePer100MB,
 						mobileData.isSplitType,
@@ -105,12 +104,13 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.price,
 						product.itemId,
 						product.member.name,
+						product.member.profileImageUrl.coalesce(""),
 						wifi.title,
 						Expressions.stringTemplate("MIN({0})", productImage.imageUrl),
 						wifi.latitude,
 						wifi.longitude,
 						wifi.address,
-						review.rating.avg().coalesce(DEFAULT_RATING),
+						member.averageRating,
 						distance.divide(METER_TO_KILOMETER),
 						Expressions.booleanTemplate(
 								"CURRENT_TIMESTAMP BETWEEN {0} AND {1}", wifi.startTime,
@@ -121,12 +121,6 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.from(product)
 				.groupBy(product.id)
 				.join(wifi).on(wifi.id.eq(product.itemId))
-				.leftJoin(review).on(review.trade.id.eq(
-						JPAExpressions
-								.select(tradeDetails.trade.id)
-								.from(tradeDetails)
-								.where(tradeDetails.product.id.eq(product.id))
-				))
 				.where(
 						gtCursorId(cursorId),
 						isOpenNow(isOpen, now)
@@ -174,6 +168,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.price,
 						product.member.id,
 						product.member.name,
+						product.member.profileImageUrl.coalesce(""),
 						mobileData.remainAmount,
 						mobileData.pricePer100MB,
 						member.averageRating,
@@ -184,7 +179,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.from(product)
 				.join(mobileData).on(product.itemId.eq(mobileData.id))
 				.leftJoin(member).on(product.member.id.eq(member.id))
-				.where(isActiveProduct(),
+				.where(isActiveOrSoldOutProduct(),
 						product.itemId.eq(mobileData.id),
 						product.id.eq(productId)
 				)
@@ -203,13 +198,14 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.price,
 						product.member.id,
 						product.member.name,
+						product.member.profileImageUrl.coalesce(""),
 						wifi.title,
 						wifi.content,
 						wifi.latitude,
 						wifi.longitude,
 						wifi.address,
-						review.rating.avg().coalesce(DEFAULT_RATING),
-						review.rating.count().intValue(),
+						member.averageRating,
+						member.reviewCount,
 						Expressions.nullExpression(List.class),
 						wifi.startTime,
 						wifi.endTime,
@@ -221,13 +217,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				))
 				.from(product)
 				.join(wifi).on(product.itemId.eq(wifi.id))
-				.leftJoin(review).on(review.trade.id.eq(
-						JPAExpressions
-								.select(tradeDetails.trade.id)
-								.from(tradeDetails)
-								.where(tradeDetails.product.id.eq(product.id))
-				))
-				.where(isActiveProduct(),
+				.leftJoin(member).on(product.member.id.eq(member.id))
+				.where(isActiveOrSoldOutProduct(),
 						product.itemId.eq(wifi.id),
 						product.id.eq(productId)
 				)
@@ -371,6 +362,11 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		return product.state.eq(ProductState.ACTIVE);
 	}
 
+	private BooleanExpression isActiveOrSoldOutProduct() {
+
+		return product.state.in(ProductState.ACTIVE, ProductState.SOLD_OUT);
+	}
+
 	private BooleanExpression gtCursorId(Long cursorId) {
 
 		return cursorId != null ? product.id.gt(cursorId) : null;
@@ -466,7 +462,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				)
 				.where(
 						product.member.id.eq(request.memberId()),
-						request.productState() != null ? product.state.eq(request.productState()) : null
+						request.productState() != null ? product.state.eq(request.productState())
+								: null
 				)
 				.fetchOne();
 	}
