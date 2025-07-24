@@ -40,7 +40,7 @@ public class MemberController {
 	}
 
 	@PostMapping("/members/profile-image")
-	public CommonResponse<Void> getProfileImage(
+	public CommonResponse<Void> updateProfileImage(
 			@RequestBody @Valid UpdateProfileImageRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
