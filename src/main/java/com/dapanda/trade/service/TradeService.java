@@ -148,10 +148,12 @@ public class TradeService {
 		buyer.deductCash(price);
 		buyer.addBuyingData(dataAmount);
 		mobileData.deductRemainAmount(dataAmount);
-		product.updatePrice(product.getPrice() - price);
-		mobileData.update100MBPerPrice(price, mobileData.getRemainAmount());
+
 		if (mobileData.getRemainAmount().compareTo(BigDecimal.ZERO) == 0) {
 			product.changeState(ProductState.SOLD_OUT);
+		} else {
+			product.updatePrice(product.getPrice() - price);
+			mobileData.update100MBPerPrice(price, mobileData.getRemainAmount());
 		}
 	}
 
@@ -159,8 +161,9 @@ public class TradeService {
 			Member seller, int price) {
 
 		Trade buyerTrade = Trade.of(mobileData.getDataAmount(), price,
-				TradeType.MOBILE_PURCHASE_SINGLE, buyer);
-		Trade sellerTrade = Trade.of(mobileData.getDataAmount(), price, TradeType.SALE, seller);
+				TradeType.PURCHASE_MOBILE_SINGLE, buyer);
+		Trade sellerTrade = Trade.of(mobileData.getDataAmount(), price, TradeType.SALE_MOBILE_DATA,
+				seller);
 		tradeRepository.saveAll(new ArrayList<>(List.of(buyerTrade, sellerTrade)));
 		TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
 		TradeDetails sellerTradeDetails = TradeDetails.of(product, sellerTrade);
@@ -310,7 +313,7 @@ public class TradeService {
 		}
 
 		// 3. 거래 생성
-		Trade buyerTrade = Trade.of(totalAmount, totalPrice, TradeType.MOBILE_PURCHASE_COMPOSITE,
+		Trade buyerTrade = Trade.of(totalAmount, totalPrice, TradeType.PURCHASE_MOBILE_COMPOSITE,
 				buyer);
 		tradeRepository.save(buyerTrade);
 
@@ -351,7 +354,7 @@ public class TradeService {
 
 			// 4-7. 거래 저장
 			Trade sellerTrade = Trade.of(totalAmount, null, totalPrice,
-					TradeType.MOBILE_PURCHASE_COMPOSITE, seller);
+					TradeType.PURCHASE_MOBILE_COMPOSITE, seller);
 
 			tradeRepository.save(sellerTrade);
 
@@ -406,22 +409,26 @@ public class TradeService {
 		if (buyer.getCash() < totalPrice) {
 			throw new GlobalException(ResultCode.INSUFFICIENT_CASH);
 		}
-		// 6. 거래 생성
-		Trade trade = Trade.of(timeAmount, totalPrice, TradeType.MOBILE_PURCHASE_SINGLE, buyer);
-		tradeRepository.save(trade);
 
-		// 7. 판매자/구매자 캐시 업데이트
+		// 6. 판매자/구매자 캐시 업데이트
 		Member seller = memberRepository.findByIdForUpdate(product.getMember().getId())
 				.orElseThrow();
 		seller.addCash(totalPrice);
 		buyer.deductCash(totalPrice);
 
-		// 8. 거래 상세 저장
-		TradeDetails tradeDetails = TradeDetails.of(product, trade);
-		tradeDetailsRepository.save(tradeDetails);
+		// 7. 거래 저장
+		Trade buyerTrade = Trade.of(timeAmount, totalPrice, TradeType.PURCHASE_MOBILE_SINGLE,
+				buyer);
+		Trade sellerTrade = Trade.of(timeAmount, totalPrice, TradeType.SALE_WIFI, seller);
+		tradeRepository.saveAll(new ArrayList<>(List.of(buyerTrade, sellerTrade)));
 
-		// 9. 응답 반환
-		return TradeProductResponse.of(trade.getId());
+		TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
+		TradeDetails sellerTradeDetails = TradeDetails.of(product, sellerTrade);
+		tradeDetailsRepository.saveAll(
+				new ArrayList<>(List.of(buyerTradeDetails, sellerTradeDetails)));
+
+		// 8. 응답 반환
+		return TradeProductResponse.of(buyerTradeDetails.getId());
 	}
 
 
