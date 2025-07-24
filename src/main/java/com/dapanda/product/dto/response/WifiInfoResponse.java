@@ -21,8 +21,9 @@ public class WifiInfoResponse {
 	private double latitude;
 	private double longitude;
 	private String address;
-	private double averageRate;
+	private float averageRate;
 	private int reviewCount;
+	private boolean myProduct;
 	private List<String> imageUrls;
 	private LocalDateTime startTime;
 	private LocalDateTime endTime;

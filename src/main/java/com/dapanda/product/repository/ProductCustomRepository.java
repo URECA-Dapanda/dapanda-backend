@@ -8,9 +8,8 @@ import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.trade.dto.MobileDataScrap;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductCustomRepository {
@@ -21,9 +20,9 @@ public interface ProductCustomRepository {
 	public CursorPageResponse<WifiSummary> findWifiByCursor(Long cursorId, int size,
 			ProductSortOption productSortOption, boolean isOpen, Double latitude, Double longitude);
 
-	public MobileDataInfoResponse findMobileDataInfo(Long productId);
+	public MobileDataInfoResponse findMobileDataInfo(Long productId, Long memberId);
 
-	public WifiInfoResponse findWifiInfo(Long productId);
+	public WifiInfoResponse findWifiInfo(Long productId, Long memberId);
 
 	public List<String> findWifiImages(Long wifiId);
 

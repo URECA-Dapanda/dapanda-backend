@@ -121,6 +121,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.from(product)
 				.groupBy(product.id)
 				.join(wifi).on(wifi.id.eq(product.itemId))
+				.leftJoin(member).on(product.member.id.eq(member.id))
 				.where(
 						gtCursorId(cursorId),
 						isOpenNow(isOpen, now)
@@ -159,7 +160,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	}
 
 	@Override
-	public MobileDataInfoResponse findMobileDataInfo(Long productId) {
+	public MobileDataInfoResponse findMobileDataInfo(Long productId, Long memberId) {
 
 		return queryFactory
 				.select(Projections.constructor(MobileDataInfoResponse.class,
@@ -173,6 +174,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						mobileData.pricePer100MB,
 						member.averageRating,
 						member.reviewCount,
+						Expressions.booleanTemplate("{0} = {1}", product.member.id, memberId),
 						mobileData.isSplitType,
 						product.updatedAt
 				))
@@ -189,7 +191,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	}
 
 	@Override
-	public WifiInfoResponse findWifiInfo(Long productId) {
+	public WifiInfoResponse findWifiInfo(Long productId, Long memberId) {
 
 		return queryFactory
 				.select(Projections.constructor(WifiInfoResponse.class,
@@ -206,6 +208,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						wifi.address,
 						member.averageRating,
 						member.reviewCount,
+						Expressions.booleanTemplate("{0} = {1}", product.member.id, memberId),
 						Expressions.nullExpression(List.class),
 						wifi.startTime,
 						wifi.endTime,

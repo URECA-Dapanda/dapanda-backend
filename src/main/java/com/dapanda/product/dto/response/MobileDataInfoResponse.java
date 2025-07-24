@@ -18,6 +18,7 @@ public class MobileDataInfoResponse {
 	private int pricePer100MB;
 	private float averageRate;
 	private int reviewCount;
+	private boolean myProduct;
 	private boolean splitType;
 	private LocalDateTime updatedAt;
 }

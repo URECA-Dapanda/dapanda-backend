@@ -354,7 +354,7 @@ class ProductServiceTest {
 				for (int i = 1; i <= 3; i++) {
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 100 + i, (long) i,
-									"회원" + i, "상품제목" + i, 37.0 + i, 127.0 + i, ADDRESS, i * 10.0, i,
+									"회원" + i, "상품제목" + i, 37.0 + i, 127.0 + i, ADDRESS, 3F, i,
 									true, UPDATED_AT));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
@@ -389,7 +389,7 @@ class ProductServiceTest {
 							37.0 + i,
 							127.0 + i,
 							ADDRESS,
-							i * 10.0,
+							3F,
 							i % 2 == 0 ? 2 : 1,
 							true,
 							UPDATED_AT
@@ -425,7 +425,7 @@ class ProductServiceTest {
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 1000, (long) i,
 									"회원" + i, "상품제목" + idx, 37.0 + idx, 127.0 + idx, ADDRESS,
-									5.0 - idx, idx, true, UPDATED_AT));
+									3F, idx, true, UPDATED_AT));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -513,17 +513,16 @@ class ProductServiceTest {
 				MobileDataInfoResponse expectedResponse = new MobileDataInfoResponse(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member.getId(), member.getName(),
 						PROFILE_IMAGE_URL, REMAIN_AMOUNT_1, PRICE_PER_100MB_300, AVERAGE_RATE,
-						REVIEW_COUNT, false,
-						UPDATED_AT);
+						REVIEW_COUNT, true, false, UPDATED_AT);
 
 				given(productRepository.existsById(PRODUCT_ID))
 						.willReturn(true);
-				given(productRepository.findMobileDataInfo(PRODUCT_ID)).willReturn(
+				given(productRepository.findMobileDataInfo(PRODUCT_ID, MEMBER_ID)).willReturn(
 						expectedResponse);
 
 				// when
 				MobileDataInfoResponse actualResponse = productService.findMobileDataInfo(
-						PRODUCT_ID);
+						PRODUCT_ID, MEMBER_ID);
 
 				// then
 				assertThat(actualResponse.getItemId()).isEqualTo(mobileData.getId());
@@ -543,7 +542,8 @@ class ProductServiceTest {
 					given(productRepository.existsById(PRODUCT_ID)).willReturn(false);
 
 					// when & then
-					assertThatThrownBy(() -> productService.findMobileDataInfo(PRODUCT_ID))
+					assertThatThrownBy(
+							() -> productService.findMobileDataInfo(PRODUCT_ID, MEMBER_ID))
 							.isInstanceOf(GlobalException.class)
 							.hasMessage(ResultCode.PRODUCT_NOT_FOUND.getMessage());
 				}
@@ -554,10 +554,12 @@ class ProductServiceTest {
 
 					// given
 					given(productRepository.existsById(PRODUCT_ID)).willReturn(true);
-					given(productRepository.findMobileDataInfo(PRODUCT_ID)).willReturn(null);
+					given(productRepository.findMobileDataInfo(PRODUCT_ID, MEMBER_ID)).willReturn(
+							null);
 
 					// when & then
-					assertThatThrownBy(() -> productService.findMobileDataInfo(PRODUCT_ID))
+					assertThatThrownBy(
+							() -> productService.findMobileDataInfo(PRODUCT_ID, MEMBER_ID))
 							.isInstanceOf(GlobalException.class)
 							.hasMessage(ResultCode.INVALID_PRODUCT.getMessage());
 				}
@@ -584,16 +586,17 @@ class ProductServiceTest {
 				WifiInfoResponse expectedResponse = new WifiInfoResponse(PRODUCT_ID,
 						wifi.getId(), PRICE_3000, member.getId(), member.getName(),
 						PROFILE_IMAGE_URL, TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						AVERAGE_RATE, REVIEW_COUNT, null, START_TIME,
+						AVERAGE_RATE, REVIEW_COUNT, false, null, START_TIME,
 						END_TIME, true, UPDATED_AT);
 
 				given(productRepository.existsById(PRODUCT_ID))
 						.willReturn(true);
-				given(productRepository.findWifiInfo(PRODUCT_ID)).willReturn(
+				given(productRepository.findWifiInfo(PRODUCT_ID, MEMBER_ID)).willReturn(
 						expectedResponse);
 
 				// when
-				WifiInfoResponse actualResponse = productService.findWifiInfo(PRODUCT_ID);
+				WifiInfoResponse actualResponse = productService.findWifiInfo(PRODUCT_ID,
+						MEMBER_ID);
 
 				// then
 				assertThat(actualResponse.getItemId()).isEqualTo(wifi.getId());
@@ -614,7 +617,7 @@ class ProductServiceTest {
 				given(productRepository.existsById(PRODUCT_ID)).willReturn(false);
 
 				// when & then
-				assertThatThrownBy(() -> productService.findWifiInfo(PRODUCT_ID))
+				assertThatThrownBy(() -> productService.findWifiInfo(PRODUCT_ID, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.PRODUCT_NOT_FOUND.getMessage());
 			}
@@ -625,10 +628,10 @@ class ProductServiceTest {
 
 				// given
 				given(productRepository.existsById(PRODUCT_ID)).willReturn(true);
-				given(productRepository.findWifiInfo(PRODUCT_ID)).willReturn(null);
+				given(productRepository.findWifiInfo(PRODUCT_ID, MEMBER_ID)).willReturn(null);
 
 				// when & then
-				assertThatThrownBy(() -> productService.findWifiInfo(PRODUCT_ID))
+				assertThatThrownBy(() -> productService.findWifiInfo(PRODUCT_ID, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.INVALID_PRODUCT.getMessage());
 			}
