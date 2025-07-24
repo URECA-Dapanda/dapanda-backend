@@ -29,8 +29,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
-	private static final String SPRING_SECURITY_PRINCIPAL = "SPRING_SECURITY_PRINCIPAL";
-
 	@Value("${jwt.secret}")
 	private String secretKey;
 
@@ -83,7 +81,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 										userDetails.getAuthorities()
 								);
 
-						attributes.put(SPRING_SECURITY_PRINCIPAL, authentication);
+						SecurityContextHolder.getContext().setAuthentication(authentication);
 
 						log.info("Handshake - AccessToken authenticated. Member ID: {}", memberId);
 						return true; // 핸드셰이크 계속 진행
