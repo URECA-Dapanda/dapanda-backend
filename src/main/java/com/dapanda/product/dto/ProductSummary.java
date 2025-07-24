@@ -7,7 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 public class ProductSummary {
 
-	private Long id;
+	private Long productId;
 	private int price;
 	private Long itemId;
 	private String memberName;

@@ -1,6 +1,7 @@
 package com.dapanda.trade.dto.request;
 
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 public record DefaultPurchaseMobileDataRequest(
 
@@ -10,6 +11,6 @@ public record DefaultPurchaseMobileDataRequest(
 		@NotNull(message = "데이터 아이디는 필수입니다.")
 		Long mobileDataId,
 
-		Float dataAmount) {
+		BigDecimal dataAmount) {
 
 }

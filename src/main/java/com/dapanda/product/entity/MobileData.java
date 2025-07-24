@@ -1,6 +1,7 @@
 package com.dapanda.product.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import lombok.*;
 
 @Entity
@@ -15,12 +16,12 @@ public class MobileData {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private float dataAmount;
-	private float remainAmount;
+	private BigDecimal dataAmount;
+	private BigDecimal remainAmount;
 	private int pricePer100MB;
 	private boolean isSplitType;
 
-	public static MobileData of(float dataAmount, float remainAmount, int pricePer100MB,
+	public static MobileData of(BigDecimal dataAmount, BigDecimal remainAmount, int pricePer100MB,
 			boolean isSplitType) {
 
 		return MobileData.builder()
@@ -31,10 +32,12 @@ public class MobileData {
 				.build();
 	}
 
-	public static MobileData singleOf(float dataAmount, int totalPrice, boolean isSplitType) {
+	public static MobileData singleOf(BigDecimal dataAmount, int totalPrice, boolean isSplitType) {
 
-		int pricePer100MB = (int) Math.ceil(totalPrice / (dataAmount * 10));
-
+		int pricePer100MB = new BigDecimal(totalPrice)
+				.divide(dataAmount.multiply(BigDecimal.TEN), 0, java.math.RoundingMode.CEILING)
+				.intValue();
+		
 		return MobileData.builder()
 				.dataAmount(dataAmount)
 				.remainAmount(dataAmount)
@@ -43,16 +46,16 @@ public class MobileData {
 				.build();
 	}
 
-	public void updateMobileData(float changedAmount, int pricePer100MB, boolean isSplitType) {
+	public void updateMobileData(BigDecimal changedAmount, int pricePer100MB, boolean isSplitType) {
 
-		this.dataAmount += changedAmount;
-		this.remainAmount += changedAmount;
+		this.dataAmount = this.dataAmount.add(changedAmount);
+		this.remainAmount = this.remainAmount.add(changedAmount);
 		this.pricePer100MB = pricePer100MB;
 		this.isSplitType = isSplitType;
 	}
 
-	public void deductRemainAmount(float dataAmount) {
+	public void deductRemainAmount(BigDecimal dataAmount) {
 
-		this.remainAmount -= dataAmount;
+		this.remainAmount = this.remainAmount.subtract(dataAmount);
 	}
 }

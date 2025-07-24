@@ -14,6 +14,7 @@ import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -66,7 +67,7 @@ public class ProductService {
 	}
 
 	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, Integer size,
-			String productSortOption, Float dataAmount) {
+			String productSortOption, BigDecimal dataAmount) {
 
 		return productRepository.findMobileDataByCursor(cursorId, size,
 				ProductSortOption.from(productSortOption), dataAmount);
@@ -117,13 +118,14 @@ public class ProductService {
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
-		Float soldAmount = productRepository.sumSoldMobileDataAmountByMemberId(member.getId());
+		BigDecimal soldAmount = productRepository.sumSoldMobileDataAmountByMemberId(member.getId());
 		if (soldAmount == null) {
-			soldAmount = 0f;
+			soldAmount = BigDecimal.ZERO;
 		}
 
-		float willSellAmount = request.getDataAmount();
-		if (soldAmount + willSellAmount > MobileData.MAX_TRANSFERABLE_DATA_AMOUNT) {
+		BigDecimal willSellAmount = request.getDataAmount();
+		if (soldAmount.add(willSellAmount)
+				.compareTo(BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
 			throw new GlobalException(ResultCode.EXCEEDED_TRANSFER_LIMIT);
 		}
 
@@ -210,8 +212,8 @@ public class ProductService {
 		validateProductOwner(savedProduct, memberId);
 		validateDataAmount(request.changedAmount(), savedMobileData, memberId);
 
-		int changedPricePer100MB = (int) (request.price() / (savedMobileData.getDataAmount()
-				* 1000));
+		int changedPricePer100MB = (int) Math.ceil(
+				request.price() / (savedMobileData.getDataAmount().floatValue() * 10));
 
 		savedProduct.updatePrice(request.price());
 		savedMobileData.updateMobileData(request.changedAmount(), changedPricePer100MB,
@@ -267,19 +269,22 @@ public class ProductService {
 		}
 	}
 
-	private void validateDataAmount(float changedDataAmount, MobileData savedMobileData,
+	private void validateDataAmount(BigDecimal changedDataAmount, MobileData savedMobileData,
 			Long memberId) {
 
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
-		float resultDataAmount = savedMobileData.getDataAmount() + changedDataAmount;
+		BigDecimal resultDataAmount = savedMobileData.getDataAmount().add(changedDataAmount);
 
-		if (resultDataAmount <= 0 || resultDataAmount > MobileData.MAX_TRANSFERABLE_DATA_AMOUNT) {
+		if (resultDataAmount.compareTo(BigDecimal.ZERO) <= 0 || resultDataAmount.compareTo(
+				BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
 			throw new GlobalException(ResultCode.INVALID_DATA_TRANSFER_AMOUNT);
 		}
 
-		if (member.getSellingData() + changedDataAmount > MobileData.MAX_TRANSFERABLE_DATA_AMOUNT) {
+		System.out.println("member.getSellingData() = " + member.getSellingData());
+		if (member.getSellingData().add(changedDataAmount)
+				.compareTo(BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
 			throw new GlobalException(ResultCode.EXCEEDED_TRANSFER_LIMIT);
 		}
 	}

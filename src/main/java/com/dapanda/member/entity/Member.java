@@ -3,6 +3,7 @@ package com.dapanda.member.entity;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.common.entity.BaseEntity;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import lombok.*;
 
 @Entity
@@ -32,9 +33,9 @@ public class Member extends BaseEntity {
 	@Column(nullable = false)
 	private OAuthProvider provider;
 
-	private float buyingData;
+	private BigDecimal buyingData;
 
-	private float sellingData;
+	private BigDecimal sellingData;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -92,14 +93,14 @@ public class Member extends BaseEntity {
 	}
 
 	// TODO: 매달 1일 초기화 메서드
-	public void addBuyingData(float buyingData) {
+	public void addBuyingData(BigDecimal buyingData) {
 
-		this.buyingData += buyingData;
+		this.buyingData = this.buyingData.add(buyingData);
 	}
 
-	public void addSellingData(float sellingData) {
+	public void addSellingData(BigDecimal sellingData) {
 
-		this.sellingData += sellingData;
+		this.sellingData = this.sellingData.add(sellingData);
 	}
 
 	public void updateReviewInfo(int reviewCount, float averageRating) {

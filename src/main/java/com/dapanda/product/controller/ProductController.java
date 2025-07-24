@@ -13,6 +13,7 @@ import com.dapanda.product.service.ProductService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -59,7 +60,7 @@ public class ProductController {
 			@RequestParam(required = false) Long cursorId,
 			@RequestParam @Min(1) Integer size,
 			@RequestParam String productSortOption,
-			@RequestParam(required = false) Float dataAmount) {
+			@RequestParam(required = false) BigDecimal dataAmount) {
 
 		return CommonResponse.success(
 				productService.findMobileDataByCursor(cursorId, size, productSortOption,
