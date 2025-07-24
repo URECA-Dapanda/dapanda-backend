@@ -389,12 +389,12 @@ class ProductControllerTest {
 						.andDo(document("product/get-products-mobile-data",
 								queryParameters(
 										parameterWithName("cursorId").description(
-												"마지막 커서 아이디 (필수 X)").optional(),
+												"마지막 커서 아이디 (선택)").optional(),
 										parameterWithName("size").description(
 												"페이지 사이즈 (필수, 1 이상 정수)"),
 										parameterWithName("productSortOption").description(
-												"정렬 조건 (필수 X, 기본값: 최신순) - RECENT(최신순), PRICE_ASC(가격 낮은순), AMOUNT_ASC(데이터 용량 적은순), AMOUNT_DESC(데이터 용량 많은순"),
-										parameterWithName("dataAmount").description("데이터 양 (필수 X)")
+												"정렬 조건 (필수, 기본값: 최신순) - RECENT(최신순), PRICE_ASC(가격 낮은순), AMOUNT_ASC(데이터 용량 적은순), AMOUNT_DESC(데이터 용량 많은순"),
+										parameterWithName("dataAmount").description("데이터 양 (선택)")
 												.optional()
 								),
 								responseFields(
@@ -409,7 +409,9 @@ class ProductControllerTest {
 										fieldWithPath("data.data[].itemId").description(
 												"모바일 데이터 아이디"),
 										fieldWithPath("data.data[].memberName").description(
-												"등록한 회원 이름"),
+												"상품을 등록한 회원 이름"),
+										fieldWithPath("data.data[].profileImageUrl").description(
+												"상품을 등록한 회원의 프로필 이미지 URL"),
 										fieldWithPath("data.data[].remainAmount").description(
 												"데이터 잔여량"),
 										fieldWithPath("data.data[].pricePer100MB").description(
@@ -516,6 +518,8 @@ class ProductControllerTest {
 				Product product3 = ProductFixture.createWifiProduct(5000, wifi3.getId(), member);
 				productRepository.saveAll(List.of(product1, product2, product3));
 
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
 				// when & then
 				mockMvc.perform(MockMvcRequestBuilders.get("/api/products/wifi")
 								.param("cursorId", String.valueOf(cursorId))
@@ -525,7 +529,9 @@ class ProductControllerTest {
 								.param("latitude", String.valueOf(latitude))
 								.param("longitude", String.valueOf(longitude))
 								.contentType(MediaType.APPLICATION_JSON)
-						)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
@@ -533,12 +539,12 @@ class ProductControllerTest {
 						.andDo(document("product/get-products-wifi",
 								queryParameters(
 										parameterWithName("cursorId").description(
-												"마지막 커서 아이디 (필수 X)"),
+												"마지막 커서 아이디 (선택)"),
 										parameterWithName("size").description(
 												"페이지 사이즈 (필수, 1 이상 정수)"),
 										parameterWithName("productSortOption").description(
-												"정렬 조건 (필수 X) - PRICE_ASC(가격 낮은순), AVERAGE_RATE_DESC(평점 높은순)"),
-										parameterWithName("open").description("영업중 여부 (필수 X)"),
+												"정렬 조건 (필수) - PRICE_ASC(가격 낮은순), AVERAGE_RATE_DESC(평점 높은순), DISTANCE_ASC(거리 가까운순)"),
+										parameterWithName("open").description("영업중 여부 (선택)"),
 										parameterWithName("latitude").description("사용자의 위도 (필수 O)"),
 										parameterWithName("longitude").description("사용자의 경도 (필수 O)")
 								),
@@ -554,7 +560,9 @@ class ProductControllerTest {
 										fieldWithPath("data.data[].itemId").description(
 												"와이파이 아이디"),
 										fieldWithPath("data.data[].memberName").description(
-												"등록한 회원 이름"),
+												"상품을 등록한 회원 이름"),
+										fieldWithPath("data.data[].profileImageUrl").description(
+												"상품을 등록한 회원의 프로필 이미지 URL"),
 										fieldWithPath("data.data[].title").description("게시물 제목"),
 										fieldWithPath("data.data[].imageUrl").description(
 												"대표 이미지 URL").optional(),
@@ -639,23 +647,30 @@ class ProductControllerTest {
 						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
 								PRICE_PER_100MB_300));
 
-				productRepository.save(
+				Product product = productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								member));
 
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
 				// when & then
-				mockMvc.perform(get("/api/products/mobile-data/{productId}", PRODUCT_ID)
-								.contentType(MediaType.APPLICATION_JSON))
+				mockMvc.perform(get("/api/products/mobile-data/{productId}", product.getId())
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.data.productId").value(PRODUCT_ID))
 						.andExpect(jsonPath("$.data.itemId").value(mobileData.getId()))
 						.andExpect(jsonPath("$.data.price").value(PRICE_3000))
 						.andExpect(jsonPath("$.data.memberId").value(member.getId()))
 						.andExpect(jsonPath("$.data.memberName").value(member.getName()))
+						.andExpect(jsonPath("$.data.profileImageUrl").value(""))
 						.andExpect(jsonPath("$.data.remainAmount").value(REMAIN_AMOUNT_1))
 						.andExpect(jsonPath("$.data.pricePer100MB").value(PRICE_PER_100MB_300))
 						.andExpect(jsonPath("$.data.averageRate").exists())
 						.andExpect(jsonPath("$.data.reviewCount").exists())
+						.andExpect(jsonPath("$.data.myProduct").exists())
 						.andExpect(jsonPath("$.data.splitType").exists())
 						.andExpect(jsonPath("$.data.updatedAt").exists())
 						.andDo(document("product/get-mobile-data-info",
@@ -669,18 +684,21 @@ class ProductControllerTest {
 												"상품을 등록한 회원의 아이디"),
 										fieldWithPath("data.memberName").description(
 												"상품을 등록한 회원의 이름"),
+										fieldWithPath("data.profileImageUrl").description(
+												"상품을 등록한 회원의 프로필 이미지 URL"),
 										fieldWithPath("data.remainAmount").description("남은 데이터양"),
 										fieldWithPath("data.pricePer100MB").description(
 												"100MB 당 가격"),
 										fieldWithPath("data.averageRate").description("평균 별점"),
 										fieldWithPath("data.reviewCount").description("리뷰 수"),
+										fieldWithPath("data.myProduct").description("자신이 등록한 글 여부"),
 										fieldWithPath("data.splitType").description("분할 여부"),
 										fieldWithPath("data.updatedAt").description("수정된 시간")
 								))
 						);
 
 				MobileDataInfoResponse actualResponse = productService.findMobileDataInfo(
-						PRODUCT_ID);
+						PRODUCT_ID, member.getId());
 
 				assertThat(actualResponse.getProductId()).isEqualTo(PRODUCT_ID);
 				assertThat(actualResponse.getItemId()).isEqualTo(mobileData.getId());
@@ -697,9 +715,17 @@ class ProductControllerTest {
 			@DisplayName("데이터 상품 상세 조회 시 상품 아이디가 존재하지 않으면 예외를 던진다")
 			void throwsExceptionWhenProductIdNotExist() throws Exception {
 
-				// given & when & then
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
+				// when & then
 				mockMvc.perform(get("/api/products/mobile-data/{productId}", INVALID_PRODUCT_ID)
-								.contentType(MediaType.APPLICATION_JSON))
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
 						.andExpect(status().isBadRequest())
 						.andDo(document("product/get-mobile-data-info-not-exist-product-id-error",
 								responseFields(
@@ -720,14 +746,19 @@ class ProductControllerTest {
 						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
 								PRICE_PER_100MB_300));
 
-				productRepository.save(
+				Product product = productRepository.save(
 						ProductFixture.createMobileDataProductInactive(PRICE_3000,
 								mobileData.getId(),
 								member));
 
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
 				// when & then
-				mockMvc.perform(get("/api/products/mobile-data/{productId}", PRODUCT_ID)
-								.contentType(MediaType.APPLICATION_JSON))
+				mockMvc.perform(get("/api/products/mobile-data/{productId}", product.getId() + 1)
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
 						.andExpect(status().isBadRequest())
 						.andDo(document("product/get-mobile-data-info-invalid-product-error",
 								responseFields(
@@ -766,15 +797,21 @@ class ProductControllerTest {
 				productImageRepository.save(
 						ProductImageFixture.createProductImage(IMAGE_URL_2, 2, wifi.getId()));
 
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
 				// when & then
 				mockMvc.perform(get("/api/products/wifi/{productId}", PRODUCT_ID)
-								.contentType(MediaType.APPLICATION_JSON))
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.data.productId").value(PRODUCT_ID))
 						.andExpect(jsonPath("$.data.itemId").value(wifi.getId()))
 						.andExpect(jsonPath("$.data.price").value(PRICE_3000))
 						.andExpect(jsonPath("$.data.memberId").value(member.getId()))
 						.andExpect(jsonPath("$.data.memberName").value(member.getName()))
+						.andExpect(jsonPath("$.data.profileImageUrl").value(""))
 						.andExpect(jsonPath("$.data.title").value(TITLE))
 						.andExpect(jsonPath("$.data.content").value(CONTENT))
 						.andExpect(jsonPath("$.data.latitude").value(LATITUDE))
@@ -783,6 +820,7 @@ class ProductControllerTest {
 						.andExpect(jsonPath("$.data.content").value(CONTENT))
 						.andExpect(jsonPath("$.data.averageRate").exists())
 						.andExpect(jsonPath("$.data.reviewCount").exists())
+						.andExpect(jsonPath("$.data.myProduct").exists())
 						.andExpect(jsonPath("$.data.imageUrls").exists())
 						.andExpect(jsonPath("$.data.startTime").exists())
 						.andExpect(jsonPath("$.data.endTime").exists())
@@ -799,6 +837,8 @@ class ProductControllerTest {
 												"상품을 등록한 회원의 아이디"),
 										fieldWithPath("data.memberName").description(
 												"상품을 등록한 회원의 이름"),
+										fieldWithPath("data.profileImageUrl").description(
+												"상품을 등록한 회원의 프로필 이미지 URL"),
 										fieldWithPath("data.title").description("게시물 제목"),
 										fieldWithPath("data.content").description("게시물 내용"),
 										fieldWithPath("data.latitude").description("위도"),
@@ -806,6 +846,7 @@ class ProductControllerTest {
 										fieldWithPath("data.address").description("주소"),
 										fieldWithPath("data.averageRate").description("평균 별점"),
 										fieldWithPath("data.reviewCount").description("리뷰 수"),
+										fieldWithPath("data.myProduct").description("자신이 등록한 글 여부"),
 										fieldWithPath("data.imageUrls[]").description(
 												"이미지 URL (우선순위 높은순)"),
 										fieldWithPath("data.startTime").description("시작 시간"),
@@ -815,7 +856,8 @@ class ProductControllerTest {
 								))
 						);
 
-				WifiInfoResponse actualResponse = productService.findWifiInfo(PRODUCT_ID);
+				WifiInfoResponse actualResponse = productService.findWifiInfo(PRODUCT_ID,
+						member.getId());
 
 				assertThat(actualResponse.getProductId()).isEqualTo(PRODUCT_ID);
 				assertThat(actualResponse.getItemId()).isEqualTo(wifi.getId());
@@ -830,9 +872,17 @@ class ProductControllerTest {
 			@DisplayName("와이파이 상품 상세 조회 시 상품 아이디가 존재하지 않으면 예외를 던진다")
 			void throwsExceptionWhenProductIdNotExist() throws Exception {
 
-				// given & when & then
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
+				// when & then
 				mockMvc.perform(get("/api/products/wifi/{productId}", INVALID_PRODUCT_ID)
-								.contentType(MediaType.APPLICATION_JSON))
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
 						.andExpect(status().isBadRequest())
 						.andDo(document("product/get-wifi-info-not-exist-product-id-error",
 								responseFields(
@@ -843,7 +893,7 @@ class ProductControllerTest {
 			}
 
 			@Test
-			@DisplayName("데이터 상품 상세 조회 시 상품이 유효하지 않으면 예외를 던진다")
+			@DisplayName("와이파이 상품 상세 조회 시 상품이 유효하지 않으면 예외를 던진다")
 			void throwsExceptionWhenProductInvalid() throws Exception {
 
 				// given
@@ -853,12 +903,17 @@ class ProductControllerTest {
 						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE,
 								ADDRESS, START_TIME, END_TIME));
 
-				productRepository.save(
+				Product product = productRepository.save(
 						ProductFixture.createWifiProductInactive(PRICE_3000, wifi.getId(), member));
 
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
 				// when & then
-				mockMvc.perform(get("/api/products/wifi/{productId}", PRODUCT_ID)
-								.contentType(MediaType.APPLICATION_JSON))
+				mockMvc.perform(get("/api/products/wifi/{productId}", product.getId() + 1)
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
 						.andExpect(status().isBadRequest())
 						.andDo(document("product/get-wifi-info-invalid-product-error",
 								responseFields(
@@ -891,8 +946,7 @@ class ProductControllerTest {
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								member));
 
-				CustomUserDetails userDetails = mock(CustomUserDetails.class);
-				given(userDetails.getId()).willReturn(member.getId());
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
 
 				UpdateMobileDataRequest request = new UpdateMobileDataRequest(product.getId(),
 						NEW_PRICE_9000, CHANGED_AMOUNT, SPLIT_TYPE);

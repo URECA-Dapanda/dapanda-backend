@@ -179,10 +179,11 @@ public class TradeService {
 		sellerPlan.deductMobileData(dataAmount);
 	}
 
-	public FindMobileDataScrapResponse findMobileDataScrap(BigDecimal dataAmount) {
+	public FindMobileDataScrapResponse findMobileDataScrap(BigDecimal dataAmount, Long memberId) {
 
 		// 1. 정렬된 상품 목록 조회 (단가 낮은순, 용량 많은순, 일반우선)
-		List<MobileDataScrap> sortedList = productRepository.findMobileDataScrap(dataAmount);
+		List<MobileDataScrap> sortedList = productRepository.findMobileDataScrap(dataAmount,
+				memberId);
 
 		// 2. 가능한 조합들을 저장할 리스트
 		List<List<MobileDataScrap>> candidates = new ArrayList<>(); // 가능한 조합들을 저장하는 리스트

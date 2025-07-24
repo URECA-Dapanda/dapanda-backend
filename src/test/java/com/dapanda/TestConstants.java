@@ -18,6 +18,7 @@ public final class TestConstants {
 		public static final int CASH_5000 = 5000;
 		public static final BigDecimal BUYING_DATA = BigDecimal.valueOf(1.0);
 		public static final BigDecimal SELLING_DATA = BigDecimal.valueOf(1.0);
+		public static final String PROFILE_IMAGE_URL = "imageUrl.jpg";
 	}
 
 	public static final class Pagination {

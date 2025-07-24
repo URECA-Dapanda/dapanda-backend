@@ -20,7 +20,7 @@ public class WifiFixture {
 	}
 
 	public static WifiSummary createWifiSummary(Long id, int price, Long itemId, String memberName,
-			String title, double latitude, double longitude, String address, double averageRate,
+			String title, double latitude, double longitude, String address, float averageRate,
 			double distanceKm, boolean isOpen, LocalDateTime updatedAt) {
 
 		return new WifiSummary(
@@ -28,6 +28,7 @@ public class WifiFixture {
 				price,
 				itemId,
 				memberName,
+				"image.jpg",
 				title,
 				"imageUrl",
 				latitude,

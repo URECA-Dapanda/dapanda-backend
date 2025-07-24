@@ -51,6 +51,8 @@ public class Member extends BaseEntity {
 
 	private float averageRating;
 
+	private String profileImageUrl;
+
 	public static Member ofOAuthMember(String email, String name,
 			OAuthProvider provider, MemberRole role) {
 
@@ -102,6 +104,7 @@ public class Member extends BaseEntity {
 	}
 
 	public void updateReviewInfo(int reviewCount, float averageRating) {
+
 		this.reviewCount = reviewCount;
 		this.averageRating = averageRating;
 	}

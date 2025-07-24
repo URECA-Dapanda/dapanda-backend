@@ -31,9 +31,11 @@ public class TradeController {
 
 	@GetMapping("/trades/mobile-data/scrap")
 	public CommonResponse<FindMobileDataScrapResponse> defaultPurchaseMobileData(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@RequestParam BigDecimal dataAmount) {
 
-		return CommonResponse.success(tradeService.findMobileDataScrap(dataAmount));
+		return CommonResponse.success(
+				tradeService.findMobileDataScrap(dataAmount, userDetails.getId()));
 	}
 
 	@PostMapping("/trades/mobile-data/scrap")

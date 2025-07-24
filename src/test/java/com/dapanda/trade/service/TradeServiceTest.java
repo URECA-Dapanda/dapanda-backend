@@ -331,12 +331,13 @@ class TradeServiceTest {
 
 				BigDecimal dataAmount = DATA_AMOUNT_2;
 
-				given(productRepository.findMobileDataScrap(dataAmount)).willReturn(new ArrayList<>(
+				given(productRepository.findMobileDataScrap(dataAmount,
+						BUYER_MEMBER_ID)).willReturn(new ArrayList<>(
 						List.of(mobileDataScrap1, mobileDataScrap2)));
 
 				// when
 				FindMobileDataScrapResponse response = tradeService.findMobileDataScrap(
-						dataAmount);
+						dataAmount, BUYER_MEMBER_ID);
 
 				// then
 				assertThat(response.getTotalAmount()).isEqualTo(DATA_AMOUNT_2);
@@ -372,12 +373,13 @@ class TradeServiceTest {
 
 				BigDecimal dataAmount = DATA_AMOUNT_2;
 
-				given(productRepository.findMobileDataScrap(dataAmount)).willReturn(
+				given(productRepository.findMobileDataScrap(dataAmount,
+						BUYER_MEMBER_ID)).willReturn(
 						new ArrayList<>());
 
 				// when
 				FindMobileDataScrapResponse response = tradeService.findMobileDataScrap(
-						dataAmount);
+						dataAmount, BUYER_MEMBER_ID);
 
 				// then
 				assertThat(response.getTotalAmount()).isEqualTo(BigDecimal.ZERO);

@@ -11,4 +11,5 @@ public class ProductSummary {
 	private int price;
 	private Long itemId;
 	private String memberName;
+	private String profileImageUrl;
 }

@@ -21,9 +21,9 @@ public interface ProductCustomRepository {
 	public CursorPageResponse<WifiSummary> findWifiByCursor(Long cursorId, int size,
 			ProductSortOption productSortOption, boolean isOpen, Double latitude, Double longitude);
 
-	public MobileDataInfoResponse findMobileDataInfo(Long productId);
+	public MobileDataInfoResponse findMobileDataInfo(Long productId, Long memberId);
 
-	public WifiInfoResponse findWifiInfo(Long productId);
+	public WifiInfoResponse findWifiInfo(Long productId, Long memberId);
 
 	public List<String> findWifiImages(Long wifiId);
 
@@ -31,7 +31,7 @@ public interface ProductCustomRepository {
 
 	List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request);
 
-	List<MobileDataScrap> findMobileDataScrap(BigDecimal dataAmount);
+	List<MobileDataScrap> findMobileDataScrap(BigDecimal dataAmount, Long memberId);
 
 	FindMarketPriceResponse findMarketPrice(ItemType itemType);
 

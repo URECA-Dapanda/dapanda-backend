@@ -124,7 +124,7 @@ include::{snippets}/member/get-buying-data/http-response.adoc[]
 
 include::{snippets}/member/get-buying-data/response-fields.adoc[]
 
-==== 캐시 조회
+==== 판매 데이터양 조회
 
 `GET` 회원이 판매한 데이터양 조회
 
@@ -142,6 +142,7 @@ include::{snippets}/member/get-selling-data/response-fields.adoc[]
 
 ---
 
+[[resources-chat]]
 === 채팅
 
 ==== WebSocket 프로토콜
@@ -196,7 +197,9 @@ include::{snippets}/chat/chat-room-already-exist/http-response.adoc[]
 
 include::{snippets}/chat/chat-room-already-exist/response-fields.adoc[]
 
-[[resources-payment]]
+---
+
+[[resources-report]]
 === 신고
 
 ==== 신고 생성
@@ -671,11 +674,11 @@ include::{snippets}/product/post-wifi-success/response-fields.adoc[]
 include::{snippets}/product/post-wifi-missing-field-error/http-request.adoc[]
 include::{snippets}/product/post-wifi-missing-field-error/http-response.adoc[]
 
-=== 파일 업로드 Presigned URL 발급
+===== 파일 업로드 Presigned URL 발급
 
 S3 Presigned URL을 발급받아 클라이언트가 직접 S3로 파일을 업로드할 수 있도록 합니다.
 
-==== Presigned URL 단건/복수 발급
+====== Presigned URL 단건/복수 발급
 
 `POST /api/images/presign`
 

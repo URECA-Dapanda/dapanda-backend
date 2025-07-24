@@ -83,16 +83,19 @@ public class ProductController {
 
 	@GetMapping("/products/mobile-data/{productId}")
 	public CommonResponse<MobileDataInfoResponse> getMobileDataInfo(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable("productId") Long productId) {
 
-		return CommonResponse.success(productService.findMobileDataInfo(productId));
+		return CommonResponse.success(
+				productService.findMobileDataInfo(productId, userDetails.getId()));
 	}
 
 	@GetMapping("/products/wifi/{productId}")
 	public CommonResponse<WifiInfoResponse> getWifiInfo(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable("productId") Long productId) {
 
-		return CommonResponse.success(productService.findWifiInfo(productId));
+		return CommonResponse.success(productService.findWifiInfo(productId, userDetails.getId()));
 	}
 
 	@PostMapping("/products/mobile-data")

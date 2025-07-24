@@ -171,7 +171,7 @@ class TradeControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
 										fieldWithPath("dataAmount").description(
-												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
+												"구매할 데이터양 (선택, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -246,7 +246,7 @@ class TradeControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
 										fieldWithPath("dataAmount").description(
-												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
+												"구매할 데이터양 (선택, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -319,7 +319,7 @@ class TradeControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
 										fieldWithPath("dataAmount").description(
-												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
+												"구매할 데이터양 (선택, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -367,7 +367,7 @@ class TradeControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
 										fieldWithPath("dataAmount").description(
-												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
+												"구매할 데이터양 (선택, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -418,7 +418,7 @@ class TradeControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
 										fieldWithPath("dataAmount").description(
-												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
+												"구매할 데이터양 (선택, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -474,7 +474,7 @@ class TradeControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("mobileDataId").description("데이터 아이디 (필수)"),
 										fieldWithPath("dataAmount").description(
-												"구매할 데이터양 (필수 X, 분할 구매는 필수)")
+												"구매할 데이터양 (선택, 분할 구매는 필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -500,7 +500,8 @@ class TradeControllerTest {
 				// given
 				Member seller1 = MemberFixture.createMember1();
 				Member seller2 = MemberFixture.createMember2();
-				List<Member> members = Arrays.asList(seller1, seller2);
+				Member buyer = MemberFixture.createMember3();
+				List<Member> members = Arrays.asList(seller1, seller2, buyer);
 				memberRepository.saveAll(members);
 
 				MobileData mobileData1 = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
@@ -519,11 +520,15 @@ class TradeControllerTest {
 
 				BigDecimal dataAmount = DATA_AMOUNT_2;
 
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
+
 				// when & then
 				mockMvc.perform(get("/api/trades/mobile-data/scrap")
 								.param("dataAmount", String.valueOf(dataAmount))
 								.contentType(MediaType.APPLICATION_JSON)
-						)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
@@ -569,7 +574,7 @@ class TradeControllerTest {
 						);
 
 				FindMobileDataScrapResponse response = tradeService.findMobileDataScrap(
-						dataAmount);
+						dataAmount, buyer.getId());
 
 				assertThat(response.getTotalAmount()).isEqualByComparingTo(DATA_AMOUNT_2);
 				assertThat(response.getTotalPrice()).isEqualTo(
@@ -601,13 +606,19 @@ class TradeControllerTest {
 			void findDataProductScrapWhenNotExist() throws Exception {
 
 				// given
+				Member buyer = memberRepository.save(MemberFixture.createMember1());
+
 				BigDecimal dataAmount = DATA_AMOUNT_2;
+
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
 				// when & then
 				mockMvc.perform(get("/api/trades/mobile-data/scrap")
 								.param("dataAmount", String.valueOf(dataAmount))
 								.contentType(MediaType.APPLICATION_JSON)
-						)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
@@ -628,7 +639,7 @@ class TradeControllerTest {
 						);
 
 				FindMobileDataScrapResponse response = tradeService.findMobileDataScrap(
-						dataAmount);
+						dataAmount, buyer.getId());
 
 				assertThat(response.getTotalAmount()).isEqualByComparingTo(BigDecimal.ZERO);
 				assertThat(response.getTotalPrice()).isEqualTo(0); // 조합된 상품의 총 가격
