@@ -2,14 +2,14 @@ package com.dapanda.member.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.CommonResponse;
+import com.dapanda.member.dto.request.UpdateProfileImageRequest;
 import com.dapanda.member.dto.response.FindCashResponse;
 import com.dapanda.member.dto.response.FindDataResponse;
 import com.dapanda.member.service.MemberService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -38,4 +38,15 @@ public class MemberController {
 
 		return CommonResponse.success(memberService.findSellingData(userDetails.getId()));
 	}
+
+	@PostMapping("/members/profile-image")
+	public CommonResponse<Void> getProfileImage(
+			@RequestBody @Valid UpdateProfileImageRequest request,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		memberService.updateProfileImage(request, userDetails.getId());
+
+		return CommonResponse.success(null);
+	}
+
 }
