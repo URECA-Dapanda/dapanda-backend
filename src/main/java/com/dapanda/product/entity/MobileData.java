@@ -33,7 +33,7 @@ public class MobileData {
 
 	public static MobileData singleOf(float dataAmount, int totalPrice, boolean isSplitType) {
 
-		int pricePer100MB = (int) Math.ceil(totalPrice / dataAmount * 10);
+		int pricePer100MB = (int) Math.ceil(totalPrice / (dataAmount * 10));
 
 		return MobileData.builder()
 				.dataAmount(dataAmount)
