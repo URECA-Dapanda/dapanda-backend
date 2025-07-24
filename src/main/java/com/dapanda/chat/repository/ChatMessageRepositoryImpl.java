@@ -38,7 +38,7 @@ public class ChatMessageRepositoryImpl implements ChatMessageRepositoryCustom {
 				.from(chatMessage)
 				.join(chatMessage.chatRoom, chatRoom)
 				.where(whereClause)
-				.orderBy(chatMessage.id.asc())
+				.orderBy(chatMessage.id.desc())
 				.limit(request.size() + 1)
 				.fetch();
 	}
