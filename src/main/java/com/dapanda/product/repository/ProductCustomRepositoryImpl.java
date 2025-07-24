@@ -314,7 +314,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	}
 
 	@Override
-	public List<MobileDataScrap> findMobileDataScrap(float dataAmount) {
+	public List<MobileDataScrap> findMobileDataScrap(float dataAmount, Long memberId) {
 
 		return queryFactory
 				.select(Projections.constructor(MobileDataScrap.class,
@@ -332,6 +332,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.from(product)
 				.join(mobileData).on(product.itemId.eq(mobileData.id))
 				.where(
+						product.member.id.ne(memberId),
 						product.state.eq(ProductState.ACTIVE),
 						mobileData.remainAmount.gt(0)
 				)
@@ -340,7 +341,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						mobileData.remainAmount.desc(),
 						mobileData.isSplitType.asc()
 				)
-				.limit(200) // 필요에 따라 조절
+				.limit(100) // 필요에 따라 조절
 				.fetch();
 	}
 

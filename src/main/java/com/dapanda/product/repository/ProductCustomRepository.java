@@ -30,7 +30,7 @@ public interface ProductCustomRepository {
 
 	List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request);
 
-	List<MobileDataScrap> findMobileDataScrap(float dataAmount);
+	List<MobileDataScrap> findMobileDataScrap(float dataAmount, Long memberId);
 
 	FindMarketPriceResponse findMarketPrice(ItemType itemType);
 
