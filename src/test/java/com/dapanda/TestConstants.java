@@ -2,6 +2,7 @@ package com.dapanda;
 
 import com.dapanda.report.entity.ReportTargetCategory;
 import com.dapanda.review.entity.ReviewSortOption;
+
 import java.time.LocalDateTime;
 
 public final class TestConstants {
@@ -25,6 +26,7 @@ public final class TestConstants {
 		public static final Long DEFAULT_CURSOR_ID = null;
 		public static final int DEFAULT_SIZE_2 = 2;
 		public static final String DEFAULT_REVIEW_SORT_OPTION = ReviewSortOption.RECENT.name();
+		public static final int CHAT_MESSAGE_HISTORY_DEFAULT_SIZE = 20;
 	}
 
 	public static final class Review {

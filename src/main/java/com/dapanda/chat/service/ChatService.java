@@ -1,15 +1,9 @@
 package com.dapanda.chat.service;
 
-import com.dapanda.chat.dto.request.CreateChatMessageRequest;
-import com.dapanda.chat.dto.request.ReadJoiningChatRoomRequest;
-import com.dapanda.chat.dto.response.CreateChatRoomResponse;
-import com.dapanda.chat.dto.response.ReadJoiningChatRoomResponse;
-import com.dapanda.chat.entity.ChatMessage;
-import com.dapanda.chat.entity.ChatParticipant;
-import com.dapanda.chat.entity.ChatRoom;
-import com.dapanda.chat.repository.ChatMessageRepository;
-import com.dapanda.chat.repository.ChatParticipantRepository;
-import com.dapanda.chat.repository.ChatRoomRepository;
+import com.dapanda.chat.dto.request.*;
+import com.dapanda.chat.dto.response.*;
+import com.dapanda.chat.entity.*;
+import com.dapanda.chat.repository.*;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
@@ -33,6 +27,31 @@ public class ChatService {
 	private final ChatParticipantRepository chatParticipantRepository;
 	private final ProductRepository productRepository;
 	private final MemberRepository memberRepository;
+
+	public CursorPageResponse<SendChatMessageResponse> readChatMessageHistory(ReadChatMessageHistoryRequest request) {
+
+		validateParticipant(request.chatRoomId(), request.memberId());
+
+		List<SendChatMessageResponse> response = chatMessageRepository.findChatMessageHistory(request);
+
+		boolean hasNext = response.size() > request.size();
+
+		if (hasNext) {
+			response = response.subList(0, request.size());
+		}
+
+		Long nextCursorId = hasNext && !response.isEmpty()
+				? response.get(response.size() - 1).getChatMessageId()
+				: null;
+
+		CursorPageResponse.PageInfo pageInfo = CursorPageResponse.PageInfo.of(
+				nextCursorId,
+				hasNext,
+				request.size()
+		);
+
+		return CursorPageResponse.of(response, pageInfo);
+	}
 
 	public CursorPageResponse<ReadJoiningChatRoomResponse> readChatRoom(ReadJoiningChatRoomRequest request) {
 
@@ -109,14 +128,14 @@ public class ChatService {
 	}
 
 	@Transactional
-	public void createChatMessage(Long chatRoomId, CreateChatMessageRequest request) {
+	public SendChatMessageResponse createChatMessage(Long chatRoomId, CreateChatMessageRequest request, Long senderId) {
 
-		validateParticipant(chatRoomId, request.senderId());
+		validateParticipant(chatRoomId, senderId);
 
 		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
 				.orElseThrow(() -> new GlobalException(ResultCode.CHAT_ROOM_NOT_FOUND));
 
-		Member sender = memberRepository.findById(request.senderId())
+		Member sender = memberRepository.findById(senderId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
 		ChatMessage chatMessage = ChatMessage.of(request.message(), chatRoom, sender);
@@ -124,6 +143,8 @@ public class ChatService {
 		ChatMessage savedChatMessage = chatMessageRepository.save(chatMessage);
 
 		chatRoom.updateLastMessage(savedChatMessage);
+
+		return SendChatMessageResponse.of(savedChatMessage.getId(), senderId, request.message(), savedChatMessage.getCreatedAt());
 	}
 
 	private void validateParticipant(Long chatRoomId, Long memberId){

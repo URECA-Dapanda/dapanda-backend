@@ -35,6 +35,12 @@ public class MemberService {
 	private final RefreshTokenService refreshTokenService;
 	private final S3Service s3Service;
 
+	public Member findById(Long memberId) {
+
+		return memberRepository.findById(memberId)
+				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+	}
+
 	public LoginResponse login(LoginRequest request, HttpServletResponse response) {
 
 		Member member = memberRepository.findByEmail(request.email())
