@@ -2,6 +2,7 @@ package com.dapanda.product.entity;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import lombok.*;
 
 @Entity
@@ -54,13 +55,16 @@ public class MobileData {
 		this.isSplitType = isSplitType;
 	}
 
-	public void update100MBPerPrice(int price, float remainAmount) {
-
-		this.pricePer100MB = (int) Math.ceil(price / (remainAmount * 10));
-	}
-
-	public void deductRemainAmount(float dataAmount) {
+	public void deductRemainAmount(BigDecimal dataAmount) {
 
 		this.remainAmount = this.remainAmount.subtract(dataAmount);
+	}
+
+	public void update100MBPerPrice(int price, BigDecimal remainAmount) {
+
+		BigDecimal pricePer100MB = BigDecimal.valueOf(price)
+				.divide(remainAmount.multiply(BigDecimal.TEN), RoundingMode.CEILING);
+
+		this.pricePer100MB = pricePer100MB.intValue();
 	}
 }
