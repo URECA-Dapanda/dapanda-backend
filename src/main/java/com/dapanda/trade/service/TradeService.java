@@ -7,36 +7,17 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.plan.entity.Plan;
 import com.dapanda.plan.repository.PlanRepository;
-import com.dapanda.product.entity.MobileData;
-import com.dapanda.product.entity.Product;
-import com.dapanda.product.entity.ProductState;
-import com.dapanda.product.entity.Wifi;
-import com.dapanda.product.repository.MobileDataRepository;
-import com.dapanda.product.repository.ProductRepository;
-import com.dapanda.product.repository.WifiRepository;
-import com.dapanda.trade.dto.CashHistoryMonthlySummary;
-import com.dapanda.trade.dto.CashHistorySummary;
-import com.dapanda.trade.dto.MobileDataScrap;
-import com.dapanda.trade.dto.PurchaseHistorySummary;
-import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
-import com.dapanda.trade.dto.request.PurchaseWifiRequest;
-import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
-import com.dapanda.trade.dto.response.FindCashHistoryResponse;
-import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
-import com.dapanda.trade.dto.response.FindTradeHistoryResponse;
-import com.dapanda.trade.dto.response.TradeProductResponse;
-import com.dapanda.trade.entity.Trade;
-import com.dapanda.trade.entity.TradeDetails;
-import com.dapanda.trade.entity.TradeType;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.*;
+import com.dapanda.trade.dto.*;
+import com.dapanda.trade.dto.request.*;
+import com.dapanda.trade.dto.response.*;
+import com.dapanda.trade.entity.*;
 import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
 import jakarta.transaction.Transactional;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -191,10 +172,11 @@ public class TradeService {
 		sellerPlan.deductMobileData(dataAmount);
 	}
 
-	public FindMobileDataScrapResponse findMobileDataScrap(Float dataAmount) {
+	public FindMobileDataScrapResponse findMobileDataScrap(Float dataAmount, Long memberId) {
 
 		// 1. 정렬된 상품 목록 조회 (단가 낮은순, 용량 많은순, 일반우선)
-		List<MobileDataScrap> sortedList = productRepository.findMobileDataScrap(dataAmount);
+		List<MobileDataScrap> sortedList = productRepository.findMobileDataScrap(dataAmount,
+				memberId);
 
 		// 2. 가능한 조합들을 저장할 리스트
 		List<List<MobileDataScrap>> candidates = new ArrayList<>(); // 가능한 조합들을 저장하는 리스트

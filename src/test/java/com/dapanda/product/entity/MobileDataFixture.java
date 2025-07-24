@@ -86,6 +86,7 @@ public class MobileDataFixture {
 				price,
 				itemId,
 				memberName,
+				"profile.jpg",
 				remainAmount,
 				pricePer100MB,
 				isSplitType,

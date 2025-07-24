@@ -1,34 +1,14 @@
 package com.dapanda.trade.service;
 
-import static com.dapanda.TestConstants.Member.BUYER_MEMBER_ID;
-import static com.dapanda.TestConstants.Member.CASH_3000;
-import static com.dapanda.TestConstants.Member.CASH_5000;
-import static com.dapanda.TestConstants.Member.MEMBER_ID;
-import static com.dapanda.TestConstants.Member.SELLER_MEMBER_ID;
-import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
-import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_2;
-import static com.dapanda.TestConstants.MobileData.MOBILE_DATA_ID;
-import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_150;
-import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
-import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
-import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_2;
+import static com.dapanda.TestConstants.Member.*;
+import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
-import static com.dapanda.TestConstants.Product.PRICE_1500;
-import static com.dapanda.TestConstants.Product.PRICE_3000;
-import static com.dapanda.TestConstants.Product.PRICE_500;
-import static com.dapanda.TestConstants.Product.PRODUCT_ID;
+import static com.dapanda.TestConstants.Product.*;
 import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
 import static com.dapanda.TestConstants.Trade.TRADE_ID_2;
-import static com.dapanda.TestConstants.Wifi.ADDRESS;
-import static com.dapanda.TestConstants.Wifi.CONTENT;
-import static com.dapanda.TestConstants.Wifi.END_TIME;
-import static com.dapanda.TestConstants.Wifi.LATITUDE;
-import static com.dapanda.TestConstants.Wifi.LONGITUDE;
-import static com.dapanda.TestConstants.Wifi.START_TIME;
-import static com.dapanda.TestConstants.Wifi.TITLE;
-import static com.dapanda.TestConstants.Wifi.WIFI_ID;
+import static com.dapanda.TestConstants.Wifi.*;
 import static com.dapanda.trade.entity.TradeType.WIFI;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -44,39 +24,19 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.plan.entity.Plan;
 import com.dapanda.plan.entity.PlanFixture;
 import com.dapanda.plan.repository.PlanRepository;
-import com.dapanda.product.entity.MobileData;
-import com.dapanda.product.entity.MobileDataFixture;
-import com.dapanda.product.entity.Product;
-import com.dapanda.product.entity.ProductFixture;
-import com.dapanda.product.entity.ProductState;
-import com.dapanda.product.entity.Wifi;
-import com.dapanda.product.entity.WifiFixture;
-import com.dapanda.product.repository.MobileDataRepository;
-import com.dapanda.product.repository.ProductRepository;
-import com.dapanda.product.repository.WifiRepository;
-import com.dapanda.trade.dto.CashHistoryMonthlySummary;
-import com.dapanda.trade.dto.CashHistorySummary;
-import com.dapanda.trade.dto.MobileDataScrap;
-import com.dapanda.trade.dto.PurchaseHistorySummary;
-import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
-import com.dapanda.trade.dto.request.PurchaseWifiRequest;
-import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
-import com.dapanda.trade.dto.response.FindCashHistoryResponse;
-import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
-import com.dapanda.trade.dto.response.FindTradeHistoryResponse;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.*;
+import com.dapanda.trade.dto.*;
+import com.dapanda.trade.dto.request.*;
+import com.dapanda.trade.dto.response.*;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeFixture;
 import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import java.util.*;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -364,12 +324,13 @@ class TradeServiceTest {
 
 				float dataAmount = DATA_AMOUNT_2;
 
-				given(productRepository.findMobileDataScrap(dataAmount)).willReturn(new ArrayList<>(
+				given(productRepository.findMobileDataScrap(dataAmount,
+						BUYER_MEMBER_ID)).willReturn(new ArrayList<>(
 						List.of(mobileDataScrap1, mobileDataScrap2)));
 
 				// when
 				FindMobileDataScrapResponse response = tradeService.findMobileDataScrap(
-						dataAmount);
+						dataAmount, BUYER_MEMBER_ID);
 
 				// then
 				assertThat(response.getTotalAmount()).isEqualTo(DATA_AMOUNT_2);
@@ -405,12 +366,13 @@ class TradeServiceTest {
 
 				float dataAmount = DATA_AMOUNT_2;
 
-				given(productRepository.findMobileDataScrap(dataAmount)).willReturn(
+				given(productRepository.findMobileDataScrap(dataAmount,
+						BUYER_MEMBER_ID)).willReturn(
 						new ArrayList<>());
 
 				// when
 				FindMobileDataScrapResponse response = tradeService.findMobileDataScrap(
-						dataAmount);
+						dataAmount, BUYER_MEMBER_ID);
 
 				// then
 				assertThat(response.getTotalAmount()).isEqualTo(0);

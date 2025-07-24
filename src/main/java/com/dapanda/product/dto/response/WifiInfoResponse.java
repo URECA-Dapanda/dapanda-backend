@@ -2,11 +2,7 @@ package com.dapanda.product.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE, toBuilder = true)
@@ -19,13 +15,15 @@ public class WifiInfoResponse {
 	private int price;
 	private Long memberId;
 	private String memberName;
+	private String profileImageUrl;
 	private String title;
 	private String content;
 	private double latitude;
 	private double longitude;
 	private String address;
-	private double averageRate;
+	private float averageRate;
 	private int reviewCount;
+	private boolean myProduct;
 	private List<String> imageUrls;
 	private LocalDateTime startTime;
 	private LocalDateTime endTime;
