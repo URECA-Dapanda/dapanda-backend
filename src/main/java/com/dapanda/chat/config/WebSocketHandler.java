@@ -14,14 +14,6 @@ public class WebSocketHandler implements ChannelInterceptor {
 	@Override
 	public Message<?> preSend(Message<?> message, MessageChannel channel) {
 
-		log.info("preSend 로그");
-
-		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-
-		log.info("accessor.getMessageHeaders() : {}", accessor.getMessageHeaders());
-		log.info("accessor.getUser() : {}", accessor.getUser());
-		log.info("accessor.getSessionAttributes() : {}", accessor.getSessionAttributes());
-
 		//TODO 메시지 전송 전 유효성 검증 로직 고도화
 
 		return message;
