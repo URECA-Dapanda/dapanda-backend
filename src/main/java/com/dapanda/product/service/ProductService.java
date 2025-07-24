@@ -181,7 +181,7 @@ public class ProductService {
 			int idx = 0;
 			for (String imgUrl : images) {
 				// 확장자 체크 (jpg, jpeg, png만 허용)
-				if (!s3Service.isNotSupportedImageExtension(imgUrl)) {
+				if (s3Service.isNotValidImageExtension(imgUrl)) {
 					throw new GlobalException(ResultCode.INVALID_IMAGE_FORMAT);
 				}
 				ProductImage productImage = ProductImage.of(

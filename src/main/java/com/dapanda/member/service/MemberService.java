@@ -154,7 +154,7 @@ public class MemberService {
 
 		if (imageUrl != null && !imageUrl.isEmpty()) {
 
-			if (!s3Service.isNotSupportedImageExtension(imageUrl)) {
+			if (s3Service.isNotValidImageExtension(imageUrl)) {
 				throw new GlobalException(ResultCode.INVALID_IMAGE_FORMAT);
 			}
 

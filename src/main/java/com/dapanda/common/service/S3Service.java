@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class S3Service {
 
-	public boolean isNotSupportedImageExtension(String imageUrl) {
+	public boolean isNotValidImageExtension(String imageUrl) {
 
-		return ImageExtension.isValid(imageUrl);
+		return !ImageExtension.isValid(imageUrl);
 	}
 
 }
