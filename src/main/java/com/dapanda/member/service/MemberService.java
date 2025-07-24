@@ -11,17 +11,18 @@ import com.dapanda.common.service.S3Service;
 import com.dapanda.jwt.JwtPrinciple;
 import com.dapanda.jwt.JwtTokenProvider;
 import com.dapanda.member.dto.request.UpdateProfileImageRequest;
-import com.dapanda.member.dto.response.FindCashResponse;
-import com.dapanda.member.dto.response.FindDataResponse;
+import com.dapanda.member.dto.response.*;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberRole;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.refreshToken.service.RefreshTokenService;
+import com.dapanda.trade.repository.TradeRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class MemberService {
 	private static final String EMAIL_REGEX =
 			"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 	private final MemberRepository memberRepository;
+	private final TradeRepository tradeRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RefreshTokenService refreshTokenService;
@@ -163,4 +165,23 @@ public class MemberService {
 		}
 
 	}
+
+	@Transactional(readOnly = true)
+	public MemberInfoResponse getMemberInfo(Long memberId) {
+
+		Member member = memberRepository.findById(memberId)
+				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+
+		Long tradeCount = tradeRepository.countTradeHistoryByMemberId(memberId);
+
+		return MemberInfoResponse.of(
+				member.getName(),
+				member.getProfileImageUrl(),
+				member.getCreatedAt().toLocalDate(),
+				member.getAverageRating(),
+				member.getReviewCount(),
+				tradeCount != null ? tradeCount.intValue() : 0
+		);
+	}
+
 }
