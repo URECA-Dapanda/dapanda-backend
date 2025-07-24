@@ -17,6 +17,7 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.refreshToken.service.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -130,14 +131,14 @@ public class MemberService {
 
 	public FindDataResponse findBuyingData(Long memberId) {
 
-		float buyingData = memberRepository.findById(memberId).orElseThrow().getBuyingData();
+		BigDecimal buyingData = memberRepository.findById(memberId).orElseThrow().getBuyingData();
 
 		return FindDataResponse.of(buyingData);
 	}
 
 	public FindDataResponse findSellingData(Long memberId) {
 
-		float sellingData = memberRepository.findById(memberId).orElseThrow().getSellingData();
+		BigDecimal sellingData = memberRepository.findById(memberId).orElseThrow().getSellingData();
 
 		return FindDataResponse.of(sellingData);
 	}

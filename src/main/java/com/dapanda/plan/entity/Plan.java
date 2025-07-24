@@ -2,20 +2,9 @@ package com.dapanda.plan.entity;
 
 import com.dapanda.common.entity.BaseEntity;
 import com.dapanda.member.entity.Member;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import java.math.BigDecimal;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -32,7 +21,7 @@ public class Plan extends BaseEntity {
 
 	private String name;
 
-	private float providingDataAmount;
+	private BigDecimal providingDataAmount;
 
 	private int monthlyPrice;
 
@@ -47,7 +36,7 @@ public class Plan extends BaseEntity {
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Member member;
 
-	public static Plan of(String name, float providingDataAmount, int monthlyPrice,
+	public static Plan of(String name, BigDecimal providingDataAmount, int monthlyPrice,
 			PlanCategory category, AgeGroup ageGroup, Member member) {
 
 		return Plan.builder()
@@ -60,13 +49,13 @@ public class Plan extends BaseEntity {
 				.build();
 	}
 
-	public void addMobileData(float dataAmount) {
+	public void addMobileData(BigDecimal dataAmount) {
 
-		this.providingDataAmount += dataAmount;
+		this.providingDataAmount = this.providingDataAmount.add(dataAmount);
 	}
 
-	public void deductMobileData(float dataAmount) {
+	public void deductMobileData(BigDecimal dataAmount) {
 
-		this.providingDataAmount -= dataAmount;
+		this.providingDataAmount.subtract(dataAmount);
 	}
 }

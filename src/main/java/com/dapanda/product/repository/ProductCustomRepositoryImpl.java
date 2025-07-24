@@ -1,5 +1,13 @@
 package com.dapanda.product.repository;
 
+import static com.dapanda.member.entity.QMember.member;
+import static com.dapanda.product.entity.QMobileData.mobileData;
+import static com.dapanda.product.entity.QProduct.product;
+import static com.dapanda.product.entity.QProductImage.productImage;
+import static com.dapanda.product.entity.QWifi.wifi;
+import static com.dapanda.review.entity.QReview.review;
+import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
+
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
@@ -13,19 +21,11 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static com.dapanda.member.entity.QMember.member;
-import static com.dapanda.product.entity.QMobileData.mobileData;
-import static com.dapanda.product.entity.QProduct.product;
-import static com.dapanda.product.entity.QProductImage.productImage;
-import static com.dapanda.product.entity.QWifi.wifi;
-import static com.dapanda.review.entity.QReview.review;
-import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
@@ -44,7 +44,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 	@Override
 	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, int size,
-			ProductSortOption productSortOption, Float dataAmount) {
+			ProductSortOption productSortOption, BigDecimal dataAmount) {
 
 		List<MobileDataSummary> content = queryFactory
 				.select(Projections.constructor(MobileDataSummary.class,
@@ -320,7 +320,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	}
 
 	@Override
-	public List<MobileDataScrap> findMobileDataScrap(float dataAmount) {
+	public List<MobileDataScrap> findMobileDataScrap(BigDecimal dataAmount) {
 
 		return queryFactory
 				.select(Projections.constructor(MobileDataScrap.class,
@@ -351,9 +351,9 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	}
 
 	@Override
-	public Float sumSoldMobileDataAmountByMemberId(Long memberId) {
+	public BigDecimal sumSoldMobileDataAmountByMemberId(Long memberId) {
 
-		Float sum = queryFactory
+		BigDecimal sum = queryFactory
 				.select(mobileData.dataAmount.sum())
 				.from(product)
 				.join(mobileData).on(product.itemId.eq(mobileData.id))
@@ -363,7 +363,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				)
 				.fetchOne();
 
-		return sum != null ? sum : 0f;
+		return sum != null ? sum : new BigDecimal("0");
 	}
 
 	private BooleanExpression isActiveProduct() {
@@ -376,9 +376,11 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		return cursorId != null ? product.id.gt(cursorId) : null;
 	}
 
-	private BooleanExpression eqDataAmount(Float dataAmount) {
+	private BooleanExpression eqDataAmount(BigDecimal dataAmount) {
 
-		return dataAmount != null ? mobileData.remainAmount.eq(dataAmount) : null;
+		return dataAmount != null
+				? Expressions.booleanTemplate("ABS({0} - {1}) < 0.000001", mobileData.remainAmount,
+				dataAmount) : null;
 	}
 
 	private BooleanExpression isOpenNow(boolean isOpen, LocalDateTime now) {
@@ -466,7 +468,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				)
 				.where(
 						product.member.id.eq(request.memberId()),
-						request.productState() != null ? product.state.eq(request.productState()) : null
+						request.productState() != null ? product.state.eq(request.productState())
+								: null
 				)
 				.fetchOne();
 	}

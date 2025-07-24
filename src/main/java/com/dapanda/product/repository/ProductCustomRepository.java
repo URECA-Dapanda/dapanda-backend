@@ -8,15 +8,15 @@ import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.trade.dto.MobileDataScrap;
-import org.springframework.stereotype.Repository;
-
+import java.math.BigDecimal;
 import java.util.List;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductCustomRepository {
 
 	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, int size,
-			ProductSortOption productSortOption, Float dataAmount);
+			ProductSortOption productSortOption, BigDecimal dataAmount);
 
 	public CursorPageResponse<WifiSummary> findWifiByCursor(Long cursorId, int size,
 			ProductSortOption productSortOption, boolean isOpen, Double latitude, Double longitude);
@@ -27,11 +27,11 @@ public interface ProductCustomRepository {
 
 	public List<String> findWifiImages(Long wifiId);
 
-	public Float sumSoldMobileDataAmountByMemberId(Long memberId);
+	public BigDecimal sumSoldMobileDataAmountByMemberId(Long memberId);
 
 	List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request);
 
-	List<MobileDataScrap> findMobileDataScrap(float dataAmount);
+	List<MobileDataScrap> findMobileDataScrap(BigDecimal dataAmount);
 
 	FindMarketPriceResponse findMarketPrice(ItemType itemType);
 

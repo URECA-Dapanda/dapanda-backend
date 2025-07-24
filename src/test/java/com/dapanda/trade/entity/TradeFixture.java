@@ -4,6 +4,7 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.product.entity.MobileData;
 import com.dapanda.product.entity.Product;
 import com.dapanda.trade.dto.MobileDataScrap;
+import java.math.BigDecimal;
 import org.springframework.test.util.ReflectionTestUtils;
 
 public class TradeFixture {
@@ -11,7 +12,7 @@ public class TradeFixture {
 	public static Trade createTradeMobileDataDefault(Member member) {
 
 		return Trade.of(
-				0.5F,
+				BigDecimal.valueOf(0.5),
 				1000,
 				TradeType.MOBILE_PURCHASE_SINGLE,
 				member
@@ -28,7 +29,7 @@ public class TradeFixture {
 	}
 
 	public static MobileDataScrap createMobileDataScrap(Product product, MobileData mobileData,
-			int purchasePrice, float purchaseDataAmount) {
+			int purchasePrice, BigDecimal purchaseDataAmount) {
 
 		return new MobileDataScrap(product.getId(), mobileData.getId(),
 				product.getMember().getName(), product.getPrice(), purchasePrice,

@@ -2,25 +2,16 @@ package com.dapanda.trade.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.CommonResponse;
-import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
-import com.dapanda.trade.dto.request.PurchaseWifiRequest;
-import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
-import com.dapanda.trade.dto.response.FindCashHistoryResponse;
-import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
-import com.dapanda.trade.dto.response.FindTradeHistoryResponse;
-import com.dapanda.trade.dto.response.TradeProductResponse;
+import com.dapanda.trade.dto.request.*;
+import com.dapanda.trade.dto.response.*;
 import com.dapanda.trade.service.TradeService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -40,7 +31,7 @@ public class TradeController {
 
 	@GetMapping("/trades/mobile-data/scrap")
 	public CommonResponse<FindMobileDataScrapResponse> defaultPurchaseMobileData(
-			@RequestParam Float dataAmount) {
+			@RequestParam BigDecimal dataAmount) {
 
 		return CommonResponse.success(tradeService.findMobileDataScrap(dataAmount));
 	}

@@ -2,32 +2,17 @@ package com.dapanda.trade.controller;
 
 
 import static com.dapanda.TestConstants.Member.CASH_5000;
-import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
-import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_2;
-import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_150;
-import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
-import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
-import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_2;
+import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
-import static com.dapanda.TestConstants.Product.PRICE_1500;
-import static com.dapanda.TestConstants.Product.PRICE_3000;
-import static com.dapanda.TestConstants.Product.PRICE_500;
-import static com.dapanda.TestConstants.Wifi.ADDRESS;
-import static com.dapanda.TestConstants.Wifi.CONTENT;
-import static com.dapanda.TestConstants.Wifi.END_TIME;
-import static com.dapanda.TestConstants.Wifi.LATITUDE;
-import static com.dapanda.TestConstants.Wifi.LONGITUDE;
-import static com.dapanda.TestConstants.Wifi.START_TIME;
-import static com.dapanda.TestConstants.Wifi.TITLE;
+import static com.dapanda.TestConstants.Product.*;
+import static com.dapanda.TestConstants.Wifi.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -45,39 +30,22 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.plan.entity.Plan;
 import com.dapanda.plan.entity.PlanFixture;
 import com.dapanda.plan.repository.PlanRepository;
-import com.dapanda.product.entity.ItemType;
-import com.dapanda.product.entity.MobileData;
-import com.dapanda.product.entity.MobileDataFixture;
-import com.dapanda.product.entity.Product;
-import com.dapanda.product.entity.ProductFixture;
-import com.dapanda.product.entity.ProductState;
-import com.dapanda.product.entity.Wifi;
-import com.dapanda.product.entity.WifiFixture;
-import com.dapanda.product.repository.MobileDataRepository;
-import com.dapanda.product.repository.ProductRepository;
-import com.dapanda.product.repository.WifiRepository;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.*;
 import com.dapanda.trade.dto.MobileDataScrap;
-import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
-import com.dapanda.trade.dto.request.PurchaseWifiRequest;
-import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
+import com.dapanda.trade.dto.request.*;
 import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
-import com.dapanda.trade.entity.Trade;
-import com.dapanda.trade.entity.TradeDetails;
-import com.dapanda.trade.entity.TradeFixture;
+import com.dapanda.trade.entity.*;
 import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
 import com.dapanda.trade.service.TradeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import java.util.*;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -224,9 +192,9 @@ class TradeControllerTest {
 				assertThat(soldOutProduct.getState()).isEqualTo(ProductState.SOLD_OUT);
 				assertThat(soldOutMobileData.getRemainAmount()).isEqualTo(0);
 				assertThat(afterBuyerPlan.getProvidingDataAmount()).isEqualTo(
-						PROVIDING_DATA_AMOUNT_10 + mobileData.getDataAmount());
+						PROVIDING_DATA_AMOUNT_10.add(mobileData.getDataAmount()));
 				assertThat(afterSellerPlan.getProvidingDataAmount()).isEqualTo(
-						PROVIDING_DATA_AMOUNT_10 - mobileData.getDataAmount());
+						PROVIDING_DATA_AMOUNT_10.subtract(mobileData.getDataAmount()));
 				assertThat(afterBuyer.getBuyingData()).isEqualTo(mobileData.getDataAmount());
 				assertThat(afterSeller.getSellingData()).isEqualTo(mobileData.getDataAmount());
 			}
@@ -295,11 +263,11 @@ class TradeControllerTest {
 
 				assertThat(soldOutProduct.getState()).isEqualTo(ProductState.ACTIVE);
 				assertThat(soldOutMobileData.getRemainAmount()).isEqualTo(
-						DATA_AMOUNT_2 - DATA_AMOUNT_1);
+						DATA_AMOUNT_2.subtract(DATA_AMOUNT_1));
 				assertThat(afterBuyerPlan.getProvidingDataAmount()).isEqualTo(
-						PROVIDING_DATA_AMOUNT_10 + DATA_AMOUNT_1);
+						PROVIDING_DATA_AMOUNT_10.add(DATA_AMOUNT_1));
 				assertThat(afterSellerPlan.getProvidingDataAmount()).isEqualTo(
-						PROVIDING_DATA_AMOUNT_10 - DATA_AMOUNT_1);
+						PROVIDING_DATA_AMOUNT_10.subtract(DATA_AMOUNT_1));
 				assertThat(afterBuyer.getBuyingData()).isEqualTo(DATA_AMOUNT_1);
 				assertThat(afterSeller.getSellingData()).isEqualTo(DATA_AMOUNT_1);
 			}
@@ -546,7 +514,7 @@ class TradeControllerTest {
 				List<Product> products = Arrays.asList(product1, product2);
 				productRepository.saveAll(products);
 
-				float dataAmount = DATA_AMOUNT_2;
+				BigDecimal dataAmount = DATA_AMOUNT_2;
 
 				// when & then
 				mockMvc.perform(get("/api/trades/mobile-data/scrap")
@@ -628,7 +596,7 @@ class TradeControllerTest {
 			void findDataProductScrapWhenNotExist() throws Exception {
 
 				// given
-				float dataAmount = DATA_AMOUNT_2;
+				BigDecimal dataAmount = DATA_AMOUNT_2;
 
 				// when & then
 				mockMvc.perform(get("/api/trades/mobile-data/scrap")
@@ -893,9 +861,9 @@ class TradeControllerTest {
 				memberRepository.saveAll(members);
 
 				MobileData mobileData1 = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
-						0, PRICE_PER_100MB_150);
+						BigDecimal.ZERO, PRICE_PER_100MB_150);
 				MobileData mobileData2 = MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2,
-						0, PRICE_PER_100MB_300);
+						BigDecimal.ZERO, PRICE_PER_100MB_300);
 				List<MobileData> mobileDataList = Arrays.asList(mobileData1, mobileData2);
 				mobileDataRepository.saveAll(mobileDataList);
 

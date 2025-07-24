@@ -32,6 +32,7 @@ import com.dapanda.product.repository.*;
 import com.dapanda.product.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import org.junit.jupiter.api.*;
@@ -49,31 +50,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
-import static com.dapanda.TestConstants.MobileData.*;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
-import static com.dapanda.TestConstants.Product.*;
-import static com.dapanda.TestConstants.Wifi.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -147,7 +123,8 @@ class ProductControllerTest {
 			@DisplayName("정상적으로 모바일 데이터 상품을 등록한다")
 			void createMobileData_success() throws Exception {
 
-				CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2.0F, false);
+				CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
+						new BigDecimal("2.0"), false);
 
 				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/mobile-data")
 								.with(authentication(new UsernamePasswordAuthenticationToken(
@@ -232,7 +209,7 @@ class ProductControllerTest {
 				Member member = memberRepository.save(MemberFixture.createMember2());
 				// sellingData 필드를 강제로 세팅하려면 set 메소드 또는 ReflectionTestUtils 사용
 				MobileData fullMobileData = mobileDataRepository.save(
-						MobileData.singleOf(2000F, 1000, false) // 2000MB짜리 상품
+						MobileData.singleOf(BigDecimal.valueOf(2000), 1000, false) // 2000MB짜리 상품
 				);
 				productRepository.save(
 						Product.of(ProductState.ACTIVE, 1000, fullMobileData.getId(),
@@ -241,7 +218,8 @@ class ProductControllerTest {
 
 				userDetails = CustomUserDetails.from(member);
 
-				CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 1.0F, false);
+				CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
+						BigDecimal.valueOf(1.0), false);
 
 				mockMvc.perform(MockMvcRequestBuilders.post("/api/products/mobile-data")
 								.with(authentication(new UsernamePasswordAuthenticationToken(
@@ -271,7 +249,7 @@ class ProductControllerTest {
 
 				CreateMobileDataRequest incompleteRequest = new CreateMobileDataRequest(
 						null,     // price 누락
-						2.0F,
+						new BigDecimal("2.0"),
 						false
 				);
 
@@ -372,13 +350,16 @@ class ProductControllerTest {
 				// given
 				int size = 2;
 				String productSortOption = "RECENT";
-				Float dataAmount = 2.0F;
+				BigDecimal dataAmount = new BigDecimal("2.0");
 
 				Member member = memberRepository.save(MemberFixture.createMember1());
 
-				MobileData mobileData1 = MobileDataFixture.createMobileData(2.0F, 2.0F, 500);
-				MobileData mobileData2 = MobileDataFixture.createMobileData(2.0F, 2.0F, 600);
-				MobileData mobileData3 = MobileDataFixture.createMobileData(3.0F, 3.0F, 700);
+				MobileData mobileData1 = MobileDataFixture.createMobileData(BigDecimal.valueOf(2.0),
+						BigDecimal.valueOf(2.0), 500);
+				MobileData mobileData2 = MobileDataFixture.createMobileData(BigDecimal.valueOf(2.0),
+						BigDecimal.valueOf(2.0), 600);
+				MobileData mobileData3 = MobileDataFixture.createMobileData(BigDecimal.valueOf(3.0),
+						BigDecimal.valueOf(3.0), 700);
 				mobileDataRepository.saveAll(List.of(mobileData1, mobileData2, mobileData3));
 
 				Product product1 = ProductFixture.createMobileDataProduct(3000,
@@ -948,9 +929,9 @@ class ProductControllerTest {
 				assertThat(updatedProduct.getId()).isEqualTo(product.getId());
 				assertThat(updatedProduct.getPrice()).isEqualTo(NEW_PRICE_9000);
 				assertThat(updatedMobileData.getDataAmount()).isEqualTo(
-						BEFORE_DATA_AMOUNT + CHANGED_AMOUNT);
+						BEFORE_DATA_AMOUNT.add(CHANGED_AMOUNT));
 				assertThat(updatedMobileData.getRemainAmount()).isEqualTo(
-						BEFORE_REMAIN_AMOUNT + CHANGED_AMOUNT);
+						BEFORE_REMAIN_AMOUNT.add(CHANGED_AMOUNT));
 			}
 		}
 

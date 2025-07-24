@@ -2,6 +2,7 @@ package com.dapanda;
 
 import com.dapanda.report.entity.ReportTargetCategory;
 import com.dapanda.review.entity.ReviewSortOption;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public final class TestConstants {
@@ -65,16 +66,16 @@ public final class TestConstants {
 	public static final class MobileData {
 
 		public static final Long MOBILE_DATA_ID = 1L;
-		public static final float BEFORE_DATA_AMOUNT = 1.0F;
-		public static final float BEFORE_REMAIN_AMOUNT = 1.0F;
-		public static final float CHANGED_AMOUNT = 1.0F;
-		public static final float EXCEED_CHANGED_AMOUNT = 3.0F;
-		public static final float SELLING_DATA = 1.5F;
+		public static final BigDecimal BEFORE_DATA_AMOUNT = BigDecimal.valueOf(1.0);
+		public static final BigDecimal BEFORE_REMAIN_AMOUNT = BigDecimal.valueOf(1.0);
+		public static final BigDecimal CHANGED_AMOUNT = BigDecimal.valueOf(1.0);
+		public static final BigDecimal EXCEED_CHANGED_AMOUNT = BigDecimal.valueOf(3.0);
+		public static final BigDecimal SELLING_DATA = BigDecimal.valueOf(1.5);
 		public static final boolean SPLIT_TYPE = true;
-		public static final float DATA_AMOUNT_1 = 1.0F;
-		public static final float DATA_AMOUNT_2 = 2.0F;
-		public static final float REMAIN_AMOUNT_1 = 1.0F;
-		public static final float REMAIN_AMOUNT_2 = 2.0F;
+		public static final BigDecimal DATA_AMOUNT_1 = BigDecimal.valueOf(1.0);
+		public static final BigDecimal DATA_AMOUNT_2 = BigDecimal.valueOf(2.0);
+		public static final BigDecimal REMAIN_AMOUNT_1 = BigDecimal.valueOf(1.0);
+		public static final BigDecimal REMAIN_AMOUNT_2 = BigDecimal.valueOf(2.0);
 		public static final int PRICE_PER_100MB_300 = 300;
 		public static final int PRICE_PER_100MB_150 = 150;
 	}
@@ -101,7 +102,8 @@ public final class TestConstants {
 
 	public static final class Plan {
 
-		public static final Float PROVIDING_DATA_AMOUNT_10 = 10.0F;
+		public static final BigDecimal PROVIDING_DATA_AMOUNT_10 = BigDecimal.valueOf(10);
+
 	}
 
 	public static final class Chat {

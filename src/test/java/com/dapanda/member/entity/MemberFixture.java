@@ -1,6 +1,7 @@
 package com.dapanda.member.entity;
 
 import com.dapanda.auth.entity.OAuthProvider;
+import java.math.BigDecimal;
 import org.springframework.test.util.ReflectionTestUtils;
 
 public class MemberFixture {
@@ -73,7 +74,7 @@ public class MemberFixture {
 		return member;
 	}
 
-	public static Member createMemberWithSellingDataWithId(long memberId, float sellingData) {
+	public static Member createMemberWithSellingDataWithId(long memberId, BigDecimal sellingData) {
 
 		Member member = createMember1WithId(memberId);
 		ReflectionTestUtils.setField(member, "sellingData", sellingData);  // 강제로 세팅
@@ -81,7 +82,7 @@ public class MemberFixture {
 		return member;
 	}
 
-	public static Member createMemberWithSellingData(float sellingData) {
+	public static Member createMemberWithSellingData(BigDecimal sellingData) {
 
 		Member member = createMember1();
 		ReflectionTestUtils.setField(member, "sellingData", sellingData);  // 강제로 세팅
