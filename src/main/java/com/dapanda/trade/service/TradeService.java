@@ -16,6 +16,8 @@ import com.dapanda.trade.entity.*;
 import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +67,11 @@ public class TradeService {
 
 		if (mobileData.isSplitType()) {
 
-			int price = (int) (mobileData.getPricePer100MB() * request.dataAmount() * 10);
+			int price = BigDecimal.valueOf(mobileData.getPricePer100MB())
+					.multiply(request.dataAmount())
+					.multiply(BigDecimal.TEN)
+					.setScale(0, RoundingMode.CEILING)
+					.intValue();
 
 			return handlePartialPurchaseProduct(product, mobileData, buyerId, request.dataAmount(),
 					price);
@@ -102,7 +108,7 @@ public class TradeService {
 	 * 데이터 분할 상품 일반 구매
 	 */
 	private TradeProductResponse handlePartialPurchaseProduct(Product product,
-			MobileData mobileData, Long buyerId, float dataAmount, int price) {
+			MobileData mobileData, Long buyerId, BigDecimal dataAmount, int price) {
 
 		// Lock 건 상태로 구매자, 판매자 조회
 		Member buyer = memberRepository.findByIdForUpdate(buyerId).orElseThrow();
@@ -121,17 +127,18 @@ public class TradeService {
 		return TradeProductResponse.of(trade.getId());
 	}
 
-	private void validatePurchaseLimit(Member buyer, float dataAmount) {
+	private void validatePurchaseLimit(Member buyer, BigDecimal dataAmount) {
 
-		if (buyer.getBuyingData() + dataAmount > MobileData.MAX_TRANSFERABLE_DATA_AMOUNT) {
+		if (buyer.getBuyingData().add(dataAmount).compareTo(
+				BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
 			throw new GlobalException(ResultCode.EXCEEDED_PURCHASE_LIMIT);
 		}
 	}
 
 	private void deductBuyerCashAndUpdateState(Member buyer, Product product, MobileData mobileData,
-			int price, float dataAmount) {
+			int price, BigDecimal dataAmount) {
 
-		if (mobileData.getRemainAmount() < dataAmount) {
+		if (mobileData.getRemainAmount().compareTo(dataAmount) < 0) {
 			throw new GlobalException(ResultCode.INVALID_REMAIN_DATA_AMOUNT);
 		}
 		if (buyer.getCash() < price) {
@@ -143,7 +150,7 @@ public class TradeService {
 		mobileData.deductRemainAmount(dataAmount);
 		product.updatePrice(product.getPrice() - price);
 		mobileData.update100MBPerPrice(price, mobileData.getRemainAmount());
-		if (mobileData.getRemainAmount() == 0) {
+		if (mobileData.getRemainAmount().compareTo(BigDecimal.ZERO) == 0) {
 			product.changeState(ProductState.SOLD_OUT);
 		}
 	}
@@ -163,7 +170,7 @@ public class TradeService {
 		return buyerTrade;
 	}
 
-	private void updateBuyerAndSellerData(Member buyer, Member seller, float dataAmount) {
+	private void updateBuyerAndSellerData(Member buyer, Member seller, BigDecimal dataAmount) {
 
 		seller.addSellingData(dataAmount);
 
@@ -174,7 +181,7 @@ public class TradeService {
 		sellerPlan.deductMobileData(dataAmount);
 	}
 
-	public FindMobileDataScrapResponse findMobileDataScrap(Float dataAmount, Long memberId) {
+	public FindMobileDataScrapResponse findMobileDataScrap(BigDecimal dataAmount, Long memberId) {
 
 		// 1. 정렬된 상품 목록 조회 (단가 낮은순, 용량 많은순, 일반우선)
 		List<MobileDataScrap> sortedList = productRepository.findMobileDataScrap(dataAmount,
@@ -183,22 +190,22 @@ public class TradeService {
 		// 2. 가능한 조합들을 저장할 리스트
 		List<List<MobileDataScrap>> candidates = new ArrayList<>(); // 가능한 조합들을 저장하는 리스트
 		int sortedListSize = sortedList.size();
-		float target = dataAmount; // 사용자가 구매하고자 하는 목표 데이터 용량 (GB 단위)
+		BigDecimal target = dataAmount; // 사용자가 구매하고자 하는 목표 데이터 용량 (GB 단위)
 
 		// 3. 시작 인덱스를 0부터 n-1까지 순차적으로 이동하며 탐색
 		for (int start = 0; start < sortedListSize; start++) {
-			float sumAmount = 0; // 현재 조합에 포함된 상품들로 누적한 총 데이터 용량 (GB 단위)
+			BigDecimal sumAmount = BigDecimal.ZERO; // 현재 조합에 포함된 상품들로 누적한 총 데이터 용량 (GB 단위)
 			int sumPrice = 0;
 			List<MobileDataScrap> temp = new ArrayList<>(); // 현재 조합 중인 상품 목록을 저장하는 임시 리스트
 
 			// 4. 현재 start 위치부터 하나씩 상품을 누적하며 조합을 시도
 			for (int i = start; i < sortedListSize; i++) {
 				MobileDataScrap item = sortedList.get(i);
-				float amount = item.getRemainAmount();
+				BigDecimal amount = item.getRemainAmount();
 
 				// 4-1. 분할 가능한 상품이고, 목표 용량을 초과한다면 필요한 만큼만 구매
 				if (item.isSplitType()) {
-					float needed = Math.min(amount, target - sumAmount);
+					BigDecimal needed = amount.min(target.subtract(sumAmount));
 
 					// 필요한 만큼만 구매한 정보로 새 객체 생성
 					MobileDataScrap partialScrap = new MobileDataScrap(
@@ -206,7 +213,8 @@ public class TradeService {
 							item.getMobileDataId(),
 							item.getMemberName(),
 							item.getPrice(),
-							(int) (needed * 10 * item.getPricePer100MB()), // purchasePrice
+							(int) (needed.doubleValue() * 10 * item.getPricePer100MB()),
+							// purchasePrice
 							item.getRemainAmount(),
 							needed, // purchaseAmount
 							item.getPricePer100MB(),
@@ -214,20 +222,20 @@ public class TradeService {
 							item.getUpdatedAt()
 					);
 
-					sumAmount += needed;
-					sumPrice += (int) (needed * 10 * item.getPricePer100MB());
+					sumAmount = sumAmount.add(needed);
+					sumPrice += (int) (needed.doubleValue() * 10 * item.getPricePer100MB());
 					temp.add(partialScrap);
 				} else {
-					sumAmount += amount;
+					sumAmount = sumAmount.add(amount);
 					sumPrice += item.getPrice();
 					temp.add(item);
 				}
 
-				if (sumAmount == target) { // 5. 목표 용량을 정확히 채운 조합은 후보군에 추가
+				if (sumAmount.compareTo(target) == 0) { // 5. 목표 용량을 정확히 채운 조합은 후보군에 추가
 					candidates.add(temp);
 					break;
 				}
-				if (sumAmount > target) { // 6. 목표 용량을 초과하면 더 이상 탐색하지 않음
+				if (sumAmount.compareTo(target) > 0) { // 6. 목표 용량을 초과하면 더 이상 탐색하지 않음
 					break;
 				}
 			}
@@ -246,7 +254,7 @@ public class TradeService {
 		// 9. 후보가 없으면 빈 응답 반환
 		if (best.isEmpty()) {
 
-			return FindMobileDataScrapResponse.of(0, 0, Collections.emptyList());
+			return FindMobileDataScrapResponse.of(BigDecimal.ZERO, 0, Collections.emptyList());
 		}
 
 		// 10. 최적 조합이 존재하면 최종 응답 생성
@@ -256,25 +264,25 @@ public class TradeService {
 		return FindMobileDataScrapResponse.of(dataAmount, totalPrice, bestCombination);
 	}
 
-	private int calculateTotalPrice(List<MobileDataScrap> scrapList, float dataAmount) {
+	private int calculateTotalPrice(List<MobileDataScrap> scrapList, BigDecimal dataAmount) {
 
-		float sumAmount = 0;
+		BigDecimal sumAmount = BigDecimal.ZERO;
 		int total = 0;
 
 		// 조합된 상품 리스트를 순회하며, 실제로 필요한 만큼만 구매하고 총 가격 계산
 		for (MobileDataScrap scrap : scrapList) {
 			// 분할 상품의 경우: 필요한 만큼만 구매 (단가 적용)
 			if (scrap.isSplitType()) {
-				float needed = Math.min(scrap.getRemainAmount(), dataAmount - sumAmount);
-				total += (int) (needed * 10 * scrap.getPricePer100MB());
-				sumAmount += needed;
+				BigDecimal needed = scrap.getRemainAmount().min(dataAmount.subtract(sumAmount));
+				total += (int) (needed.doubleValue() * 10 * scrap.getPricePer100MB());
+				sumAmount = sumAmount.add(needed);
 			} else { // 일반 상품의 경우: 상품 전체를 사용하며 고정 가격 적용
 				total += scrap.getPrice();
-				sumAmount += scrap.getRemainAmount();
+				sumAmount = sumAmount.add(scrap.getRemainAmount());
 			}
 
 			// 목표 용량을 채웠으면 반복 종료
-			if (sumAmount >= dataAmount) {
+			if (sumAmount.compareTo(dataAmount) >= 0) {
 				break;
 			}
 		}
@@ -289,7 +297,7 @@ public class TradeService {
 	public TradeProductResponse scrapPurchaseMobileData(Long buyerId,
 			ScrapPurchaseMobileDataRequest request) {
 
-		float totalAmount = request.totalAmount();
+		BigDecimal totalAmount = request.totalAmount();
 		int totalPrice = request.totalPrice();
 
 		// 1. 구매자 Lock 조회
@@ -319,8 +327,8 @@ public class TradeService {
 					.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
 			// 4-2. 구매 데이터양 만큼 remainAmount 차감
-			float purchaseAmount = scrap.getPurchaseAmount();
-			if (mobileData.getRemainAmount() < purchaseAmount) {
+			BigDecimal purchaseAmount = scrap.getPurchaseAmount();
+			if (mobileData.getRemainAmount().compareTo(purchaseAmount) < 0) {
 				throw new GlobalException(ResultCode.INVALID_REMAIN_DATA_AMOUNT);
 			}
 
@@ -336,7 +344,8 @@ public class TradeService {
 			seller.addSellingData(purchaseAmount);
 
 			// 4-6. 상품 상태 변경
-			if (!mobileData.isSplitType() || mobileData.getRemainAmount() == 0) {
+			if (!mobileData.isSplitType()
+					|| mobileData.getRemainAmount().compareTo(BigDecimal.ZERO) == 0) {
 				product.changeState(ProductState.SOLD_OUT);
 			}
 

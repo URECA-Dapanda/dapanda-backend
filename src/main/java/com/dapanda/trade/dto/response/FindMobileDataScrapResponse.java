@@ -1,12 +1,9 @@
 package com.dapanda.trade.dto.response;
 
 import com.dapanda.trade.dto.MobileDataScrap;
+import java.math.BigDecimal;
 import java.util.List;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -14,11 +11,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class FindMobileDataScrapResponse {
 
-	private float totalAmount;
+	private BigDecimal totalAmount;
 	private int totalPrice;
 	private List<MobileDataScrap> combinations;
 
-	public static FindMobileDataScrapResponse of(float totalAmount, int totalPrice,
+	public static FindMobileDataScrapResponse of(BigDecimal totalAmount, int totalPrice,
 			List<MobileDataScrap> combinations) {
 
 		return FindMobileDataScrapResponse.builder()
