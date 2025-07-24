@@ -4,6 +4,7 @@ import com.dapanda.common.dto.response.CountCursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.common.service.S3Service;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
@@ -34,6 +35,8 @@ public class ProductService {
 	private final WifiRepository wifiRepository;
 
 	private final MemberRepository memberRepository;
+
+	private final S3Service s3Service;
 
 	public CountCursorPageResponse<ReadSellingProductResponse> readSellingProduct(
 			ReadSellingProductRequest request) {
@@ -180,7 +183,7 @@ public class ProductService {
 			int idx = 0;
 			for (String imgUrl : images) {
 				// 확장자 체크 (jpg, jpeg, png만 허용)
-				if (!isValidImageExtension(imgUrl)) {
+				if (s3Service.isNotValidImageExtension(imgUrl)) {
 					throw new GlobalException(ResultCode.INVALID_IMAGE_FORMAT);
 				}
 				ProductImage productImage = ProductImage.of(
@@ -306,8 +309,4 @@ public class ProductService {
 		return productRepository.findMarketPrice(ItemType.valueOf(productType));
 	}
 
-	private boolean isValidImageExtension(String imageUrl) {
-
-		return ImageExtension.isValid(imageUrl);
-	}
 }

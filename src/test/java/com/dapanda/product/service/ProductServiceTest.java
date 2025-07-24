@@ -1,8 +1,8 @@
 package com.dapanda.product.service;
 
 import static com.dapanda.TestConstants.Member.*;
-import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
+import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Product.*;
@@ -19,6 +19,7 @@ import com.dapanda.common.dto.response.CountCursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.common.service.S3Service;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
@@ -58,6 +59,9 @@ class ProductServiceTest {
 
 	@InjectMocks
 	private ProductService productService;
+
+	@Mock
+	private S3Service s3Service;
 
 	@Nested
 	@DisplayName("모바일 데이터 상품 등록")

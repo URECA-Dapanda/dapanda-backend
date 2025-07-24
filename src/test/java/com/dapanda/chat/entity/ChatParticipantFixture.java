@@ -17,6 +17,11 @@ public class ChatParticipantFixture {
 		return chatParticipant;
 	}
 
+	public static List<ChatParticipant> createChatParticipant(ChatRoom chatRoom, Member buyer, Member seller) {
+
+		return List.of(ChatParticipant.of(chatRoom, buyer), ChatParticipant.of(chatRoom, seller));
+	}
+
 	public static List<ChatParticipant> createChatParticipantList(List<ChatRoom> chatRoomList, Member buyer, Member seller){
 
 		List<ChatParticipant> chatParticipantList = new ArrayList<>();

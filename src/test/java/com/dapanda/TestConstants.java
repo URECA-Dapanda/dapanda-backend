@@ -26,6 +26,7 @@ public final class TestConstants {
 		public static final Long DEFAULT_CURSOR_ID = null;
 		public static final int DEFAULT_SIZE_2 = 2;
 		public static final String DEFAULT_REVIEW_SORT_OPTION = ReviewSortOption.RECENT.name();
+		public static final int CHAT_MESSAGE_HISTORY_DEFAULT_SIZE = 20;
 	}
 
 	public static final class Review {
