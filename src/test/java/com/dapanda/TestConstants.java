@@ -17,6 +17,7 @@ public final class TestConstants {
 		public static final int CASH_5000 = 5000;
 		public static final float BUYING_DATA = 1F;
 		public static final float SELLING_DATA = 1F;
+		public static final String PROFILE_IMAGE_URL = "imageUrl.jpg";
 	}
 
 	public static final class Pagination {

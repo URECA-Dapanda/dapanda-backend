@@ -6,17 +6,8 @@ import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.CommonResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
-import com.dapanda.product.dto.request.CreateMobileDataRequest;
-import com.dapanda.product.dto.request.CreateWifiRequest;
-import com.dapanda.product.dto.request.ReadSellingProductRequest;
-import com.dapanda.product.dto.request.UpdateMobileDataRequest;
-import com.dapanda.product.dto.request.UpdateWifiRequest;
-import com.dapanda.product.dto.response.FindMarketPriceResponse;
-import com.dapanda.product.dto.response.MobileDataInfoResponse;
-import com.dapanda.product.dto.response.ReadSellingProductResponse;
-import com.dapanda.product.dto.response.UpdateMobileDataResponse;
-import com.dapanda.product.dto.response.UpdateWifiResponse;
-import com.dapanda.product.dto.response.WifiInfoResponse;
+import com.dapanda.product.dto.request.*;
+import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.ProductState;
 import com.dapanda.product.service.ProductService;
 import jakarta.validation.Valid;
@@ -25,15 +16,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -99,16 +82,19 @@ public class ProductController {
 
 	@GetMapping("/products/mobile-data/{productId}")
 	public CommonResponse<MobileDataInfoResponse> getMobileDataInfo(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable("productId") Long productId) {
 
-		return CommonResponse.success(productService.findMobileDataInfo(productId));
+		return CommonResponse.success(
+				productService.findMobileDataInfo(productId, userDetails.getId()));
 	}
 
 	@GetMapping("/products/wifi/{productId}")
 	public CommonResponse<WifiInfoResponse> getWifiInfo(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable("productId") Long productId) {
 
-		return CommonResponse.success(productService.findWifiInfo(productId));
+		return CommonResponse.success(productService.findWifiInfo(productId, userDetails.getId()));
 	}
 
 	@PostMapping("/products/mobile-data")

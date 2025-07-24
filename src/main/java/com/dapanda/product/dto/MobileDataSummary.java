@@ -13,10 +13,11 @@ public class MobileDataSummary extends ProductSummary {
 	private boolean splitType;
 	private LocalDateTime updatedAt;
 
-	public MobileDataSummary(Long id, int price, Long itemId, String memberName, float remainAmount,
+	public MobileDataSummary(Long id, int price, Long itemId, String memberName,
+			String profileImageUrl, float remainAmount,
 			int pricePer100MB, boolean splitType, LocalDateTime updatedAt) {
 
-		super(id, price, itemId, memberName);
+		super(id, price, itemId, memberName, profileImageUrl);
 		this.remainAmount = remainAmount;
 		this.pricePer100MB = pricePer100MB;
 		this.splitType = splitType;

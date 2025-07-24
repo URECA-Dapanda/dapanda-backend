@@ -79,13 +79,13 @@ public class ProductService {
 				ProductSortOption.from(productSortOption), open, latitude, longitude);
 	}
 
-	public MobileDataInfoResponse findMobileDataInfo(Long productId) {
+	public MobileDataInfoResponse findMobileDataInfo(Long productId, Long memberId) {
 
 		if (!productRepository.existsById(productId)) {
 			throw new GlobalException(ResultCode.PRODUCT_NOT_FOUND);
 		}
 
-		MobileDataInfoResponse response = productRepository.findMobileDataInfo(productId);
+		MobileDataInfoResponse response = productRepository.findMobileDataInfo(productId, memberId);
 
 		if (response == null) {
 			throw new GlobalException(ResultCode.INVALID_PRODUCT);
@@ -94,13 +94,13 @@ public class ProductService {
 		return response;
 	}
 
-	public WifiInfoResponse findWifiInfo(Long productId) {
+	public WifiInfoResponse findWifiInfo(Long productId, Long memberId) {
 
 		if (!productRepository.existsById(productId)) {
 			throw new GlobalException(ResultCode.PRODUCT_NOT_FOUND);
 		}
 
-		WifiInfoResponse response = productRepository.findWifiInfo(productId);
+		WifiInfoResponse response = productRepository.findWifiInfo(productId, memberId);
 
 		if (response == null) {
 			throw new GlobalException(ResultCode.INVALID_PRODUCT);
