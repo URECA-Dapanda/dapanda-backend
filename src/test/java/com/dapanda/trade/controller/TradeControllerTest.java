@@ -1242,7 +1242,7 @@ class TradeControllerTest {
 										fieldWithPath("data.trades.data[].tradeId").description(
 												"거래 아이디"),
 										fieldWithPath("data.trades.data[].tradeType").description(
-												"거래 타입 (MOBILE_DATA_SINGLE (데이터 일반 구매), MOBILE_DATA_COMPOSITE (데이터 자투리 구매), WIFI (와이파이))"),
+												"거래 타입 (데이터 일반 구매: PURCHASE_MOBILE_SINGLE, 데이터 자투리 구매: PURCHASE_MOBILE_COMPOSITE, 와이파이: PURCHASE_WIFI)"),
 										fieldWithPath("data.trades.data[].dataAmount").description(
 												"거래 데이터양 (데이터)"),
 										fieldWithPath("data.trades.data[].title").description(
@@ -1278,12 +1278,22 @@ class TradeControllerTest {
 				// given
 				Member member = memberRepository.save(MemberFixture.createMember1());
 
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileData(BigDecimal.valueOf(2.0),
+								BigDecimal.ZERO, PRICE_PER_100MB_300));
+				Product product = productRepository.save(
+						ProductFixture.createMobileDataProduct(PRICE_3000,
+								mobileData.getId(), member));
+
 				Trade wifiTrade = TradeFixture.createTradeWifi(member);
 				Trade mobileDataTrade = TradeFixture.createTradeMobileDataDefault(member);
 				Trade chargeTrade = TradeFixture.createTradeCharge(member);
 				Trade saleTrade = TradeFixture.createTradeSale(member);
 				tradeRepository.saveAll(
 						List.of(wifiTrade, mobileDataTrade, chargeTrade, saleTrade));
+
+				TradeDetails tradeDetails = tradeDetailsRepository.save(
+						TradeDetails.of(product, saleTrade));
 
 				int year = LocalDate.now().getYear();
 				int month = LocalDate.now().getMonthValue();
@@ -1321,6 +1331,9 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.data.cashHistorySummary.data[0].price").exists())
 						.andExpect(
 								jsonPath("$.data.cashHistorySummary.data[0].description").exists())
+						.andExpect(
+								jsonPath(
+										"$.data.cashHistorySummary.data[0].classification").exists())
 						.andExpect(jsonPath("$.data.cashHistorySummary.data[0].createdAt").exists())
 						.andExpect(jsonPath("$.data.cashHistorySummary.pageInfo").exists())
 						.andDo(print())
@@ -1363,16 +1376,19 @@ class TradeControllerTest {
 												"캐시 내역 리스트"),
 										fieldWithPath(
 												"data.cashHistorySummary.data[].tradeId").description(
-												"거래 아이디"),
+												"거래 아이디 ("),
 										fieldWithPath(
 												"data.cashHistorySummary.data[].tradeType").description(
-												"거래 타입"),
+												"거래 타입 (데이터 일반 구매: PURCHASE_MOBILE_SINGLE, 데이터 자투리 구매: PURCHASE_MOBILE_COMPOSITE, 와이파이: PURCHASE_WIFI, 판매: SALE, 충전: CHARGE, 출금: REFUND"),
 										fieldWithPath(
 												"data.cashHistorySummary.data[].price").description(
 												"거래 금액"),
 										fieldWithPath(
 												"data.cashHistorySummary.data[].description").description(
-												"거래 설명 (데이터: GB, 와이파이: 분, 나머지: '-')"),
+												"거래 설명"),
+										fieldWithPath(
+												"data.cashHistorySummary.data[].classification").description(
+												"분류 (구매, 판매, 충전, 출금)"),
 										fieldWithPath(
 												"data.cashHistorySummary.data[].createdAt").description(
 												"거래 생성 시각"),
