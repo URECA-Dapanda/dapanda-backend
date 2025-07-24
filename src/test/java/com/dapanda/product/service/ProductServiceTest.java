@@ -425,7 +425,7 @@ class ProductServiceTest {
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 1000, (long) i,
 									"회원" + i, "상품제목" + idx, 37.0 + idx, 127.0 + idx, ADDRESS,
-									3F, idx, true, UPDATED_AT));
+									1F + i, idx, true, UPDATED_AT));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -440,7 +440,7 @@ class ProductServiceTest {
 
 				// then
 				assertThat(result.getData()).hasSize(3);
-				assertThat(result.getData().get(0).getAverageRate()).isEqualTo(4.0);
+				assertThat(result.getData().get(0).getAverageRate()).isEqualTo(4.0F);
 			}
 
 			@Test
