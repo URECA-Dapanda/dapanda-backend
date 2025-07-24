@@ -1,5 +1,6 @@
 package com.dapanda.chat.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -8,24 +9,30 @@ import java.time.LocalDateTime;
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
-public class SendChatMessageResponse {
+public class ReadChatMessageHistoryResponse {
 
 	private Long chatMessageId;
-	private Long senderId;
 	private String message;
 	private LocalDateTime createdAt;
+	private boolean isMine;
 
-	public static SendChatMessageResponse of(
+	public static ReadChatMessageHistoryResponse of(
 			Long chatMessageId,
-			Long senderId,
 			String message,
-			LocalDateTime createdAt) {
+			LocalDateTime createdAt,
+			boolean isMine) {
 
-		return SendChatMessageResponse.builder()
+		return ReadChatMessageHistoryResponse.builder()
 				.chatMessageId(chatMessageId)
-				.senderId(senderId)
 				.message(message)
 				.createdAt(createdAt)
+				.isMine(isMine)
 				.build();
+	}
+
+	@JsonProperty("isMine")
+	public boolean getIsMine(){
+
+		return isMine;
 	}
 }
