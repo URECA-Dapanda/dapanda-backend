@@ -26,6 +26,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Comparator;
 import java.util.List;
 
 import static com.dapanda.TestConstants.Pagination.CHAT_MESSAGE_HISTORY_DEFAULT_SIZE;
@@ -330,7 +331,7 @@ class ChatControllerTest {
 
 				List<Integer> expectedSortedIds = chatMessages.stream()
 						.map(ChatMessage::getId)
-						.sorted() // ID 오름차순으로 정렬
+						.sorted(Comparator.reverseOrder()) // ID 오름차순으로 정렬
 						.limit(CHAT_MESSAGE_HISTORY_DEFAULT_SIZE) // 기본 페이지 크기만큼만 가져옴
 						.map(Long::intValue)
 						.toList();
