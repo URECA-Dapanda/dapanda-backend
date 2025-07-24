@@ -1,5 +1,6 @@
 package com.dapanda.chat.service;
 
+import com.dapanda.chat.dto.SendMessageDto;
 import com.dapanda.chat.dto.request.*;
 import com.dapanda.chat.dto.response.*;
 import com.dapanda.chat.entity.*;
@@ -142,7 +143,9 @@ public class ChatService {
 
 		chatRoom.updateLastMessage(chatMessage);
 
-		return CreateMessageResponse.of(chatMessage.getId(), request.message(), chatMessage.getCreatedAt());
+		SendMessageDto sendMessageDto = SendMessageDto.of(chatMessage.getId(), request.message(), chatMessage.getCreatedAt());
+
+		return CreateMessageResponse.of(sendMessageDto, sender.getId());
 	}
 
 	private void validateParticipant(Long chatRoomId, Long memberId){
@@ -151,5 +154,9 @@ public class ChatService {
 
 			throw new GlobalException(ResultCode.CHAT_ROOM_ACCESS_DENIED);
 		}
+	}
+
+	public void findChatMessageSenderId(Long chatMessageId) {
+
 	}
 }
