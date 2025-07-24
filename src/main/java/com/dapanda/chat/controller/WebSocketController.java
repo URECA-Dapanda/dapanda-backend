@@ -9,14 +9,13 @@ import com.dapanda.chat.service.ChatService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.*;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
-import java.util.Map;
+import java.util.Collections;
 
 @Slf4j
 @Controller
@@ -29,21 +28,15 @@ public class WebSocketController {
 	@MessageMapping("/{chatRoomId}")
 	public void sendMessage(
 			@DestinationVariable Long chatRoomId,
-			@Valid CreateChatMessageRequest request,
-			@AuthenticationPrincipal CustomUserDetails userDetails) {
+			@Payload @Valid CreateChatMessageRequest request,
+			@AuthenticationPrincipal CustomUserDetails userDetails,
+			SimpMessageHeaderAccessor accessor) {
 
 		CreateMessageResponse response = chatService.createChatMessage(chatRoomId, request, userDetails.getId());
-
-		MessageHeaders headers = new MessageHeaders(
-				Map.of(
-						MessagePrinciple.EXCEPT_MEMBER_ID.getKey(), userDetails.getId(),
-						MessagePrinciple.SENDER_ID.getKey(), response.getSenderId()
-				)
-		);
 
 		messageTemplate.convertAndSend(
 				WebSocketPath.SUB.getPath() + WebSocketPath.SLASH.getPath() + chatRoomId,
 				response.getSendMessageDto(),
-				headers);
+				Collections.singletonMap(MessagePrinciple.SIMP_SESSION_ID.getKey(), accessor.getSessionId()));
 	}
 }

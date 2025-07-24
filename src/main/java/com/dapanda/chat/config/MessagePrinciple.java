@@ -8,10 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum MessagePrinciple {
 
 	SIMP_MESSAGE_TYPE("simpMessageType"),
-	PAYLOAD("payload"),
-	NATIVE_HEADERS("nativeHeaders"),
-	EXCEPT_MEMBER_ID("exceptMemberId"),
-	SENDER_ID("senderId");
+	SIMP_SESSION_ID("simpSessionId");
 
 	private final String key;
 }

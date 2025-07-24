@@ -8,6 +8,7 @@ import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -25,40 +26,18 @@ public class OutboundInterceptor implements ChannelInterceptor {
 			return message;
 		}
 
-		Map<String, Object> nativeHeaders = (Map<String, Object>) headers.get(SimpMessageHeaderAccessor.NATIVE_HEADERS);
+		Object nativeHeaderObj = headers.get(SimpMessageHeaderAccessor.NATIVE_HEADERS);
+		if (!(nativeHeaderObj instanceof Map)) {
+			return message;
+		}
 
-		String senderId = getFirstNativeHeader(nativeHeaders, MessagePrinciple.SENDER_ID.getKey());
-		String exceptMemberId = getFirstNativeHeader(nativeHeaders, MessagePrinciple.EXCEPT_MEMBER_ID.getKey());
+		Object messageSenderSession = ((Map<String, List<String>>) headers.get(SimpMessageHeaderAccessor.NATIVE_HEADERS)).get(MessagePrinciple.SIMP_SESSION_ID.getKey()).get(0);
+		Object messageReceiverSession = headers.get(MessagePrinciple.SIMP_SESSION_ID.getKey());
 
-		if (senderId != null && senderId.equals(exceptMemberId)) {
+		if (messageSenderSession.equals(messageReceiverSession)) {
 
 			return null;
 		}
-
 		return message;
-	}
-
-	private String getFirstNativeHeader(Map<String, Object> headers, String key) {
-
-		if (headers == null) {
-
-			return null;
-		}
-
-		Object value = headers.get(key);
-
-		if (value instanceof Iterable<?> iterable) {
-
-			for (Object v : iterable) {
-
-				return v != null ? v.toString() : null;
-			}
-		}
-		if (value != null) {
-
-			return value.toString();
-		}
-
-		return null;
 	}
 }
