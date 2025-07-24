@@ -1,4 +1,4 @@
-package com.dapanda.product.entity;
+package com.dapanda.common.entity;
 
 import java.util.Arrays;
 

@@ -107,4 +107,9 @@ public class Member extends BaseEntity {
 		this.reviewCount = reviewCount;
 		this.averageRating = averageRating;
 	}
+
+	public void updateProfileImage(String profileImageUrl) {
+
+		this.profileImageUrl = profileImageUrl;
+	}
 }
