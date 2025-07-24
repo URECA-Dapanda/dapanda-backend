@@ -348,15 +348,15 @@ public class ChatServiceTest {
 						chatRoom.getId()
 				);
 
-				List<SendChatMessageResponse> response = new ArrayList<>();
+				List<ReadChatMessageHistoryResponse> response = new ArrayList<>();
 
-				for (ChatMessage chatMessage : chatMessageList) {
+				for (int i = 0; i < chatMessageList.size(); i++) {
 
-					response.add(SendChatMessageResponse.of(
-							chatMessage.getId(),
-							chatMessage.getMember().getId(),
-							chatMessage.getMessage(),
-							chatMessage.getCreatedAt())
+					response.add(ReadChatMessageHistoryResponse.of(
+							chatMessageList.get(i).getId(),
+							chatMessageList.get(i).getMessage(),
+							chatMessageList.get(i).getCreatedAt(),
+							i % 2 == 0)
 					);
 				}
 
@@ -364,7 +364,7 @@ public class ChatServiceTest {
 				given(chatMessageRepository.findChatMessageHistory(request)).willReturn(response);
 
 				//when
-				CursorPageResponse<SendChatMessageResponse> pageResponse = chatService.readChatMessageHistory(request);
+				CursorPageResponse<ReadChatMessageHistoryResponse> pageResponse = chatService.readChatMessageHistory(request);
 
 				//then
 				assertThat(pageResponse.getData().size()).isEqualTo(CHAT_MESSAGE_HISTORY_DEFAULT_SIZE);
