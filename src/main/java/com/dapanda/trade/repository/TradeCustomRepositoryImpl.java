@@ -1,5 +1,6 @@
 package com.dapanda.trade.repository;
 
+import static com.dapanda.product.entity.QMobileData.mobileData;
 import static com.dapanda.product.entity.QProduct.product;
 import static com.dapanda.product.entity.QWifi.wifi;
 import static com.dapanda.trade.entity.QTrade.trade;
@@ -83,16 +84,56 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 						trade.id,
 						trade.tradeType,
 						trade.tradingPrice,
+
+						// description
 						new CaseBuilder()
-								.when(trade.tradeType.in(TradeType.MOBILE_PURCHASE_SINGLE,
-										TradeType.MOBILE_PURCHASE_COMPOSITE))
-								// SQL 문자열 연결 연산자 이용
-								.then(Expressions.stringTemplate("'' || {0}",
+								.when(trade.tradeType.eq(TradeType.PURCHASE_MOBILE_SINGLE))
+								.then(Expressions.stringTemplate(
+										"CONCAT('데이터 일반 구매 ', ROUND({0}, 1), 'GB')",
 										trade.dataAmount.coalesce(BigDecimal.ZERO)))
-								.when(trade.tradeType.eq(TradeType.WIFI))
-								.then(Expressions.stringTemplate("'' || {0}",
+								.when(trade.tradeType.eq(TradeType.PURCHASE_MOBILE_COMPOSITE))
+								.then(Expressions.stringTemplate(
+										"CONCAT('데이터 자투리 구매 ', ROUND({0}, 1), 'GB')",
+										trade.dataAmount.coalesce(BigDecimal.ZERO)))
+
+								.when(trade.tradeType.eq(TradeType.PURCHASE_WIFI))
+								.then(Expressions.stringTemplate("concat('와이파이 구매 ', {0}, '분')",
 										trade.timeAmount.coalesce(0)))
+
+								.when(trade.tradeType.eq(TradeType.SALE_MOBILE_DATA)
+										.and(mobileData.isSplitType.isTrue()))
+								.then(Expressions.stringTemplate(
+										"concat('데이터 분할 판매 ', ROUND({0}, 1), 'GB')",
+										trade.dataAmount.coalesce(BigDecimal.ZERO)))
+
+								.when(trade.tradeType.eq(TradeType.SALE_MOBILE_DATA)
+										.and(mobileData.isSplitType.isFalse()))
+								.then(Expressions.stringTemplate(
+										"concat('데이터 일반 판매 ', ROUND({0}, 1), 'GB')",
+										trade.dataAmount.coalesce(BigDecimal.ZERO)))
+
+								.when(trade.tradeType.eq(TradeType.SALE_WIFI))
+								.then(Expressions.stringTemplate("concat('와이파이 ', {0}, '분')",
+										trade.timeAmount.coalesce(0)))
+
 								.otherwise("-"),
+
+						// classification
+						new CaseBuilder()
+								.when(trade.tradeType.in(
+										TradeType.PURCHASE_MOBILE_SINGLE,
+										TradeType.PURCHASE_MOBILE_COMPOSITE,
+										TradeType.PURCHASE_WIFI))
+								.then("구매")
+								.when(trade.tradeType.in(TradeType.SALE_MOBILE_DATA,
+										TradeType.SALE_WIFI))
+								.then("판매")
+								.when(trade.tradeType.eq(TradeType.CHARGE))
+								.then("충전")
+								.when(trade.tradeType.eq(TradeType.REFUND))
+								.then("출금")
+								.otherwise("-"),
+
 						trade.createdAt
 				))
 				.from(trade)
@@ -100,6 +141,8 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 				.leftJoin(tradeDetails.product, product)
 				.leftJoin(wifi)
 				.on(product.itemType.eq(ItemType.WIFI).and(product.itemId.eq(wifi.id)))
+				.leftJoin(mobileData)
+				.on(product.itemType.eq(ItemType.MOBILE_DATA).and(product.itemId.eq(mobileData.id)))
 				.where(
 						eqMemberId(memberId),
 						ltCursorId(cursorId),
@@ -131,8 +174,8 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 				.from(trade)
 				.where(
 						trade.member.id.eq(memberId),
-						trade.tradeType.in(TradeType.MOBILE_PURCHASE_SINGLE,
-								TradeType.MOBILE_PURCHASE_COMPOSITE, TradeType.WIFI),
+						trade.tradeType.in(TradeType.PURCHASE_MOBILE_SINGLE,
+								TradeType.PURCHASE_MOBILE_COMPOSITE, TradeType.PURCHASE_WIFI),
 						trade.createdAt.between(startDate, endDate)
 				)
 				.fetchOne();
@@ -142,7 +185,7 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 				.from(trade)
 				.where(
 						trade.member.id.eq(memberId),
-						trade.tradeType.in(TradeType.SALE),
+						trade.tradeType.in(TradeType.SALE_MOBILE_DATA, TradeType.SALE_WIFI),
 						trade.createdAt.between(startDate, endDate)
 				)
 				.fetchOne();
@@ -184,9 +227,9 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 	private BooleanExpression isValidTradeType() {
 
 		return trade.tradeType.in(
-				TradeType.MOBILE_PURCHASE_SINGLE,
-				TradeType.MOBILE_PURCHASE_COMPOSITE,
-				TradeType.WIFI
+				TradeType.PURCHASE_MOBILE_SINGLE,
+				TradeType.PURCHASE_MOBILE_COMPOSITE,
+				TradeType.PURCHASE_WIFI
 		);
 	}
 
