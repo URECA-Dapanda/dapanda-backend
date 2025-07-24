@@ -56,6 +56,6 @@ public class Plan extends BaseEntity {
 
 	public void deductMobileData(BigDecimal dataAmount) {
 
-		this.providingDataAmount.subtract(dataAmount);
+		this.providingDataAmount = this.providingDataAmount.subtract(dataAmount);
 	}
 }

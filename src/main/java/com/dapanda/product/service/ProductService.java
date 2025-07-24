@@ -279,6 +279,7 @@ public class ProductService {
 			throw new GlobalException(ResultCode.INVALID_DATA_TRANSFER_AMOUNT);
 		}
 
+		System.out.println("member.getSellingData() = " + member.getSellingData());
 		if (member.getSellingData().add(changedDataAmount)
 				.compareTo(BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
 			throw new GlobalException(ResultCode.EXCEEDED_TRANSFER_LIMIT);

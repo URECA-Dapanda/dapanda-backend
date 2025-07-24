@@ -104,7 +104,7 @@ class PlanServiceTest {
 
 				when(planRepository.findByMemberId(memberId)).thenReturn(Optional.of(plan));
 				when(plan.getName()).thenReturn("프리미엄");
-				when(plan.getProvidingDataAmount()).thenReturn(BigDecimal.valueOf(30));
+				when(plan.getProvidingDataAmount()).thenReturn(BigDecimal.valueOf(30.0));
 				when(plan.getMonthlyPrice()).thenReturn(25000);
 
 				// when
@@ -113,7 +113,8 @@ class PlanServiceTest {
 				// then
 				assertThat(result).isNotNull();
 				assertThat(result.getName()).isEqualTo("프리미엄");
-				assertThat(result.getProvidingDataAmount()).isEqualTo(30.0f);
+				assertThat(result.getProvidingDataAmount()).isEqualByComparingTo(
+						BigDecimal.valueOf(30.0));
 				assertThat(result.getMonthlyPrice()).isEqualTo(25000);
 				verify(planRepository, times(1)).findByMemberId(memberId);
 			}

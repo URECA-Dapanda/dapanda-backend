@@ -80,7 +80,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		if (hasNext) {
 			content.remove(size);
 		}
-		Long nextCursorId = hasNext ? content.get(content.size() - 1).getId() : null;
+		Long nextCursorId = hasNext ? content.get(content.size() - 1).getProductId() : null;
 
 		return CursorPageResponse.of(content,
 				CursorPageResponse.PageInfo.of(nextCursorId, hasNext, content.size()));
@@ -158,7 +158,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		if (hasNext) {
 			content.remove(size);
 		}
-		Long nextCursorId = hasNext ? content.get(content.size() - 1).getId() : null;
+		Long nextCursorId = hasNext ? content.get(content.size() - 1).getProductId() : null;
 
 		return CursorPageResponse.of(content,
 				CursorPageResponse.PageInfo.of(nextCursorId, hasNext, content.size()));
@@ -330,7 +330,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.price,
 						Expressions.constant(0),
 						mobileData.remainAmount,
-						Expressions.constant(0f),
+						Expressions.constant(BigDecimal.valueOf(0)),
 						mobileData.pricePer100MB,
 						mobileData.isSplitType,
 						product.updatedAt

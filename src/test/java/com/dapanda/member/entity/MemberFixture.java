@@ -8,52 +8,77 @@ public class MemberFixture {
 
 	public static Member createMember1() {
 
-		return Member.ofOAuthMember(
+		Member member = Member.ofOAuthMember(
 				"dummy1@email.com",
 				"dummy1Name",
 				OAuthProvider.KAKAO,
 				MemberRole.ROLE_MEMBER
 		);
+
+		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
+		ReflectionTestUtils.setField(member, "sellingData", BigDecimal.ZERO);
+
+		return member;
 	}
 
 	public static Member createMember2() {
 
-		return Member.ofOAuthMember(
+		Member member = Member.ofOAuthMember(
 				"dummy2@email.com",
 				"dummy2Name",
 				OAuthProvider.KAKAO,
 				MemberRole.ROLE_MEMBER
 		);
+
+		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
+		ReflectionTestUtils.setField(member, "sellingData", BigDecimal.ZERO);
+
+		return member;
 	}
 
 	public static Member createMember3() {
 
-		return Member.ofOAuthMember(
+		Member member = Member.ofOAuthMember(
 				"dummy3@email.com",
 				"dummy3Name",
 				OAuthProvider.KAKAO,
 				MemberRole.ROLE_MEMBER
 		);
+
+		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
+		ReflectionTestUtils.setField(member, "sellingData", BigDecimal.ZERO);
+
+		return member;
 	}
 
 	public static Member createMember4() {
 
-		return Member.ofOAuthMember(
+		Member member = Member.ofOAuthMember(
 				"dummy4@email.com",
 				"dummy4Name",
 				OAuthProvider.KAKAO,
 				MemberRole.ROLE_MEMBER
 		);
+
+		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
+		ReflectionTestUtils.setField(member, "sellingData", BigDecimal.ZERO);
+
+		return member;
 	}
 
 	public static Member createMember5() {
 
-		return Member.ofOAuthMember(
+		Member member = Member.ofOAuthMember(
 				"dummy5@email.com",
 				"dummy5Name",
 				OAuthProvider.KAKAO,
 				MemberRole.ROLE_MEMBER
 		);
+
+		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
+		ReflectionTestUtils.setField(member, "sellingData", BigDecimal.ZERO);
+
+		return member;
 	}
 
 	public static Member createMember1WithId(Long memberId) {
@@ -61,6 +86,8 @@ public class MemberFixture {
 		Member member = createMember1();
 
 		ReflectionTestUtils.setField(member, "id", memberId);
+		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
+		ReflectionTestUtils.setField(member, "sellingData", BigDecimal.ZERO);
 
 		return member;
 	}
@@ -70,6 +97,8 @@ public class MemberFixture {
 		Member member = createMember2();
 
 		ReflectionTestUtils.setField(member, "id", memberId);
+		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
+		ReflectionTestUtils.setField(member, "sellingData", BigDecimal.ZERO);
 
 		return member;
 	}
@@ -77,7 +106,9 @@ public class MemberFixture {
 	public static Member createMemberWithSellingDataWithId(long memberId, BigDecimal sellingData) {
 
 		Member member = createMember1WithId(memberId);
+
 		ReflectionTestUtils.setField(member, "sellingData", sellingData);  // 강제로 세팅
+		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
 
 		return member;
 	}
@@ -85,7 +116,9 @@ public class MemberFixture {
 	public static Member createMemberWithSellingData(BigDecimal sellingData) {
 
 		Member member = createMember1();
+
 		ReflectionTestUtils.setField(member, "sellingData", sellingData);  // 강제로 세팅
+		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
 
 		return member;
 	}

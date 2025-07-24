@@ -402,7 +402,7 @@ class ProductControllerTest {
 										fieldWithPath("message").description("처리 결과 메시지"),
 										fieldWithPath("data").description("응답 데이터 (에러시 반환되지 않음)"),
 										fieldWithPath("data.data").description("상품 데이터 배열"),
-										fieldWithPath("data.data[].id").description(
+										fieldWithPath("data.data[].productId").description(
 												"상품 아이디"),
 										fieldWithPath("data.data[].price").description(
 												"상품 가격"),
@@ -547,7 +547,7 @@ class ProductControllerTest {
 										fieldWithPath("message").description("처리 결과 메시지"),
 										fieldWithPath("data").description("응답 데이터 (에러시 반환되지 않음)"),
 										fieldWithPath("data.data").description("상품 데이터 배열"),
-										fieldWithPath("data.data[].id").description(
+										fieldWithPath("data.data[].productId").description(
 												"상품 아이디"),
 										fieldWithPath("data.data[].price").description(
 												"상품 가격"),
@@ -684,7 +684,7 @@ class ProductControllerTest {
 
 				assertThat(actualResponse.getProductId()).isEqualTo(PRODUCT_ID);
 				assertThat(actualResponse.getItemId()).isEqualTo(mobileData.getId());
-				assertThat(actualResponse.getRemainAmount()).isEqualTo(REMAIN_AMOUNT_1);
+				assertThat(actualResponse.getRemainAmount()).isEqualByComparingTo(REMAIN_AMOUNT_1);
 				assertThat(actualResponse.getPricePer100MB()).isEqualTo(PRICE_PER_100MB_300);
 			}
 		}
@@ -928,9 +928,9 @@ class ProductControllerTest {
 
 				assertThat(updatedProduct.getId()).isEqualTo(product.getId());
 				assertThat(updatedProduct.getPrice()).isEqualTo(NEW_PRICE_9000);
-				assertThat(updatedMobileData.getDataAmount()).isEqualTo(
+				assertThat(updatedMobileData.getDataAmount()).isEqualByComparingTo(
 						BEFORE_DATA_AMOUNT.add(CHANGED_AMOUNT));
-				assertThat(updatedMobileData.getRemainAmount()).isEqualTo(
+				assertThat(updatedMobileData.getRemainAmount()).isEqualByComparingTo(
 						BEFORE_REMAIN_AMOUNT.add(CHANGED_AMOUNT));
 			}
 		}
