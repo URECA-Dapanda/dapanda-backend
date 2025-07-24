@@ -7,18 +7,13 @@ import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.entity.ItemType;
-import com.dapanda.trade.dto.CashHistoryMonthlySummary;
-import com.dapanda.trade.dto.CashHistorySummary;
-import com.dapanda.trade.dto.PurchaseHistorySummary;
+import com.dapanda.trade.dto.*;
 import com.dapanda.trade.entity.TradeType;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.math.BigDecimal;
+import java.time.*;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -37,7 +32,7 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 				.select(Projections.constructor(PurchaseHistorySummary.class,
 						trade.id,
 						trade.tradeType,
-						trade.dataAmount.coalesce(0f),
+						trade.dataAmount.coalesce(new BigDecimal("0")),
 						wifi.title.coalesce(""),
 						trade.createdAt
 				))
@@ -93,7 +88,7 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 										TradeType.MOBILE_PURCHASE_COMPOSITE))
 								// SQL 문자열 연결 연산자 이용
 								.then(Expressions.stringTemplate("'' || {0}",
-										trade.dataAmount.coalesce(0F)))
+										trade.dataAmount.coalesce(BigDecimal.ZERO)))
 								.when(trade.tradeType.eq(TradeType.WIFI))
 								.then(Expressions.stringTemplate("'' || {0}",
 										trade.timeAmount.coalesce(0)))

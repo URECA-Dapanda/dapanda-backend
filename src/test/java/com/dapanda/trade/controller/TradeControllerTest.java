@@ -41,6 +41,7 @@ import com.dapanda.trade.repository.TradeRepository;
 import com.dapanda.trade.service.TradeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -189,13 +190,16 @@ class TradeControllerTest {
 				Member afterSeller = memberRepository.findById(seller.getId()).orElseThrow();
 
 				assertThat(soldOutProduct.getState()).isEqualTo(ProductState.SOLD_OUT);
-				assertThat(soldOutMobileData.getRemainAmount()).isEqualTo(0);
-				assertThat(afterBuyerPlan.getProvidingDataAmount()).isEqualTo(
-						PROVIDING_DATA_AMOUNT_10 + mobileData.getDataAmount());
-				assertThat(afterSellerPlan.getProvidingDataAmount()).isEqualTo(
-						PROVIDING_DATA_AMOUNT_10 - mobileData.getDataAmount());
-				assertThat(afterBuyer.getBuyingData()).isEqualTo(mobileData.getDataAmount());
-				assertThat(afterSeller.getSellingData()).isEqualTo(mobileData.getDataAmount());
+				assertThat(soldOutMobileData.getRemainAmount()).isEqualByComparingTo(
+						BigDecimal.ZERO);
+				assertThat(afterBuyerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+						PROVIDING_DATA_AMOUNT_10.add(mobileData.getDataAmount()));
+				assertThat(afterSellerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+						PROVIDING_DATA_AMOUNT_10.subtract(mobileData.getDataAmount()));
+				assertThat(afterBuyer.getBuyingData()).isEqualByComparingTo(
+						mobileData.getDataAmount());
+				assertThat(afterSeller.getSellingData()).isEqualByComparingTo(
+						mobileData.getDataAmount());
 			}
 
 			@Test
@@ -261,14 +265,14 @@ class TradeControllerTest {
 				Member afterSeller = memberRepository.findById(seller.getId()).orElseThrow();
 
 				assertThat(soldOutProduct.getState()).isEqualTo(ProductState.ACTIVE);
-				assertThat(soldOutMobileData.getRemainAmount()).isEqualTo(
-						DATA_AMOUNT_2 - DATA_AMOUNT_1);
-				assertThat(afterBuyerPlan.getProvidingDataAmount()).isEqualTo(
-						PROVIDING_DATA_AMOUNT_10 + DATA_AMOUNT_1);
-				assertThat(afterSellerPlan.getProvidingDataAmount()).isEqualTo(
-						PROVIDING_DATA_AMOUNT_10 - DATA_AMOUNT_1);
-				assertThat(afterBuyer.getBuyingData()).isEqualTo(DATA_AMOUNT_1);
-				assertThat(afterSeller.getSellingData()).isEqualTo(DATA_AMOUNT_1);
+				assertThat(soldOutMobileData.getRemainAmount()).isEqualByComparingTo(
+						DATA_AMOUNT_2.subtract(DATA_AMOUNT_1));
+				assertThat(afterBuyerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+						PROVIDING_DATA_AMOUNT_10.add(DATA_AMOUNT_1));
+				assertThat(afterSellerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+						PROVIDING_DATA_AMOUNT_10.subtract(DATA_AMOUNT_1));
+				assertThat(afterBuyer.getBuyingData()).isEqualByComparingTo(DATA_AMOUNT_1);
+				assertThat(afterSeller.getSellingData()).isEqualByComparingTo(DATA_AMOUNT_1);
 			}
 		}
 
@@ -514,7 +518,7 @@ class TradeControllerTest {
 				List<Product> products = Arrays.asList(product1, product2);
 				productRepository.saveAll(products);
 
-				float dataAmount = DATA_AMOUNT_2;
+				BigDecimal dataAmount = DATA_AMOUNT_2;
 
 				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
@@ -572,7 +576,7 @@ class TradeControllerTest {
 				FindMobileDataScrapResponse response = tradeService.findMobileDataScrap(
 						dataAmount, buyer.getId());
 
-				assertThat(response.getTotalAmount()).isEqualTo(DATA_AMOUNT_2);
+				assertThat(response.getTotalAmount()).isEqualByComparingTo(DATA_AMOUNT_2);
 				assertThat(response.getTotalPrice()).isEqualTo(
 						PRICE_1500 + PRICE_3000); // 조합된 상품의 총 가격
 				assertThat(response.getCombinations().size()).isEqualTo(2); // 조합된 상품 개수 확인
@@ -583,14 +587,16 @@ class TradeControllerTest {
 				assertThat(result1.getProductId()).isEqualTo(product1.getId());
 				assertThat(result1.getMobileDataId()).isEqualTo(mobileData1.getId());
 				assertThat(result1.getPrice()).isEqualTo(product1.getPrice());
-				assertThat(result1.getRemainAmount()).isEqualTo(mobileData1.getRemainAmount());
+				assertThat(result1.getRemainAmount()).isEqualByComparingTo(
+						mobileData1.getRemainAmount());
 				assertThat(result1.getPricePer100MB()).isEqualTo(mobileData1.getPricePer100MB());
 				assertThat(result1.isSplitType()).isEqualTo(mobileData1.isSplitType());
 
 				assertThat(result2.getProductId()).isEqualTo(product2.getId());
 				assertThat(result2.getMobileDataId()).isEqualTo(mobileData2.getId());
 				assertThat(result2.getPrice()).isEqualTo(product2.getPrice());
-				assertThat(result2.getRemainAmount()).isEqualTo(mobileData2.getRemainAmount());
+				assertThat(result2.getRemainAmount()).isEqualByComparingTo(
+						mobileData2.getRemainAmount());
 				assertThat(result2.getPricePer100MB()).isEqualTo(mobileData2.getPricePer100MB());
 				assertThat(result2.isSplitType()).isEqualTo(mobileData2.isSplitType());
 			}
@@ -602,7 +608,7 @@ class TradeControllerTest {
 				// given
 				Member buyer = memberRepository.save(MemberFixture.createMember1());
 
-				float dataAmount = DATA_AMOUNT_2;
+				BigDecimal dataAmount = DATA_AMOUNT_2;
 
 				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
@@ -635,7 +641,7 @@ class TradeControllerTest {
 				FindMobileDataScrapResponse response = tradeService.findMobileDataScrap(
 						dataAmount, buyer.getId());
 
-				assertThat(response.getTotalAmount()).isEqualTo(0);
+				assertThat(response.getTotalAmount()).isEqualByComparingTo(BigDecimal.ZERO);
 				assertThat(response.getTotalPrice()).isEqualTo(0); // 조합된 상품의 총 가격
 				assertThat(response.getCombinations().size()).isEqualTo(0); // 조합된 상품 개수 확인
 			}
@@ -750,16 +756,19 @@ class TradeControllerTest {
 				MobileData updatedMobileData2 = mobileDataRepository.findById(mobileData2.getId())
 						.orElseThrow();
 
-				assertThat(updatedMobileData1.getRemainAmount()).isEqualTo(0);
-				assertThat(updatedMobileData2.getRemainAmount()).isEqualTo(0);
+				assertThat(updatedMobileData1.getRemainAmount()).isEqualByComparingTo(
+						BigDecimal.ZERO);
+				assertThat(updatedMobileData2.getRemainAmount()).isEqualByComparingTo(
+						BigDecimal.ZERO);
 
 				assertThat(updatedBuyer.getCash()).isEqualTo(CASH_5000 - request.totalPrice());
-				assertThat(updatedBuyer.getBuyingData()).isEqualTo(request.totalAmount());
+				assertThat(updatedBuyer.getBuyingData()).isEqualByComparingTo(
+						request.totalAmount());
 
-				assertThat(updatedSeller1.getSellingData()).isEqualTo(DATA_AMOUNT_1);
+				assertThat(updatedSeller1.getSellingData()).isEqualByComparingTo(DATA_AMOUNT_1);
 				assertThat(updatedSeller1.getCash()).isEqualTo(PRICE_1500);
 
-				assertThat(updatedSeller2.getSellingData()).isEqualTo(DATA_AMOUNT_1);
+				assertThat(updatedSeller2.getSellingData()).isEqualByComparingTo(DATA_AMOUNT_1);
 				assertThat(updatedSeller2.getCash()).isEqualTo(PRICE_3000);
 			}
 		}
@@ -871,9 +880,9 @@ class TradeControllerTest {
 				memberRepository.saveAll(members);
 
 				MobileData mobileData1 = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
-						0, PRICE_PER_100MB_150);
+						BigDecimal.ZERO, PRICE_PER_100MB_150);
 				MobileData mobileData2 = MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2,
-						0, PRICE_PER_100MB_300);
+						BigDecimal.ZERO, PRICE_PER_100MB_300);
 				List<MobileData> mobileDataList = Arrays.asList(mobileData1, mobileData2);
 				mobileDataRepository.saveAll(mobileDataList);
 

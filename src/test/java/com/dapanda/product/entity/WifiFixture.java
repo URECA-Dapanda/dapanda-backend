@@ -1,9 +1,24 @@
 package com.dapanda.product.entity;
 
 import com.dapanda.product.dto.WifiSummary;
+import org.springframework.test.util.ReflectionTestUtils;
+
 import java.time.LocalDateTime;
 
 public class WifiFixture {
+
+	public static Wifi createWifi() {
+
+		return Wifi.of(
+				"와이파이1",
+				"콘텐츠1",
+				123d,
+				1234d,
+				"주소1",
+				LocalDateTime.now(),
+				LocalDateTime.now()
+		);
+	}
 
 	public static Wifi createWifi(String title, String content, double latitude, double longitude,
 			String address, LocalDateTime startTime, LocalDateTime endTime) {
@@ -39,5 +54,22 @@ public class WifiFixture {
 				isOpen,
 				updatedAt
 		);
+	}
+
+	public static Wifi createWifiWithId(Long wifiId) {
+
+		Wifi wifi = Wifi.of(
+				"와이파이1",
+				"콘텐츠1",
+				123d,
+				1234d,
+				"주소1",
+				LocalDateTime.now(),
+				LocalDateTime.now()
+		);
+
+		ReflectionTestUtils.setField(wifi, "id", wifiId);
+
+		return wifi;
 	}
 }

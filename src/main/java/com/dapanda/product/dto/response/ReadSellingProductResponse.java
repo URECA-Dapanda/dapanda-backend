@@ -3,9 +3,9 @@ package com.dapanda.product.dto.response;
 import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.ProductState;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
-
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -19,9 +19,9 @@ public class ReadSellingProductResponse {
 
 	// Mobile Data
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private Float dataAmount;
+	private BigDecimal dataAmount;
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private Float remainAmount;
+	private BigDecimal remainAmount;
 
 	// WIFI
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -36,8 +36,8 @@ public class ReadSellingProductResponse {
 			Long productId,
 			ItemType type,
 			ProductState state,
-			Float dataAmount,
-			Float remainAmount,
+			BigDecimal dataAmount,
+			BigDecimal remainAmount,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt) {
 

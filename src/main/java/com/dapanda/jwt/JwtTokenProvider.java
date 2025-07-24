@@ -4,23 +4,18 @@ import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.auth.service.CustomUserDetailsService;
 import com.dapanda.member.entity.Member;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import java.security.Key;
-import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.security.Key;
+import java.util.Date;
 
 @Slf4j
 @Component
@@ -40,9 +35,9 @@ public class JwtTokenProvider {
 
 		return Jwts.builder()
 				.setSubject(member.getEmail())
-				.claim("role", member.getRole().name())
-				.claim("id", member.getId())
-				.claim("provider", member.getProvider())
+				.claim(JwtClaim.ROLE.getClaim(), member.getRole().name())
+				.claim(JwtClaim.ID.getClaim(), member.getId())
+				.claim(JwtClaim.PROVIDER.getClaim(), member.getProvider())
 				.setIssuedAt(new Date())
 				.setExpiration(new Date(
 						System.currentTimeMillis() + jwtProperties.getAccessTokenExpiration()))
@@ -56,7 +51,7 @@ public class JwtTokenProvider {
 
 		return Jwts.builder()
 				.setSubject(member.getEmail())
-				.claim("provider", member.getProvider().name())
+				.claim(JwtClaim.PROVIDER.getClaim(), member.getProvider().name())
 				.setIssuedAt(new Date())
 				.setExpiration(new Date(
 						System.currentTimeMillis() + jwtProperties.getRefreshTokenExpiration()))
@@ -112,7 +107,7 @@ public class JwtTokenProvider {
 
 	public OAuthProvider getProviderFromToken(String token) {
 
-		String raw = getClaims(token).get("provider", String.class);
+		String raw = getClaims(token).get(JwtClaim.PROVIDER.getClaim(), String.class);
 
 		return OAuthProvider.valueOf(raw);
 	}

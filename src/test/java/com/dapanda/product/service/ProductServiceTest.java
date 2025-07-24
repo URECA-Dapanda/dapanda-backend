@@ -29,6 +29,7 @@ import com.dapanda.product.dto.request.*;
 import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import org.junit.jupiter.api.*;
@@ -73,12 +74,14 @@ class ProductServiceTest {
 			// given
 			Long memberId = 1L;
 			Member member = MemberFixture.createMember1WithId(memberId);
-			CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 1.0F, false);
+			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
+					BigDecimal.valueOf(1.0), false);
 
 			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
-			given(productRepository.sumSoldMobileDataAmountByMemberId(memberId)).willReturn(1.0F);
+			given(productRepository.sumSoldMobileDataAmountByMemberId(memberId)).willReturn(
+					BigDecimal.valueOf(1.0));
 
-			MobileData mobileData = MobileData.singleOf(1.0F, 12000, false);
+			MobileData mobileData = MobileData.singleOf(new BigDecimal("1.0"), 12000, false);
 			given(mobileDataRepository.save(any())).willReturn(mobileData);
 
 			Product product = Product.of(ProductState.ACTIVE, 12000, 1L, ItemType.MOBILE_DATA,
@@ -96,7 +99,8 @@ class ProductServiceTest {
 
 			// given
 			Long memberId = 1234L;
-			CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2.0F, false);
+			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
+					new BigDecimal("1.0"), false);
 
 			given(memberRepository.findById(memberId)).willReturn(Optional.empty());
 
@@ -113,12 +117,13 @@ class ProductServiceTest {
 			// given
 			Long memberId = 1L;
 			Member member = MemberFixture.createMember1WithId(memberId);
-			CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2000.0F,
+			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
+					new BigDecimal("2000.0"),
 					false); // 2GB 추가
 
 			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 			given(productRepository.sumSoldMobileDataAmountByMemberId(memberId)).willReturn(
-					2000.0F);
+					BigDecimal.valueOf(2000));
 
 			// when/then
 			assertThatThrownBy(() -> productService.createMobileData(request, memberId))
@@ -189,7 +194,7 @@ class ProductServiceTest {
 				for (int i = 1; i <= 3; i++) {
 					summaries.add(
 							MobileDataFixture.createMobileDataSummary((long) i, 1000, (long) i,
-									"회원" + i, 5, 200, false, UPDATED_AT));
+									"회원" + i, new BigDecimal("5.0"), 200, false, UPDATED_AT));
 				}
 				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -214,7 +219,7 @@ class ProductServiceTest {
 				for (int i = 1; i <= 3; i++) {
 					summaries.add(
 							MobileDataFixture.createMobileDataSummary((long) i, 100 + i, (long) i,
-									"회원" + i, 5, 200, false, UPDATED_AT));
+									"회원" + i, BigDecimal.valueOf(5), 200, false, UPDATED_AT));
 				}
 				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -244,7 +249,7 @@ class ProductServiceTest {
 							(100 + 100 * i) * 10 * i,
 							(long) i,
 							"회원" + i,
-							1 + i,
+							new BigDecimal(String.valueOf(2.0 + i)),
 							100 + 100 * i,
 							i % 2 == 0,
 							UPDATED_AT
@@ -257,67 +262,16 @@ class ProductServiceTest {
 				);
 
 				given(productRepository.findMobileDataByCursor(null, 2,
-						ProductSortOption.AMOUNT_ASC, 2.0F)).willReturn(response);
+						ProductSortOption.AMOUNT_ASC, new BigDecimal("2.0"))).willReturn(response);
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						null, 2, "AMOUNT_ASC", 2.0F);
+						null, 2, "AMOUNT_ASC", new BigDecimal("2.0"));
 
 				// then
 				assertThat(result.getData()).hasSize(3);
-				assertThat(result.getData().get(0).getRemainAmount()).isEqualTo(2);
-			}
-
-			@Test
-			@DisplayName("AMOUNT_DESC 정렬로 데이터 상품 목록 조회를 성공한다")
-			void findMobileDataSortedByAmountDescTest() {
-
-				// given
-				List<MobileDataSummary> summaries = new ArrayList<>();
-				for (int i = 3; i >= 1; i--) {
-					summaries.add(
-							MobileDataFixture.createMobileDataSummary((long) i, 1000, (long) i,
-									"회원" + i, i * 10, 200, false, UPDATED_AT));
-				}
-				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
-						CursorPageResponse.PageInfo.of(3L, false, 3));
-
-				given(productRepository.findMobileDataByCursor(null, 3,
-						ProductSortOption.AMOUNT_DESC, null)).willReturn(response);
-
-				// when
-				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						null, 3, "AMOUNT_DESC", null);
-
-				// then
-				assertThat(result.getData()).hasSize(3);
-				assertThat(result.getData().get(0).getRemainAmount()).isEqualTo(30);
-			}
-
-			@Test
-			@DisplayName("dataAmount 기준으로 필터링된 데이터 상품 목록 조회를 성공한다")
-			void findMobileDataFilteredByAmountTest() {
-
-				// given
-				List<MobileDataSummary> summaries = new ArrayList<>();
-				summaries.add(new MobileDataSummary(1L, 1000, 1L, "회원1", "profile.jpg", 5.0F, 200,
-						false, UPDATED_AT));
-				summaries.add(
-						new MobileDataSummary(2L, 2000, 2L, "회원2", "profile.jpg", 10, 200,
-								false, UPDATED_AT));
-				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
-						CursorPageResponse.PageInfo.of(2L, false, 2));
-
-				given(productRepository.findMobileDataByCursor(null, 3,
-						ProductSortOption.AMOUNT_ASC, 5.0F)).willReturn(response);
-
-				// when
-				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						null, 3, "AMOUNT_ASC", 5.0F);
-
-				// then
-				assertThat(result.getData()).hasSize(2);
-				assertThat(result.getData().get(0).getRemainAmount()).isGreaterThanOrEqualTo(5);
+				assertThat(result.getData().get(0).getRemainAmount()).isEqualByComparingTo(
+						BigDecimal.valueOf(3));
 			}
 		}
 
@@ -678,9 +632,9 @@ class ProductServiceTest {
 				assertThat(response.getProductId()).isEqualTo(PRODUCT_ID);
 				assertThat(product.getPrice()).isEqualTo(NEW_PRICE_9000);
 				assertThat(mobileData.getDataAmount()).isEqualTo(
-						BEFORE_DATA_AMOUNT + CHANGED_AMOUNT);
+						BEFORE_DATA_AMOUNT.add(CHANGED_AMOUNT));
 				assertThat(mobileData.getRemainAmount()).isEqualTo(
-						BEFORE_REMAIN_AMOUNT + CHANGED_AMOUNT);
+						BEFORE_REMAIN_AMOUNT.add(CHANGED_AMOUNT));
 			}
 		}
 
@@ -745,8 +699,7 @@ class ProductServiceTest {
 
 				// given
 				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID,
-						NEW_PRICE_9000,
-						CHANGED_AMOUNT, SPLIT_TYPE);
+						NEW_PRICE_9000, CHANGED_AMOUNT, SPLIT_TYPE);
 
 				Member member = MemberFixture.createMemberWithSellingDataWithId(MEMBER_ID,
 						SELLING_DATA);

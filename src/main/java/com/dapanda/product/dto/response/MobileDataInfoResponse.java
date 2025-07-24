@@ -1,5 +1,6 @@
 package com.dapanda.product.dto.response;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +15,7 @@ public class MobileDataInfoResponse {
 	private Long memberId;
 	private String memberName;
 	private String profileImageUrl;
-	private float remainAmount;
+	private BigDecimal remainAmount;
 	private int pricePer100MB;
 	private float averageRate;
 	private int reviewCount;
