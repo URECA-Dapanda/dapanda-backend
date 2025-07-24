@@ -1,8 +1,7 @@
 package com.dapanda.chat.dto.response;
 
+import com.dapanda.chat.dto.SendMessageDto;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -10,19 +9,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CreateMessageResponse {
 
-	private Long chatMessageId;
-	private String message;
-	private LocalDateTime createdAt;
+	private SendMessageDto sendMessageDto;
+	private Long senderId;
 
-	public static CreateMessageResponse of(
-			Long chatMessageId,
-			String message,
-			LocalDateTime createdAt) {
+	public static CreateMessageResponse of(SendMessageDto sendMessageDto, Long senderId) {
 
 		return CreateMessageResponse.builder()
-				.chatMessageId(chatMessageId)
-				.message(message)
-				.createdAt(createdAt)
+				.sendMessageDto(sendMessageDto)
+				.senderId(senderId)
 				.build();
 	}
 }
