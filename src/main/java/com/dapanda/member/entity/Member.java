@@ -2,20 +2,8 @@ package com.dapanda.member.entity;
 
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.common.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Getter
@@ -61,6 +49,8 @@ public class Member extends BaseEntity {
 	private int reviewCount;
 
 	private float averageRating;
+
+	private String profileImageUrl;
 
 	public static Member ofOAuthMember(String email, String name,
 			OAuthProvider provider, MemberRole role) {
@@ -113,6 +103,7 @@ public class Member extends BaseEntity {
 	}
 
 	public void updateReviewInfo(int reviewCount, float averageRating) {
+
 		this.reviewCount = reviewCount;
 		this.averageRating = averageRating;
 	}
