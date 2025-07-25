@@ -4,10 +4,9 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.plan.dto.response.PlanInfoResponse;
-import com.dapanda.plan.entity.AgeGroup;
-import com.dapanda.plan.entity.Plan;
-import com.dapanda.plan.entity.PlanCategory;
+import com.dapanda.plan.entity.*;
 import com.dapanda.plan.repository.PlanRepository;
+import java.math.BigDecimal;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,7 +33,7 @@ public class PlanService {
 		PlanCategory category = randomCategory();
 		AgeGroup ageGroup = randomAgeGroup();
 		String name = randomPlanName(category, ageGroup);
-		float dataAmount = randomDataAmount();
+		BigDecimal dataAmount = new BigDecimal(randomDataAmount());
 		int price = randomMonthlyPrice();
 
 		Plan plan = Plan.of(

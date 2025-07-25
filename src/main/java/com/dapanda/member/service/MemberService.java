@@ -7,8 +7,10 @@ import com.dapanda.auth.dto.response.SignupResponse;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.common.service.S3Service;
 import com.dapanda.jwt.JwtPrinciple;
 import com.dapanda.jwt.JwtTokenProvider;
+import com.dapanda.member.dto.request.UpdateProfileImageRequest;
 import com.dapanda.member.dto.response.FindCashResponse;
 import com.dapanda.member.dto.response.FindDataResponse;
 import com.dapanda.member.entity.Member;
@@ -17,6 +19,7 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.refreshToken.service.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,13 @@ public class MemberService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RefreshTokenService refreshTokenService;
+	private final S3Service s3Service;
+
+	public Member findById(Long memberId) {
+
+		return memberRepository.findById(memberId)
+				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+	}
 
 	public LoginResponse login(LoginRequest request, HttpServletResponse response) {
 
@@ -130,15 +140,34 @@ public class MemberService {
 
 	public FindDataResponse findBuyingData(Long memberId) {
 
-		float buyingData = memberRepository.findById(memberId).orElseThrow().getBuyingData();
+		BigDecimal buyingData = memberRepository.findById(memberId).orElseThrow().getBuyingData();
 
 		return FindDataResponse.of(buyingData);
 	}
 
 	public FindDataResponse findSellingData(Long memberId) {
 
-		float sellingData = memberRepository.findById(memberId).orElseThrow().getSellingData();
+		BigDecimal sellingData = memberRepository.findById(memberId).orElseThrow().getSellingData();
 
 		return FindDataResponse.of(sellingData);
+	}
+
+	public void updateProfileImage(UpdateProfileImageRequest request, Long memberId) {
+
+		Member member = memberRepository.findById(memberId)
+				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+
+		String imageUrl = request.imageUrl();
+
+		if (imageUrl != null && !imageUrl.isEmpty()) {
+
+			if (s3Service.isNotValidImageExtension(imageUrl)) {
+				throw new GlobalException(ResultCode.INVALID_IMAGE_FORMAT);
+			}
+
+			member.updateProfileImage(imageUrl);
+			memberRepository.save(member);
+		}
+
 	}
 }

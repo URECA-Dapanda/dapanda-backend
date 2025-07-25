@@ -1,10 +1,9 @@
 package com.dapanda.product.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.common.dto.response.CountCursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.CommonResponse;
-import com.dapanda.common.exception.GlobalException;
-import com.dapanda.common.exception.ResultCode;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.*;
@@ -14,6 +13,7 @@ import com.dapanda.product.service.ProductService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,7 +28,7 @@ public class ProductController {
 	private final ProductService productService;
 
 	@GetMapping("/members/{memberId}/selling-products")
-	public CommonResponse<CursorPageResponse<ReadSellingProductResponse>> readSellingProductHistory(
+	public CommonResponse<CountCursorPageResponse<ReadSellingProductResponse>> readSellingProductHistory(
 
 			@PathVariable Long memberId,
 			@RequestParam ProductState productState,
@@ -42,13 +42,14 @@ public class ProductController {
 	}
 
 	@GetMapping("/selling-products")
-	public CommonResponse<CursorPageResponse<ReadSellingProductResponse>> readMySellingProductHistory(
+	public CommonResponse<CountCursorPageResponse<ReadSellingProductResponse>> readMySellingProductHistory(
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@RequestParam ProductState productState,
 			@RequestParam(required = false) Long cursorId,
 			@RequestParam(defaultValue = "2") @Min(1) @Max(100) Integer size) {
 
-		ReadSellingProductRequest request = new ReadSellingProductRequest(cursorId, size, userDetails.getId(),
+		ReadSellingProductRequest request = new ReadSellingProductRequest(cursorId, size,
+				userDetails.getId(),
 				productState);
 
 		return CommonResponse.success(productService.readSellingProduct(request));
@@ -59,7 +60,7 @@ public class ProductController {
 			@RequestParam(required = false) Long cursorId,
 			@RequestParam @Min(1) Integer size,
 			@RequestParam String productSortOption,
-			@RequestParam(required = false) Float dataAmount) {
+			@RequestParam(required = false) BigDecimal dataAmount) {
 
 		return CommonResponse.success(
 				productService.findMobileDataByCursor(cursorId, size, productSortOption,
@@ -82,16 +83,19 @@ public class ProductController {
 
 	@GetMapping("/products/mobile-data/{productId}")
 	public CommonResponse<MobileDataInfoResponse> getMobileDataInfo(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable("productId") Long productId) {
 
-		return CommonResponse.success(productService.findMobileDataInfo(productId));
+		return CommonResponse.success(
+				productService.findMobileDataInfo(productId, userDetails.getId()));
 	}
 
 	@GetMapping("/products/wifi/{productId}")
 	public CommonResponse<WifiInfoResponse> getWifiInfo(
+			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable("productId") Long productId) {
 
-		return CommonResponse.success(productService.findWifiInfo(productId));
+		return CommonResponse.success(productService.findWifiInfo(productId, userDetails.getId()));
 	}
 
 	@PostMapping("/products/mobile-data")
@@ -99,10 +103,6 @@ public class ProductController {
 			@RequestBody @Valid CreateMobileDataRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-
-		if (userDetails == null) {
-			throw new GlobalException(ResultCode.UNAUTHORIZED);
-		}
 
 		productService.createMobileData(request, userDetails.getId());
 
@@ -114,10 +114,6 @@ public class ProductController {
 			@RequestBody @Valid CreateWifiRequest request,
 			@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-
-		if (userDetails == null) {
-			throw new GlobalException(ResultCode.UNAUTHORIZED);
-		}
 
 		productService.createWifi(request, userDetails.getId());
 

@@ -13,16 +13,12 @@ import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.plan.entity.AgeGroup;
-import com.dapanda.plan.entity.Plan;
-import com.dapanda.plan.entity.PlanCategory;
+import com.dapanda.plan.entity.*;
 import com.dapanda.plan.repository.PlanRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import java.math.BigDecimal;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -98,7 +94,7 @@ class PlanControllerTest {
 				// given
 				Plan plan = planRepository.save(Plan.of(
 						"청년 Value 베이직",
-						30.0f,
+						BigDecimal.valueOf(30.0),
 						15000,
 						PlanCategory._5G,
 						AgeGroup.YOUTH,
@@ -135,7 +131,8 @@ class PlanControllerTest {
 
 				// 실제 서비스로직 검증 (Optional)
 				var result = planRepository.findByMemberId(member.getId()).orElseThrow();
-				assertThat(result.getProvidingDataAmount()).isEqualTo(30.0f);
+				assertThat(result.getProvidingDataAmount()).isEqualByComparingTo(
+						BigDecimal.valueOf(30.0));
 			}
 		}
 

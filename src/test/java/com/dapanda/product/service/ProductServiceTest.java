@@ -1,84 +1,38 @@
 package com.dapanda.product.service;
 
-import static com.dapanda.TestConstants.Member.MEMBER_ID;
-import static com.dapanda.TestConstants.Member.OTHER_MEMBER_ID;
-import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
-import static com.dapanda.TestConstants.MobileData.BEFORE_DATA_AMOUNT;
-import static com.dapanda.TestConstants.MobileData.BEFORE_REMAIN_AMOUNT;
-import static com.dapanda.TestConstants.MobileData.CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
-import static com.dapanda.TestConstants.MobileData.EXCEED_CHANGED_AMOUNT;
-import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
-import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
+import static com.dapanda.TestConstants.Member.*;
 import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
-import static com.dapanda.TestConstants.MobileData.SPLIT_TYPE;
+import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
-import static com.dapanda.TestConstants.Product.NEW_PRICE_9000;
-import static com.dapanda.TestConstants.Product.PRICE_3000;
-import static com.dapanda.TestConstants.Product.PRODUCT_ID;
-import static com.dapanda.TestConstants.Product.UPDATED_AT;
+import static com.dapanda.TestConstants.Product.*;
 import static com.dapanda.TestConstants.Review.AVERAGE_RATE;
 import static com.dapanda.TestConstants.Review.REVIEW_COUNT;
-import static com.dapanda.TestConstants.Wifi.ADDRESS;
-import static com.dapanda.TestConstants.Wifi.CHANGED_CONTENT;
-import static com.dapanda.TestConstants.Wifi.CHANGED_LATITUDE;
-import static com.dapanda.TestConstants.Wifi.CHANGED_LONGITUDE;
-import static com.dapanda.TestConstants.Wifi.CHANGED_TITLE;
-import static com.dapanda.TestConstants.Wifi.CONTENT;
-import static com.dapanda.TestConstants.Wifi.END_TIME;
-import static com.dapanda.TestConstants.Wifi.LATITUDE;
-import static com.dapanda.TestConstants.Wifi.LONGITUDE;
-import static com.dapanda.TestConstants.Wifi.START_TIME;
-import static com.dapanda.TestConstants.Wifi.TITLE;
-import static com.dapanda.TestConstants.Wifi.WRONG_END_TIME;
-import static com.dapanda.TestConstants.Wifi.WRONG_START_TIME;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static com.dapanda.TestConstants.Wifi.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+import com.dapanda.common.dto.response.CountCursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.common.service.S3Service;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
-import com.dapanda.product.dto.request.CreateMobileDataRequest;
-import com.dapanda.product.dto.request.CreateWifiRequest;
-import com.dapanda.product.dto.request.ReadSellingProductRequest;
-import com.dapanda.product.dto.request.UpdateMobileDataRequest;
-import com.dapanda.product.dto.request.UpdateWifiRequest;
-import com.dapanda.product.dto.response.FindMarketPriceResponse;
-import com.dapanda.product.dto.response.MobileDataInfoResponse;
-import com.dapanda.product.dto.response.ReadSellingProductResponse;
-import com.dapanda.product.dto.response.UpdateMobileDataResponse;
-import com.dapanda.product.dto.response.UpdateWifiResponse;
-import com.dapanda.product.dto.response.WifiInfoResponse;
-import com.dapanda.product.entity.ItemType;
-import com.dapanda.product.entity.MobileData;
-import com.dapanda.product.entity.MobileDataFixture;
-import com.dapanda.product.entity.Product;
-import com.dapanda.product.entity.ProductFixture;
-import com.dapanda.product.entity.ProductSortOption;
-import com.dapanda.product.entity.ProductState;
-import com.dapanda.product.entity.Wifi;
-import com.dapanda.product.entity.WifiFixture;
-import com.dapanda.product.repository.MobileDataRepository;
-import com.dapanda.product.repository.ProductRepository;
-import com.dapanda.product.repository.WifiRepository;
+import com.dapanda.product.dto.request.*;
+import com.dapanda.product.dto.response.*;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import java.util.*;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -92,6 +46,9 @@ class ProductServiceTest {
 	private ProductRepository productRepository;
 
 	@Mock
+	private ProductImageRepository productImageRepository;
+
+	@Mock
 	private MobileDataRepository mobileDataRepository;
 
 	@Mock
@@ -102,6 +59,9 @@ class ProductServiceTest {
 
 	@InjectMocks
 	private ProductService productService;
+
+	@Mock
+	private S3Service s3Service;
 
 	@Nested
 	@DisplayName("모바일 데이터 상품 등록")
@@ -114,12 +74,14 @@ class ProductServiceTest {
 			// given
 			Long memberId = 1L;
 			Member member = MemberFixture.createMember1WithId(memberId);
-			CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2.0F, false);
+			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
+					BigDecimal.valueOf(1.0), false);
 
 			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
-			given(productRepository.sumSoldMobileDataAmountByMemberId(memberId)).willReturn(1.0F);
+			given(productRepository.sumSoldMobileDataAmountByMemberId(memberId)).willReturn(
+					BigDecimal.valueOf(1.0));
 
-			MobileData mobileData = MobileData.singleOf(2.0F, 12000, false);
+			MobileData mobileData = MobileData.singleOf(new BigDecimal("1.0"), 12000, false);
 			given(mobileDataRepository.save(any())).willReturn(mobileData);
 
 			Product product = Product.of(ProductState.ACTIVE, 12000, 1L, ItemType.MOBILE_DATA,
@@ -137,7 +99,8 @@ class ProductServiceTest {
 
 			// given
 			Long memberId = 1234L;
-			CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2.0F, false);
+			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
+					new BigDecimal("1.0"), false);
 
 			given(memberRepository.findById(memberId)).willReturn(Optional.empty());
 
@@ -154,12 +117,13 @@ class ProductServiceTest {
 			// given
 			Long memberId = 1L;
 			Member member = MemberFixture.createMember1WithId(memberId);
-			CreateMobileDataRequest request = new CreateMobileDataRequest(12000, 2000.0F,
+			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
+					new BigDecimal("2000.0"),
 					false); // 2GB 추가
 
 			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 			given(productRepository.sumSoldMobileDataAmountByMemberId(memberId)).willReturn(
-					2000.0F);
+					BigDecimal.valueOf(2000));
 
 			// when/then
 			assertThatThrownBy(() -> productService.createMobileData(request, memberId))
@@ -180,7 +144,8 @@ class ProductServiceTest {
 			Long memberId = 1L;
 			Member member = MemberFixture.createMember1WithId(memberId);
 			CreateWifiRequest request = new CreateWifiRequest(15000, "와이파이", "설명", 37.5, 127.0,
-					ADDRESS, LocalDateTime.now(), LocalDateTime.now().plusHours(5));
+					ADDRESS, LocalDateTime.now().plusMinutes(5), LocalDateTime.now().plusHours(5),
+					Collections.singletonList("ImageUrl.jpg"));
 			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 			Wifi wifi = Wifi.of("와이파이", "설명", 37.5, 127.0, ADDRESS, request.getStartTime(),
 					request.getEndTime());
@@ -201,7 +166,8 @@ class ProductServiceTest {
 			// given
 			Long memberId = 999L;
 			CreateWifiRequest request = new CreateWifiRequest(15000, "와이파이", "설명", 37.5, 127.0,
-					ADDRESS, LocalDateTime.now(), LocalDateTime.now().plusHours(5));
+					ADDRESS, LocalDateTime.now(), LocalDateTime.now().plusHours(5),
+					Collections.singletonList("ImageUrl"));
 			given(memberRepository.findById(memberId)).willReturn(Optional.empty());
 
 			// when/then
@@ -228,7 +194,7 @@ class ProductServiceTest {
 				for (int i = 1; i <= 3; i++) {
 					summaries.add(
 							MobileDataFixture.createMobileDataSummary((long) i, 1000, (long) i,
-									"회원" + i, 5, 200, false, UPDATED_AT));
+									"회원" + i, new BigDecimal("5.0"), 200, false, UPDATED_AT));
 				}
 				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -253,7 +219,7 @@ class ProductServiceTest {
 				for (int i = 1; i <= 3; i++) {
 					summaries.add(
 							MobileDataFixture.createMobileDataSummary((long) i, 100 + i, (long) i,
-									"회원" + i, 5, 200, false, UPDATED_AT));
+									"회원" + i, BigDecimal.valueOf(5), 200, false, UPDATED_AT));
 				}
 				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -283,7 +249,7 @@ class ProductServiceTest {
 							(100 + 100 * i) * 10 * i,
 							(long) i,
 							"회원" + i,
-							1 + i,
+							new BigDecimal(String.valueOf(2.0 + i)),
 							100 + 100 * i,
 							i % 2 == 0,
 							UPDATED_AT
@@ -296,67 +262,16 @@ class ProductServiceTest {
 				);
 
 				given(productRepository.findMobileDataByCursor(null, 2,
-						ProductSortOption.AMOUNT_ASC, 2.0F)).willReturn(response);
+						ProductSortOption.AMOUNT_ASC, new BigDecimal("2.0"))).willReturn(response);
 
 				// when
 				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						null, 2, "AMOUNT_ASC", 2.0F);
+						null, 2, "AMOUNT_ASC", new BigDecimal("2.0"));
 
 				// then
 				assertThat(result.getData()).hasSize(3);
-				assertThat(result.getData().get(0).getRemainAmount()).isEqualTo(2);
-			}
-
-			@Test
-			@DisplayName("AMOUNT_DESC 정렬로 데이터 상품 목록 조회를 성공한다")
-			void findMobileDataSortedByAmountDescTest() {
-
-				// given
-				List<MobileDataSummary> summaries = new ArrayList<>();
-				for (int i = 3; i >= 1; i--) {
-					summaries.add(
-							MobileDataFixture.createMobileDataSummary((long) i, 1000, (long) i,
-									"회원" + i, i * 10, 200, false, UPDATED_AT));
-				}
-				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
-						CursorPageResponse.PageInfo.of(3L, false, 3));
-
-				given(productRepository.findMobileDataByCursor(null, 3,
-						ProductSortOption.AMOUNT_DESC, null)).willReturn(response);
-
-				// when
-				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						null, 3, "AMOUNT_DESC", null);
-
-				// then
-				assertThat(result.getData()).hasSize(3);
-				assertThat(result.getData().get(0).getRemainAmount()).isEqualTo(30);
-			}
-
-			@Test
-			@DisplayName("dataAmount 기준으로 필터링된 데이터 상품 목록 조회를 성공한다")
-			void findMobileDataFilteredByAmountTest() {
-
-				// given
-				List<MobileDataSummary> summaries = new ArrayList<>();
-				summaries.add(new MobileDataSummary(1L, 1000, 1L, "회원1", 5.0F, 200,
-						false, UPDATED_AT));
-				summaries.add(
-						new MobileDataSummary(2L, 2000, 2L, "회원2", 10, 200,
-								false, UPDATED_AT));
-				CursorPageResponse<MobileDataSummary> response = CursorPageResponse.of(summaries,
-						CursorPageResponse.PageInfo.of(2L, false, 2));
-
-				given(productRepository.findMobileDataByCursor(null, 3,
-						ProductSortOption.AMOUNT_ASC, 5.0F)).willReturn(response);
-
-				// when
-				CursorPageResponse<MobileDataSummary> result = productService.findMobileDataByCursor(
-						null, 3, "AMOUNT_ASC", 5.0F);
-
-				// then
-				assertThat(result.getData()).hasSize(2);
-				assertThat(result.getData().get(0).getRemainAmount()).isGreaterThanOrEqualTo(5);
+				assertThat(result.getData().get(0).getRemainAmount()).isEqualByComparingTo(
+						BigDecimal.valueOf(3));
 			}
 		}
 
@@ -397,7 +312,7 @@ class ProductServiceTest {
 				for (int i = 1; i <= 3; i++) {
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 100 + i, (long) i,
-									"회원" + i, "상품제목" + i, 37.0 + i, 127.0 + i, ADDRESS, i * 10.0, i,
+									"회원" + i, "상품제목" + i, 37.0 + i, 127.0 + i, ADDRESS, 3F, i,
 									true, UPDATED_AT));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
@@ -432,7 +347,7 @@ class ProductServiceTest {
 							37.0 + i,
 							127.0 + i,
 							ADDRESS,
-							i * 10.0,
+							3F,
 							i % 2 == 0 ? 2 : 1,
 							true,
 							UPDATED_AT
@@ -468,7 +383,7 @@ class ProductServiceTest {
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 1000, (long) i,
 									"회원" + i, "상품제목" + idx, 37.0 + idx, 127.0 + idx, ADDRESS,
-									5.0 - idx, idx, true, UPDATED_AT));
+									1F + i, idx, true, UPDATED_AT));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -483,7 +398,7 @@ class ProductServiceTest {
 
 				// then
 				assertThat(result.getData()).hasSize(3);
-				assertThat(result.getData().get(0).getAverageRate()).isEqualTo(4.0);
+				assertThat(result.getData().get(0).getAverageRate()).isEqualTo(4.0F);
 			}
 
 			@Test
@@ -493,10 +408,12 @@ class ProductServiceTest {
 				// given
 				List<WifiSummary> summaries = new ArrayList<>();
 				summaries.add(
-						new WifiSummary(1L, 1000, 1L, "회원1", "상품제목1", "imageUrl", 37.0, 127.0,
+						new WifiSummary(1L, 1000, 1L, "회원1", "image.jpg",
+								"상품제목1", "imageUrl", 37.0, 127.0,
 								ADDRESS, 5, 5, true, UPDATED_AT));
 				summaries.add(
-						new WifiSummary(2L, 2000, 2L, "회원2", "상품제목2", "imageUrl", 37.1, 127.1,
+						new WifiSummary(2L, 2000, 2L, "회원2", "image.jpg",
+								"상품제목2", "imageUrl", 37.1, 127.1,
 								ADDRESS, 10, 10, true, UPDATED_AT));
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(2L, false, 2));
@@ -553,17 +470,17 @@ class ProductServiceTest {
 						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
 				MobileDataInfoResponse expectedResponse = new MobileDataInfoResponse(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member.getId(), member.getName(),
-						REMAIN_AMOUNT_1, PRICE_PER_100MB_300, AVERAGE_RATE, REVIEW_COUNT, false,
-						UPDATED_AT);
+						PROFILE_IMAGE_URL, REMAIN_AMOUNT_1, PRICE_PER_100MB_300, AVERAGE_RATE,
+						REVIEW_COUNT, true, false, UPDATED_AT);
 
 				given(productRepository.existsById(PRODUCT_ID))
 						.willReturn(true);
-				given(productRepository.findMobileDataInfo(PRODUCT_ID)).willReturn(
+				given(productRepository.findMobileDataInfo(PRODUCT_ID, MEMBER_ID)).willReturn(
 						expectedResponse);
 
 				// when
 				MobileDataInfoResponse actualResponse = productService.findMobileDataInfo(
-						PRODUCT_ID);
+						PRODUCT_ID, MEMBER_ID);
 
 				// then
 				assertThat(actualResponse.getItemId()).isEqualTo(mobileData.getId());
@@ -583,7 +500,8 @@ class ProductServiceTest {
 					given(productRepository.existsById(PRODUCT_ID)).willReturn(false);
 
 					// when & then
-					assertThatThrownBy(() -> productService.findMobileDataInfo(PRODUCT_ID))
+					assertThatThrownBy(
+							() -> productService.findMobileDataInfo(PRODUCT_ID, MEMBER_ID))
 							.isInstanceOf(GlobalException.class)
 							.hasMessage(ResultCode.PRODUCT_NOT_FOUND.getMessage());
 				}
@@ -594,10 +512,12 @@ class ProductServiceTest {
 
 					// given
 					given(productRepository.existsById(PRODUCT_ID)).willReturn(true);
-					given(productRepository.findMobileDataInfo(PRODUCT_ID)).willReturn(null);
+					given(productRepository.findMobileDataInfo(PRODUCT_ID, MEMBER_ID)).willReturn(
+							null);
 
 					// when & then
-					assertThatThrownBy(() -> productService.findMobileDataInfo(PRODUCT_ID))
+					assertThatThrownBy(
+							() -> productService.findMobileDataInfo(PRODUCT_ID, MEMBER_ID))
 							.isInstanceOf(GlobalException.class)
 							.hasMessage(ResultCode.INVALID_PRODUCT.getMessage());
 				}
@@ -622,17 +542,19 @@ class ProductServiceTest {
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE,
 						ADDRESS, START_TIME, END_TIME);
 				WifiInfoResponse expectedResponse = new WifiInfoResponse(PRODUCT_ID,
-						wifi.getId(), PRICE_3000, member.getId(), member.getName(), TITLE, CONTENT,
-						LATITUDE, LONGITUDE, ADDRESS, AVERAGE_RATE, REVIEW_COUNT, null, START_TIME,
+						wifi.getId(), PRICE_3000, member.getId(), member.getName(),
+						PROFILE_IMAGE_URL, TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
+						AVERAGE_RATE, REVIEW_COUNT, false, null, START_TIME,
 						END_TIME, true, UPDATED_AT);
 
 				given(productRepository.existsById(PRODUCT_ID))
 						.willReturn(true);
-				given(productRepository.findWifiInfo(PRODUCT_ID)).willReturn(
+				given(productRepository.findWifiInfo(PRODUCT_ID, MEMBER_ID)).willReturn(
 						expectedResponse);
 
 				// when
-				WifiInfoResponse actualResponse = productService.findWifiInfo(PRODUCT_ID);
+				WifiInfoResponse actualResponse = productService.findWifiInfo(PRODUCT_ID,
+						MEMBER_ID);
 
 				// then
 				assertThat(actualResponse.getItemId()).isEqualTo(wifi.getId());
@@ -653,7 +575,7 @@ class ProductServiceTest {
 				given(productRepository.existsById(PRODUCT_ID)).willReturn(false);
 
 				// when & then
-				assertThatThrownBy(() -> productService.findWifiInfo(PRODUCT_ID))
+				assertThatThrownBy(() -> productService.findWifiInfo(PRODUCT_ID, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.PRODUCT_NOT_FOUND.getMessage());
 			}
@@ -664,10 +586,10 @@ class ProductServiceTest {
 
 				// given
 				given(productRepository.existsById(PRODUCT_ID)).willReturn(true);
-				given(productRepository.findWifiInfo(PRODUCT_ID)).willReturn(null);
+				given(productRepository.findWifiInfo(PRODUCT_ID, MEMBER_ID)).willReturn(null);
 
 				// when & then
-				assertThatThrownBy(() -> productService.findWifiInfo(PRODUCT_ID))
+				assertThatThrownBy(() -> productService.findWifiInfo(PRODUCT_ID, MEMBER_ID))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.INVALID_PRODUCT.getMessage());
 			}
@@ -710,9 +632,9 @@ class ProductServiceTest {
 				assertThat(response.getProductId()).isEqualTo(PRODUCT_ID);
 				assertThat(product.getPrice()).isEqualTo(NEW_PRICE_9000);
 				assertThat(mobileData.getDataAmount()).isEqualTo(
-						BEFORE_DATA_AMOUNT + CHANGED_AMOUNT);
+						BEFORE_DATA_AMOUNT.add(CHANGED_AMOUNT));
 				assertThat(mobileData.getRemainAmount()).isEqualTo(
-						BEFORE_REMAIN_AMOUNT + CHANGED_AMOUNT);
+						BEFORE_REMAIN_AMOUNT.add(CHANGED_AMOUNT));
 			}
 		}
 
@@ -777,8 +699,7 @@ class ProductServiceTest {
 
 				// given
 				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID,
-						NEW_PRICE_9000,
-						CHANGED_AMOUNT, SPLIT_TYPE);
+						NEW_PRICE_9000, CHANGED_AMOUNT, SPLIT_TYPE);
 
 				Member member = MemberFixture.createMemberWithSellingDataWithId(MEMBER_ID,
 						SELLING_DATA);
@@ -994,7 +915,7 @@ class ProductServiceTest {
 				given(productRepository.findSellingProduct(request)).willReturn(queryResponse);
 
 				//when
-				CursorPageResponse<ReadSellingProductResponse> response = productService.readSellingProduct(
+				CountCursorPageResponse<ReadSellingProductResponse> response = productService.readSellingProduct(
 						request);
 
 				//then

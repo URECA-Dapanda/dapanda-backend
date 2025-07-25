@@ -2,20 +2,9 @@ package com.dapanda.member.entity;
 
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.common.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import java.math.BigDecimal;
+import lombok.*;
 
 @Entity
 @Getter
@@ -44,9 +33,9 @@ public class Member extends BaseEntity {
 	@Column(nullable = false)
 	private OAuthProvider provider;
 
-	private float buyingData;
+	private BigDecimal buyingData;
 
-	private float sellingData;
+	private BigDecimal sellingData;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -61,6 +50,8 @@ public class Member extends BaseEntity {
 	private int reviewCount;
 
 	private float averageRating;
+
+	private String profileImageUrl;
 
 	public static Member ofOAuthMember(String email, String name,
 			OAuthProvider provider, MemberRole role) {
@@ -102,18 +93,24 @@ public class Member extends BaseEntity {
 	}
 
 	// TODO: 매달 1일 초기화 메서드
-	public void addBuyingData(float buyingData) {
+	public void addBuyingData(BigDecimal buyingData) {
 
-		this.buyingData += buyingData;
+		this.buyingData = this.buyingData.add(buyingData);
 	}
 
-	public void addSellingData(float sellingData) {
+	public void addSellingData(BigDecimal sellingData) {
 
-		this.sellingData += sellingData;
+		this.sellingData = this.sellingData.add(sellingData);
 	}
 
 	public void updateReviewInfo(int reviewCount, float averageRating) {
+
 		this.reviewCount = reviewCount;
 		this.averageRating = averageRating;
+	}
+
+	public void updateProfileImage(String profileImageUrl) {
+
+		this.profileImageUrl = profileImageUrl;
 	}
 }

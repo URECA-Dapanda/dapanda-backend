@@ -6,29 +6,21 @@ import static com.dapanda.product.entity.QProduct.product;
 import static com.dapanda.product.entity.QProductImage.productImage;
 import static com.dapanda.product.entity.QWifi.wifi;
 import static com.dapanda.review.entity.QReview.review;
-import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.ReadSellingProductRequest;
-import com.dapanda.product.dto.response.FindMarketPriceResponse;
-import com.dapanda.product.dto.response.MobileDataInfoResponse;
-import com.dapanda.product.dto.response.ReadSellingProductResponse;
-import com.dapanda.product.dto.response.WifiInfoResponse;
-import com.dapanda.product.entity.ItemType;
-import com.dapanda.product.entity.ProductSortOption;
-import com.dapanda.product.entity.ProductState;
-import com.dapanda.product.entity.QProductImage;
+import com.dapanda.product.dto.response.*;
+import com.dapanda.product.entity.*;
 import com.dapanda.trade.dto.MobileDataScrap;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +43,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 	@Override
 	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, int size,
-			ProductSortOption productSortOption, Float dataAmount) {
+			ProductSortOption productSortOption, BigDecimal dataAmount) {
 
 		List<MobileDataSummary> content = queryFactory
 				.select(Projections.constructor(MobileDataSummary.class,
@@ -59,6 +51,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.price,
 						product.itemId,
 						product.member.name,
+						product.member.profileImageUrl.coalesce(""),
 						mobileData.remainAmount,
 						mobileData.pricePer100MB,
 						mobileData.isSplitType,
@@ -87,7 +80,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		if (hasNext) {
 			content.remove(size);
 		}
-		Long nextCursorId = hasNext ? content.get(content.size() - 1).getId() : null;
+		Long nextCursorId = hasNext ? content.get(content.size() - 1).getProductId() : null;
 
 		return CursorPageResponse.of(content,
 				CursorPageResponse.PageInfo.of(nextCursorId, hasNext, content.size()));
@@ -112,12 +105,13 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.price,
 						product.itemId,
 						product.member.name,
+						product.member.profileImageUrl.coalesce(""),
 						wifi.title,
 						Expressions.stringTemplate("MIN({0})", productImage.imageUrl),
 						wifi.latitude,
 						wifi.longitude,
 						wifi.address,
-						review.rating.avg().coalesce(DEFAULT_RATING),
+						member.averageRating,
 						distance.divide(METER_TO_KILOMETER),
 						Expressions.booleanTemplate(
 								"CURRENT_TIMESTAMP BETWEEN {0} AND {1}", wifi.startTime,
@@ -128,12 +122,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.from(product)
 				.groupBy(product.id)
 				.join(wifi).on(wifi.id.eq(product.itemId))
-				.leftJoin(review).on(review.trade.id.eq(
-						JPAExpressions
-								.select(tradeDetails.trade.id)
-								.from(tradeDetails)
-								.where(tradeDetails.product.id.eq(product.id))
-				))
+				.leftJoin(member).on(product.member.id.eq(member.id))
 				.where(
 						gtCursorId(cursorId),
 						isOpenNow(isOpen, now)
@@ -154,7 +143,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.orderBy(
 						productSortOption == ProductSortOption.PRICE_ASC ? product.price.asc() :
 								productSortOption == ProductSortOption.AVERAGE_RATE_DESC
-										? review.rating.avg().desc() :
+										? member.averageRating.desc() :
 										distance.asc(),
 						product.id.asc()
 				)
@@ -165,14 +154,14 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		if (hasNext) {
 			content.remove(size);
 		}
-		Long nextCursorId = hasNext ? content.get(content.size() - 1).getId() : null;
+		Long nextCursorId = hasNext ? content.get(content.size() - 1).getProductId() : null;
 
 		return CursorPageResponse.of(content,
 				CursorPageResponse.PageInfo.of(nextCursorId, hasNext, content.size()));
 	}
 
 	@Override
-	public MobileDataInfoResponse findMobileDataInfo(Long productId) {
+	public MobileDataInfoResponse findMobileDataInfo(Long productId, Long memberId) {
 
 		return queryFactory
 				.select(Projections.constructor(MobileDataInfoResponse.class,
@@ -181,17 +170,19 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.price,
 						product.member.id,
 						product.member.name,
+						product.member.profileImageUrl.coalesce(""),
 						mobileData.remainAmount,
 						mobileData.pricePer100MB,
 						member.averageRating,
 						member.reviewCount,
+						Expressions.booleanTemplate("{0} = {1}", product.member.id, memberId),
 						mobileData.isSplitType,
 						product.updatedAt
 				))
 				.from(product)
 				.join(mobileData).on(product.itemId.eq(mobileData.id))
 				.leftJoin(member).on(product.member.id.eq(member.id))
-				.where(isActiveProduct(),
+				.where(isActiveOrSoldOutProduct(),
 						product.itemId.eq(mobileData.id),
 						product.id.eq(productId)
 				)
@@ -201,7 +192,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	}
 
 	@Override
-	public WifiInfoResponse findWifiInfo(Long productId) {
+	public WifiInfoResponse findWifiInfo(Long productId, Long memberId) {
 
 		return queryFactory
 				.select(Projections.constructor(WifiInfoResponse.class,
@@ -210,13 +201,15 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.price,
 						product.member.id,
 						product.member.name,
+						product.member.profileImageUrl.coalesce(""),
 						wifi.title,
 						wifi.content,
 						wifi.latitude,
 						wifi.longitude,
 						wifi.address,
-						review.rating.avg().coalesce(DEFAULT_RATING),
-						review.rating.count().intValue(),
+						member.averageRating,
+						member.reviewCount,
+						Expressions.booleanTemplate("{0} = {1}", product.member.id, memberId),
 						Expressions.nullExpression(List.class),
 						wifi.startTime,
 						wifi.endTime,
@@ -228,13 +221,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				))
 				.from(product)
 				.join(wifi).on(product.itemId.eq(wifi.id))
-				.leftJoin(review).on(review.trade.id.eq(
-						JPAExpressions
-								.select(tradeDetails.trade.id)
-								.from(tradeDetails)
-								.where(tradeDetails.product.id.eq(product.id))
-				))
-				.where(isActiveProduct(),
+				.leftJoin(member).on(product.member.id.eq(member.id))
+				.where(isActiveOrSoldOutProduct(),
 						product.itemId.eq(wifi.id),
 						product.id.eq(productId)
 				)
@@ -327,7 +315,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	}
 
 	@Override
-	public List<MobileDataScrap> findMobileDataScrap(float dataAmount) {
+	public List<MobileDataScrap> findMobileDataScrap(BigDecimal dataAmount, Long memberId) {
 
 		return queryFactory
 				.select(Projections.constructor(MobileDataScrap.class,
@@ -337,7 +325,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.price,
 						Expressions.constant(0),
 						mobileData.remainAmount,
-						Expressions.constant(0f),
+						Expressions.constant(BigDecimal.valueOf(0)),
 						mobileData.pricePer100MB,
 						mobileData.isSplitType,
 						product.updatedAt
@@ -345,6 +333,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.from(product)
 				.join(mobileData).on(product.itemId.eq(mobileData.id))
 				.where(
+						product.member.id.ne(memberId),
 						product.state.eq(ProductState.ACTIVE),
 						mobileData.remainAmount.gt(0)
 				)
@@ -353,14 +342,14 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						mobileData.remainAmount.desc(),
 						mobileData.isSplitType.asc()
 				)
-				.limit(200) // 필요에 따라 조절
+				.limit(100) // 필요에 따라 조절
 				.fetch();
 	}
 
 	@Override
-	public Float sumSoldMobileDataAmountByMemberId(Long memberId) {
+	public BigDecimal sumSoldMobileDataAmountByMemberId(Long memberId) {
 
-		Float sum = queryFactory
+		BigDecimal sum = queryFactory
 				.select(mobileData.dataAmount.sum())
 				.from(product)
 				.join(mobileData).on(product.itemId.eq(mobileData.id))
@@ -370,7 +359,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				)
 				.fetchOne();
 
-		return sum != null ? sum : 0f;
+		return sum != null ? sum : new BigDecimal("0");
 	}
 
 	private BooleanExpression isActiveProduct() {
@@ -378,14 +367,21 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		return product.state.eq(ProductState.ACTIVE);
 	}
 
+	private BooleanExpression isActiveOrSoldOutProduct() {
+
+		return product.state.in(ProductState.ACTIVE, ProductState.SOLD_OUT);
+	}
+
 	private BooleanExpression gtCursorId(Long cursorId) {
 
 		return cursorId != null ? product.id.gt(cursorId) : null;
 	}
 
-	private BooleanExpression eqDataAmount(Float dataAmount) {
+	private BooleanExpression eqDataAmount(BigDecimal dataAmount) {
 
-		return dataAmount != null ? mobileData.remainAmount.eq(dataAmount) : null;
+		return dataAmount != null
+				? Expressions.booleanTemplate("ABS({0} - {1}) < 0.000001", mobileData.remainAmount,
+				dataAmount) : null;
 	}
 
 	private BooleanExpression isOpenNow(boolean isOpen, LocalDateTime now) {
@@ -458,4 +454,24 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		);
 	}
 
+	public Long countSellingProduct(ReadSellingProductRequest request) {
+
+		return queryFactory
+				.select(product.count())
+				.from(product)
+				.leftJoin(mobileData).on(
+						product.itemId.eq(mobileData.id)
+								.and(product.itemType.eq(ItemType.MOBILE_DATA))
+				)
+				.leftJoin(wifi).on(
+						product.itemId.eq(wifi.id)
+								.and(product.itemType.eq(ItemType.WIFI))
+				)
+				.where(
+						product.member.id.eq(request.memberId()),
+						request.productState() != null ? product.state.eq(request.productState())
+								: null
+				)
+				.fetchOne();
+	}
 }

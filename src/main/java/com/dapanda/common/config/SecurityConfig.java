@@ -18,11 +18,9 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.*;
 
 @Configuration
 @RequiredArgsConstructor
@@ -59,7 +57,7 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/", "/api/**", "/api-docs.html", "/docs/**",
 								"/oauth2/**", "error", "/actuator/health", "/default-ui.css",
-								"/api/auth/**", "/connect/**").permitAll()
+								"/api/auth/**", "/conn/**").permitAll()
 						.anyRequest().authenticated()
 				)
 				.oauth2Login(oauth2 -> oauth2
@@ -72,7 +70,7 @@ public class SecurityConfig {
 
 		http.addFilterBefore(
 				jwtAuthenticationFilter,
-				OAuth2AuthorizationRequestRedirectFilter.class
+				UsernamePasswordAuthenticationFilter.class
 		);
 
 		return http.build();

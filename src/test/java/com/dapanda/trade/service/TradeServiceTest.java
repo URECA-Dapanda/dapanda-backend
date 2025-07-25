@@ -1,35 +1,15 @@
 package com.dapanda.trade.service;
 
-import static com.dapanda.TestConstants.Member.BUYER_MEMBER_ID;
-import static com.dapanda.TestConstants.Member.CASH_3000;
-import static com.dapanda.TestConstants.Member.CASH_5000;
-import static com.dapanda.TestConstants.Member.MEMBER_ID;
-import static com.dapanda.TestConstants.Member.SELLER_MEMBER_ID;
-import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_1;
-import static com.dapanda.TestConstants.MobileData.DATA_AMOUNT_2;
-import static com.dapanda.TestConstants.MobileData.MOBILE_DATA_ID;
-import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_150;
-import static com.dapanda.TestConstants.MobileData.PRICE_PER_100MB_300;
-import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_1;
-import static com.dapanda.TestConstants.MobileData.REMAIN_AMOUNT_2;
+import static com.dapanda.TestConstants.Member.*;
+import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
-import static com.dapanda.TestConstants.Product.PRICE_1500;
-import static com.dapanda.TestConstants.Product.PRICE_3000;
-import static com.dapanda.TestConstants.Product.PRICE_500;
-import static com.dapanda.TestConstants.Product.PRODUCT_ID;
+import static com.dapanda.TestConstants.Product.*;
 import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
 import static com.dapanda.TestConstants.Trade.TRADE_ID_2;
-import static com.dapanda.TestConstants.Wifi.ADDRESS;
-import static com.dapanda.TestConstants.Wifi.CONTENT;
-import static com.dapanda.TestConstants.Wifi.END_TIME;
-import static com.dapanda.TestConstants.Wifi.LATITUDE;
-import static com.dapanda.TestConstants.Wifi.LONGITUDE;
-import static com.dapanda.TestConstants.Wifi.START_TIME;
-import static com.dapanda.TestConstants.Wifi.TITLE;
-import static com.dapanda.TestConstants.Wifi.WIFI_ID;
-import static com.dapanda.trade.entity.TradeType.WIFI;
+import static com.dapanda.TestConstants.Wifi.*;
+import static com.dapanda.trade.entity.TradeType.PURCHASE_WIFI;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
@@ -44,39 +24,20 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.plan.entity.Plan;
 import com.dapanda.plan.entity.PlanFixture;
 import com.dapanda.plan.repository.PlanRepository;
-import com.dapanda.product.entity.MobileData;
-import com.dapanda.product.entity.MobileDataFixture;
-import com.dapanda.product.entity.Product;
-import com.dapanda.product.entity.ProductFixture;
-import com.dapanda.product.entity.ProductState;
-import com.dapanda.product.entity.Wifi;
-import com.dapanda.product.entity.WifiFixture;
-import com.dapanda.product.repository.MobileDataRepository;
-import com.dapanda.product.repository.ProductRepository;
-import com.dapanda.product.repository.WifiRepository;
-import com.dapanda.trade.dto.CashHistoryMonthlySummary;
-import com.dapanda.trade.dto.CashHistorySummary;
-import com.dapanda.trade.dto.MobileDataScrap;
-import com.dapanda.trade.dto.PurchaseHistorySummary;
-import com.dapanda.trade.dto.request.DefaultPurchaseMobileDataRequest;
-import com.dapanda.trade.dto.request.PurchaseWifiRequest;
-import com.dapanda.trade.dto.request.ScrapPurchaseMobileDataRequest;
-import com.dapanda.trade.dto.response.FindCashHistoryResponse;
-import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
-import com.dapanda.trade.dto.response.FindTradeHistoryResponse;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.*;
+import com.dapanda.trade.dto.*;
+import com.dapanda.trade.dto.request.*;
+import com.dapanda.trade.dto.response.*;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeFixture;
 import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import java.util.*;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -149,14 +110,19 @@ class TradeServiceTest {
 				tradeService.defaultPurchaseMobileData(BUYER_MEMBER_ID, request);
 
 				// then
+				Plan updateBuyerPlan = planRepository.findByMember(buyer).orElseThrow();
+				Plan updateSellerPlan = planRepository.findByMember(seller).orElseThrow();
+
 				assertThat(product.getState()).isEqualTo(ProductState.SOLD_OUT);
-				assertThat(mobileData.getRemainAmount()).isEqualTo(0);
-				assertThat(buyerPlan.getProvidingDataAmount()).isEqualTo(
-						PROVIDING_DATA_AMOUNT_10 + DATA_AMOUNT_1);
-				assertThat(sellerPlan.getProvidingDataAmount()).isEqualTo(
-						PROVIDING_DATA_AMOUNT_10 - DATA_AMOUNT_1);
-				assertThat(buyer.getBuyingData()).isEqualTo(DATA_AMOUNT_1);
-				assertThat(seller.getSellingData()).isEqualTo(DATA_AMOUNT_1);
+				assertThat(mobileData.getRemainAmount()).isEqualByComparingTo(
+						BigDecimal.valueOf(0));
+				assertThat(updateBuyerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+						PROVIDING_DATA_AMOUNT_10.add(DATA_AMOUNT_1));
+				assertThat(updateSellerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+						PROVIDING_DATA_AMOUNT_10.subtract(DATA_AMOUNT_1));
+				assertThat(buyer.getBuyingData()).isEqualByComparingTo(DATA_AMOUNT_1);
+				assertThat(seller.getSellingData()).isEqualByComparingTo(DATA_AMOUNT_1);
+
 			}
 
 			@Test
@@ -196,13 +162,14 @@ class TradeServiceTest {
 
 				// then
 				assertThat(product.getState()).isEqualTo(ProductState.ACTIVE);
-				assertThat(mobileData.getRemainAmount()).isEqualTo(DATA_AMOUNT_2 - DATA_AMOUNT_1);
-				assertThat(buyerPlan.getProvidingDataAmount()).isEqualTo(
-						PROVIDING_DATA_AMOUNT_10 + DATA_AMOUNT_1);
-				assertThat(sellerPlan.getProvidingDataAmount()).isEqualTo(
-						PROVIDING_DATA_AMOUNT_10 - DATA_AMOUNT_1);
-				assertThat(buyer.getBuyingData()).isEqualTo(DATA_AMOUNT_1);
-				assertThat(seller.getSellingData()).isEqualTo(DATA_AMOUNT_1);
+				assertThat(mobileData.getRemainAmount()).isEqualByComparingTo(
+						DATA_AMOUNT_2.subtract(DATA_AMOUNT_1));
+				assertThat(buyerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+						PROVIDING_DATA_AMOUNT_10.add(DATA_AMOUNT_1));
+				assertThat(sellerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+						PROVIDING_DATA_AMOUNT_10.subtract(DATA_AMOUNT_1));
+				assertThat(buyer.getBuyingData()).isEqualByComparingTo(DATA_AMOUNT_1);
+				assertThat(seller.getSellingData()).isEqualByComparingTo(DATA_AMOUNT_1);
 			}
 		}
 
@@ -362,14 +329,15 @@ class TradeServiceTest {
 				MobileDataScrap mobileDataScrap2 = TradeFixture.createMobileDataScrap(product2,
 						mobileData2, PRICE_3000, DATA_AMOUNT_1);
 
-				float dataAmount = DATA_AMOUNT_2;
+				BigDecimal dataAmount = DATA_AMOUNT_2;
 
-				given(productRepository.findMobileDataScrap(dataAmount)).willReturn(new ArrayList<>(
+				given(productRepository.findMobileDataScrap(dataAmount,
+						BUYER_MEMBER_ID)).willReturn(new ArrayList<>(
 						List.of(mobileDataScrap1, mobileDataScrap2)));
 
 				// when
 				FindMobileDataScrapResponse response = tradeService.findMobileDataScrap(
-						dataAmount);
+						dataAmount, BUYER_MEMBER_ID);
 
 				// then
 				assertThat(response.getTotalAmount()).isEqualTo(DATA_AMOUNT_2);
@@ -403,17 +371,18 @@ class TradeServiceTest {
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 
-				float dataAmount = DATA_AMOUNT_2;
+				BigDecimal dataAmount = DATA_AMOUNT_2;
 
-				given(productRepository.findMobileDataScrap(dataAmount)).willReturn(
+				given(productRepository.findMobileDataScrap(dataAmount,
+						BUYER_MEMBER_ID)).willReturn(
 						new ArrayList<>());
 
 				// when
 				FindMobileDataScrapResponse response = tradeService.findMobileDataScrap(
-						dataAmount);
+						dataAmount, BUYER_MEMBER_ID);
 
 				// then
-				assertThat(response.getTotalAmount()).isEqualTo(0);
+				assertThat(response.getTotalAmount()).isEqualTo(BigDecimal.ZERO);
 				assertThat(response.getTotalPrice()).isEqualTo(0); // 조합된 상품의 총 가격
 				assertThat(response.getCombinations().size()).isEqualTo(0); // 조합된 상품 개수 확인
 			}
@@ -479,8 +448,8 @@ class TradeServiceTest {
 				tradeService.scrapPurchaseMobileData(BUYER_MEMBER_ID, request);
 
 				// then
-				assertThat(mobileData1.getRemainAmount()).isEqualTo(0);
-				assertThat(mobileData2.getRemainAmount()).isEqualTo(0);
+				assertThat(mobileData1.getRemainAmount()).isEqualTo(BigDecimal.valueOf(0.0));
+				assertThat(mobileData2.getRemainAmount()).isEqualTo(BigDecimal.valueOf(0.0));
 
 				assertThat(buyer.getCash()).isEqualTo(CASH_5000 - request.totalPrice());
 				assertThat(buyer.getBuyingData()).isEqualTo(request.totalAmount());
@@ -549,7 +518,7 @@ class TradeServiceTest {
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 
 				MobileData mobileData1 = MobileDataFixture.createMobileDataWithId(MOBILE_DATA_ID,
-						DATA_AMOUNT_1, 0, PRICE_PER_100MB_150);
+						DATA_AMOUNT_1, BigDecimal.ZERO, PRICE_PER_100MB_150);
 				MobileData mobileData2 = MobileDataFixture.createMobileDataSplitTypeWithId(
 						MOBILE_DATA_ID + 1, DATA_AMOUNT_2, REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
 				Product product1 = ProductFixture.createMobileDataProductWithId(
@@ -719,8 +688,8 @@ class TradeServiceTest {
 				PurchaseHistorySummary summary1 = new PurchaseHistorySummary(
 
 						TRADE_ID_1,
-						WIFI,
-						0f,
+						PURCHASE_WIFI,
+						BigDecimal.valueOf(0),
 						TITLE,
 						trade1.getCreatedAt()
 				);
@@ -728,8 +697,8 @@ class TradeServiceTest {
 				PurchaseHistorySummary summary2 = new PurchaseHistorySummary(
 
 						TRADE_ID_2,
-						WIFI,
-						0f,
+						PURCHASE_WIFI,
+						BigDecimal.valueOf(0),
 						TITLE + 1,
 						trade2.getCreatedAt()
 				);
@@ -751,10 +720,10 @@ class TradeServiceTest {
 				assertThat(response.getTradeCount()).isEqualTo(DEFAULT_SIZE_2);
 				assertThat(response.getTrades().getData().size()).isEqualTo(DEFAULT_SIZE_2);
 
-				assertThat(result1.getTradeType()).isEqualTo(WIFI);
+				assertThat(result1.getTradeType()).isEqualTo(PURCHASE_WIFI);
 				assertThat(result1.getTitle()).isEqualTo(TITLE);
 
-				assertThat(result2.getTradeType()).isEqualTo(WIFI);
+				assertThat(result2.getTradeType()).isEqualTo(PURCHASE_WIFI);
 				assertThat(result2.getTitle()).isEqualTo(TITLE + 1);
 			}
 		}
@@ -787,11 +756,11 @@ class TradeServiceTest {
 						CursorPageResponse.of(
 								List.of(
 										new CashHistorySummary(TRADE_ID_1, wifiTrade.getTradeType(),
-												wifiTrade.getTradingPrice(), "0.5",
+												wifiTrade.getTradingPrice(), "0.5", "구매",
 												LocalDateTime.now()),
 										new CashHistorySummary(TRADE_ID_2,
 												chargeTrade.getTradeType(),
-												wifiTrade.getTradingPrice(), "60",
+												wifiTrade.getTradingPrice(), "60", "구매",
 												LocalDateTime.now())
 								),
 								PageInfo.of(null, false, 2)

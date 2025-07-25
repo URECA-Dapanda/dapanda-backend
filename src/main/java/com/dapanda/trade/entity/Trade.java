@@ -3,6 +3,9 @@ package com.dapanda.trade.entity;
 import com.dapanda.common.entity.CreatedAtEntity;
 import com.dapanda.member.entity.Member;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
+import lombok.*;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -16,7 +19,7 @@ public class Trade extends CreatedAtEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	private Float dataAmount;
+	private BigDecimal dataAmount;
 
 	private Integer timeAmount;
 
@@ -29,7 +32,7 @@ public class Trade extends CreatedAtEntity {
 	@JoinColumn(name = "member_id")
 	private Member member;
 
-	public static Trade of(Float dataAmount, Integer timeAmount, int tradingPrice,
+	public static Trade of(BigDecimal dataAmount, Integer timeAmount, int tradingPrice,
 			TradeType tradeType, Member member) {
 
 		return Trade.builder()
@@ -41,7 +44,8 @@ public class Trade extends CreatedAtEntity {
 				.build();
 	}
 
-	public static Trade of(Float dataAmount, int tradingPrice, TradeType tradeType, Member member) {
+	public static Trade of(BigDecimal dataAmount, int tradingPrice, TradeType tradeType,
+			Member member) {
 
 		return Trade.builder()
 				.dataAmount(dataAmount)

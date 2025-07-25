@@ -1,33 +1,20 @@
 package com.dapanda.product.service;
 
+import com.dapanda.common.dto.response.CountCursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.common.service.S3Service;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
-import com.dapanda.product.dto.request.CreateMobileDataRequest;
-import com.dapanda.product.dto.request.CreateWifiRequest;
-import com.dapanda.product.dto.request.ReadSellingProductRequest;
-import com.dapanda.product.dto.request.UpdateMobileDataRequest;
-import com.dapanda.product.dto.request.UpdateWifiRequest;
-import com.dapanda.product.dto.response.FindMarketPriceResponse;
-import com.dapanda.product.dto.response.MobileDataInfoResponse;
-import com.dapanda.product.dto.response.ReadSellingProductResponse;
-import com.dapanda.product.dto.response.UpdateMobileDataResponse;
-import com.dapanda.product.dto.response.UpdateWifiResponse;
-import com.dapanda.product.dto.response.WifiInfoResponse;
-import com.dapanda.product.entity.ItemType;
-import com.dapanda.product.entity.MobileData;
-import com.dapanda.product.entity.Product;
-import com.dapanda.product.entity.ProductSortOption;
-import com.dapanda.product.entity.ProductState;
-import com.dapanda.product.entity.Wifi;
-import com.dapanda.product.repository.MobileDataRepository;
-import com.dapanda.product.repository.ProductRepository;
-import com.dapanda.product.repository.WifiRepository;
+import com.dapanda.product.dto.request.*;
+import com.dapanda.product.dto.response.*;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.*;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -41,18 +28,24 @@ public class ProductService {
 
 	private final ProductRepository productRepository;
 
+	private final ProductImageRepository productImageRepository;
+
 	private final MobileDataRepository mobileDataRepository;
 
 	private final WifiRepository wifiRepository;
 
 	private final MemberRepository memberRepository;
 
-	public CursorPageResponse<ReadSellingProductResponse> readSellingProduct(
+	private final S3Service s3Service;
+
+	public CountCursorPageResponse<ReadSellingProductResponse> readSellingProduct(
 			ReadSellingProductRequest request) {
 
 		validateMemberId(request.memberId());
 
 		List<ReadSellingProductResponse> response = productRepository.findSellingProduct(request);
+
+		Long count = productRepository.countSellingProduct(request);
 
 		boolean hasNext = response.size() > request.size();
 
@@ -64,20 +57,17 @@ public class ProductService {
 				? response.get(response.size() - 1).getProductId()
 				: null;
 
-		CursorPageResponse.PageInfo pageInfo = CursorPageResponse.PageInfo.of(
+		CountCursorPageResponse.PageInfo pageInfo = CountCursorPageResponse.PageInfo.of(
 				nextCursorId,
 				hasNext,
 				request.size()
 		);
 
-		return CursorPageResponse.of(response, pageInfo);
+		return CountCursorPageResponse.of(response, pageInfo, count);
 	}
 
-//	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(
-//			MobileDataCursorRequest request) {
-
 	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, Integer size,
-			String productSortOption, Float dataAmount) {
+			String productSortOption, BigDecimal dataAmount) {
 
 		return productRepository.findMobileDataByCursor(cursorId, size,
 				ProductSortOption.from(productSortOption), dataAmount);
@@ -90,13 +80,13 @@ public class ProductService {
 				ProductSortOption.from(productSortOption), open, latitude, longitude);
 	}
 
-	public MobileDataInfoResponse findMobileDataInfo(Long productId) {
+	public MobileDataInfoResponse findMobileDataInfo(Long productId, Long memberId) {
 
 		if (!productRepository.existsById(productId)) {
 			throw new GlobalException(ResultCode.PRODUCT_NOT_FOUND);
 		}
 
-		MobileDataInfoResponse response = productRepository.findMobileDataInfo(productId);
+		MobileDataInfoResponse response = productRepository.findMobileDataInfo(productId, memberId);
 
 		if (response == null) {
 			throw new GlobalException(ResultCode.INVALID_PRODUCT);
@@ -105,13 +95,13 @@ public class ProductService {
 		return response;
 	}
 
-	public WifiInfoResponse findWifiInfo(Long productId) {
+	public WifiInfoResponse findWifiInfo(Long productId, Long memberId) {
 
 		if (!productRepository.existsById(productId)) {
 			throw new GlobalException(ResultCode.PRODUCT_NOT_FOUND);
 		}
 
-		WifiInfoResponse response = productRepository.findWifiInfo(productId);
+		WifiInfoResponse response = productRepository.findWifiInfo(productId, memberId);
 
 		if (response == null) {
 			throw new GlobalException(ResultCode.INVALID_PRODUCT);
@@ -128,13 +118,14 @@ public class ProductService {
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
-		Float soldAmount = productRepository.sumSoldMobileDataAmountByMemberId(member.getId());
+		BigDecimal soldAmount = productRepository.sumSoldMobileDataAmountByMemberId(member.getId());
 		if (soldAmount == null) {
-			soldAmount = 0f;
+			soldAmount = BigDecimal.ZERO;
 		}
 
-		float willSellAmount = request.getDataAmount();
-		if (soldAmount + willSellAmount > MobileData.MAX_TRANSFERABLE_DATA_AMOUNT * 1000) {
+		BigDecimal willSellAmount = request.getDataAmount();
+		if (soldAmount.add(willSellAmount)
+				.compareTo(BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
 			throw new GlobalException(ResultCode.EXCEEDED_TRANSFER_LIMIT);
 		}
 
@@ -161,6 +152,10 @@ public class ProductService {
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
+		if (request.getStartTime().isBefore(LocalDateTime.now())) {
+			throw new GlobalException(ResultCode.START_TIME_BEFORE_NOW);
+		}
+
 		Wifi savedWifi = wifiRepository.save(
 				Wifi.of(
 						request.getTitle(),
@@ -183,6 +178,23 @@ public class ProductService {
 				)
 		);
 
+		List<String> images = request.getImages();
+		if (images != null && !images.isEmpty()) {
+			int idx = 0;
+			for (String imgUrl : images) {
+				// 확장자 체크 (jpg, jpeg, png만 허용)
+				if (s3Service.isNotValidImageExtension(imgUrl)) {
+					throw new GlobalException(ResultCode.INVALID_IMAGE_FORMAT);
+				}
+				ProductImage productImage = ProductImage.of(
+						imgUrl,
+						idx++, // 리스트 순서가 priority
+						savedWifi.getId()
+				);
+				productImageRepository.save(productImage);
+			}
+		}
+
 		validateProductOwner(savedProduct, memberId);
 	}
 
@@ -200,8 +212,8 @@ public class ProductService {
 		validateProductOwner(savedProduct, memberId);
 		validateDataAmount(request.changedAmount(), savedMobileData, memberId);
 
-		int changedPricePer100MB = (int) (request.price() / (savedMobileData.getDataAmount()
-				* 1000));
+		int changedPricePer100MB = (int) Math.ceil(
+				request.price() / (savedMobileData.getDataAmount().floatValue() * 10));
 
 		savedProduct.updatePrice(request.price());
 		savedMobileData.updateMobileData(request.changedAmount(), changedPricePer100MB,
@@ -257,19 +269,22 @@ public class ProductService {
 		}
 	}
 
-	private void validateDataAmount(float changedDataAmount, MobileData savedMobileData,
+	private void validateDataAmount(BigDecimal changedDataAmount, MobileData savedMobileData,
 			Long memberId) {
 
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
-		float resultDataAmount = savedMobileData.getDataAmount() + changedDataAmount;
+		BigDecimal resultDataAmount = savedMobileData.getDataAmount().add(changedDataAmount);
 
-		if (resultDataAmount <= 0 || resultDataAmount > MobileData.MAX_TRANSFERABLE_DATA_AMOUNT) {
+		if (resultDataAmount.compareTo(BigDecimal.ZERO) <= 0 || resultDataAmount.compareTo(
+				BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
 			throw new GlobalException(ResultCode.INVALID_DATA_TRANSFER_AMOUNT);
 		}
 
-		if (member.getSellingData() + changedDataAmount > MobileData.MAX_TRANSFERABLE_DATA_AMOUNT) {
+		System.out.println("member.getSellingData() = " + member.getSellingData());
+		if (member.getSellingData().add(changedDataAmount)
+				.compareTo(BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
 			throw new GlobalException(ResultCode.EXCEEDED_TRANSFER_LIMIT);
 		}
 	}
@@ -280,7 +295,6 @@ public class ProductService {
 			throw new GlobalException(ResultCode.OTHER_PRODUCT);
 		}
 	}
-
 
 	private void validateMemberId(Long memberId) {
 
@@ -294,4 +308,5 @@ public class ProductService {
 
 		return productRepository.findMarketPrice(ItemType.valueOf(productType));
 	}
+
 }

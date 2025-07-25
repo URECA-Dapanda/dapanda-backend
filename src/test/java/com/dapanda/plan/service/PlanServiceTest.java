@@ -1,28 +1,17 @@
 package com.dapanda.plan.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.dapanda.member.entity.Member;
 import com.dapanda.plan.dto.response.PlanInfoResponse;
-import com.dapanda.plan.entity.AgeGroup;
-import com.dapanda.plan.entity.Plan;
-import com.dapanda.plan.entity.PlanCategory;
+import com.dapanda.plan.entity.*;
 import com.dapanda.plan.repository.PlanRepository;
+import java.math.BigDecimal;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -115,7 +104,7 @@ class PlanServiceTest {
 
 				when(planRepository.findByMemberId(memberId)).thenReturn(Optional.of(plan));
 				when(plan.getName()).thenReturn("프리미엄");
-				when(plan.getProvidingDataAmount()).thenReturn(30.0f);
+				when(plan.getProvidingDataAmount()).thenReturn(BigDecimal.valueOf(30.0));
 				when(plan.getMonthlyPrice()).thenReturn(25000);
 
 				// when
@@ -124,7 +113,8 @@ class PlanServiceTest {
 				// then
 				assertThat(result).isNotNull();
 				assertThat(result.getName()).isEqualTo("프리미엄");
-				assertThat(result.getProvidingDataAmount()).isEqualTo(30.0f);
+				assertThat(result.getProvidingDataAmount()).isEqualByComparingTo(
+						BigDecimal.valueOf(30.0));
 				assertThat(result.getMonthlyPrice()).isEqualTo(25000);
 				verify(planRepository, times(1)).findByMemberId(memberId);
 			}

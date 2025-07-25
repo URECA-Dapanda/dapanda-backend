@@ -4,13 +4,11 @@ import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.ReadSellingProductRequest;
-import com.dapanda.product.dto.response.FindMarketPriceResponse;
-import com.dapanda.product.dto.response.MobileDataInfoResponse;
-import com.dapanda.product.dto.response.ReadSellingProductResponse;
-import com.dapanda.product.dto.response.WifiInfoResponse;
+import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.ProductSortOption;
 import com.dapanda.trade.dto.MobileDataScrap;
+import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 
@@ -18,22 +16,24 @@ import org.springframework.stereotype.Repository;
 public interface ProductCustomRepository {
 
 	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, int size,
-			ProductSortOption productSortOption, Float dataAmount);
+			ProductSortOption productSortOption, BigDecimal dataAmount);
 
 	public CursorPageResponse<WifiSummary> findWifiByCursor(Long cursorId, int size,
 			ProductSortOption productSortOption, boolean isOpen, Double latitude, Double longitude);
 
-	public MobileDataInfoResponse findMobileDataInfo(Long productId);
+	public MobileDataInfoResponse findMobileDataInfo(Long productId, Long memberId);
 
-	public WifiInfoResponse findWifiInfo(Long productId);
+	public WifiInfoResponse findWifiInfo(Long productId, Long memberId);
 
 	public List<String> findWifiImages(Long wifiId);
 
-	public Float sumSoldMobileDataAmountByMemberId(Long memberId);
+	public BigDecimal sumSoldMobileDataAmountByMemberId(Long memberId);
 
 	List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request);
 
-	List<MobileDataScrap> findMobileDataScrap(float dataAmount);
+	List<MobileDataScrap> findMobileDataScrap(BigDecimal dataAmount, Long memberId);
 
 	FindMarketPriceResponse findMarketPrice(ItemType itemType);
+
+	Long countSellingProduct(ReadSellingProductRequest request);
 }
