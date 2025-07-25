@@ -9,7 +9,7 @@ import static com.dapanda.TestConstants.Product.*;
 import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
 import static com.dapanda.TestConstants.Trade.TRADE_ID_2;
 import static com.dapanda.TestConstants.Wifi.*;
-import static com.dapanda.trade.entity.TradeType.WIFI;
+import static com.dapanda.trade.entity.TradeType.PURCHASE_WIFI;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
@@ -688,7 +688,7 @@ class TradeServiceTest {
 				PurchaseHistorySummary summary1 = new PurchaseHistorySummary(
 
 						TRADE_ID_1,
-						WIFI,
+						PURCHASE_WIFI,
 						BigDecimal.valueOf(0),
 						TITLE,
 						trade1.getCreatedAt()
@@ -697,7 +697,7 @@ class TradeServiceTest {
 				PurchaseHistorySummary summary2 = new PurchaseHistorySummary(
 
 						TRADE_ID_2,
-						WIFI,
+						PURCHASE_WIFI,
 						BigDecimal.valueOf(0),
 						TITLE + 1,
 						trade2.getCreatedAt()
@@ -720,10 +720,10 @@ class TradeServiceTest {
 				assertThat(response.getTradeCount()).isEqualTo(DEFAULT_SIZE_2);
 				assertThat(response.getTrades().getData().size()).isEqualTo(DEFAULT_SIZE_2);
 
-				assertThat(result1.getTradeType()).isEqualTo(WIFI);
+				assertThat(result1.getTradeType()).isEqualTo(PURCHASE_WIFI);
 				assertThat(result1.getTitle()).isEqualTo(TITLE);
 
-				assertThat(result2.getTradeType()).isEqualTo(WIFI);
+				assertThat(result2.getTradeType()).isEqualTo(PURCHASE_WIFI);
 				assertThat(result2.getTitle()).isEqualTo(TITLE + 1);
 			}
 		}
@@ -756,11 +756,11 @@ class TradeServiceTest {
 						CursorPageResponse.of(
 								List.of(
 										new CashHistorySummary(TRADE_ID_1, wifiTrade.getTradeType(),
-												wifiTrade.getTradingPrice(), "0.5",
+												wifiTrade.getTradingPrice(), "0.5", "구매",
 												LocalDateTime.now()),
 										new CashHistorySummary(TRADE_ID_2,
 												chargeTrade.getTradeType(),
-												wifiTrade.getTradingPrice(), "60",
+												wifiTrade.getTradingPrice(), "60", "구매",
 												LocalDateTime.now())
 								),
 								PageInfo.of(null, false, 2)

@@ -14,7 +14,7 @@ public class TradeFixture {
 		return Trade.of(
 				BigDecimal.valueOf(0.5),
 				1000,
-				TradeType.MOBILE_PURCHASE_SINGLE,
+				TradeType.PURCHASE_MOBILE_SINGLE,
 				member
 		);
 	}
@@ -42,7 +42,7 @@ public class TradeFixture {
 		return Trade.of(
 				30,
 				1000,
-				TradeType.WIFI,
+				TradeType.PURCHASE_WIFI,
 				member
 		);
 	}
@@ -59,8 +59,9 @@ public class TradeFixture {
 	public static Trade createTradeSale(Member member) {
 
 		return Trade.of(
+				BigDecimal.valueOf(2.0),
 				1000,
-				TradeType.SALE,
+				TradeType.SALE_MOBILE_DATA,
 				member
 		);
 	}
