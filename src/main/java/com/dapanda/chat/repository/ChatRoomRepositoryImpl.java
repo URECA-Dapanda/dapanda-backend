@@ -5,7 +5,7 @@ import com.dapanda.chat.dto.response.ReadJoiningChatRoomResponse;
 import com.dapanda.chat.entity.ChatRoomReadOption;
 import com.dapanda.product.entity.ItemType;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -70,8 +70,8 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 			);
 		}
 
-		List<Tuple> tuples = jpaQueryFactory
-				.select(
+		return jpaQueryFactory
+				.select(Projections.constructor(ReadJoiningChatRoomResponse.class,
 						chatRoom.id,
 						chatRoom.createdAt,
 						chatRoom.lastMessageAt,
@@ -82,7 +82,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 						product.itemType,
 						wifi.startTime,
 						wifi.endTime
-				)
+				))
 				.from(chatParticipant)
 				.join(chatParticipant.chatRoom, chatRoom)
 				.join(chatParticipant.member, member)
@@ -95,20 +95,5 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 				.orderBy(chatRoom.lastMessageAt.desc(), chatRoom.createdAt.desc())
 				.limit(request.size() + 1)
 				.fetch();
-
-		return tuples.stream()
-				.map(tuple -> ReadJoiningChatRoomResponse.of(
-						tuple.get(chatRoom.id),
-						tuple.get(chatRoom.createdAt),
-						tuple.get(chatRoom.lastMessageAt),
-						tuple.get(member.id),
-						tuple.get(member.name),
-						tuple.get(product.id),
-						tuple.get(product.itemId),
-						tuple.get(product.itemType),
-						tuple.get(wifi.startTime),
-						tuple.get(wifi.endTime)
-				))
-				.toList();
 	}
 }
