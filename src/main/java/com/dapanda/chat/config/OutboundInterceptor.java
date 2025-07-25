@@ -38,6 +38,7 @@ public class OutboundInterceptor implements ChannelInterceptor {
 
 			return null;
 		}
+
 		return message;
 	}
 }
