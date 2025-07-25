@@ -1379,7 +1379,7 @@ class TradeControllerTest {
 												"거래 아이디 ("),
 										fieldWithPath(
 												"data.cashHistorySummary.data[].tradeType").description(
-												"거래 타입 (데이터 일반 구매: PURCHASE_MOBILE_SINGLE, 데이터 자투리 구매: PURCHASE_MOBILE_COMPOSITE, 와이파이: PURCHASE_WIFI, 판매: SALE, 충전: CHARGE, 출금: REFUND"),
+												"거래 타입 (데이터 일반 구매: PURCHASE_MOBILE_SINGLE, 데이터 자투리 구매: PURCHASE_MOBILE_COMPOSITE, 와이파이: PURCHASE_WIFI, 데이터 판매: SALE_MOBILE_DATA, 와이파이 판매: SALE_WIFI, 충전: CHARGE, 출금: REFUND"),
 										fieldWithPath(
 												"data.cashHistorySummary.data[].price").description(
 												"거래 금액"),
