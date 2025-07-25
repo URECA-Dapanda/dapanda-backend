@@ -143,7 +143,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.orderBy(
 						productSortOption == ProductSortOption.PRICE_ASC ? product.price.asc() :
 								productSortOption == ProductSortOption.AVERAGE_RATE_DESC
-										? review.rating.avg().desc() :
+										? member.averageRating.desc() :
 										distance.asc(),
 						product.id.asc()
 				)

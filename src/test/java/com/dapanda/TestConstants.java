@@ -14,6 +14,7 @@ public final class TestConstants {
 		public static final Long SELLER_MEMBER_ID = 3L;
 		public static final Long MEMBER_ID = 1L;
 		public static final Long OTHER_MEMBER_ID = 2L;
+		public static final int CASH_0 = 0;
 		public static final int CASH_3000 = 3000;
 		public static final int CASH_5000 = 5000;
 		public static final BigDecimal BUYING_DATA = BigDecimal.valueOf(1.0);
@@ -115,5 +116,17 @@ public final class TestConstants {
 		public static final Long CHAT_PARTICIPANT_ID_2 = 2L;
 		public static final String CHAT_MESSAGE = "안녕하세요~~";
 		public static final Long CHAT_MESSAGE_ID = 1L;
+	}
+
+	public static final class Payment {
+
+		public static final Long PAYMENT_ID = 1L;
+		public static final String REQUEST_ID = "REQUEST_ID_1";
+		public static final String DUPLICATE_REQUEST_ID = "refund:REQUEST_ID_1";
+		public static final String INVALID_REQUEST_ID = " ";
+		public static final int CHARGE_AMOUNT_3000 = 3000;
+		public static final int REFUND_AMOUNT_3000 = 3000;
+		public static final String APPROVED_AT = "2025-07-25T13:44:09+09:00";
+		public static final int TOTAL_AMOUNT_3000 = 3000;
 	}
 }

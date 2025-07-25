@@ -260,29 +260,30 @@ include::{snippets}/report/create-report/validation-error/http-response.adoc[]
 
 === 결제
 
+[[resources-payment]]
 결제 리소스는 사용자가 캐시를 충전하는 데 사용됩니다.
 
 [[resources-payment-save-amount]]
 ==== 결제 금액 임시 저장
 
-`POST /api/payments/save-amount`
+`POST /api/payments/cash-charge-save-amount`
 주문 아이디와 결제 금액을 세션에 임시 저장합니다.
 
 ===== 요청
 
-include::{snippets}/save-amount/http-request.adoc[]
+include::{snippets}/payments/save-amount/http-request.adoc[]
 
 ===== 요청 필드
 
-include::{snippets}/save-amount/request-fields.adoc[]
+include::{snippets}/payments/save-amount/request-fields.adoc[]
 
 ===== 응답
 
-include::{snippets}/save-amount/http-response.adoc[]
+include::{snippets}/payments/save-amount/http-response.adoc[]
 
 ===== 응답 필드
 
-include::{snippets}/save-amount/response-fields.adoc[]
+include::{snippets}/payments/save-amount/response-fields.adoc[]
 
 [[resources-payment-verify-amount]]
 ==== 결제 금액 검증
@@ -292,63 +293,104 @@ include::{snippets}/save-amount/response-fields.adoc[]
 
 ===== 요청
 
-include::{snippets}/verify-amount/http-request.adoc[]
+include::{snippets}/payments/verify-amount/http-request.adoc[]
 
 ===== 요청 필드
 
-include::{snippets}/verify-amount/request-fields.adoc[]
+include::{snippets}/payments/verify-amount/request-fields.adoc[]
 
 ===== 응답
 
-include::{snippets}/verify-amount/http-response.adoc[]
+include::{snippets}/payments/verify-amount/http-response.adoc[]
 
 ===== 응답 필드
 
-include::{snippets}/verify-amount/response-fields.adoc[]
+include::{snippets}/payments/verify-amount/response-fields.adoc[]
 
 ===== 실패 요청
 
 ====== 금액 불일치
 
-include::{snippets}/verify-amount-mismatch-error/http-request.adoc[]
+include::{snippets}/payments/verify-amount-mismatch-error/http-request.adoc[]
 
-include::{snippets}/verify-amount-mismatch-error/http-response.adoc[]
+include::{snippets}/payments/verify-amount-mismatch-error/http-response.adoc[]
 
 [[resources-payment-confirm]]
-==== 결제 승인
+==== 캐시 충전
 
-`POST /api/payments/confirm`
+`POST /api/payments/charge`
 토스 결제 승인 요청을 수행하고, 승인 결과와 결제 정보를 반환합니다.
 
 ===== 요청
 
-include::{snippets}/confirm-payment/http-request.adoc[]
+include::{snippets}/payments/charge-cash/http-request.adoc[]
 
 ===== 요청 필드
 
-include::{snippets}/confirm-payment/request-fields.adoc[]
+include::{snippets}/payments/charge-cash/request-fields.adoc[]
 
 ===== 응답
 
-include::{snippets}/confirm-payment/http-response.adoc[]
+include::{snippets}/payments/charge-cash/http-response.adoc[]
 
 ===== 응답 필드
 
-include::{snippets}/confirm-payment/response-fields.adoc[]
+include::{snippets}/payments/charge-cash/response-fields.adoc[]
 
 ===== 실패 요청
 
 ====== 토스 결제 승인 실패
 
-include::{snippets}/confirm-payment-error/http-request.adoc[]
+include::{snippets}/payments/charge-cash-payment-error/http-request.adoc[]
 
-include::{snippets}/confirm-payment-error/http-response.adoc[]
+include::{snippets}/payments/charge-cash-payment-error/http-response.adoc[]
 
 ====== 결제 금액이 0 이하
 
-include::{snippets}/confirm-payment-invalid-amount-error/http-request.adoc[]
+include::{snippets}/payments/charge-cash-payment-invalid-amount-error/http-request.adoc[]
 
-include::{snippets}/confirm-payment-invalid-amount-error/http-response.adoc[]
+include::{snippets}/payments/charge-cash-payment-invalid-amount-error/http-response.adoc[]
+
+==== 캐시 환불
+
+`POST /api/payments/refund`
+캐시 환불을 합니다.
+
+===== 요청
+
+include::{snippets}/payments/refund-cash/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/payments/refund-cash/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/payments/refund-cash/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/payments/refund-cash/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 유효하지 않은 요청 아이디
+
+include::{snippets}/payments/refund-cash-invalid-request-id-error/http-request.adoc[]
+
+include::{snippets}/payments/refund-cash-invalid-request-id-error/http-response.adoc[]
+
+====== 이미 존재하는 요청
+
+include::{snippets}/payments/refund-cash-duplicate-request-id-error/http-request.adoc[]
+
+include::{snippets}/payments/refund-cash-duplicate-request-id-error/http-response.adoc[]
+
+====== 유효하지 않은 환불 캐시
+
+include::{snippets}/payments/refund-cash-invalid-cash-amount-error/http-request.adoc[]
+
+include::{snippets}/payments/refund-cash-invalid-cash-amount-error/http-response.adoc[]
 
 ---
 
