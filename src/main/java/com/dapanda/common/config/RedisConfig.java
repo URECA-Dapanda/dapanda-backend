@@ -6,10 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.*;
 
@@ -23,18 +22,18 @@ public class RedisConfig {
 	@Value("${spring.data.redis.port}")
 	private int redisPort;
 
-	@Bean
-	@Primary
-	public RedisTemplate<String, String> stringRedisTemplate(
-			RedisConnectionFactory connectionFactory) {
-
-		RedisTemplate<String, String> template = new RedisTemplate<>();
-		template.setConnectionFactory(connectionFactory);
-		template.setKeySerializer(new StringRedisSerializer());
-		template.setValueSerializer(new StringRedisSerializer());
-
-		return template;
-	}
+//	@Bean(name = "customStringRedisTemplate")
+//	@Primary
+//	public RedisTemplate<String, String> stringRedisTemplate(
+//			RedisConnectionFactory connectionFactory) {
+//
+//		RedisTemplate<String, String> template = new RedisTemplate<>();
+//		template.setConnectionFactory(connectionFactory);
+//		template.setKeySerializer(new StringRedisSerializer());
+//		template.setValueSerializer(new StringRedisSerializer());
+//
+//		return template;
+//	}
 
 	@Bean
 	public GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer() {
