@@ -51,6 +51,8 @@ public enum ResultCode {
 	MOBILE_DATA_NOT_FOUND(HttpStatus.BAD_REQUEST, 3009, "존재하지 않는 데이터 상품입니다."),
 	WIFI_NOT_FOUND(HttpStatus.BAD_REQUEST, 3010, "존재하지 않는 와이파이 상품입니다."),
 	NOT_FOUND_PLAN(HttpStatus.BAD_REQUEST, 3011, "회원의 요금제 정보가 존재하지 않습니다."),
+	START_TIME_BEFORE_NOW(HttpStatus.BAD_REQUEST, 3012, "현재보다 더 일찍 시작할 수 없습니다."),
+	INVALID_IMAGE_FORMAT(HttpStatus.BAD_REQUEST, 3013, "허용되지 않은 이미지 형식입니다."),
 
 	// 거래 4000번대
 	TRADE_NOT_FOUND(HttpStatus.BAD_REQUEST, 4000, "거래 이력을 찾을 수 없습니다."),
@@ -67,10 +69,10 @@ public enum ResultCode {
 	FAIL_PAYMENT_APPROVAL(HttpStatus.BAD_REQUEST, 5001, "결제 승인에 실패했습니다."),
 	INVALID_PAYMENT_AMOUNT(HttpStatus.BAD_REQUEST, 5002, "결제 금액이 유효하지 않습니다."),
 	PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, 5003, "결제 요청 금액과 일치하지 않습니다."),
-	INVALID_CASH_AMOUNT(HttpStatus.BAD_REQUEST, 5004, "환불 요청한 캐시가 보유한 캐시보다 많습니다."),
-	INVALID_REQUEST_ID(HttpStatus.BAD_REQUEST, 5005, "유효하지 않은 요청 아이디입니다."),
-	DUPLICATE_REQUEST(HttpStatus.BAD_REQUEST, 5006, "이미 처리된 요청입니다."),
-	REQUEST_TIMEOUT(HttpStatus.BAD_REQUEST, 5007, "요청이 지연되었습니다. 잠시 후 다시 시도해주세요."),
+	INVALID_REQUEST_ID(HttpStatus.BAD_REQUEST, 5003, "유효하지 않은 요청 아이디입니다."),
+	DUPLICATE_REQUEST(HttpStatus.BAD_REQUEST, 5005, "이미 처리된 요청입니다."),
+	REQUEST_TIMEOUT(HttpStatus.BAD_REQUEST, 5006, "결제 요청 시간이 초과되었습니다. 잠시 후 다시 시도해주세요."),
+	INVALID_CASH_AMOUNT(HttpStatus.BAD_REQUEST, 5007, "유효하지 않은 캐시 금액입니다."),
 
 	// 리뷰 6000번대
 	SELF_REVIEW(HttpStatus.BAD_REQUEST, 6000, "자신에게 리뷰를 작성할 수 없습니다."),
@@ -84,6 +86,7 @@ public enum ResultCode {
 	CHAT_OWN_PRODUCT(HttpStatus.BAD_REQUEST, 8000, "자기 상품의 채팅방은 생성할 수 없습니다."),
 	CHAT_ROOM_NOT_FOUND(HttpStatus.BAD_REQUEST, 8001, "채팅방을 찾을 수 없습니다."),
 	CHAT_ROOM_ACCESS_DENIED(HttpStatus.BAD_REQUEST, 8002, "해당 채팅방의 참가자가 아닙니다."),
+	STOMP_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, 8003, "인증되지 않은 사용자 입니다."),
 
 	// 관리자 9000번대
 
