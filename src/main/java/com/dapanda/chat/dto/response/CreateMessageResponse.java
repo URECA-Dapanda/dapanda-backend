@@ -5,8 +5,8 @@ import lombok.*;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class CreateMessageResponse {
 
 	private SendMessageDto sendMessageDto;
