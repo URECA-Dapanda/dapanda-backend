@@ -1,23 +1,19 @@
 package com.dapanda.payment.dto.response;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class ConfirmPaymentResponse {
+public class ChargeCashResponse {
 
 	private Long paymentId;
 	private int totalAmount;
 
-	public static ConfirmPaymentResponse of(Long paymentId, int totalAmount) {
+	public static ChargeCashResponse of(Long paymentId, int totalAmount) {
 
-		return ConfirmPaymentResponse.builder()
+		return ChargeCashResponse.builder()
 				.paymentId(paymentId)
 				.totalAmount(totalAmount)
 				.build();

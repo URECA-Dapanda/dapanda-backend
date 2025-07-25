@@ -63,7 +63,7 @@ public class PaymentService {
 	@Transactional
 	public void updateCash(Long memberId, int amount) {
 
-		Member member = memberRepository.findById(memberId)
+		Member member = memberRepository.findByIdForUpdate(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
 		member.addCash(amount);
