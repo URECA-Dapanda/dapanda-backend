@@ -982,10 +982,9 @@ class ProductControllerTest {
 
 				assertThat(updatedProduct.getId()).isEqualTo(product.getId());
 				assertThat(updatedProduct.getPrice()).isEqualTo(NEW_PRICE_9000);
-				assertThat(updatedMobileData.getDataAmount()).isEqualByComparingTo(
-						BEFORE_DATA_AMOUNT.add(CHANGED_AMOUNT));
+				assertThat(updatedMobileData.getDataAmount()).isEqualByComparingTo(CHANGED_AMOUNT);
 				assertThat(updatedMobileData.getRemainAmount()).isEqualByComparingTo(
-						BEFORE_REMAIN_AMOUNT.add(CHANGED_AMOUNT));
+						CHANGED_AMOUNT);
 			}
 		}
 
