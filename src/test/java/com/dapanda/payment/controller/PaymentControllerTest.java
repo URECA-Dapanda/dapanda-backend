@@ -422,7 +422,8 @@ class PaymentControllerTest {
 						.andDo(print())
 						.andDo(document("payments/refund-cash",
 								requestFields(
-										fieldWithPath("requestId").description("환불 요청 아이디 (임의의 아이디 생성)"),
+										fieldWithPath("requestId").description(
+												"환불 요청 아이디 (임의의 아이디 생성)"),
 										fieldWithPath("refundAmount").description("환불 금액")
 								),
 								responseFields(
@@ -576,7 +577,6 @@ class PaymentControllerTest {
 //						try {
 //							Thread.sleep(40000000); // 오래 점유하여 다른 스레드 타임아웃 유도
 //						} catch (InterruptedException e) {
-//							System.out.println("e = " + e);
 //							throw new RuntimeException(e);
 //						}
 //					});
