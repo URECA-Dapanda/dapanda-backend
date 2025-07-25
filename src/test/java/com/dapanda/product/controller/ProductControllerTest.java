@@ -1147,12 +1147,14 @@ class ProductControllerTest {
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
 
+				List<String> imageUrls = List.of("image1.jpg", "image2.jpg", "image3.jpg");
+
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, START_TIME, END_TIME);
+						ADDRESS, imageUrls, START_TIME, END_TIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")
@@ -1172,6 +1174,7 @@ class ProductControllerTest {
 										fieldWithPath("content").description("상품 본문 (필수)"),
 										fieldWithPath("latitude").description("위도 (필수)"),
 										fieldWithPath("longitude").description("경도 (필수)"),
+										fieldWithPath("imageUrls").description("이미지 (필수)"),
 										fieldWithPath("address").description("지도 (필수)"),
 										fieldWithPath("startTime").description("시작 시간 (필수)"),
 										fieldWithPath("endTime").description("종료 시간 (필수)")
@@ -1212,13 +1215,14 @@ class ProductControllerTest {
 								START_TIME, END_TIME));
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member1));
+				List<String> imageUrls = List.of("image1.jpg", "image2.jpg", "image3.jpg");
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member2.getId());
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, START_TIME, END_TIME);
+						ADDRESS, imageUrls, START_TIME, END_TIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")
@@ -1238,6 +1242,7 @@ class ProductControllerTest {
 										fieldWithPath("latitude").description("위도 (필수)"),
 										fieldWithPath("longitude").description("경도 (필수)"),
 										fieldWithPath("address").description("주소 (필수)"),
+										fieldWithPath("imageUrls").description("이미지 (필수)"),
 										fieldWithPath("startTime").description("시작 시간 (필수)"),
 										fieldWithPath("endTime").description("종료 시간 (필수)")
 								),
@@ -1259,13 +1264,14 @@ class ProductControllerTest {
 								START_TIME, END_TIME));
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
+				List<String> imageUrls = List.of("image1.jpg", "image2.jpg", "image3.jpg");
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, WRONG_START_TIME, WRONG_END_TIME);
+						ADDRESS, imageUrls, WRONG_START_TIME, WRONG_END_TIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")
@@ -1285,6 +1291,7 @@ class ProductControllerTest {
 										fieldWithPath("latitude").description("위도 (필수)"),
 										fieldWithPath("longitude").description("경도 (필수)"),
 										fieldWithPath("address").description("주소 (필수)"),
+										fieldWithPath("imageUrls").description("이미지 (필수)"),
 										fieldWithPath("startTime").description("시작 시간 (필수)"),
 										fieldWithPath("endTime").description("종료 시간 (필수)")
 								),
