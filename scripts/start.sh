@@ -12,6 +12,23 @@ sudo chown ubuntu:ubuntu "$LOG_DIR"
 # 앱 실행
 echo "Starting $APP_NAME with prod profile..."
 nohup java -jar "$APP_DIR/$APP_NAME" --spring.profiles.active=prod > "$LOG_FILE" 2>&1 &
+# === 앱 Health Check 대기 ===
+echo "Waiting for application health check to pass..."
+
+for i in {1..30}; do
+  sleep 2
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health)
+  echo "  [$i] Health check status: $STATUS"
+  if [ "$STATUS" -eq 200 ]; then
+    echo "✅ Application is healthy."
+    break
+  fi
+done
+
+if [ "$STATUS" -ne 200 ]; then
+  echo "❌ Application health check failed. Exiting..."
+  exit 1
+fi
 # ===== CloudWatch Agent 설치 여부 확인 후 설치 =====
 echo "Checking CloudWatch Agent installation..."
 if ! command -v "$CLOUDWATCH_AGENT_BIN" &> /dev/null; then
