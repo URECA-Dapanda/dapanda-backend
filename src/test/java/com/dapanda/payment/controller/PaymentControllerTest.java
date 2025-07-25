@@ -151,7 +151,7 @@ class PaymentControllerTest {
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
-						.andDo(document("save-amount",
+						.andDo(document("payments/save-amount",
 								requestFields(
 										fieldWithPath("orderId").description(
 												"주문 아이디 (필수)"),
@@ -198,7 +198,7 @@ class PaymentControllerTest {
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
-						.andDo(document("verify-amount",
+						.andDo(document("payments/verify-amount",
 								requestFields(
 										fieldWithPath("orderId").description("주문 아이디 (필수)"),
 										fieldWithPath("amount").description("검증할 결제 금액 (필수)")
@@ -239,7 +239,7 @@ class PaymentControllerTest {
 								ResultCode.PAYMENT_AMOUNT_MISMATCH.getCode()))
 						.andExpect(jsonPath("$.message").value(
 								ResultCode.PAYMENT_AMOUNT_MISMATCH.getMessage()))
-						.andDo(document("verify-amount-mismatch-error",
+						.andDo(document("payments/verify-amount-mismatch-error",
 								requestFields(
 										fieldWithPath("orderId").description("주문 아이디 (필수)"),
 										fieldWithPath("amount").description("검증할 결제 금액 (필수)")
@@ -253,7 +253,7 @@ class PaymentControllerTest {
 	}
 
 	@Nested
-	@DisplayName("결제 승인 API")
+	@DisplayName("캐시 충전 API")
 	class Confirm {
 
 		@Nested
@@ -286,7 +286,7 @@ class PaymentControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andDo(print())
-						.andDo(document("charge-cash",
+						.andDo(document("payments/charge-cash",
 								requestFields(
 										fieldWithPath("paymentKey").description("토스 결제 키"),
 										fieldWithPath("orderId").description("주문 아이디"),
@@ -331,7 +331,7 @@ class PaymentControllerTest {
 								ResultCode.FAIL_PAYMENT_APPROVAL.getCode()))
 						.andExpect(jsonPath("$.message").value(
 								ResultCode.FAIL_PAYMENT_APPROVAL.getMessage()))
-						.andDo(document("charge-cash-confirm-payment-error",
+						.andDo(document("payments/charge-cash-payment-error",
 								requestFields(
 										fieldWithPath("paymentKey").description("토스 결제 키"),
 										fieldWithPath("orderId").description("주문 아이디"),
@@ -370,7 +370,7 @@ class PaymentControllerTest {
 								ResultCode.INVALID_PAYMENT_AMOUNT.getCode()))
 						.andExpect(jsonPath("$.message").value(
 								ResultCode.INVALID_PAYMENT_AMOUNT.getMessage()))
-						.andDo(document("confirm-payment-invalid-amount-error",
+						.andDo(document("payments/charge-cash-payment-invalid-amount-error",
 								requestFields(
 										fieldWithPath("paymentKey").description("토스 결제 키"),
 										fieldWithPath("orderId").description("주문 아이디"),
@@ -420,9 +420,9 @@ class PaymentControllerTest {
 						.andExpect(jsonPath("$.data.refundPrice").value(response.getRefundPrice()))
 						.andExpect(jsonPath("$.data.remainCash").value(response.getRemainCash()))
 						.andDo(print())
-						.andDo(document("refund-cash",
+						.andDo(document("payments/refund-cash",
 								requestFields(
-										fieldWithPath("requestId").description("환불 요청 아이디"),
+										fieldWithPath("requestId").description("환불 요청 아이디 (임의의 아이디 생성)"),
 										fieldWithPath("refundAmount").description("환불 금액")
 								),
 								responseFields(
@@ -464,7 +464,7 @@ class PaymentControllerTest {
 								jsonPath("$.code").value(ResultCode.INVALID_REQUEST_ID.getCode()))
 						.andExpect(jsonPath("$.message").value(
 								ResultCode.INVALID_REQUEST_ID.getMessage()))
-						.andDo(document("refund-cash-invalid-request-id-error",
+						.andDo(document("payments/refund-cash-invalid-request-id-error",
 								requestFields(
 										fieldWithPath("requestId").description("환불 요청 아이디"),
 										fieldWithPath("refundAmount").description("환불 금액")
@@ -501,7 +501,7 @@ class PaymentControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.DUPLICATE_REQUEST.getCode()))
 						.andExpect(jsonPath("$.message").value(
 								ResultCode.DUPLICATE_REQUEST.getMessage()))
-						.andDo(document("refund-cash-duplicate-request-id-error",
+						.andDo(document("payments/refund-cash-duplicate-request-id-error",
 								requestFields(
 										fieldWithPath("requestId").description("환불 요청 아이디"),
 										fieldWithPath("refundAmount").description("환불 금액")
@@ -538,7 +538,7 @@ class PaymentControllerTest {
 								jsonPath("$.code").value(ResultCode.INVALID_CASH_AMOUNT.getCode()))
 						.andExpect(jsonPath("$.message").value(
 								ResultCode.INVALID_CASH_AMOUNT.getMessage()))
-						.andDo(document("refund-cash-invalid-caash-amount-error",
+						.andDo(document("payments/refund-cash-invalid-cash-amount-error",
 								requestFields(
 										fieldWithPath("requestId").description("환불 요청 아이디"),
 										fieldWithPath("refundAmount").description("환불 금액")
@@ -550,6 +550,7 @@ class PaymentControllerTest {
 						));
 			}
 
+			// TODO: 비관적 락 테스트
 //			@Test
 //			@DisplayName("캐시 환불 요청이 지연될 경우 예외를 던진다")
 //			public void throwsExceptionWhenRequestDelay() throws Exception {
