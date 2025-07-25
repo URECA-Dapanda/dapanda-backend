@@ -3,9 +3,7 @@ package com.dapanda.chat.controller;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.chat.dto.request.ReadChatMessageHistoryRequest;
 import com.dapanda.chat.dto.request.ReadJoiningChatRoomRequest;
-import com.dapanda.chat.dto.response.CreateChatRoomResponse;
-import com.dapanda.chat.dto.response.ReadJoiningChatRoomResponse;
-import com.dapanda.chat.dto.response.SendChatMessageResponse;
+import com.dapanda.chat.dto.response.*;
 import com.dapanda.chat.entity.ChatRoomReadOption;
 import com.dapanda.chat.service.ChatService;
 import com.dapanda.common.dto.response.CursorPageResponse;
@@ -47,7 +45,7 @@ public class ChatController {
 	}
 
 	@GetMapping("/chat-room/{chatRoomId}/history")
-	public CommonResponse<CursorPageResponse<SendChatMessageResponse>> readChatHistory(
+	public CommonResponse<CursorPageResponse<ReadChatMessageHistoryResponse>> readChatHistory(
 			@PathVariable Long chatRoomId,
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@RequestParam(required = false) Long cursorId,

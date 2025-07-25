@@ -626,6 +626,49 @@ include::{snippets}/auth-logout-invalid-token/http-request.adoc[]
 
 include::{snippets}/auth-logout-invalid-token/http-response.adoc[]
 
+==== 회원 정보 조회
+
+`GET /api/members/info`
+
+회원의 기본 정보를 조회합니다.
+
+===== 요청
+
+====== 내 정보 조회
+
+include::{snippets}/member/get-my-info/http-request.adoc[]
+
+====== 타인 정보 조회
+
+include::{snippets}/member/get-other-info/http-request.adoc[]
+
+===== 응답
+
+===== 내 정보 조회
+
+include::{snippets}/member/get-my-info/http-response.adoc[]
+
+====== 타인 정보 조회
+
+include::{snippets}/member/get-other-info/http-response.adoc[]
+
+===== 응답 필드
+
+===== 내 정보
+
+include::{snippets}/member/get-my-info/response-fields.adoc[]
+
+====== 타인 정보
+
+include::{snippets}/member/get-other-info/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 존재하지 않는 회원
+
+include::{snippets}/member/get-member-info-notfound/http-request.adoc[]
+include::{snippets}/member/get-member-info-notfound/http-response.adoc[]
+
 ---
 
 [[resources-product]]

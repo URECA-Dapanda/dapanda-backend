@@ -6,24 +6,21 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
-@NoArgsConstructor
-@AllArgsConstructor
-public class SendChatMessageResponse {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+public class CreateMessageResponse {
 
 	private Long chatMessageId;
-	private Long senderId;
 	private String message;
 	private LocalDateTime createdAt;
 
-	public static SendChatMessageResponse of(
+	public static CreateMessageResponse of(
 			Long chatMessageId,
-			Long senderId,
 			String message,
 			LocalDateTime createdAt) {
 
-		return SendChatMessageResponse.builder()
+		return CreateMessageResponse.builder()
 				.chatMessageId(chatMessageId)
-				.senderId(senderId)
 				.message(message)
 				.createdAt(createdAt)
 				.build();
