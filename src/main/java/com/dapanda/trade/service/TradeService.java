@@ -332,6 +332,9 @@ public class TradeService {
 			if (!mobileData.isSplitType()
 					|| mobileData.getRemainAmount().compareTo(BigDecimal.ZERO) == 0) {
 				product.changeState(ProductState.SOLD_OUT);
+			} else {
+				product.updatePrice(product.getPrice() - purchasePrice);
+				mobileData.update100MBPerPrice(purchasePrice, mobileData.getRemainAmount());
 			}
 
 			// 4-7. 거래 저장
