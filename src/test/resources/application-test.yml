@@ -12,6 +12,10 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
   sql:
     init:
@@ -39,3 +43,5 @@ jwt:
 
 toss:
   secret-key: test-secret-key
+
+AWS_REGION: KOREA
