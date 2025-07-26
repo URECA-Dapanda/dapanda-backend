@@ -1,8 +1,8 @@
 package com.dapanda.product.service;
 
 import static com.dapanda.TestConstants.Member.*;
-import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
 import static com.dapanda.TestConstants.MobileData.*;
+import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Product.*;
@@ -14,6 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import com.dapanda.common.dto.response.CountCursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse;
@@ -610,8 +612,7 @@ class ProductServiceTest {
 
 				// given
 				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID,
-						NEW_PRICE_9000,
-						CHANGED_AMOUNT, SPLIT_TYPE);
+						NEW_PRICE_9000, CHANGED_AMOUNT, SPLIT_TYPE);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
@@ -619,22 +620,25 @@ class ProductServiceTest {
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member);
 
+				MobileData mockMobileData = spy(mobileData); // 실제 객체 mocking
+
 				given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
 				given(mobileDataRepository.findById(mobileData.getId())).willReturn(
-						Optional.of(mobileData));
+						Optional.of(mockMobileData));
 
 				// when
 				UpdateMobileDataResponse response = productService.updateMobileData(request,
 						MEMBER_ID);
 
 				// then
+				int expected100MBPerPrice = (int) Math.ceil(
+						NEW_PRICE_9000 / (CHANGED_AMOUNT.floatValue() * 10));
+
 				assertThat(response.getProductId()).isEqualTo(PRODUCT_ID);
-				assertThat(product.getPrice()).isEqualTo(NEW_PRICE_9000);
-				assertThat(mobileData.getDataAmount()).isEqualTo(
-						BEFORE_DATA_AMOUNT.add(CHANGED_AMOUNT));
-				assertThat(mobileData.getRemainAmount()).isEqualTo(
-						BEFORE_REMAIN_AMOUNT.add(CHANGED_AMOUNT));
+
+				verify(mockMobileData).updateMobileData(CHANGED_AMOUNT, expected100MBPerPrice,
+						SPLIT_TYPE);
 			}
 		}
 
@@ -648,8 +652,7 @@ class ProductServiceTest {
 
 				// given
 				UpdateMobileDataRequest request = new UpdateMobileDataRequest(PRODUCT_ID,
-						NEW_PRICE_9000,
-						CHANGED_AMOUNT, SPLIT_TYPE);
+						NEW_PRICE_9000, CHANGED_AMOUNT, SPLIT_TYPE);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
