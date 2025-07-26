@@ -1025,6 +1025,10 @@ include::{snippets}/product/get-wifi-info-invalid-product-error/http-response.ad
 
 include::{snippets}/product/put-mobile-data/http-request.adoc[]
 
+===== 요청 필드
+
+include::{snippets}/product/put-mobile-data/request-fields.adoc[]
+
 ===== 응답
 
 include::{snippets}/product/put-mobile-data/http-response.adoc[]

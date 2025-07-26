@@ -966,7 +966,7 @@ class ProductControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("price").description("상품 가격 (필수)"),
 										fieldWithPath("changedAmount").description(
-												"데이터 변화량 (필수, 음수/양수)"),
+												"상품 데이터양 (필수)"),
 										fieldWithPath("isSplitType").description("분할 여부 (필수)")
 								),
 								responseFields(
@@ -982,10 +982,9 @@ class ProductControllerTest {
 
 				assertThat(updatedProduct.getId()).isEqualTo(product.getId());
 				assertThat(updatedProduct.getPrice()).isEqualTo(NEW_PRICE_9000);
-				assertThat(updatedMobileData.getDataAmount()).isEqualByComparingTo(
-						BEFORE_DATA_AMOUNT.add(CHANGED_AMOUNT));
+				assertThat(updatedMobileData.getDataAmount()).isEqualByComparingTo(CHANGED_AMOUNT);
 				assertThat(updatedMobileData.getRemainAmount()).isEqualByComparingTo(
-						BEFORE_REMAIN_AMOUNT.add(CHANGED_AMOUNT));
+						CHANGED_AMOUNT);
 			}
 		}
 

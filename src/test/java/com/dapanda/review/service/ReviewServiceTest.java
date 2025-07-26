@@ -1,33 +1,5 @@
 package com.dapanda.review.service;
 
-import com.dapanda.common.dto.response.CursorPageResponse;
-import com.dapanda.common.exception.GlobalException;
-import com.dapanda.common.exception.ResultCode;
-import com.dapanda.member.entity.Member;
-import com.dapanda.member.entity.MemberFixture;
-import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.review.dto.request.CreateReviewRequest;
-import com.dapanda.review.dto.request.ReadReviewRequest;
-import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.dto.response.*;
-import com.dapanda.review.entity.Review;
-import com.dapanda.review.entity.ReviewFixture;
-import com.dapanda.review.repository.ReviewRepository;
-import com.dapanda.trade.entity.Trade;
-import com.dapanda.trade.entity.TradeFixture;
-import com.dapanda.trade.repository.TradeRepository;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 import static com.dapanda.TestConstants.Member.*;
 import static com.dapanda.TestConstants.Pagination.*;
 import static com.dapanda.TestConstants.Review.*;
@@ -38,6 +10,27 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+
+import com.dapanda.common.dto.response.CursorPageResponse;
+import com.dapanda.common.exception.GlobalException;
+import com.dapanda.common.exception.ResultCode;
+import com.dapanda.member.entity.Member;
+import com.dapanda.member.entity.MemberFixture;
+import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.review.dto.request.*;
+import com.dapanda.review.dto.response.*;
+import com.dapanda.review.entity.Review;
+import com.dapanda.review.entity.ReviewFixture;
+import com.dapanda.review.repository.ReviewRepository;
+import com.dapanda.trade.entity.Trade;
+import com.dapanda.trade.entity.TradeFixture;
+import com.dapanda.trade.repository.TradeRepository;
+import java.util.*;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("리뷰 서비스 테스트")
@@ -336,7 +329,6 @@ class ReviewServiceTest {
 				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID_2);
 				Review review = ReviewFixture.createReviewWithRating(trade, REVIEW_ID,
 						oldRating);
-				System.out.println(member == review.getTrade().getMember());
 				UpdateReviewRequest request = new UpdateReviewRequest(newRating, COMMENT);
 
 				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
