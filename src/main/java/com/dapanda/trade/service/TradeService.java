@@ -19,6 +19,7 @@ import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
+import java.time.LocalTime;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -381,13 +382,27 @@ public class TradeService {
 		int totalPrice = product.getPrice() * timeAmount / 10;
 
 		// 5. 유효성 검사
-		if (request.startTime().isAfter(request.endTime())) {
-			throw new GlobalException(ResultCode.INVALID_TIME);
+		LocalTime requestStart = request.startTime().toLocalTime();
+		LocalTime requestEnd = request.endTime().toLocalTime();
+		LocalTime wifiStart = wifi.getStartTime().toLocalTime();
+		LocalTime wifiEnd = wifi.getEndTime().toLocalTime();
+
+		boolean isOverMidnight = wifiStart.isAfter(wifiEnd); // 영업 시간이 자정을 넘기는지 여부
+
+		boolean isStartValid;
+		boolean isEndValid;
+
+		if (isOverMidnight) {
+			isStartValid = !requestStart.isBefore(wifiStart) || !requestStart.isAfter(wifiEnd);
+			isEndValid = !requestEnd.isBefore(wifiStart) || !requestEnd.isAfter(wifiEnd);
+		} else {
+			isStartValid = !requestStart.isBefore(wifiStart) && !requestStart.isAfter(wifiEnd);
+			isEndValid = !requestEnd.isBefore(wifiStart) && !requestEnd.isAfter(wifiEnd);
 		}
-		if (request.startTime().isBefore(wifi.getStartTime()) || request.endTime()
-				.isAfter(wifi.getEndTime())) {
+		if (!isStartValid || !isEndValid) {
 			throw new GlobalException(ResultCode.INVALID_WIFI_OPERATION_TIME);
 		}
+
 		if (product.getMember().getId().equals(buyerId)) {
 			throw new GlobalException(ResultCode.CANNOT_PURCHASE_OWN_PRODUCT);
 		}
@@ -402,7 +417,7 @@ public class TradeService {
 		buyer.deductCash(totalPrice);
 
 		// 7. 거래 저장
-		Trade buyerTrade = Trade.of(timeAmount, totalPrice, TradeType.PURCHASE_MOBILE_SINGLE,
+		Trade buyerTrade = Trade.of(timeAmount, totalPrice, TradeType.PURCHASE_WIFI,
 				buyer);
 		Trade sellerTrade = Trade.of(timeAmount, totalPrice, TradeType.SALE_WIFI, seller);
 		tradeRepository.saveAll(new ArrayList<>(List.of(buyerTrade, sellerTrade)));
