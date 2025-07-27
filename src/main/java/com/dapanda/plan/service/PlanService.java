@@ -39,6 +39,7 @@ public class PlanService {
 		Plan plan = Plan.of(
 				name,
 				dataAmount,
+				dataAmount,
 				price,
 				category,
 				ageGroup,
