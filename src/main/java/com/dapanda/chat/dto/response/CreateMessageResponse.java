@@ -11,16 +11,19 @@ import java.time.LocalDateTime;
 public class CreateMessageResponse {
 
 	private Long chatMessageId;
+	private Long senderId;
 	private String message;
 	private LocalDateTime createdAt;
 
 	public static CreateMessageResponse of(
 			Long chatMessageId,
+			Long senderId,
 			String message,
 			LocalDateTime createdAt) {
 
 		return CreateMessageResponse.builder()
 				.chatMessageId(chatMessageId)
+				.senderId(senderId)
 				.message(message)
 				.createdAt(createdAt)
 				.build();
