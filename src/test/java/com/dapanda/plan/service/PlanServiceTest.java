@@ -56,7 +56,7 @@ class PlanServiceTest {
 				assertThat(result).isNotNull();
 				assertThat(result.getMember()).isEqualTo(member);
 				assertThat(result.getName()).isNotBlank();
-				assertThat(result.getProvidingDataAmount()).isPositive();
+				assertThat(result.getAvailableDataAmount()).isPositive();
 				assertThat(result.getMonthlyPrice()).isPositive();
 				assertThat(result.getCategory()).isInstanceOf(PlanCategory.class);
 				assertThat(result.getAgeGroup()).isInstanceOf(AgeGroup.class);
@@ -104,6 +104,7 @@ class PlanServiceTest {
 
 				when(planRepository.findByMemberId(memberId)).thenReturn(Optional.of(plan));
 				when(plan.getName()).thenReturn("프리미엄");
+				when(plan.getAvailableDataAmount()).thenReturn(BigDecimal.valueOf(30.0));
 				when(plan.getProvidingDataAmount()).thenReturn(BigDecimal.valueOf(30.0));
 				when(plan.getMonthlyPrice()).thenReturn(25000);
 
@@ -113,6 +114,8 @@ class PlanServiceTest {
 				// then
 				assertThat(result).isNotNull();
 				assertThat(result.getName()).isEqualTo("프리미엄");
+				assertThat(result.getAvailableDataAmount()).isEqualByComparingTo(
+						BigDecimal.valueOf(30.0));
 				assertThat(result.getProvidingDataAmount()).isEqualByComparingTo(
 						BigDecimal.valueOf(30.0));
 				assertThat(result.getMonthlyPrice()).isEqualTo(25000);

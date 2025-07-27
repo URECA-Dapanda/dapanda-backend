@@ -95,6 +95,7 @@ class PlanControllerTest {
 				Plan plan = planRepository.save(Plan.of(
 						"청년 Value 베이직",
 						BigDecimal.valueOf(30.0),
+						BigDecimal.valueOf(30.0),
 						15000,
 						PlanCategory._5G,
 						AgeGroup.YOUTH,
@@ -131,7 +132,7 @@ class PlanControllerTest {
 
 				// 실제 서비스로직 검증 (Optional)
 				var result = planRepository.findByMemberId(member.getId()).orElseThrow();
-				assertThat(result.getProvidingDataAmount()).isEqualByComparingTo(
+				assertThat(result.getAvailableDataAmount()).isEqualByComparingTo(
 						BigDecimal.valueOf(30.0));
 			}
 		}
