@@ -15,19 +15,19 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductCustomRepository {
 
-	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, int size,
+	CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, int size,
 			ProductSortOption productSortOption, BigDecimal dataAmount);
 
-	public CursorPageResponse<WifiSummary> findWifiByCursor(Long cursorId, int size,
+	CursorPageResponse<WifiSummary> findWifiByCursor(Long cursorId, int size,
 			ProductSortOption productSortOption, boolean isOpen, Double latitude, Double longitude);
 
-	public MobileDataInfoResponse findMobileDataInfo(Long productId, Long memberId);
+	MobileDataInfoResponse findMobileDataInfo(Long productId, Long memberId);
 
-	public WifiInfoResponse findWifiInfo(Long productId, Long memberId);
+	WifiInfoResponse findWifiInfo(Long productId, Long memberId);
 
-	public List<String> findWifiImages(Long wifiId);
+	List<String> findWifiImages(Long wifiId);
 
-	public BigDecimal sumSoldMobileDataAmountByMemberId(Long memberId);
+	BigDecimal sumSoldMobileDataAmountByMemberId(Long memberId);
 
 	List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request);
 
