@@ -369,14 +369,11 @@ class ProductControllerTest {
 				Product product3 = ProductFixture.createMobileDataProduct(5000,
 						mobileData3.getId(), member);
 				productRepository.saveAll(List.of(product1, product2, product3));
-				MobileDataCursorRequest request = new MobileDataCursorRequest(null, size,
-						productSortOption, dataAmount);
 
 				// when & then
 				mockMvc.perform(
 								MockMvcRequestBuilders.get(
 												"/api/products/mobile-data")
-										.param("cursorId", "1")
 										.param("size", String.valueOf(size))
 										.param("productSortOption", productSortOption)
 										.param("dataAmount", String.valueOf(dataAmount))
