@@ -152,10 +152,6 @@ public class ProductService {
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
-		if (request.getStartTime().isBefore(LocalDateTime.now())) {
-			throw new GlobalException(ResultCode.START_TIME_BEFORE_NOW);
-		}
-
 		Wifi savedWifi = wifiRepository.save(
 				Wifi.of(
 						request.getTitle(),
