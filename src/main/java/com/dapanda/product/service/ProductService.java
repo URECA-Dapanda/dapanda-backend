@@ -329,4 +329,13 @@ public class ProductService {
 		return productRepository.findMarketPrice(ItemType.valueOf(productType));
 	}
 
+	@Transactional
+	public void hidePreviousMobileDataProducts() {
+
+		List<Product> products = productRepository.findAllBeforeThisMonthAndIsActive();
+
+		for (Product product : products) {
+			product.changeState(ProductState.HIDDEN);
+		}
+	}
 }
