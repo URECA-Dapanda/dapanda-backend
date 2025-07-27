@@ -30,25 +30,26 @@ ext {
     snippetsDir = file("build/generated-snippets")
 }
 
+dependencyManagement {
+    imports {
+        mavenBom "org.testcontainers:testcontainers-bom:1.19.7"
+    }
+}
+
 dependencies {
 
     // Spring Data JPA
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
+    // Spring Data Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
     // Spring Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
-
-    // Bean Validation
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     // WebSocket
     implementation 'org.springframework.security:spring-security-messaging'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
-
-    // Testcontainers
-    testImplementation 'org.testcontainers:junit-jupiter'
-    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
-    testImplementation 'org.testcontainers:mysql'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
@@ -95,6 +96,9 @@ dependencies {
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
+    // Redis & Spring Data Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
     // Test
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -104,9 +108,6 @@ dependencies {
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.testcontainers:mysql'
-
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 // 테스트 실행 설정
