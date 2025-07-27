@@ -11,6 +11,7 @@ import lombok.*;
 public class PlanInfoResponse {
 
 	private String name;
+	private BigDecimal availableDataAmount;
 	private BigDecimal providingDataAmount;
 	private int monthlyPrice;
 
@@ -18,7 +19,8 @@ public class PlanInfoResponse {
 
 		return PlanInfoResponse.builder().
 				name(plan.getName()).
-				providingDataAmount(plan.getProvidingDataAmount()).
+				availableDataAmount(plan.getAvailableDataAmount()).
+				providingDataAmount(plan.getAvailableDataAmount()).
 				monthlyPrice(plan.getMonthlyPrice()).
 				build();
 	}
