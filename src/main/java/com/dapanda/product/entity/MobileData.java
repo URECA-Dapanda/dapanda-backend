@@ -47,10 +47,10 @@ public class MobileData {
 				.build();
 	}
 
-	public void updateMobileData(BigDecimal changedAmount, int pricePer100MB, boolean isSplitType) {
+	public void updateMobileData(BigDecimal newAmount, int pricePer100MB, boolean isSplitType) {
 
-		this.dataAmount = this.dataAmount.add(changedAmount);
-		this.remainAmount = this.remainAmount.add(changedAmount);
+		this.dataAmount = newAmount;
+		this.remainAmount = newAmount;
 		this.pricePer100MB = pricePer100MB;
 		this.isSplitType = isSplitType;
 	}
