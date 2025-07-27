@@ -5,7 +5,7 @@ spring:
     username: root
     password: 1234
     hikari:
-      max-lifetime: 30000  # 30초
+      max-lifetime: 60000  # 60초
   jpa:
     hibernate:
       ddl-auto: create
