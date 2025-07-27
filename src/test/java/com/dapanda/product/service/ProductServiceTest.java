@@ -737,9 +737,11 @@ class ProductServiceTest {
 			public void updateWifiTest() {
 
 				// given
+				List<String> imageUrls = List.of("image1.jpg", "image2.jpg", "image3.jpg");
+
 				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, START_TIME, END_TIME);
+						ADDRESS, imageUrls, START_TIME, END_TIME);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
@@ -774,9 +776,11 @@ class ProductServiceTest {
 			public void failUpdateWifiIfMemberIsWrongTest() throws Exception {
 
 				// given
+				List<String> imageUrls = List.of("image1.jpg", "image2.jpg", "image3.jpg");
+
 				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, START_TIME, END_TIME);
+						ADDRESS, imageUrls, START_TIME, END_TIME);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
@@ -799,9 +803,11 @@ class ProductServiceTest {
 			public void failUpdateWifiIfTimeIsInvalidTest() throws Exception {
 
 				// given
+				List<String> imageUrls = List.of("image1.jpg", "image2.jpg", "image3.jpg");
+
 				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, WRONG_START_TIME, WRONG_END_TIME);
+						ADDRESS, imageUrls, WRONG_START_TIME, WRONG_END_TIME);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
