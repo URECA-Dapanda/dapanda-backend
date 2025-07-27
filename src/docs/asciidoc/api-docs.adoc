@@ -1310,3 +1310,34 @@ include::{snippets}/trade/get-cash-history/http-response.adoc[]
 ===== 응답 필드
 
 include::{snippets}/trade/get-cash-history/response-fields.adoc[]
+
+[[resources-plan]]
+=== 요금제
+
+==== 나의 플랜 조회
+
+`GET /api/plans/my-data`
+
+회원이 보유한 통신 플랜 정보를 조회합니다.
+
+===== 요청
+
+include::{snippets}/plans/get-my-plan-info/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/plans/get-my-plan-info/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/plans/get-my-plan-info/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 플랜이 없는 경우
+
+include::{snippets}/plan/get-my-plan-info-no-plan-error/http-request.adoc[]
+
+include::{snippets}/plan/get-my-plan-info-no-plan-error/http-response.adoc[]
+
+include::{snippets}/plan/get-my-plan-info-no-plan-error/response-fields.adoc[]
