@@ -19,6 +19,7 @@ public class ReadJoiningChatRoomResponse {
 	//Member
 	private Long senderId;
 	private String senderName;
+	private String senderProfileImageUrl;
 
 	//Product
 	private Long productId;
