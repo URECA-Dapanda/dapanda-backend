@@ -75,6 +75,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 						chatRoom.id,
 						chatRoom.createdAt,
 						chatRoom.lastMessageAt,
+						chatRoom.lastMessage,
 						member.id,
 						member.name,
 						product.id,
