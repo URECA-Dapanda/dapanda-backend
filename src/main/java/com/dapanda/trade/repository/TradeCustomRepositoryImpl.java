@@ -237,4 +237,17 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 
 		return trade.member.id.eq(memberId);
 	}
+
+	@Override
+	public boolean existsByProductId(Long productId) {
+		Integer count = queryFactory
+				.selectOne()
+				.from(trade)
+				.join(tradeDetails).on(tradeDetails.trade.eq(trade))
+				.where(tradeDetails.product.id.eq(productId))
+				.limit(1)
+				.fetchFirst();
+
+		return count != null;
+	}
 }
