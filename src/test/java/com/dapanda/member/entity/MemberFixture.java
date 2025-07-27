@@ -18,6 +18,8 @@ public class MemberFixture {
 		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
 		ReflectionTestUtils.setField(member, "sellingData", BigDecimal.ZERO);
 
+		member.updateProfileImage("test-image1.jpg");
+
 		return member;
 	}
 
@@ -32,6 +34,8 @@ public class MemberFixture {
 
 		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
 		ReflectionTestUtils.setField(member, "sellingData", BigDecimal.ZERO);
+
+		member.updateProfileImage("test-image2.jpg");
 
 		return member;
 	}
