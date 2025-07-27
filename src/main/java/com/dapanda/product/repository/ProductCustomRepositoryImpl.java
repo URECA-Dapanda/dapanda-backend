@@ -5,7 +5,6 @@ import static com.dapanda.product.entity.QMobileData.mobileData;
 import static com.dapanda.product.entity.QProduct.product;
 import static com.dapanda.product.entity.QProductImage.productImage;
 import static com.dapanda.product.entity.QWifi.wifi;
-import static com.dapanda.review.entity.QReview.review;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
@@ -60,7 +59,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.from(product)
 				.join(mobileData).on(mobileData.id.eq(product.itemId))
 				.where(isActiveProduct(),
-						gtCursorId(cursorId),
+						productSortOption == ProductSortOption.RECENT ? ltCursorId(cursorId)
+								: gtCursorId(cursorId),
 						eqDataAmount(dataAmount)
 				)
 				.orderBy(
@@ -123,10 +123,6 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.groupBy(product.id)
 				.join(wifi).on(wifi.id.eq(product.itemId))
 				.leftJoin(member).on(product.member.id.eq(member.id))
-				.where(
-						gtCursorId(cursorId),
-						isOpenNow(isOpen, now)
-				)
 				.leftJoin(productImage).on(
 						productImage.wifiId.eq(wifi.id)
 								.and(productImage.priority.eq(
@@ -143,7 +139,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.orderBy(
 						productSortOption == ProductSortOption.PRICE_ASC ? product.price.asc() :
 								productSortOption == ProductSortOption.AVERAGE_RATE_DESC
-										? review.rating.avg().desc() :
+										? member.averageRating.desc() :
 										distance.asc(),
 						product.id.asc()
 				)
@@ -375,6 +371,11 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	private BooleanExpression gtCursorId(Long cursorId) {
 
 		return cursorId != null ? product.id.gt(cursorId) : null;
+	}
+
+	private BooleanExpression ltCursorId(Long cursorId) {
+
+		return cursorId != null ? product.id.lt(cursorId) : null;
 	}
 
 	private BooleanExpression eqDataAmount(BigDecimal dataAmount) {

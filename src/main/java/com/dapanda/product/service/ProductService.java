@@ -239,6 +239,27 @@ public class ProductService {
 		savedWifi.updateWifi(request.title(), request.content(), request.latitude(),
 				request.longitude(), request.address(), request.startTime(), request.endTime());
 
+		// 기존에 저장된 와이파이 이미지들 삭제
+		productImageRepository.removeProductImagesById(savedWifi.getId());
+
+		// 새로운 이미지 등록
+		List<String> images = request.imageUrls();
+		if (images != null && !images.isEmpty()) {
+			int idx = 0;
+			for (String imgUrl : images) {
+				// 확장자 체크 (jpg, jpeg, png만 허용)
+				if (s3Service.isNotValidImageExtension(imgUrl)) {
+					throw new GlobalException(ResultCode.INVALID_IMAGE_FORMAT);
+				}
+				ProductImage productImage = ProductImage.of(
+						imgUrl,
+						idx++, // 리스트 순서가 priority
+						savedWifi.getId()
+				);
+				productImageRepository.save(productImage);
+			}
+		}
+
 		return UpdateWifiResponse.from(savedProduct.getId());
 	}
 
@@ -282,7 +303,6 @@ public class ProductService {
 			throw new GlobalException(ResultCode.INVALID_DATA_TRANSFER_AMOUNT);
 		}
 
-		System.out.println("member.getSellingData() = " + member.getSellingData());
 		if (member.getSellingData().add(changedDataAmount)
 				.compareTo(BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
 			throw new GlobalException(ResultCode.EXCEEDED_TRANSFER_LIMIT);

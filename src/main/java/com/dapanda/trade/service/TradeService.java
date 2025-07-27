@@ -37,6 +37,8 @@ public class TradeService {
 	private final TradeDetailsRepository tradeDetailsRepository;
 	private final PlanRepository planRepository;
 
+	// TODO: 구매 로직 리팩토링 (메서드)
+
 	/**
 	 * 1. 데이터 일반 상품 구매 요청
 	 * 2. 해당 상품 재고 조회
@@ -101,6 +103,8 @@ public class TradeService {
 
 		updateBuyerAndSellerData(buyer, seller, mobileData.getDataAmount());
 
+		seller.addCash(product.getPrice());
+
 		return TradeProductResponse.of(trade.getId());
 	}
 
@@ -123,6 +127,8 @@ public class TradeService {
 				product.getPrice());
 
 		updateBuyerAndSellerData(buyer, seller, dataAmount);
+
+		seller.addCash(product.getPrice());
 
 		return TradeProductResponse.of(trade.getId());
 	}
@@ -164,7 +170,7 @@ public class TradeService {
 				TradeType.PURCHASE_MOBILE_SINGLE, buyer);
 		Trade sellerTrade = Trade.of(mobileData.getDataAmount(), price, TradeType.SALE_MOBILE_DATA,
 				seller);
-		tradeRepository.saveAll(new ArrayList<>(List.of(buyerTrade, sellerTrade)));
+		tradeRepository.saveAll(List.of(buyerTrade, sellerTrade));
 		TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
 		TradeDetails sellerTradeDetails = TradeDetails.of(product, sellerTrade);
 		tradeDetailsRepository.saveAll(
@@ -267,32 +273,6 @@ public class TradeService {
 		return FindMobileDataScrapResponse.of(dataAmount, totalPrice, bestCombination);
 	}
 
-	private int calculateTotalPrice(List<MobileDataScrap> scrapList, BigDecimal dataAmount) {
-
-		BigDecimal sumAmount = BigDecimal.ZERO;
-		int total = 0;
-
-		// 조합된 상품 리스트를 순회하며, 실제로 필요한 만큼만 구매하고 총 가격 계산
-		for (MobileDataScrap scrap : scrapList) {
-			// 분할 상품의 경우: 필요한 만큼만 구매 (단가 적용)
-			if (scrap.isSplitType()) {
-				BigDecimal needed = scrap.getRemainAmount().min(dataAmount.subtract(sumAmount));
-				total += (int) (needed.doubleValue() * 10 * scrap.getPricePer100MB());
-				sumAmount = sumAmount.add(needed);
-			} else { // 일반 상품의 경우: 상품 전체를 사용하며 고정 가격 적용
-				total += scrap.getPrice();
-				sumAmount = sumAmount.add(scrap.getRemainAmount());
-			}
-
-			// 목표 용량을 채웠으면 반복 종료
-			if (sumAmount.compareTo(dataAmount) >= 0) {
-				break;
-			}
-		}
-
-		return total;
-	}
-
 	/**
 	 * 데이터 상품 자투리 구매
 	 */
@@ -311,6 +291,8 @@ public class TradeService {
 		if (buyer.getCash() < totalPrice) {
 			throw new GlobalException(ResultCode.INSUFFICIENT_CASH);
 		}
+
+		validatePurchaseLimit(buyer, request.totalAmount());
 
 		// 3. 거래 생성
 		Trade buyerTrade = Trade.of(totalAmount, totalPrice, TradeType.PURCHASE_MOBILE_COMPOSITE,
@@ -350,6 +332,9 @@ public class TradeService {
 			if (!mobileData.isSplitType()
 					|| mobileData.getRemainAmount().compareTo(BigDecimal.ZERO) == 0) {
 				product.changeState(ProductState.SOLD_OUT);
+			} else {
+				product.updatePrice(product.getPrice() - purchasePrice);
+				mobileData.update100MBPerPrice(purchasePrice, mobileData.getRemainAmount());
 			}
 
 			// 4-7. 거래 저장
@@ -453,5 +438,31 @@ public class TradeService {
 				year, month);
 
 		return FindCashHistoryResponse.of(monthlySummary, cashHistorySummary);
+	}
+
+	private int calculateTotalPrice(List<MobileDataScrap> scrapList, BigDecimal dataAmount) {
+
+		BigDecimal sumAmount = BigDecimal.ZERO;
+		int total = 0;
+
+		// 조합된 상품 리스트를 순회하며, 실제로 필요한 만큼만 구매하고 총 가격 계산
+		for (MobileDataScrap scrap : scrapList) {
+			// 분할 상품의 경우: 필요한 만큼만 구매 (단가 적용)
+			if (scrap.isSplitType()) {
+				BigDecimal needed = scrap.getRemainAmount().min(dataAmount.subtract(sumAmount));
+				total += (int) (needed.doubleValue() * 10 * scrap.getPricePer100MB());
+				sumAmount = sumAmount.add(needed);
+			} else { // 일반 상품의 경우: 상품 전체를 사용하며 고정 가격 적용
+				total += scrap.getPrice();
+				sumAmount = sumAmount.add(scrap.getRemainAmount());
+			}
+
+			// 목표 용량을 채웠으면 반복 종료
+			if (sumAmount.compareTo(dataAmount) >= 0) {
+				break;
+			}
+		}
+
+		return total;
 	}
 }

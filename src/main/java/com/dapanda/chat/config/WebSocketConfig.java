@@ -12,7 +12,7 @@ import org.springframework.web.socket.config.annotation.*;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-	private final WebSocketHandler webSocketHandler;
+	private final OutboundInterceptor outboundInterceptor;
 
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -32,9 +32,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 		registry.enableSimpleBroker(WebSocketPath.SUB.getPath());
 	}
 
-	@Override
-	public void configureClientInboundChannel(ChannelRegistration registration) {
 
-		registration.interceptors(webSocketHandler);
+	@Override
+	public void configureClientOutboundChannel(ChannelRegistration registration) {
+
+		registration.interceptors(outboundInterceptor);
 	}
 }

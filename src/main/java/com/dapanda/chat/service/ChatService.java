@@ -28,11 +28,11 @@ public class ChatService {
 	private final ProductRepository productRepository;
 	private final MemberRepository memberRepository;
 
-	public CursorPageResponse<SendChatMessageResponse> readChatMessageHistory(ReadChatMessageHistoryRequest request) {
+	public CursorPageResponse<ReadChatMessageHistoryResponse> readChatMessageHistory(ReadChatMessageHistoryRequest request) {
 
 		validateParticipant(request.chatRoomId(), request.memberId());
 
-		List<SendChatMessageResponse> response = chatMessageRepository.findChatMessageHistory(request);
+		List<ReadChatMessageHistoryResponse> response = chatMessageRepository.findChatMessageHistory(request);
 
 		boolean hasNext = response.size() > request.size();
 
@@ -128,7 +128,7 @@ public class ChatService {
 	}
 
 	@Transactional
-	public SendChatMessageResponse createChatMessage(Long chatRoomId, CreateChatMessageRequest request, Long senderId) {
+	public CreateMessageResponse createChatMessage(Long chatRoomId, CreateChatMessageRequest request, Long senderId) {
 
 		validateParticipant(chatRoomId, senderId);
 
@@ -138,13 +138,11 @@ public class ChatService {
 		Member sender = memberRepository.findById(senderId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
-		ChatMessage chatMessage = ChatMessage.of(request.message(), chatRoom, sender);
+		ChatMessage chatMessage = chatMessageRepository.save(ChatMessage.of(request.message(), chatRoom, sender));
 
-		ChatMessage savedChatMessage = chatMessageRepository.save(chatMessage);
+		chatRoom.updateLastMessage(chatMessage);
 
-		chatRoom.updateLastMessage(savedChatMessage);
-
-		return SendChatMessageResponse.of(savedChatMessage.getId(), senderId, request.message(), savedChatMessage.getCreatedAt());
+		return CreateMessageResponse.of(chatMessage.getId(), request.message(), chatMessage.getCreatedAt());
 	}
 
 	private void validateParticipant(Long chatRoomId, Long memberId){

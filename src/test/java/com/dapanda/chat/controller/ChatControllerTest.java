@@ -366,9 +366,9 @@ class ChatControllerTest {
 										// data.data[] 배열 내의 각 리뷰 객체 필드
 										fieldWithPath("data.data[]").description("조회된 채팅방 목록"),
 										fieldWithPath("data.data[].chatMessageId").description("메시지 아이디"),
-										fieldWithPath("data.data[].senderId").description("메시지 작성 회원 아이디"),
 										fieldWithPath("data.data[].message").description("메시지"),
 										fieldWithPath("data.data[].createdAt").description("메시지 생성 시간"),
+										fieldWithPath("data.data[].isMine").description("조회 요청한 사용자 소유 여부"),
 										fieldWithPath("data.pageInfo").description("페이지 정보"),
 										fieldWithPath("data.pageInfo.size").description("현재 페이지 크기"),
 										fieldWithPath("data.pageInfo.hasNext").description("다음 페이지 존재 여부"),

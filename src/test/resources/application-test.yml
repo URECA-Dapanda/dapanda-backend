@@ -12,6 +12,12 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      ssl:
+        enabled: false
 
   sql:
     init:

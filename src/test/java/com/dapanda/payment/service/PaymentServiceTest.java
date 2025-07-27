@@ -1,35 +1,41 @@
 package com.dapanda.payment.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static com.dapanda.TestConstants.Member.*;
+import static com.dapanda.TestConstants.Payment.*;
+import static com.dapanda.common.exception.ResultCode.FAIL_PAYMENT_APPROVAL;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
-import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
-import com.dapanda.member.entity.MemberRole;
+import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.payment.dto.request.TossConfirmRequest;
-import com.dapanda.payment.dto.response.ConfirmPaymentResponse;
+import com.dapanda.payment.dto.request.ChargeCashRequest;
+import com.dapanda.payment.dto.request.RefundCashRequest;
+import com.dapanda.payment.dto.response.*;
 import com.dapanda.payment.entity.Payment;
 import com.dapanda.payment.repository.PaymentRepository;
-import java.time.OffsetDateTime;
+import com.dapanda.trade.entity.Trade;
+import com.dapanda.trade.repository.TradeRepository;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.PessimisticLockingFailureException;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -44,7 +50,19 @@ class PaymentServiceTest {
 	private MemberRepository memberRepository;
 
 	@Mock
+	private TradeRepository tradeRepository;
+
+	@Mock
 	private PaymentRepository paymentRepository;
+
+	@Mock
+	private TossPaymentService tossPaymentService;
+
+	@Mock
+	private RedisTemplate<String, String> redisTemplate;
+
+	@Mock
+	private ValueOperations<String, String> valueOperations;
 
 	@InjectMocks
 	private PaymentService paymentService;
@@ -56,7 +74,8 @@ class PaymentServiceTest {
 		mockWebServer.start();
 		String mockBaseUrl = mockWebServer.url("/").toString();
 		webClient = WebClient.builder().baseUrl(mockBaseUrl).build();
-		paymentService = new PaymentService(memberRepository, paymentRepository, webClient);
+		paymentService = new PaymentService(memberRepository, paymentRepository, tradeRepository,
+				tossPaymentService, redisTemplate);
 	}
 
 	@AfterEach
@@ -78,39 +97,31 @@ class PaymentServiceTest {
 			void confirmPaymentTest() {
 
 				// given
-				String responseJson = """
-						    {
-						      "orderId": "testOrderId",
-						      "paymentKey": "testPaymentKey",
-						      "totalAmount": 10000,
-						      "approvedAt": "2024-01-01T00:00:00Z"
-						    }
-						""";
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				ChargeCashRequest request = new ChargeCashRequest("paymentKye123", "orderId123",
+						CHARGE_AMOUNT_3000);
+				TossConfirmResponse confirmResponse = new TossConfirmResponse("orderId123",
+						"paymentKye123",
+						TOTAL_AMOUNT_3000, APPROVED_AT);
 
-				TossConfirmRequest request = new TossConfirmRequest("testPaymentKey", "testOrderId",
-						10000);
+				Payment savedPayment = Payment.of(confirmResponse.paymentKey(),
+						confirmResponse.totalAmount(),
+						LocalDateTime.parse(APPROVED_AT, DateTimeFormatter.ISO_DATE_TIME), member);
+				ReflectionTestUtils.setField(savedPayment, "id", PAYMENT_ID);
 
-				Member mockMember = Member.ofLocalMember("abc@gmail.com", "홍길동", "abc1234",
-						OAuthProvider.LOCAL, MemberRole.ROLE_MEMBER);
-				Payment mockedPayment = Payment.of("testPaymentKey", 10000,
-						OffsetDateTime.parse("2024-01-01T00:00:00Z").toLocalDateTime(),
-						mockMember);
-				ReflectionTestUtils.setField(mockedPayment, "id", 1L);
-
-				when(paymentRepository.save(any())).thenReturn(mockedPayment);
-				when(memberRepository.findById(1L)).thenReturn(Optional.of(mockMember));
-
-				mockWebServer.enqueue(new MockResponse()
-						.setResponseCode(200)
-						.setBody(responseJson)
-						.addHeader("Content-Type", "application/json"));
+				given(memberRepository.findByIdForUpdate(MEMBER_ID)).willReturn(
+						Optional.of(member));
+				given(tossPaymentService.confirmPayment(request)).willReturn(confirmResponse);
+				given(paymentRepository.save(any(Payment.class))).willReturn(savedPayment);
+				given(tradeRepository.save(any())).willReturn(
+						mock(Trade.class));
 
 				// when
-				ConfirmPaymentResponse response = paymentService.confirmPayment(1L, request);
+				ChargeCashResponse result = paymentService.chargeCash(MEMBER_ID, request);
 
 				// then
-				assertEquals(1L, response.getPaymentId());
-				assertEquals(10000, response.getTotalAmount());
+				assertThat(result.getPaymentId()).isEqualTo(PAYMENT_ID);
+				assertThat(result.getTotalAmount()).isEqualTo(TOTAL_AMOUNT_3000);
 			}
 		}
 
@@ -123,26 +134,20 @@ class PaymentServiceTest {
 			void confirmPaymentFailIfTossReturnsErrorTest() {
 
 				// given
-				TossConfirmRequest request = new TossConfirmRequest("invalid_key", "test_orderId",
-						10000);
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 
-				Member mockMember = Member.ofLocalMember("abc@gmail.com", "홍길동", "abc1234",
-						OAuthProvider.LOCAL, MemberRole.ROLE_MEMBER);
+				ChargeCashRequest request = new ChargeCashRequest("paymentKye123", "orderId123",
+						CHARGE_AMOUNT_3000);
 
-				when(memberRepository.findById(1L)).thenReturn(Optional.of(mockMember));
+				given(memberRepository.findByIdForUpdate(MEMBER_ID)).willReturn(
+						Optional.of(member));
+				given(tossPaymentService.confirmPayment(request)).willThrow(
+						new GlobalException(ResultCode.FAIL_PAYMENT_APPROVAL));
 
-				mockWebServer.enqueue(new MockResponse()
-						.setResponseCode(400)
-						.setBody("{\"message\": \"Invalid paymentKey\"}")
-						.addHeader("Content-Type", "application/json"));
-
-				// when
-				GlobalException exception = assertThrows(GlobalException.class, () -> {
-					paymentService.confirmPayment(1L, request);
-				});
-
-				// then
-				assertEquals(ResultCode.FAIL_PAYMENT_APPROVAL, exception.getResultCode());
+				// when & then
+				assertThatThrownBy(() -> paymentService.chargeCash(MEMBER_ID, request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(FAIL_PAYMENT_APPROVAL.getMessage());
 			}
 		}
 
@@ -156,22 +161,24 @@ class PaymentServiceTest {
 
 				@Test
 				@DisplayName("캐시 충전을 성공한다")
-				void updateCashTest() {
+				void updateCashTest() throws Exception {
 
 					// given
-					Long memberId = 1L;
-					int amount = 5000;
+					Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 
-					Member mockMember = Member.ofLocalMember("abc@gmail.com", "홍길동", "abc1234",
-							OAuthProvider.LOCAL, MemberRole.ROLE_MEMBER);
-
-					when(memberRepository.findById(memberId)).thenReturn(Optional.of(mockMember));
+					ChargeCashRequest request = new ChargeCashRequest("paymentKye123", "orderId123",
+							CHARGE_AMOUNT_3000);
+					given(memberRepository.findByIdForUpdate(MEMBER_ID)).willReturn(
+							Optional.of(member));
 
 					// when
-					paymentService.updateCash(memberId, amount);
+					paymentService.updateCash(MEMBER_ID, CHARGE_AMOUNT_3000);
 
 					// then
-					assertEquals(5000, mockMember.getCash());
+					Member updateMember = memberRepository.findByIdForUpdate(MEMBER_ID)
+							.orElseThrow();
+
+					assertThat(updateMember.getCash()).isEqualTo(CHARGE_AMOUNT_3000);
 				}
 			}
 
@@ -185,21 +192,137 @@ class PaymentServiceTest {
 				void updateCashTest(int amount) {
 
 					// given
-					Long memberId = 1L;
+					Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 
-					Member mockMember = Member.ofLocalMember("abc@gmail.com", "홍길동", "abc1234",
-							OAuthProvider.LOCAL, MemberRole.ROLE_MEMBER);
+					ChargeCashRequest request = new ChargeCashRequest("paymentKye123", "orderId123",
+							amount);
 
-					when(memberRepository.findById(memberId)).thenReturn(Optional.of(mockMember));
+					given(memberRepository.findByIdForUpdate(MEMBER_ID)).willReturn(
+							Optional.of(member));
 
-					// when
-					GlobalException exception = assertThrows(GlobalException.class, () -> {
-						paymentService.updateCash(memberId, amount);
-					});
-
-					// then
-					assertEquals(ResultCode.INVALID_PAYMENT_AMOUNT, exception.getResultCode());
+					// when & then
+					assertThatThrownBy(() -> paymentService.chargeCash(MEMBER_ID, request))
+							.isInstanceOf(GlobalException.class)
+							.hasMessage(ResultCode.INVALID_PAYMENT_AMOUNT.getMessage());
 				}
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("캐시 환불")
+	class UpdateMobileData {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("캐시 환불을 성공한다")
+			public void refundCashTest() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				ReflectionTestUtils.setField(member, "cash", CASH_5000);
+
+				RefundCashRequest request = new RefundCashRequest(REQUEST_ID, REFUND_AMOUNT_3000);
+
+				given(redisTemplate.opsForValue()).willReturn(valueOperations);
+				given(valueOperations.setIfAbsent(any(), any(), any())).willReturn(true);
+				given(memberRepository.findByIdForUpdate(MEMBER_ID)).willReturn(
+						Optional.of(member));
+
+				// when
+				RefundCashResponse response = paymentService.refundCash(MEMBER_ID,
+						request);
+
+				// then
+				assertThat(response.getRefundPrice()).isEqualTo(REFUND_AMOUNT_3000);
+				assertThat(response.getRemainCash()).isEqualTo(CASH_5000 - REFUND_AMOUNT_3000);
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("요청 아이디가 유효하지 않을 경우 예외를 던진다")
+			public void throwsExceptionWhenRequestIdInvalid() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				ReflectionTestUtils.setField(member, "cash", CASH_5000);
+
+				RefundCashRequest request = new RefundCashRequest(INVALID_REQUEST_ID,
+						REFUND_AMOUNT_3000);
+
+				// when & then
+				assertThatThrownBy(() -> paymentService.refundCash(MEMBER_ID, request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.INVALID_REQUEST_ID.getMessage());
+			}
+
+			@Test
+			@DisplayName("요청 아이디가 존재할 경우 예외를 던진다")
+			public void throwsExceptionWhenRequestIdIsExists() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				ReflectionTestUtils.setField(member, "cash", CASH_5000);
+
+				RefundCashRequest request = new RefundCashRequest(REQUEST_ID, REFUND_AMOUNT_3000);
+
+				given(redisTemplate.opsForValue()).willReturn(valueOperations);
+				given(valueOperations.setIfAbsent("refund:" + REQUEST_ID, "1",
+						Duration.ofMinutes(5))).willReturn(false);
+
+				// when & then
+				assertThatThrownBy(() -> paymentService.refundCash(MEMBER_ID, request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.DUPLICATE_REQUEST.getMessage());
+			}
+
+			@Test
+			@DisplayName("보유한 캐시가 요청한 환불 캐시양보다 적으면 예외를 던진다")
+			public void throwsExceptionWhenRequestAmountIsGreaterThanCash() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				ReflectionTestUtils.setField(member, "cash", CASH_0);
+
+				RefundCashRequest request = new RefundCashRequest(REQUEST_ID, REFUND_AMOUNT_3000);
+
+				given(redisTemplate.opsForValue()).willReturn(valueOperations);
+				given(valueOperations.setIfAbsent(any(), any(), any())).willReturn(true);
+				given(memberRepository.findByIdForUpdate(MEMBER_ID)).willReturn(
+						Optional.of(member));
+
+				// when & then
+				assertThatThrownBy(() -> paymentService.refundCash(MEMBER_ID, request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.INVALID_CASH_AMOUNT.getMessage());
+			}
+
+			@Test
+			@DisplayName("캐시 환불 요청이 지연될 경우 예외를 던진다")
+			public void throwsExceptionWhenRequestDelay() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				ReflectionTestUtils.setField(member, "cash", CASH_5000);
+
+				RefundCashRequest request = new RefundCashRequest(REQUEST_ID, REFUND_AMOUNT_3000);
+
+				given(redisTemplate.opsForValue()).willReturn(valueOperations);
+				given(valueOperations.setIfAbsent(any(), any(), any())).willReturn(true);
+				given(memberRepository.findByIdForUpdate(MEMBER_ID))
+						.willThrow(new PessimisticLockingFailureException("lock timeout"));
+
+				// when & then
+				assertThatThrownBy(() -> paymentService.refundCash(MEMBER_ID, request))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.REQUEST_TIMEOUT.getMessage());
 			}
 		}
 	}

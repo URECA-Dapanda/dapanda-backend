@@ -369,14 +369,11 @@ class ProductControllerTest {
 				Product product3 = ProductFixture.createMobileDataProduct(5000,
 						mobileData3.getId(), member);
 				productRepository.saveAll(List.of(product1, product2, product3));
-				MobileDataCursorRequest request = new MobileDataCursorRequest(null, size,
-						productSortOption, dataAmount);
 
 				// when & then
 				mockMvc.perform(
 								MockMvcRequestBuilders.get(
 												"/api/products/mobile-data")
-										.param("cursorId", "1")
 										.param("size", String.valueOf(size))
 										.param("productSortOption", productSortOption)
 										.param("dataAmount", String.valueOf(dataAmount))
@@ -966,7 +963,7 @@ class ProductControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("price").description("상품 가격 (필수)"),
 										fieldWithPath("changedAmount").description(
-												"데이터 변화량 (필수, 음수/양수)"),
+												"상품 데이터양 (필수)"),
 										fieldWithPath("isSplitType").description("분할 여부 (필수)")
 								),
 								responseFields(
@@ -982,10 +979,9 @@ class ProductControllerTest {
 
 				assertThat(updatedProduct.getId()).isEqualTo(product.getId());
 				assertThat(updatedProduct.getPrice()).isEqualTo(NEW_PRICE_9000);
-				assertThat(updatedMobileData.getDataAmount()).isEqualByComparingTo(
-						BEFORE_DATA_AMOUNT.add(CHANGED_AMOUNT));
+				assertThat(updatedMobileData.getDataAmount()).isEqualByComparingTo(CHANGED_AMOUNT);
 				assertThat(updatedMobileData.getRemainAmount()).isEqualByComparingTo(
-						BEFORE_REMAIN_AMOUNT.add(CHANGED_AMOUNT));
+						CHANGED_AMOUNT);
 			}
 		}
 
@@ -1147,12 +1143,14 @@ class ProductControllerTest {
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
 
+				List<String> imageUrls = List.of("image1.jpg", "image2.jpg", "image3.jpg");
+
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, START_TIME, END_TIME);
+						ADDRESS, imageUrls, START_TIME, END_TIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")
@@ -1172,6 +1170,7 @@ class ProductControllerTest {
 										fieldWithPath("content").description("상품 본문 (필수)"),
 										fieldWithPath("latitude").description("위도 (필수)"),
 										fieldWithPath("longitude").description("경도 (필수)"),
+										fieldWithPath("imageUrls").description("이미지 (필수)"),
 										fieldWithPath("address").description("지도 (필수)"),
 										fieldWithPath("startTime").description("시작 시간 (필수)"),
 										fieldWithPath("endTime").description("종료 시간 (필수)")
@@ -1212,13 +1211,14 @@ class ProductControllerTest {
 								START_TIME, END_TIME));
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member1));
+				List<String> imageUrls = List.of("image1.jpg", "image2.jpg", "image3.jpg");
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member2.getId());
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, START_TIME, END_TIME);
+						ADDRESS, imageUrls, START_TIME, END_TIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")
@@ -1238,6 +1238,7 @@ class ProductControllerTest {
 										fieldWithPath("latitude").description("위도 (필수)"),
 										fieldWithPath("longitude").description("경도 (필수)"),
 										fieldWithPath("address").description("주소 (필수)"),
+										fieldWithPath("imageUrls").description("이미지 (필수)"),
 										fieldWithPath("startTime").description("시작 시간 (필수)"),
 										fieldWithPath("endTime").description("종료 시간 (필수)")
 								),
@@ -1259,13 +1260,14 @@ class ProductControllerTest {
 								START_TIME, END_TIME));
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
+				List<String> imageUrls = List.of("image1.jpg", "image2.jpg", "image3.jpg");
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, WRONG_START_TIME, WRONG_END_TIME);
+						ADDRESS, imageUrls, WRONG_START_TIME, WRONG_END_TIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")
@@ -1285,6 +1287,7 @@ class ProductControllerTest {
 										fieldWithPath("latitude").description("위도 (필수)"),
 										fieldWithPath("longitude").description("경도 (필수)"),
 										fieldWithPath("address").description("주소 (필수)"),
+										fieldWithPath("imageUrls").description("이미지 (필수)"),
 										fieldWithPath("startTime").description("시작 시간 (필수)"),
 										fieldWithPath("endTime").description("종료 시간 (필수)")
 								),

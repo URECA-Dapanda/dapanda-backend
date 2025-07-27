@@ -57,6 +57,8 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
+      ssl:
+        enabled: true
 
 toss:
   secret-key: ${TOSS_PAYMENTS_SECRET}
