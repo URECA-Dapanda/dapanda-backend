@@ -542,8 +542,8 @@ class ProductControllerTest {
 										parameterWithName("productSortOption").description(
 												"정렬 조건 (필수) - PRICE_ASC(가격 낮은순), AVERAGE_RATE_DESC(평점 높은순), DISTANCE_ASC(거리 가까운순)"),
 										parameterWithName("open").description("영업중 여부 (선택)"),
-										parameterWithName("latitude").description("사용자의 위도 (필수 O)"),
-										parameterWithName("longitude").description("사용자의 경도 (필수 O)")
+										parameterWithName("latitude").description("사용자의 위도 (필수)"),
+										parameterWithName("longitude").description("사용자의 경도 (필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -607,7 +607,7 @@ class ProductControllerTest {
 			}
 
 			@Test
-			@DisplayName("와아파이 상품 목록 조회 시 위도, 경도 값이 유효하지 않으면 예외를 던진다")
+			@DisplayName("와이파이 상품 목록 조회 시 위도, 경도 값이 유효하지 않으면 예외를 던진다")
 			void throwExceptionWhenProductSortOptionIsInvalid() throws Exception {
 
 				// given & when & then
@@ -662,7 +662,7 @@ class ProductControllerTest {
 						.andExpect(jsonPath("$.data.price").value(PRICE_3000))
 						.andExpect(jsonPath("$.data.memberId").value(member.getId()))
 						.andExpect(jsonPath("$.data.memberName").value(member.getName()))
-						.andExpect(jsonPath("$.data.profileImageUrl").value(""))
+						.andExpect(jsonPath("$.data.profileImageUrl").value(member.getProfileImageUrl()))
 						.andExpect(jsonPath("$.data.remainAmount").value(REMAIN_AMOUNT_1))
 						.andExpect(jsonPath("$.data.pricePer100MB").value(PRICE_PER_100MB_300))
 						.andExpect(jsonPath("$.data.averageRate").exists())
@@ -768,7 +768,7 @@ class ProductControllerTest {
 	}
 
 	@Nested
-	@DisplayName("와아파이 상품 상세 조회 API")
+	@DisplayName("와이파이 상품 상세 조회 API")
 	class WifiInfo {
 
 		@Nested
@@ -808,7 +808,7 @@ class ProductControllerTest {
 						.andExpect(jsonPath("$.data.price").value(PRICE_3000))
 						.andExpect(jsonPath("$.data.memberId").value(member.getId()))
 						.andExpect(jsonPath("$.data.memberName").value(member.getName()))
-						.andExpect(jsonPath("$.data.profileImageUrl").value(""))
+						.andExpect(jsonPath("$.data.profileImageUrl").value(member.getProfileImageUrl()))
 						.andExpect(jsonPath("$.data.title").value(TITLE))
 						.andExpect(jsonPath("$.data.content").value(CONTENT))
 						.andExpect(jsonPath("$.data.latitude").value(LATITUDE))
