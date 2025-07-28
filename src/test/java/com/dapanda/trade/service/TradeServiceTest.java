@@ -116,9 +116,9 @@ class TradeServiceTest {
 				assertThat(product.getState()).isEqualTo(ProductState.SOLD_OUT);
 				assertThat(mobileData.getRemainAmount()).isEqualByComparingTo(
 						BigDecimal.valueOf(0));
-				assertThat(updateBuyerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+				assertThat(updateBuyerPlan.getCurrentDataAmount()).isEqualByComparingTo(
 						PROVIDING_DATA_AMOUNT_10.add(DATA_AMOUNT_1));
-				assertThat(updateSellerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+				assertThat(updateSellerPlan.getCurrentDataAmount()).isEqualByComparingTo(
 						PROVIDING_DATA_AMOUNT_10.subtract(DATA_AMOUNT_1));
 				assertThat(buyer.getBuyingData()).isEqualByComparingTo(DATA_AMOUNT_1);
 				assertThat(seller.getSellingData()).isEqualByComparingTo(DATA_AMOUNT_1);
@@ -164,9 +164,9 @@ class TradeServiceTest {
 				assertThat(product.getState()).isEqualTo(ProductState.ACTIVE);
 				assertThat(mobileData.getRemainAmount()).isEqualByComparingTo(
 						DATA_AMOUNT_2.subtract(DATA_AMOUNT_1));
-				assertThat(buyerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+				assertThat(buyerPlan.getCurrentDataAmount()).isEqualByComparingTo(
 						PROVIDING_DATA_AMOUNT_10.add(DATA_AMOUNT_1));
-				assertThat(sellerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+				assertThat(sellerPlan.getCurrentDataAmount()).isEqualByComparingTo(
 						PROVIDING_DATA_AMOUNT_10.subtract(DATA_AMOUNT_1));
 				assertThat(buyer.getBuyingData()).isEqualByComparingTo(DATA_AMOUNT_1);
 				assertThat(seller.getSellingData()).isEqualByComparingTo(DATA_AMOUNT_1);

@@ -131,7 +131,7 @@ class PlanControllerTest {
 
 				// 실제 서비스로직 검증 (Optional)
 				var result = planRepository.findByMemberId(member.getId()).orElseThrow();
-				assertThat(result.getProvidingDataAmount()).isEqualByComparingTo(
+				assertThat(result.getCurrentDataAmount()).isEqualByComparingTo(
 						BigDecimal.valueOf(30.0));
 			}
 		}

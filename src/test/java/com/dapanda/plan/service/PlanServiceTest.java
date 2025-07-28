@@ -56,7 +56,7 @@ class PlanServiceTest {
 				assertThat(result).isNotNull();
 				assertThat(result.getMember()).isEqualTo(member);
 				assertThat(result.getName()).isNotBlank();
-				assertThat(result.getProvidingDataAmount()).isPositive();
+				assertThat(result.getCurrentDataAmount()).isPositive();
 				assertThat(result.getMonthlyPrice()).isPositive();
 				assertThat(result.getCategory()).isInstanceOf(PlanCategory.class);
 				assertThat(result.getAgeGroup()).isInstanceOf(AgeGroup.class);
@@ -104,7 +104,7 @@ class PlanServiceTest {
 
 				when(planRepository.findByMemberId(memberId)).thenReturn(Optional.of(plan));
 				when(plan.getName()).thenReturn("프리미엄");
-				when(plan.getProvidingDataAmount()).thenReturn(BigDecimal.valueOf(30.0));
+				when(plan.getCurrentDataAmount()).thenReturn(BigDecimal.valueOf(30.0));
 				when(plan.getMonthlyPrice()).thenReturn(25000);
 
 				// when

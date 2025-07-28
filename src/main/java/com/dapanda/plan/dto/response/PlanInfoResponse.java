@@ -18,7 +18,7 @@ public class PlanInfoResponse {
 
 		return PlanInfoResponse.builder().
 				name(plan.getName()).
-				providingDataAmount(plan.getProvidingDataAmount()).
+				providingDataAmount(plan.getCurrentDataAmount()).
 				monthlyPrice(plan.getMonthlyPrice()).
 				build();
 	}
