@@ -266,7 +266,7 @@ include::{snippets}/report/create-report/validation-error/http-response.adoc[]
 [[resources-payment-save-amount]]
 ==== 결제 금액 임시 저장
 
-`POST /api/payments/cash-charge-save-amount`
+`POST /api/payments/save-amount`
 주문 아이디와 결제 금액을 세션에 임시 저장합니다.
 
 ===== 요청

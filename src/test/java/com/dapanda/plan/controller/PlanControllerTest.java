@@ -36,7 +36,7 @@ import org.springframework.web.context.WebApplicationContext;
 @Import(TestConfig.class)
 @ActiveProfiles("test")
 @ExtendWith(RestDocumentationExtension.class)
-@DisplayName("플랜 컨트롤러 테스트")
+@DisplayName("요금제 컨트롤러 테스트")
 class PlanControllerTest {
 
 	@Autowired
