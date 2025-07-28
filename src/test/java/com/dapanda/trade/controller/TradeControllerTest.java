@@ -114,7 +114,7 @@ class TradeControllerTest {
 		jdbcTemplate.execute("DELETE FROM member");
 		jdbcTemplate.execute("TRUNCATE TABLE plan");
 		jdbcTemplate.execute("DELETE FROM trade");
-		jdbcTemplate.execute("TRUNCATE TABLE trade_details");
+		jdbcTemplate.execute("DELETE FROM trade_details");
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}

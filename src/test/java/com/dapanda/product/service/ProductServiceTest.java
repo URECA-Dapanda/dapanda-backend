@@ -88,8 +88,7 @@ class ProductServiceTest {
 			Member member = MemberFixture.createMember1WithId(memberId);
 			Plan plan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
 					PlanCategory._5G, AgeGroup.YOUTH, member);
-
-			given(planRepository.findByMemberId(MEMBER_ID)).willReturn(Optional.of(plan));
+			given(planRepository.findByMemberId(memberId)).willReturn(Optional.of(plan));
 
 			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
 					BigDecimal.valueOf(1.0), false);
@@ -136,8 +135,7 @@ class ProductServiceTest {
 			Member member = MemberFixture.createMember1WithId(memberId);
 			Plan plan = Plan.of("청년 요금제", BigDecimal.valueOf(30), 10000, PlanCategory._5G,
 					AgeGroup.YOUTH, member);
-
-			given(planRepository.findByMemberId(MEMBER_ID)).willReturn(Optional.of(plan));
+			given(planRepository.findByMemberId(memberId)).willReturn(Optional.of(plan));
 
 			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
 					new BigDecimal(3),
@@ -160,18 +158,18 @@ class ProductServiceTest {
 			// given
 			Long memberId = 1L;
 			Member member = MemberFixture.createMember1WithId(memberId);
-			Plan plan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+			Plan plan = Plan.of("요금제", BigDecimal.valueOf(0.5), 10000,
 					PlanCategory._5G, AgeGroup.YOUTH, member);
 
-			given(planRepository.findByMemberId(MEMBER_ID)).willReturn(Optional.of(plan));
+			given(planRepository.findByMemberId(memberId)).willReturn(Optional.of(plan));
 
 			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
-					new BigDecimal("2000.0"),
-					false); // 2GB 추가
+					new BigDecimal("1.0"),
+					false);
 
 			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 			given(productRepository.sumSoldMobileDataAmountByMemberId(memberId)).willReturn(
-					BigDecimal.valueOf(2000));
+					BigDecimal.valueOf(1));
 
 			// when/then
 			assertThatThrownBy(() -> productService.createMobileData(request, memberId))

@@ -135,9 +135,6 @@ public class ProductService {
 			throw new GlobalException(ResultCode.NOT_ENOUGH_DATA);
 		}
 
-		plan.deductMobileData(dataAmount);
-		planRepository.save(plan);
-
 		BigDecimal willSellAmount = request.getDataAmount();
 		if (soldAmount.add(willSellAmount)
 				.compareTo(BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
