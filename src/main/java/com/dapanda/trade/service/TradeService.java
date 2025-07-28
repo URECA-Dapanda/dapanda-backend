@@ -38,8 +38,6 @@ public class TradeService {
 	private final TradeDetailsRepository tradeDetailsRepository;
 	private final PlanRepository planRepository;
 
-	// TODO: 구매 로직 리팩토링 (메서드)
-
 	/**
 	 * 1. 데이터 일반 상품 구매 요청
 	 * 2. 해당 상품 재고 조회
@@ -47,25 +45,17 @@ public class TradeService {
 	 * 4. 캐시 결제 -> 캐시에 Lock, 결제 완료되면 Lock 해제 // 캐시 잔고 부족하면 예외
 	 * 5. 해당 상품 SOLD_OUT 처리
 	 * 6. Trade, TradeDetails 순서대로 생성
-	 * 7. 구매자: 데이터 추가 / 판매자: 데이터 차감 / 공통 필드 갱신
+	 * 7. 구매자: 데이터 추가 / 판매자: 데이터 차감 / 공통 필드(캐시) 갱신
 	 * 8. 알림, 로그 -> EventListener(트랜잭션 이후)
 	 * 9. Response: 구매 데이터양, 내 총 데이터양
 	 */
 	@Transactional
-	public TradeProductResponse defaultPurchaseMobileData(
-			Long buyerId, DefaultPurchaseMobileDataRequest request) {
+	public TradeProductResponse defaultPurchaseMobileData(Long buyerId,
+			DefaultPurchaseMobileDataRequest request) {
 
-		Product product = productRepository.findByIdForUpdate(request.productId())
-				.orElseThrow();
+		validateProduct(request.productId(), buyerId);
 
-		if (product.getState().equals(ProductState.SOLD_OUT)) {
-			throw new GlobalException(ResultCode.ALREADY_SOLD_OUT);
-		}
-
-		if (product.getMember().getId().equals(buyerId)) {
-			throw new GlobalException(ResultCode.CANNOT_PURCHASE_OWN_PRODUCT);
-		}
-
+		Product product = productRepository.findById(request.productId()).orElseThrow();
 		MobileData mobileData = mobileDataRepository.findById(product.getItemId()).orElseThrow();
 
 		if (mobileData.isSplitType()) {
@@ -89,22 +79,17 @@ public class TradeService {
 	private TradeProductResponse handleFullPurchaseProduct(Product product,
 			MobileData mobileData, Long buyerId) {
 
-		// Lock 건 상태로 구매자, 판매자 조회
-		Member buyer = memberRepository.findByIdForUpdate(buyerId).orElseThrow();
-		Member seller = memberRepository.findByIdForUpdate(product.getMember().getId())
-				.orElseThrow();
+		validateMobileDataLimit(buyerId, mobileData.getDataAmount());
 
-		validatePurchaseLimit(buyer, mobileData.getDataAmount());
-
-		deductBuyerCashAndUpdateState(buyer, product, mobileData, product.getPrice(),
+		updateBuyerCashAndDataAmount(buyerId, product.getPrice(),
+				mobileData.getDataAmount());
+		updateSellerCashAndDataAmount(product.getMember().getId(), product.getPrice(),
+				mobileData.getDataAmount());
+		updateMobileDataProduct(mobileData, product, product.getPrice(),
 				mobileData.getDataAmount());
 
-		Trade trade = createTradeAndTradeDetails(product, mobileData, buyer, seller,
-				product.getPrice());
-
-		updateBuyerAndSellerData(buyer, seller, mobileData.getDataAmount());
-
-		seller.addCash(product.getPrice());
+		Trade trade = createMobileDataTradeAndTradeDetails(product, mobileData, buyerId,
+				product.getMember().getId(), product.getPrice());
 
 		return TradeProductResponse.of(trade.getId());
 	}
@@ -115,80 +100,16 @@ public class TradeService {
 	private TradeProductResponse handlePartialPurchaseProduct(Product product,
 			MobileData mobileData, Long buyerId, BigDecimal dataAmount, int price) {
 
-		// Lock 건 상태로 구매자, 판매자 조회
-		Member buyer = memberRepository.findByIdForUpdate(buyerId).orElseThrow();
-		Member seller = memberRepository.findByIdForUpdate(product.getMember().getId())
-				.orElseThrow();
+		validateMobileDataLimit(buyerId, dataAmount);
 
-		validatePurchaseLimit(buyer, dataAmount);
+		updateBuyerCashAndDataAmount(buyerId, price, dataAmount);
+		updateSellerCashAndDataAmount(product.getMember().getId(), price, dataAmount);
+		updateMobileDataProduct(mobileData, product, price, dataAmount);
 
-		deductBuyerCashAndUpdateState(buyer, product, mobileData, price, dataAmount);
-
-		Trade trade = createTradeAndTradeDetails(product, mobileData, buyer, seller,
-				product.getPrice());
-
-		updateBuyerAndSellerData(buyer, seller, dataAmount);
-
-		seller.addCash(product.getPrice());
+		Trade trade = createMobileDataTradeAndTradeDetails(product, mobileData, buyerId,
+				product.getMember().getId(), product.getPrice());
 
 		return TradeProductResponse.of(trade.getId());
-	}
-
-	private void validatePurchaseLimit(Member buyer, BigDecimal dataAmount) {
-
-		if (buyer.getBuyingData().add(dataAmount).compareTo(
-				BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
-			throw new GlobalException(ResultCode.EXCEEDED_PURCHASE_LIMIT);
-		}
-	}
-
-	private void deductBuyerCashAndUpdateState(Member buyer, Product product, MobileData mobileData,
-			int price, BigDecimal dataAmount) {
-
-		if (mobileData.getRemainAmount().compareTo(dataAmount) < 0) {
-			throw new GlobalException(ResultCode.INVALID_REMAIN_DATA_AMOUNT);
-		}
-		if (buyer.getCash() < price) {
-			throw new GlobalException(ResultCode.INSUFFICIENT_CASH);
-		}
-
-		buyer.deductCash(price);
-		buyer.addBuyingData(dataAmount);
-		mobileData.deductRemainAmount(dataAmount);
-
-		if (mobileData.getRemainAmount().compareTo(BigDecimal.ZERO) == 0) {
-			product.changeState(ProductState.SOLD_OUT);
-		} else {
-			product.updatePrice(product.getPrice() - price);
-			mobileData.update100MBPerPrice(price, mobileData.getRemainAmount());
-		}
-	}
-
-	private Trade createTradeAndTradeDetails(Product product, MobileData mobileData, Member buyer,
-			Member seller, int price) {
-
-		Trade buyerTrade = Trade.of(mobileData.getDataAmount(), price,
-				TradeType.PURCHASE_MOBILE_SINGLE, buyer);
-		Trade sellerTrade = Trade.of(mobileData.getDataAmount(), price, TradeType.SALE_MOBILE_DATA,
-				seller);
-		tradeRepository.saveAll(List.of(buyerTrade, sellerTrade));
-		TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
-		TradeDetails sellerTradeDetails = TradeDetails.of(product, sellerTrade);
-		tradeDetailsRepository.saveAll(
-				new ArrayList<>(List.of(buyerTradeDetails, sellerTradeDetails)));
-
-		return buyerTrade;
-	}
-
-	private void updateBuyerAndSellerData(Member buyer, Member seller, BigDecimal dataAmount) {
-
-		seller.addSellingData(dataAmount);
-
-		Plan sellerPlan = planRepository.findByMember(seller).orElseThrow();
-		Plan buyerPlan = planRepository.findByMember(buyer).orElseThrow();
-
-		buyerPlan.addMobileData(dataAmount);
-		sellerPlan.deductMobileData(dataAmount);
 	}
 
 	public FindMobileDataScrapResponse findMobileDataScrap(BigDecimal dataAmount, Long memberId) {
@@ -284,18 +205,14 @@ public class TradeService {
 		BigDecimal totalAmount = request.totalAmount();
 		int totalPrice = request.totalPrice();
 
-		// 1. 구매자 Lock 조회
-		Member buyer = memberRepository.findByIdForUpdate(buyerId)
-				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+		validateMobileDataLimit(buyerId, request.totalAmount());
 
-		// 2. 캐시 충분한지 검사
-		if (buyer.getCash() < totalPrice) {
-			throw new GlobalException(ResultCode.INSUFFICIENT_CASH);
-		}
-
-		validatePurchaseLimit(buyer, request.totalAmount());
+		// 2. 구매자 캐시, 데이터양 업데이트
+		updateBuyerCashAndDataAmount(buyerId, totalPrice, totalAmount);
 
 		// 3. 거래 생성
+		Member buyer = memberRepository.findById(buyerId).orElseThrow();
+
 		Trade buyerTrade = Trade.of(totalAmount, totalPrice, TradeType.PURCHASE_MOBILE_COMPOSITE,
 				buyer);
 		tradeRepository.save(buyerTrade);
@@ -309,52 +226,29 @@ public class TradeService {
 			MobileData mobileData = mobileDataRepository.findById(scrap.getMobileDataId())
 					.orElseThrow(() -> new GlobalException(ResultCode.MOBILE_DATA_NOT_FOUND));
 
-			Member seller = memberRepository.findByIdForUpdate(product.getMember().getId())
+			Member seller = memberRepository.findById(product.getMember().getId())
 					.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
-			// 4-2. 구매 데이터양 만큼 remainAmount 차감
+			// 4-2. 상품 가격, 데이터양
 			BigDecimal purchaseAmount = scrap.getPurchaseAmount();
-			if (mobileData.getRemainAmount().compareTo(purchaseAmount) < 0) {
-				throw new GlobalException(ResultCode.INVALID_REMAIN_DATA_AMOUNT);
-			}
-
-			mobileData.deductRemainAmount(purchaseAmount);
-
-			// 4-3. 상품 가격
 			int purchasePrice = scrap.getPurchasePrice();
 
-			// 4-4. 판매자 캐시 증가
-			seller.addCash(purchasePrice);
+			// 4-3. 상품 업데이트
+			updateMobileDataProduct(mobileData, product, purchasePrice, purchaseAmount);
 
-			// 4-5. 판매 데이터양 업데이트
-			seller.addSellingData(purchaseAmount);
+			// 4-4. 판매자 캐시, 데이터양 업데이트
+			updateSellerCashAndDataAmount(product.getMember().getId(), purchasePrice,
+					purchaseAmount);
 
-			// 4-6. 상품 상태 변경
-			if (!mobileData.isSplitType()
-					|| mobileData.getRemainAmount().compareTo(BigDecimal.ZERO) == 0) {
-				product.changeState(ProductState.SOLD_OUT);
-			} else {
-				product.updatePrice(product.getPrice() - purchasePrice);
-				mobileData.update100MBPerPrice(purchasePrice, mobileData.getRemainAmount());
-			}
-
-			// 4-7. 거래 저장
+			// 4-5. 거래 저장
 			Trade sellerTrade = Trade.of(totalAmount, null, totalPrice,
 					TradeType.PURCHASE_MOBILE_COMPOSITE, seller);
-
 			tradeRepository.save(sellerTrade);
 
 			TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
 			TradeDetails sellerTradeDetails = TradeDetails.of(product, sellerTrade);
-			tradeDetailsRepository.saveAll(
-					new ArrayList<>(List.of(buyerTradeDetails, sellerTradeDetails)));
+			tradeDetailsRepository.saveAll(List.of(buyerTradeDetails, sellerTradeDetails));
 		}
-
-		// 5. 구매자 캐시 차감
-		buyer.deductCash(totalPrice);
-
-		// 6. 구매 데이터양 업데이트
-		buyer.addBuyingData(totalAmount);
 
 		return TradeProductResponse.of(buyerTrade.getId());
 	}
@@ -365,72 +259,37 @@ public class TradeService {
 	@Transactional
 	public TradeProductResponse purchaseWifi(Long buyerId, PurchaseWifiRequest request) {
 
-		// 1. 구매자 조회
-		Member buyer = memberRepository.findByIdForUpdate(buyerId).orElseThrow();
-
-		// 2. 상품 조회
+		// 1. 상품 조회
 		Product product = productRepository.findByIdForUpdate(request.productId())
 				.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
 
-		// 3. 와이파이 정보 조회
+		// 2. 와이파이 정보 조회
 		Wifi wifi = wifiRepository.findById(request.wifiId())
 				.orElseThrow(() -> new GlobalException(ResultCode.WIFI_NOT_FOUND));
 
-		// 4. 시간/금액 검사
+		// 3. 유효성 검사
 		int timeAmount = (int) Duration.between(request.startTime(), request.endTime())
 				.toMinutes();
 		int totalPrice = product.getPrice() * timeAmount / 10;
 
-		// 5. 유효성 검사
 		LocalTime requestStart = request.startTime().toLocalTime();
 		LocalTime requestEnd = request.endTime().toLocalTime();
 		LocalTime wifiStart = wifi.getStartTime().toLocalTime();
 		LocalTime wifiEnd = wifi.getEndTime().toLocalTime();
 
-		boolean isOverMidnight = wifiStart.isAfter(wifiEnd); // 영업 시간이 자정을 넘기는지 여부
+		validateProduct(product.getId(), buyerId);
+		validateWifiTime(requestStart, requestEnd, wifiStart, wifiEnd);
 
-		boolean isStartValid;
-		boolean isEndValid;
+		// 4. 판매자/구매자 캐시 업데이트
+		updateBuyerAndSellerCash(buyerId, product.getMember().getId(), totalPrice);
 
-		if (isOverMidnight) {
-			isStartValid = !requestStart.isBefore(wifiStart) || !requestStart.isAfter(wifiEnd);
-			isEndValid = !requestEnd.isBefore(wifiStart) || !requestEnd.isAfter(wifiEnd);
-		} else {
-			isStartValid = !requestStart.isBefore(wifiStart) && !requestStart.isAfter(wifiEnd);
-			isEndValid = !requestEnd.isBefore(wifiStart) && !requestEnd.isAfter(wifiEnd);
-		}
-		if (!isStartValid || !isEndValid) {
-			throw new GlobalException(ResultCode.INVALID_WIFI_OPERATION_TIME);
-		}
+		// 5. 거래 저장
+		Trade buyerTrade = createWifiTradeAndTradeDetails(product, buyerId,
+				product.getMember().getId(), totalPrice, timeAmount);
 
-		if (product.getMember().getId().equals(buyerId)) {
-			throw new GlobalException(ResultCode.CANNOT_PURCHASE_OWN_PRODUCT);
-		}
-		if (buyer.getCash() < totalPrice) {
-			throw new GlobalException(ResultCode.INSUFFICIENT_CASH);
-		}
-
-		// 6. 판매자/구매자 캐시 업데이트
-		Member seller = memberRepository.findByIdForUpdate(product.getMember().getId())
-				.orElseThrow();
-		seller.addCash(totalPrice);
-		buyer.deductCash(totalPrice);
-
-		// 7. 거래 저장
-		Trade buyerTrade = Trade.of(timeAmount, totalPrice, TradeType.PURCHASE_WIFI,
-				buyer);
-		Trade sellerTrade = Trade.of(timeAmount, totalPrice, TradeType.SALE_WIFI, seller);
-		tradeRepository.saveAll(new ArrayList<>(List.of(buyerTrade, sellerTrade)));
-
-		TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
-		TradeDetails sellerTradeDetails = TradeDetails.of(product, sellerTrade);
-		tradeDetailsRepository.saveAll(
-				new ArrayList<>(List.of(buyerTradeDetails, sellerTradeDetails)));
-
-		// 8. 응답 반환
-		return TradeProductResponse.of(buyerTradeDetails.getId());
+		// 6. 응답 반환
+		return TradeProductResponse.of(buyerTrade.getId());
 	}
-
 
 	public FindTradeHistoryResponse findTradeHistory(Long cursorId, Integer size,
 			Long memberId) {
@@ -453,6 +312,141 @@ public class TradeService {
 				year, month);
 
 		return FindCashHistoryResponse.of(monthlySummary, cashHistorySummary);
+	}
+
+	private void validateProduct(Long productId, Long buyerId) {
+
+		Product product = productRepository.findByIdForUpdate(productId).orElseThrow();
+
+		if (product.getState().equals(ProductState.SOLD_OUT)) {
+			throw new GlobalException(ResultCode.ALREADY_SOLD_OUT);
+		}
+
+		if (product.getMember().getId().equals(buyerId)) {
+			throw new GlobalException(ResultCode.CANNOT_PURCHASE_OWN_PRODUCT);
+		}
+	}
+
+	private void validateMobileDataLimit(Long buyerId, BigDecimal dataAmount) {
+
+		Member buyer = memberRepository.findById(buyerId).orElseThrow();
+
+		if (buyer.getBuyingData().add(dataAmount).compareTo(
+				BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
+			throw new GlobalException(ResultCode.EXCEEDED_PURCHASE_LIMIT);
+		}
+	}
+
+	private void validateWifiTime(LocalTime requestStart, LocalTime requestEnd,
+			LocalTime wifiStart, LocalTime wifiEnd) {
+
+		boolean isOverMidnight = wifiStart.isAfter(wifiEnd); // 영업 시간이 자정을 넘기는지 여부
+
+		boolean isStartValid;
+		boolean isEndValid;
+
+		if (isOverMidnight) {
+			isStartValid = !requestStart.isBefore(wifiStart) || !requestStart.isAfter(wifiEnd);
+			isEndValid = !requestEnd.isBefore(wifiStart) || !requestEnd.isAfter(wifiEnd);
+		} else {
+			isStartValid = !requestStart.isBefore(wifiStart) && !requestStart.isAfter(wifiEnd);
+			isEndValid = !requestEnd.isBefore(wifiStart) && !requestEnd.isAfter(wifiEnd);
+		}
+		if (!isStartValid || !isEndValid) {
+			throw new GlobalException(ResultCode.INVALID_WIFI_OPERATION_TIME);
+		}
+	}
+
+	private void updateBuyerCashAndDataAmount(Long buyerId, int price, BigDecimal dataAmount) {
+
+		Member buyer = memberRepository.findByIdForUpdate(buyerId).orElseThrow();
+
+		if (buyer.getCash() < price) {
+			throw new GlobalException(ResultCode.INSUFFICIENT_CASH);
+		}
+
+		Plan buyerPlan = planRepository.findByMember(buyer).orElseThrow();
+
+		buyer.deductCash(price);
+		buyer.addBuyingData(dataAmount);
+		buyerPlan.addMobileData(dataAmount);
+	}
+
+	private void updateSellerCashAndDataAmount(Long sellerId, int price, BigDecimal dataAmount) {
+
+		Member seller = memberRepository.findByIdForUpdate(sellerId).orElseThrow();
+
+		Plan sellerPlan = planRepository.findByMember(seller).orElseThrow();
+
+		seller.addCash(price);
+		seller.addSellingData(dataAmount);
+		sellerPlan.deductMobileData(dataAmount);
+	}
+
+	private void updateMobileDataProduct(MobileData mobileData, Product product, int price,
+			BigDecimal dataAmount) {
+
+		if (mobileData.getRemainAmount().compareTo(dataAmount) < 0) {
+			throw new GlobalException(ResultCode.INVALID_REMAIN_DATA_AMOUNT);
+		}
+
+		mobileData.deductRemainAmount(dataAmount);
+
+		if (mobileData.getRemainAmount().compareTo(BigDecimal.ZERO) == 0) {
+			product.changeState(ProductState.SOLD_OUT);
+		} else {
+			product.updatePrice(product.getPrice() - price);
+			mobileData.update100MBPerPrice(price, mobileData.getRemainAmount());
+		}
+	}
+
+	private void updateBuyerAndSellerCash(Long buyerId, Long sellerId, int totalPrice) {
+
+		Member buyer = memberRepository.findByIdForUpdate(buyerId).orElseThrow();
+		Member seller = memberRepository.findByIdForUpdate(sellerId).orElseThrow();
+
+		if (buyer.getCash() < totalPrice) {
+			throw new GlobalException(ResultCode.INSUFFICIENT_CASH);
+		}
+
+		seller.addCash(totalPrice);
+		buyer.deductCash(totalPrice);
+	}
+
+	private Trade createMobileDataTradeAndTradeDetails(Product product, MobileData mobileData,
+			Long buyerId, Long sellerId, int price) {
+
+		Member buyer = memberRepository.findById(buyerId).orElseThrow();
+		Member seller = memberRepository.findById(sellerId).orElseThrow();
+
+		Trade buyerTrade = Trade.of(mobileData.getDataAmount(), price,
+				TradeType.PURCHASE_MOBILE_SINGLE, buyer);
+		Trade sellerTrade = Trade.of(mobileData.getDataAmount(), price, TradeType.SALE_MOBILE_DATA,
+				seller);
+		tradeRepository.saveAll(List.of(buyerTrade, sellerTrade));
+
+		TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
+		TradeDetails sellerTradeDetails = TradeDetails.of(product, sellerTrade);
+		tradeDetailsRepository.saveAll(List.of(buyerTradeDetails, sellerTradeDetails));
+
+		return buyerTrade;
+	}
+
+	private Trade createWifiTradeAndTradeDetails(Product product, Long buyerId, Long sellerId,
+			int price, int timeAmount) {
+
+		Member buyer = memberRepository.findById(buyerId).orElseThrow();
+		Member seller = memberRepository.findById(sellerId).orElseThrow();
+
+		Trade buyerTrade = Trade.of(timeAmount, price, TradeType.PURCHASE_WIFI, buyer);
+		Trade sellerTrade = Trade.of(timeAmount, price, TradeType.SALE_WIFI, seller);
+		tradeRepository.saveAll(List.of(buyerTrade, sellerTrade));
+
+		TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
+		TradeDetails sellerTradeDetails = TradeDetails.of(product, sellerTrade);
+		tradeDetailsRepository.saveAll(List.of(buyerTradeDetails, sellerTradeDetails));
+
+		return buyerTrade;
 	}
 
 	private int calculateTotalPrice(List<MobileDataScrap> scrapList, BigDecimal dataAmount) {
