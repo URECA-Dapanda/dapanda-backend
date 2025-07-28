@@ -205,6 +205,7 @@ public class TradeService {
 		BigDecimal totalAmount = request.totalAmount();
 		int totalPrice = request.totalPrice();
 
+		// 1. 유효성 검사
 		validateMobileDataLimit(buyerId, request.totalAmount());
 
 		// 2. 구매자 캐시, 데이터양 업데이트
@@ -223,7 +224,7 @@ public class TradeService {
 			Product product = productRepository.findByIdForUpdate(scrap.getProductId())
 					.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
 
-			MobileData mobileData = mobileDataRepository.findById(scrap.getMobileDataId())
+			MobileData mobileData = mobileDataRepository.findByIdForUpdate(scrap.getMobileDataId())
 					.orElseThrow(() -> new GlobalException(ResultCode.MOBILE_DATA_NOT_FOUND));
 
 			Member seller = memberRepository.findById(product.getMember().getId())
