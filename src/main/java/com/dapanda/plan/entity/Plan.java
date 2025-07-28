@@ -21,7 +21,7 @@ public class Plan extends BaseEntity {
 
 	private String name;
 
-	private BigDecimal availableDataAmount;
+	private BigDecimal currentDataAmount;
 
 	private BigDecimal providingDataAmount;
 
@@ -38,13 +38,12 @@ public class Plan extends BaseEntity {
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Member member;
 
-	public static Plan of(String name, BigDecimal availableDataAmount,
-			BigDecimal providingDataAmount, int monthlyPrice,
+	public static Plan of(String name, BigDecimal providingDataAmount, int monthlyPrice,
 			PlanCategory category, AgeGroup ageGroup, Member member) {
 
 		return Plan.builder()
 				.name(name)
-				.availableDataAmount(availableDataAmount)
+				.currentDataAmount(providingDataAmount)
 				.providingDataAmount(providingDataAmount)
 				.monthlyPrice(monthlyPrice)
 				.category(category)
@@ -55,11 +54,11 @@ public class Plan extends BaseEntity {
 
 	public void addMobileData(BigDecimal dataAmount) {
 
-		this.availableDataAmount = this.availableDataAmount.add(dataAmount);
+		this.currentDataAmount = this.currentDataAmount.add(dataAmount);
 	}
 
 	public void deductMobileData(BigDecimal dataAmount) {
 
-		this.availableDataAmount = this.availableDataAmount.subtract(dataAmount);
+		this.currentDataAmount = this.currentDataAmount.subtract(dataAmount);
 	}
 }

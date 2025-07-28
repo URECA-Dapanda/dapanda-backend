@@ -110,10 +110,10 @@ class TradeControllerTest {
 
 		jdbcTemplate.execute("TRUNCATE TABLE wifi");
 		jdbcTemplate.execute("TRUNCATE TABLE mobile_data");
-		jdbcTemplate.execute("TRUNCATE TABLE product");
-		jdbcTemplate.execute("TRUNCATE TABLE member");
+		jdbcTemplate.execute("DELETE FROM product");
+		jdbcTemplate.execute("DELETE FROM member");
 		jdbcTemplate.execute("TRUNCATE TABLE plan");
-		jdbcTemplate.execute("TRUNCATE TABLE trade");
+		jdbcTemplate.execute("DELETE FROM trade");
 		jdbcTemplate.execute("TRUNCATE TABLE trade_details");
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
@@ -192,9 +192,9 @@ class TradeControllerTest {
 				assertThat(soldOutProduct.getState()).isEqualTo(ProductState.SOLD_OUT);
 				assertThat(soldOutMobileData.getRemainAmount()).isEqualByComparingTo(
 						BigDecimal.ZERO);
-				assertThat(afterBuyerPlan.getAvailableDataAmount()).isEqualByComparingTo(
+				assertThat(afterBuyerPlan.getCurrentDataAmount()).isEqualByComparingTo(
 						PROVIDING_DATA_AMOUNT_10.add(mobileData.getDataAmount()));
-				assertThat(afterSellerPlan.getAvailableDataAmount()).isEqualByComparingTo(
+				assertThat(afterSellerPlan.getCurrentDataAmount()).isEqualByComparingTo(
 						PROVIDING_DATA_AMOUNT_10.subtract(mobileData.getDataAmount()));
 				assertThat(afterBuyer.getBuyingData()).isEqualByComparingTo(
 						mobileData.getDataAmount());
@@ -267,9 +267,9 @@ class TradeControllerTest {
 				assertThat(soldOutProduct.getState()).isEqualTo(ProductState.ACTIVE);
 				assertThat(soldOutMobileData.getRemainAmount()).isEqualByComparingTo(
 						DATA_AMOUNT_2.subtract(DATA_AMOUNT_1));
-				assertThat(afterBuyerPlan.getAvailableDataAmount()).isEqualByComparingTo(
+				assertThat(afterBuyerPlan.getCurrentDataAmount()).isEqualByComparingTo(
 						PROVIDING_DATA_AMOUNT_10.add(DATA_AMOUNT_1));
-				assertThat(afterSellerPlan.getAvailableDataAmount()).isEqualByComparingTo(
+				assertThat(afterSellerPlan.getCurrentDataAmount()).isEqualByComparingTo(
 						PROVIDING_DATA_AMOUNT_10.subtract(DATA_AMOUNT_1));
 				assertThat(afterBuyer.getBuyingData()).isEqualByComparingTo(DATA_AMOUNT_1);
 				assertThat(afterSeller.getSellingData()).isEqualByComparingTo(DATA_AMOUNT_1);
@@ -1379,7 +1379,7 @@ class TradeControllerTest {
 												"거래 아이디 ("),
 										fieldWithPath(
 												"data.cashHistorySummary.data[].tradeType").description(
-												"거래 타입 (데이터 일반 구매: PURCHASE_MOBILE_SINGLE, 데이터 자투리 구매: PURCHASE_MOBILE_COMPOSITE, 와이파이: PURCHASE_WIFI, 판매: SALE, 충전: CHARGE, 출금: REFUND"),
+												"거래 타입 (데이터 일반 구매: PURCHASE_MOBILE_SINGLE, 데이터 자투리 구매: PURCHASE_MOBILE_COMPOSITE, 와이파이: PURCHASE_WIFI, 데이터 판매: SALE_MOBILE_DATA, 와이파이 판매: SALE_WIFI, 충전: CHARGE, 출금: REFUND"),
 										fieldWithPath(
 												"data.cashHistorySummary.data[].price").description(
 												"거래 금액"),

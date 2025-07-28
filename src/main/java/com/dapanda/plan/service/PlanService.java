@@ -39,7 +39,6 @@ public class PlanService {
 		Plan plan = Plan.of(
 				name,
 				dataAmount,
-				dataAmount,
 				price,
 				category,
 				ageGroup,
@@ -91,6 +90,12 @@ public class PlanService {
 				.orElseThrow(() -> new GlobalException(ResultCode.NOT_FOUND_PLAN));
 
 		return PlanInfoResponse.of(plan);
+	}
+
+	@Transactional
+	public void resetMemberMobileDataPlan() {
+
+		planRepository.resetMemberMobileDataPlan();
 	}
 
 }

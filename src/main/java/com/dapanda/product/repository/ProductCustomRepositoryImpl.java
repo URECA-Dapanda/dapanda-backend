@@ -5,7 +5,6 @@ import static com.dapanda.product.entity.QMobileData.mobileData;
 import static com.dapanda.product.entity.QProduct.product;
 import static com.dapanda.product.entity.QProductImage.productImage;
 import static com.dapanda.product.entity.QWifi.wifi;
-import static com.dapanda.review.entity.QReview.review;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
@@ -60,7 +59,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.from(product)
 				.join(mobileData).on(mobileData.id.eq(product.itemId))
 				.where(isActiveProduct(),
-						gtCursorId(cursorId),
+						productSortOption == ProductSortOption.RECENT ? ltCursorId(cursorId)
+								: gtCursorId(cursorId),
 						eqDataAmount(dataAmount)
 				)
 				.orderBy(
@@ -113,20 +113,13 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						wifi.address,
 						member.averageRating,
 						distance.divide(METER_TO_KILOMETER),
-						Expressions.booleanTemplate(
-								"CURRENT_TIMESTAMP BETWEEN {0} AND {1}", wifi.startTime,
-								wifi.endTime
-						),
+						isCurrentTimeWithinTimeRange(),
 						product.updatedAt
 				))
 				.from(product)
 				.groupBy(product.id)
 				.join(wifi).on(wifi.id.eq(product.itemId))
 				.leftJoin(member).on(product.member.id.eq(member.id))
-				.where(
-						gtCursorId(cursorId),
-						isOpenNow(isOpen, now)
-				)
 				.leftJoin(productImage).on(
 						productImage.wifiId.eq(wifi.id)
 								.and(productImage.priority.eq(
@@ -138,12 +131,12 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				)
 				.where(isActiveProduct(),
 						gtCursorId(cursorId),
-						isOpenNow(isOpen, now)
+						isOpenNow(isOpen)
 				)
 				.orderBy(
 						productSortOption == ProductSortOption.PRICE_ASC ? product.price.asc() :
 								productSortOption == ProductSortOption.AVERAGE_RATE_DESC
-										? review.rating.avg().desc() :
+										? member.averageRating.desc() :
 										distance.asc(),
 						product.id.asc()
 				)
@@ -213,10 +206,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						Expressions.nullExpression(List.class),
 						wifi.startTime,
 						wifi.endTime,
-						Expressions.booleanTemplate(
-								"CURRENT_TIMESTAMP BETWEEN {0} AND {1}", wifi.startTime,
-								wifi.endTime
-						),
+						isCurrentTimeWithinTimeRange(),
 						product.updatedAt
 				))
 				.from(product)
@@ -377,6 +367,11 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		return cursorId != null ? product.id.gt(cursorId) : null;
 	}
 
+	private BooleanExpression ltCursorId(Long cursorId) {
+
+		return cursorId != null ? product.id.lt(cursorId) : null;
+	}
+
 	private BooleanExpression eqDataAmount(BigDecimal dataAmount) {
 
 		return dataAmount != null
@@ -384,9 +379,20 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				dataAmount) : null;
 	}
 
-	private BooleanExpression isOpenNow(boolean isOpen, LocalDateTime now) {
+	private BooleanExpression isOpenNow(boolean isOpen) {
 
-		return isOpen ? wifi.startTime.loe(now).and(wifi.endTime.goe(now)) : null;
+		return isOpen ? isCurrentTimeWithinTimeRange() : null;
+	}
+
+	private BooleanExpression isCurrentTimeWithinTimeRange() {
+
+		return Expressions.booleanTemplate(
+				"(CASE WHEN TIME({1}) < TIME({0}) " +
+						"THEN TIME(CURRENT_TIMESTAMP) >= TIME({0}) OR TIME(CURRENT_TIMESTAMP) <= TIME({1}) "
+						+ "ELSE TIME(CURRENT_TIMESTAMP) BETWEEN TIME({0}) AND TIME({1}) END)",
+				wifi.startTime,
+				wifi.endTime
+		);
 	}
 
 	public FindMarketPriceResponse findMarketPrice(ItemType itemType) {

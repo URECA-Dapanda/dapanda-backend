@@ -15,10 +15,12 @@ public class ReadJoiningChatRoomResponse {
 	private Long chatRoomId;
 	private LocalDateTime createdAt;
 	private LocalDateTime lastMessageAt;
+	private String lastMessage;
 
 	//Member
 	private Long senderId;
 	private String senderName;
+	private String senderProfileImageUrl;
 
 	//Product
 	private Long productId;
@@ -33,6 +35,7 @@ public class ReadJoiningChatRoomResponse {
 			Long chatRoomId,
 			LocalDateTime createdAt,
 			LocalDateTime lastMessageAt,
+			String lastMessage,
 			Long senderId,
 			String senderName,
 			Long productId,
@@ -45,6 +48,7 @@ public class ReadJoiningChatRoomResponse {
 				.chatRoomId(chatRoomId)
 				.createdAt(createdAt)
 				.lastMessageAt(lastMessageAt)
+				.lastMessage(lastMessage)
 				.senderId(senderId)
 				.senderName(senderName)
 				.productId(productId)

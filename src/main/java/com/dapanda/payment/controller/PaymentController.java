@@ -3,17 +3,14 @@ package com.dapanda.payment.controller;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.CommonResponse;
 import com.dapanda.common.exception.ResultCode;
-import com.dapanda.payment.dto.request.AmountRequest;
-import com.dapanda.payment.dto.request.TossConfirmRequest;
-import com.dapanda.payment.dto.response.ConfirmPaymentResponse;
+import com.dapanda.payment.dto.request.*;
+import com.dapanda.payment.dto.response.ChargeCashResponse;
+import com.dapanda.payment.dto.response.RefundCashResponse;
 import com.dapanda.payment.service.PaymentService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -47,15 +44,27 @@ public class PaymentController {
 		return CommonResponse.success(null);
 	}
 
-	@PostMapping("/payments/confirm")
-	public CommonResponse<ConfirmPaymentResponse> confirm(
+	@PostMapping("/payments/charge")
+	public CommonResponse<ChargeCashResponse> chargeCash(
 			@AuthenticationPrincipal CustomUserDetails customUserDetails,
-			@RequestBody TossConfirmRequest request) {
+			@RequestBody ChargeCashRequest request) {
 
 		Long memberId = customUserDetails.getId();
 
-		ConfirmPaymentResponse response = paymentService.confirmPayment(memberId, request);
+		ChargeCashResponse response = paymentService.chargeCash(memberId, request);
 		paymentService.updateCash(memberId, response.getTotalAmount());
+
+		return CommonResponse.success(response);
+	}
+
+	@PostMapping("/payments/refund")
+	public CommonResponse<RefundCashResponse> refundCash(
+			@AuthenticationPrincipal CustomUserDetails customUserDetails,
+			@RequestBody RefundCashRequest request) {
+
+		Long memberId = customUserDetails.getId();
+
+		RefundCashResponse response = paymentService.refundCash(memberId, request);
 
 		return CommonResponse.success(response);
 	}

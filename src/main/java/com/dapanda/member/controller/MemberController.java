@@ -8,6 +8,8 @@ import com.dapanda.member.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,15 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
 	private final MemberService memberService;
+
+	@PostMapping("/members/role")
+	public ResponseEntity<CommonResponse<Void>> updateMemberRole(
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		memberService.updateMemberRole(userDetails.getId());
+
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+	}
 
 	@GetMapping("/members/cash")
 	public CommonResponse<FindCashResponse> getCash(

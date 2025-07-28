@@ -115,8 +115,7 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 								.when(trade.tradeType.eq(TradeType.SALE_WIFI))
 								.then(Expressions.stringTemplate("concat('와이파이 ', {0}, '분')",
 										trade.timeAmount.coalesce(0)))
-
-								.otherwise("-"),
+								.otherwise(""),
 
 						// classification
 						new CaseBuilder()
@@ -132,7 +131,7 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 								.then("충전")
 								.when(trade.tradeType.eq(TradeType.REFUND))
 								.then("출금")
-								.otherwise("-"),
+								.otherwise(""),
 
 						trade.createdAt
 				))

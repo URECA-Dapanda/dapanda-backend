@@ -17,10 +17,7 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.refreshToken.repository.RefreshTokenRepository;
 import com.dapanda.refreshToken.service.RefreshTokenService;
 import jakarta.servlet.http.HttpServletResponse;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @ActiveProfiles("test")
 @SpringBootTest
 @Transactional
-@DisplayName("Member 서비스 테스트")
+@DisplayName("회원 서비스 테스트")
 class MemberServiceBeanTest {
 
 	static final String EMAIL = "user@aaa.com";

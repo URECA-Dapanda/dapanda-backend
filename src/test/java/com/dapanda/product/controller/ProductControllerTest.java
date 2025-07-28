@@ -21,10 +21,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.common.exception.ResultCode;
-import com.dapanda.member.entity.Member;
-import com.dapanda.member.entity.MemberFixture;
+import com.dapanda.member.entity.*;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.plan.entity.*;
+import com.dapanda.plan.repository.PlanRepository;
 import com.dapanda.product.dto.request.*;
 import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.*;
@@ -76,6 +78,8 @@ class ProductControllerTest {
 	private WifiRepository wifiRepository;
 	@Autowired
 	private ProductImageRepository productImageRepository;
+	@Autowired
+	private PlanRepository planRepository;
 	private MockMvc mockMvc;
 	@Autowired
 	private ProductService productService;
@@ -88,6 +92,15 @@ class ProductControllerTest {
 		cleanupDatabase();
 	}
 
+	@AfterEach
+	void tearDown() {
+
+		planRepository.deleteAll();
+		productRepository.deleteAll();
+		mobileDataRepository.deleteAll();
+		memberRepository.deleteAll();
+	}
+
 	private void cleanupDatabase() {
 
 		entityManager.clear();
@@ -96,8 +109,8 @@ class ProductControllerTest {
 
 		jdbcTemplate.execute("TRUNCATE TABLE wifi");
 		jdbcTemplate.execute("TRUNCATE TABLE mobile_data");
-		jdbcTemplate.execute("TRUNCATE TABLE product");
-		jdbcTemplate.execute("TRUNCATE TABLE member");
+		jdbcTemplate.execute("DELETE FROM product");
+		jdbcTemplate.execute("DELETE FROM member");
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
@@ -122,6 +135,17 @@ class ProductControllerTest {
 			@Test
 			@DisplayName("정상적으로 모바일 데이터 상품을 등록한다")
 			void createMobileData_success() throws Exception {
+
+				Member member = memberRepository.save(Member.ofOAuthMember(
+						"dummy0 + @email.com",
+						"dummy1Name",
+						OAuthProvider.KAKAO,
+						MemberRole.ROLE_MEMBER));
+				Plan plan = planRepository.save(
+						Plan.of("청년 Value 베이직", new BigDecimal("30.0"), 15000,
+								PlanCategory._5G, AgeGroup.YOUTH, member));
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
 
 				CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
 						new BigDecimal("2.0"), false);
@@ -207,9 +231,19 @@ class ProductControllerTest {
 
 				// 이미 sellingData가 꽉 찬 상태로 설정
 				Member member = memberRepository.save(MemberFixture.createMember2());
+				Plan plan = Plan.of(
+						"청년 요금제",
+						BigDecimal.valueOf(20),
+						10000,
+						PlanCategory._5G,
+						AgeGroup.YOUTH,
+						member
+				);
+				planRepository.save(plan);
+
 				// sellingData 필드를 강제로 세팅하려면 set 메소드 또는 ReflectionTestUtils 사용
 				MobileData fullMobileData = mobileDataRepository.save(
-						MobileData.singleOf(BigDecimal.valueOf(2000), 1000, false) // 2000MB짜리 상품
+						MobileData.singleOf(BigDecimal.valueOf(20), 1000, false) // 2000MB짜리 상품
 				);
 				productRepository.save(
 						Product.of(ProductState.ACTIVE, 1000, fullMobileData.getId(),
@@ -369,14 +403,11 @@ class ProductControllerTest {
 				Product product3 = ProductFixture.createMobileDataProduct(5000,
 						mobileData3.getId(), member);
 				productRepository.saveAll(List.of(product1, product2, product3));
-				MobileDataCursorRequest request = new MobileDataCursorRequest(null, size,
-						productSortOption, dataAmount);
 
 				// when & then
 				mockMvc.perform(
 								MockMvcRequestBuilders.get(
 												"/api/products/mobile-data")
-										.param("cursorId", "1")
 										.param("size", String.valueOf(size))
 										.param("productSortOption", productSortOption)
 										.param("dataAmount", String.valueOf(dataAmount))
@@ -545,8 +576,8 @@ class ProductControllerTest {
 										parameterWithName("productSortOption").description(
 												"정렬 조건 (필수) - PRICE_ASC(가격 낮은순), AVERAGE_RATE_DESC(평점 높은순), DISTANCE_ASC(거리 가까운순)"),
 										parameterWithName("open").description("영업중 여부 (선택)"),
-										parameterWithName("latitude").description("사용자의 위도 (필수 O)"),
-										parameterWithName("longitude").description("사용자의 경도 (필수 O)")
+										parameterWithName("latitude").description("사용자의 위도 (필수)"),
+										parameterWithName("longitude").description("사용자의 경도 (필수)")
 								),
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
@@ -610,7 +641,7 @@ class ProductControllerTest {
 			}
 
 			@Test
-			@DisplayName("와아파이 상품 목록 조회 시 위도, 경도 값이 유효하지 않으면 예외를 던진다")
+			@DisplayName("와이파이 상품 목록 조회 시 위도, 경도 값이 유효하지 않으면 예외를 던진다")
 			void throwExceptionWhenProductSortOptionIsInvalid() throws Exception {
 
 				// given & when & then
@@ -660,12 +691,13 @@ class ProductControllerTest {
 										userDetails, null, userDetails.getAuthorities()
 								))))
 						.andExpect(status().isOk())
-						.andExpect(jsonPath("$.data.productId").value(PRODUCT_ID))
+						.andExpect(jsonPath("$.data.productId").value(product.getId()))
 						.andExpect(jsonPath("$.data.itemId").value(mobileData.getId()))
 						.andExpect(jsonPath("$.data.price").value(PRICE_3000))
 						.andExpect(jsonPath("$.data.memberId").value(member.getId()))
 						.andExpect(jsonPath("$.data.memberName").value(member.getName()))
-						.andExpect(jsonPath("$.data.profileImageUrl").value(""))
+						.andExpect(jsonPath("$.data.profileImageUrl").value(
+								member.getProfileImageUrl()))
 						.andExpect(jsonPath("$.data.remainAmount").value(REMAIN_AMOUNT_1))
 						.andExpect(jsonPath("$.data.pricePer100MB").value(PRICE_PER_100MB_300))
 						.andExpect(jsonPath("$.data.averageRate").exists())
@@ -698,9 +730,9 @@ class ProductControllerTest {
 						);
 
 				MobileDataInfoResponse actualResponse = productService.findMobileDataInfo(
-						PRODUCT_ID, member.getId());
+						product.getId(), member.getId());
 
-				assertThat(actualResponse.getProductId()).isEqualTo(PRODUCT_ID);
+				assertThat(actualResponse.getProductId()).isEqualTo(product.getId());
 				assertThat(actualResponse.getItemId()).isEqualTo(mobileData.getId());
 				assertThat(actualResponse.getRemainAmount()).isEqualByComparingTo(REMAIN_AMOUNT_1);
 				assertThat(actualResponse.getPricePer100MB()).isEqualTo(PRICE_PER_100MB_300);
@@ -771,7 +803,7 @@ class ProductControllerTest {
 	}
 
 	@Nested
-	@DisplayName("와아파이 상품 상세 조회 API")
+	@DisplayName("와이파이 상품 상세 조회 API")
 	class WifiInfo {
 
 		@Nested
@@ -789,7 +821,7 @@ class ProductControllerTest {
 						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
 								START_TIME, END_TIME));
 
-				productRepository.save(
+				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
 
 				productImageRepository.save(
@@ -800,18 +832,19 @@ class ProductControllerTest {
 				CustomUserDetails userDetails = CustomUserDetails.from(member);
 
 				// when & then
-				mockMvc.perform(get("/api/products/wifi/{productId}", PRODUCT_ID)
+				mockMvc.perform(get("/api/products/wifi/{productId}", product.getId())
 								.contentType(MediaType.APPLICATION_JSON)
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, userDetails.getAuthorities()
 								))))
 						.andExpect(status().isOk())
-						.andExpect(jsonPath("$.data.productId").value(PRODUCT_ID))
+						.andExpect(jsonPath("$.data.productId").value(product.getId()))
 						.andExpect(jsonPath("$.data.itemId").value(wifi.getId()))
 						.andExpect(jsonPath("$.data.price").value(PRICE_3000))
 						.andExpect(jsonPath("$.data.memberId").value(member.getId()))
 						.andExpect(jsonPath("$.data.memberName").value(member.getName()))
-						.andExpect(jsonPath("$.data.profileImageUrl").value(""))
+						.andExpect(jsonPath("$.data.profileImageUrl").value(
+								member.getProfileImageUrl()))
 						.andExpect(jsonPath("$.data.title").value(TITLE))
 						.andExpect(jsonPath("$.data.content").value(CONTENT))
 						.andExpect(jsonPath("$.data.latitude").value(LATITUDE))
@@ -856,10 +889,10 @@ class ProductControllerTest {
 								))
 						);
 
-				WifiInfoResponse actualResponse = productService.findWifiInfo(PRODUCT_ID,
+				WifiInfoResponse actualResponse = productService.findWifiInfo(product.getId(),
 						member.getId());
 
-				assertThat(actualResponse.getProductId()).isEqualTo(PRODUCT_ID);
+				assertThat(actualResponse.getProductId()).isEqualTo(product.getId());
 				assertThat(actualResponse.getItemId()).isEqualTo(wifi.getId());
 			}
 		}
@@ -938,7 +971,17 @@ class ProductControllerTest {
 			void updateMobileDataInfo() throws Exception {
 
 				// given
-				Member member = memberRepository.save(MemberFixture.createMember1());
+				Member member = memberRepository.save(MemberFixture.createMember2());
+				Plan plan = Plan.of(
+						"청년 요금제2",
+						BigDecimal.valueOf(15),
+						10000,
+						PlanCategory._5G,
+						AgeGroup.YOUTH,
+						member
+				);
+				planRepository.save(plan);
+
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT, BEFORE_REMAIN_AMOUNT,
 								PRICE_PER_100MB_300));
@@ -966,7 +1009,7 @@ class ProductControllerTest {
 										fieldWithPath("productId").description("상품 아이디 (필수)"),
 										fieldWithPath("price").description("상품 가격 (필수)"),
 										fieldWithPath("changedAmount").description(
-												"데이터 변화량 (필수, 음수/양수)"),
+												"상품 데이터양 (필수)"),
 										fieldWithPath("isSplitType").description("분할 여부 (필수)")
 								),
 								responseFields(
@@ -982,10 +1025,9 @@ class ProductControllerTest {
 
 				assertThat(updatedProduct.getId()).isEqualTo(product.getId());
 				assertThat(updatedProduct.getPrice()).isEqualTo(NEW_PRICE_9000);
-				assertThat(updatedMobileData.getDataAmount()).isEqualByComparingTo(
-						BEFORE_DATA_AMOUNT.add(CHANGED_AMOUNT));
+				assertThat(updatedMobileData.getDataAmount()).isEqualByComparingTo(CHANGED_AMOUNT);
 				assertThat(updatedMobileData.getRemainAmount()).isEqualByComparingTo(
-						BEFORE_REMAIN_AMOUNT.add(CHANGED_AMOUNT));
+						CHANGED_AMOUNT);
 			}
 		}
 
@@ -1147,12 +1189,14 @@ class ProductControllerTest {
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
 
+				List<String> imageUrls = List.of("image1.jpg", "image2.jpg", "image3.jpg");
+
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, START_TIME, END_TIME);
+						ADDRESS, imageUrls, START_TIME, END_TIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")
@@ -1172,6 +1216,7 @@ class ProductControllerTest {
 										fieldWithPath("content").description("상품 본문 (필수)"),
 										fieldWithPath("latitude").description("위도 (필수)"),
 										fieldWithPath("longitude").description("경도 (필수)"),
+										fieldWithPath("imageUrls").description("이미지 (필수)"),
 										fieldWithPath("address").description("지도 (필수)"),
 										fieldWithPath("startTime").description("시작 시간 (필수)"),
 										fieldWithPath("endTime").description("종료 시간 (필수)")
@@ -1212,13 +1257,14 @@ class ProductControllerTest {
 								START_TIME, END_TIME));
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member1));
+				List<String> imageUrls = List.of("image1.jpg", "image2.jpg", "image3.jpg");
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member2.getId());
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, START_TIME, END_TIME);
+						ADDRESS, imageUrls, START_TIME, END_TIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")
@@ -1238,6 +1284,7 @@ class ProductControllerTest {
 										fieldWithPath("latitude").description("위도 (필수)"),
 										fieldWithPath("longitude").description("경도 (필수)"),
 										fieldWithPath("address").description("주소 (필수)"),
+										fieldWithPath("imageUrls").description("이미지 (필수)"),
 										fieldWithPath("startTime").description("시작 시간 (필수)"),
 										fieldWithPath("endTime").description("종료 시간 (필수)")
 								),
@@ -1259,13 +1306,14 @@ class ProductControllerTest {
 								START_TIME, END_TIME));
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
+				List<String> imageUrls = List.of("image1.jpg", "image2.jpg", "image3.jpg");
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 				given(userDetails.getId()).willReturn(member.getId());
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, WRONG_START_TIME, WRONG_END_TIME);
+						ADDRESS, imageUrls, WRONG_START_TIME, WRONG_END_TIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")
@@ -1285,6 +1333,7 @@ class ProductControllerTest {
 										fieldWithPath("latitude").description("위도 (필수)"),
 										fieldWithPath("longitude").description("경도 (필수)"),
 										fieldWithPath("address").description("주소 (필수)"),
+										fieldWithPath("imageUrls").description("이미지 (필수)"),
 										fieldWithPath("startTime").description("시작 시간 (필수)"),
 										fieldWithPath("endTime").description("종료 시간 (필수)")
 								),
@@ -1311,6 +1360,16 @@ class ProductControllerTest {
 
 				// given
 				Member member = memberRepository.save(MemberFixture.createMember1());
+				Plan plan = Plan.of(
+						"청년 요금제",
+						BigDecimal.valueOf(10),
+						10000,
+						PlanCategory._5G,
+						AgeGroup.YOUTH,
+						member
+				);
+				planRepository.save(plan);
+
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
 								PRICE_PER_100MB_300));
@@ -1322,7 +1381,7 @@ class ProductControllerTest {
 				given(userDetails.getId()).willReturn(member.getId());
 
 				// when & then
-				mockMvc.perform(delete("/api/products/{productId}", PRODUCT_ID)
+				mockMvc.perform(delete("/api/products/{productId}", product.getId())
 								.contentType(MediaType.APPLICATION_JSON)
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, Collections.emptyList()
@@ -1509,7 +1568,7 @@ class ProductControllerTest {
 	}
 
 	@Nested
-	@DisplayName("판매 시세 조회")
+	@DisplayName("판매 시세 조회 API")
 	class FindMarketPrice {
 
 		@Nested

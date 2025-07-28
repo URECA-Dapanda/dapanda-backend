@@ -307,7 +307,7 @@ class MemberControllerTest {
 	}
 
 	@Nested
-	@DisplayName("회원 정보 조회")
+	@DisplayName("회원 정보 조회 API")
 	class GetMemberInfo {
 
 		@Nested

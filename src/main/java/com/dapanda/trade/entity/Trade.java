@@ -5,6 +5,8 @@ import com.dapanda.member.entity.Member;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import lombok.*;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Getter

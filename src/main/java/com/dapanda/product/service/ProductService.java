@@ -131,7 +131,7 @@ public class ProductService {
 
 		Plan plan = planRepository.findByMemberId(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.NOT_FOUND_PLAN));
-		if (plan.getAvailableDataAmount().compareTo(dataAmount) < 0) {
+		if (plan.getCurrentDataAmount().compareTo(dataAmount) < 0) {
 			throw new GlobalException(ResultCode.NOT_ENOUGH_DATA);
 		}
 
@@ -166,10 +166,6 @@ public class ProductService {
 
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
-
-		if (request.getStartTime().isBefore(LocalDateTime.now())) {
-			throw new GlobalException(ResultCode.START_TIME_BEFORE_NOW);
-		}
 
 		Wifi savedWifi = wifiRepository.save(
 				Wifi.of(
@@ -239,13 +235,14 @@ public class ProductService {
 		plan.addMobileData(beforeAmount);
 
 		BigDecimal afterAmount = request.changedAmount();
-		if (plan.getAvailableDataAmount().compareTo(afterAmount) < 0) {
+		if (plan.getCurrentDataAmount().compareTo(afterAmount) < 0) {
 			throw new GlobalException(ResultCode.NOT_ENOUGH_DATA);
 		}
 		plan.deductMobileData(afterAmount);
 
-		int changedPricePer100MB = (int) Math.ceil(
-				request.price() / (request.changedAmount().floatValue() * 10));
+		int changedPricePer100MB = new BigDecimal(request.price())
+				.divide(request.changedAmount().multiply(BigDecimal.TEN), 0,
+						java.math.RoundingMode.CEILING).intValue();
 
 		savedProduct.updatePrice(request.price());
 		savedMobileData.updateMobileData(request.changedAmount(), changedPricePer100MB,
@@ -270,6 +267,27 @@ public class ProductService {
 		savedProduct.updatePrice(request.price());
 		savedWifi.updateWifi(request.title(), request.content(), request.latitude(),
 				request.longitude(), request.address(), request.startTime(), request.endTime());
+
+		// 기존에 저장된 와이파이 이미지들 삭제
+		productImageRepository.removeProductImagesById(savedWifi.getId());
+
+		// 새로운 이미지 등록
+		List<String> images = request.imageUrls();
+		if (images != null && !images.isEmpty()) {
+			int idx = 0;
+			for (String imgUrl : images) {
+				// 확장자 체크 (jpg, jpeg, png만 허용)
+				if (s3Service.isNotValidImageExtension(imgUrl)) {
+					throw new GlobalException(ResultCode.INVALID_IMAGE_FORMAT);
+				}
+				ProductImage productImage = ProductImage.of(
+						imgUrl,
+						idx++, // 리스트 순서가 priority
+						savedWifi.getId()
+				);
+				productImageRepository.save(productImage);
+			}
+		}
 
 		return UpdateWifiResponse.from(savedProduct.getId());
 	}
@@ -324,14 +342,11 @@ public class ProductService {
 			throw new GlobalException(ResultCode.INVALID_DATA_TRANSFER_AMOUNT);
 		}
 
-		BigDecimal diffAmount = resultDataAmount.subtract(savedMobileData.getDataAmount());
-
-		if (member.getSellingData().add(diffAmount)
+		if (member.getSellingData().add(changedDataAmount)
 				.compareTo(BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
 			throw new GlobalException(ResultCode.EXCEEDED_TRANSFER_LIMIT);
 		}
 	}
-
 
 	private void validateProductOwner(Product savedProduct, Long memberId) {
 
@@ -353,4 +368,9 @@ public class ProductService {
 		return productRepository.findMarketPrice(ItemType.valueOf(productType));
 	}
 
+	@Transactional
+	public void hidePreviousMobileDataProducts() {
+
+		productRepository.updateAllBeforeThisMonthAndIsActive();
+	}
 }
