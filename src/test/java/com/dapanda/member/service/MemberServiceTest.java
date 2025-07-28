@@ -1,21 +1,18 @@
 package com.dapanda.member.service;
 
-import static com.dapanda.TestConstants.Member.BUYING_DATA;
-import static com.dapanda.TestConstants.Member.CASH_5000;
-import static com.dapanda.TestConstants.Member.MEMBER_ID;
-import static com.dapanda.TestConstants.Member.SELLING_DATA;
+import static com.dapanda.TestConstants.Member.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 import com.dapanda.member.dto.response.FindCashResponse;
 import com.dapanda.member.dto.response.FindDataResponse;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
+import java.math.BigDecimal;
 import java.util.Optional;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -99,6 +96,32 @@ class MemberServiceTest {
 
 				// then
 				assertThat(response.getData()).isEqualTo(SELLING_DATA);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("회원의 데이터양 초기화")
+	class resetMemberMobileDataAmount {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("회원의 구매/판매 데이터양을 초기화한다")
+			void resetMemberMobileDataAmount() throws Exception {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				ReflectionTestUtils.setField(member, "buyingData", BigDecimal.valueOf(2.0));
+				ReflectionTestUtils.setField(member, "sellingData", BigDecimal.valueOf(1.0));
+
+				// when
+				memberService.resetMemberMobileDataAmount();
+
+				// then
+				verify(memberRepository).resetAllDataAmounts();
 			}
 		}
 	}
