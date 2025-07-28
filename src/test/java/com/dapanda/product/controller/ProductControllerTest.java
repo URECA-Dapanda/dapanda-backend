@@ -1512,7 +1512,7 @@ class ProductControllerTest {
 	}
 
 	@Nested
-	@DisplayName("판매 시세 조회")
+	@DisplayName("판매 시세 조회 API")
 	class FindMarketPrice {
 
 		@Nested

@@ -19,12 +19,11 @@ import com.dapanda.refreshToken.service.RefreshTokenService;
 import com.dapanda.trade.repository.TradeRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -102,6 +101,7 @@ public class MemberService {
 				OAuthProvider.LOCAL,
 				MemberRole.ROLE_MEMBER
 		);
+		member.resetDataAmount();
 
 		memberRepository.save(member);
 
@@ -192,6 +192,11 @@ public class MemberService {
 	}
 
 	@Transactional
+	public void resetMemberMobileDataAmount() {
+
+		memberRepository.resetAllDataAmounts();
+	}
+
 	public void updateMemberRole(Long memberId) {
 
 		Member member = memberRepository.findById(memberId)
