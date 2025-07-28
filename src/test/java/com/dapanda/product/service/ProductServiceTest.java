@@ -1,8 +1,8 @@
 package com.dapanda.product.service;
 
 import static com.dapanda.TestConstants.Member.*;
-import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
+import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Product.*;
@@ -25,12 +25,15 @@ import com.dapanda.common.service.S3Service;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.plan.entity.*;
+import com.dapanda.plan.repository.PlanRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.*;
 import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
+import com.dapanda.trade.repository.TradeRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -60,6 +63,12 @@ class ProductServiceTest {
 	@Mock
 	private MemberRepository memberRepository;
 
+	@Mock
+	private PlanRepository planRepository;
+
+	@Mock
+	private TradeRepository tradeRepository;
+
 	@InjectMocks
 	private ProductService productService;
 
@@ -77,6 +86,10 @@ class ProductServiceTest {
 			// given
 			Long memberId = 1L;
 			Member member = MemberFixture.createMember1WithId(memberId);
+			Plan plan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+					PlanCategory._5G, AgeGroup.YOUTH, member);
+			given(planRepository.findByMemberId(memberId)).willReturn(Optional.of(plan));
+
 			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
 					BigDecimal.valueOf(1.0), false);
 
@@ -115,14 +128,18 @@ class ProductServiceTest {
 
 		@Test
 		@DisplayName("실패: 판매 데이터 2GB 초과")
-		void failCreateMobileDataIfOverLimit() {
+		void failCreateMobileDataIfOver2GB() {
 
 			// given
 			Long memberId = 1L;
 			Member member = MemberFixture.createMember1WithId(memberId);
+			Plan plan = Plan.of("청년 요금제", BigDecimal.valueOf(30), 10000, PlanCategory._5G,
+					AgeGroup.YOUTH, member);
+			given(planRepository.findByMemberId(memberId)).willReturn(Optional.of(plan));
+
 			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
-					new BigDecimal("2000.0"),
-					false); // 2GB 추가
+					new BigDecimal(3),
+					false);
 
 			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 			given(productRepository.sumSoldMobileDataAmountByMemberId(memberId)).willReturn(
@@ -132,6 +149,32 @@ class ProductServiceTest {
 			assertThatThrownBy(() -> productService.createMobileData(request, memberId))
 					.isInstanceOf(GlobalException.class)
 					.hasMessage(ResultCode.EXCEEDED_TRANSFER_LIMIT.getMessage());
+		}
+
+		@Test
+		@DisplayName("실패: 판매 데이터가 보유 데이터 양을 초과")
+		void failCreateMobileDataIfOverLimit() {
+
+			// given
+			Long memberId = 1L;
+			Member member = MemberFixture.createMember1WithId(memberId);
+			Plan plan = Plan.of("요금제", BigDecimal.valueOf(0.5), 10000,
+					PlanCategory._5G, AgeGroup.YOUTH, member);
+
+			given(planRepository.findByMemberId(memberId)).willReturn(Optional.of(plan));
+
+			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
+					new BigDecimal("1.0"),
+					false);
+
+			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
+			given(productRepository.sumSoldMobileDataAmountByMemberId(memberId)).willReturn(
+					BigDecimal.valueOf(1));
+
+			// when/then
+			assertThatThrownBy(() -> productService.createMobileData(request, memberId))
+					.isInstanceOf(GlobalException.class)
+					.hasMessage(ResultCode.NOT_ENOUGH_DATA.getMessage());
 		}
 	}
 
@@ -616,6 +659,11 @@ class ProductServiceTest {
 						NEW_PRICE_9000, CHANGED_AMOUNT, SPLIT_TYPE);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				Plan plan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, member);
+
+				given(planRepository.findByMemberId(MEMBER_ID)).willReturn(Optional.of(plan));
+
 				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
 						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB_300);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
@@ -842,12 +890,19 @@ class ProductServiceTest {
 
 				// given
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				Plan plan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, member);
+
+				given(planRepository.findByMemberId(MEMBER_ID)).willReturn(Optional.of(plan));
+
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
 						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member);
 
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+				given(mobileDataRepository.findById(mobileData.getId())).willReturn(
+						Optional.of(mobileData));
 
 				// when
 				productService.deleteProduct(PRODUCT_ID, MEMBER_ID);
@@ -884,12 +939,19 @@ class ProductServiceTest {
 
 				// given
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				Plan plan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, member);
+
+				given(planRepository.findByMemberId(MEMBER_ID)).willReturn(Optional.of(plan));
+
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
 						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
 				Product product = ProductFixture.createMobileDataProductWithIdWithState(PRODUCT_ID,
 						mobileData.getId(), ProductState.DELETED, member);
 
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+				given(mobileDataRepository.findById(mobileData.getId())).willReturn(
+						Optional.of(mobileData));
 
 				// when & then
 				assertThatThrownBy(() -> productService.deleteProduct(PRODUCT_ID, MEMBER_ID))

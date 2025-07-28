@@ -345,7 +345,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.join(mobileData).on(product.itemId.eq(mobileData.id))
 				.where(
 						product.member.id.eq(memberId),
-						product.state.eq(ProductState.ACTIVE)
+						product.state.in(ProductState.ACTIVE, ProductState.SOLD_OUT)
 				)
 				.fetchOne();
 

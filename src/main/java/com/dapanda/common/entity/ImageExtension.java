@@ -5,7 +5,8 @@ import java.util.Arrays;
 public enum ImageExtension {
 	JPG(".jpg"),
 	JPEG(".jpeg"),
-	PNG(".png");
+	PNG(".png"),
+	SVG(".svg");
 
 	private final String extension;
 

@@ -7,12 +7,15 @@ import com.dapanda.common.exception.ResultCode;
 import com.dapanda.common.service.S3Service;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.plan.entity.Plan;
+import com.dapanda.plan.repository.PlanRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.*;
 import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
+import com.dapanda.trade.repository.TradeRepository;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -37,6 +40,8 @@ public class ProductService {
 	private final MemberRepository memberRepository;
 
 	private final S3Service s3Service;
+	private final PlanRepository planRepository;
+	private final TradeRepository tradeRepository;
 
 	public CountCursorPageResponse<ReadSellingProductResponse> readSellingProduct(
 			ReadSellingProductRequest request) {
@@ -122,6 +127,13 @@ public class ProductService {
 		if (soldAmount == null) {
 			soldAmount = BigDecimal.ZERO;
 		}
+		BigDecimal dataAmount = request.getDataAmount();
+
+		Plan plan = planRepository.findByMemberId(memberId)
+				.orElseThrow(() -> new GlobalException(ResultCode.NOT_FOUND_PLAN));
+		if (plan.getCurrentDataAmount().compareTo(dataAmount) < 0) {
+			throw new GlobalException(ResultCode.NOT_ENOUGH_DATA);
+		}
 
 		BigDecimal willSellAmount = request.getDataAmount();
 		if (soldAmount.add(willSellAmount)
@@ -205,8 +217,25 @@ public class ProductService {
 		MobileData savedMobileData = mobileDataRepository.findById(savedProduct.getItemId())
 				.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
 
+		if (tradeRepository.existsByProductId(request.productId())
+				&& savedMobileData.isSplitType()) {
+			throw new GlobalException(ResultCode.PRODUCT_CANNOT_TRADE);
+		}
+
 		validateProductOwner(savedProduct, memberId);
 		validateDataAmount(request.changedAmount(), savedMobileData, memberId);
+
+		Plan plan = planRepository.findByMemberId(memberId)
+				.orElseThrow(() -> new GlobalException(ResultCode.NOT_FOUND_PLAN));
+
+		BigDecimal beforeAmount = savedMobileData.getDataAmount();
+		plan.addMobileData(beforeAmount);
+
+		BigDecimal afterAmount = request.changedAmount();
+		if (plan.getCurrentDataAmount().compareTo(afterAmount) < 0) {
+			throw new GlobalException(ResultCode.NOT_ENOUGH_DATA);
+		}
+		plan.deductMobileData(afterAmount);
 
 		int changedPricePer100MB = new BigDecimal(request.price())
 				.divide(request.changedAmount().multiply(BigDecimal.TEN), 0,
@@ -266,6 +295,15 @@ public class ProductService {
 		Product savedProduct = productRepository.findById(productId)
 				.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
 
+		MobileData refundMobileData = mobileDataRepository.findById(savedProduct.getItemId())
+				.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
+		BigDecimal refundAmount = refundMobileData.getRemainAmount();
+
+		Plan plan = planRepository.findByMemberId(memberId)
+				.orElseThrow(() -> new GlobalException(ResultCode.NOT_FOUND_PLAN));
+
+		plan.addMobileData(refundAmount);
+
 		validateProductOwner(savedProduct, memberId);
 		validateProductState(savedProduct);
 
@@ -295,8 +333,9 @@ public class ProductService {
 
 		BigDecimal resultDataAmount = savedMobileData.getDataAmount().add(changedDataAmount);
 
-		if (resultDataAmount.compareTo(BigDecimal.ZERO) <= 0 || resultDataAmount.compareTo(
-				BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
+		if (resultDataAmount.compareTo(BigDecimal.ZERO) <= 0 ||
+				resultDataAmount.compareTo(
+						BigDecimal.valueOf(MobileData.MAX_TRANSFERABLE_DATA_AMOUNT)) > 0) {
 			throw new GlobalException(ResultCode.INVALID_DATA_TRANSFER_AMOUNT);
 		}
 
