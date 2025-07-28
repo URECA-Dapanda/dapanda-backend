@@ -23,7 +23,8 @@ public class CreateWifiRequest extends CreateProductRequest {
 			Double latitude,
 			Double longitude, String address,
 			LocalDateTime startTime,
-			LocalDateTime endTime, List<String> images
+			LocalDateTime endTime,
+			List<String> images
 	) {
 
 		super(price);
