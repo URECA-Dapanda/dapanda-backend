@@ -3,6 +3,8 @@ package com.dapanda.chat.repository;
 import com.dapanda.chat.dto.request.ReadJoiningChatRoomRequest;
 import com.dapanda.chat.dto.response.ReadJoiningChatRoomResponse;
 import com.dapanda.chat.entity.ChatRoomReadOption;
+import com.dapanda.chat.entity.QChatParticipant;
+import com.dapanda.member.entity.QMember;
 import com.dapanda.product.entity.ItemType;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
@@ -14,7 +16,6 @@ import java.util.Optional;
 
 import static com.dapanda.chat.entity.QChatParticipant.chatParticipant;
 import static com.dapanda.chat.entity.QChatRoom.chatRoom;
-import static com.dapanda.member.entity.QMember.member;
 import static com.dapanda.product.entity.QProduct.product;
 import static com.dapanda.product.entity.QWifi.wifi;
 
@@ -47,7 +48,11 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 
 		BooleanBuilder whereClause = new BooleanBuilder();
 
-		whereClause.and(chatParticipant.member.id.eq(request.memberId()));
+		QChatParticipant myChatParticipant = new QChatParticipant("myChatParticipant");
+		QChatParticipant otherChatParticipant = new QChatParticipant("otherChatParticipant");
+		QMember otherMember = new QMember("otherMember");
+
+		whereClause.and(myChatParticipant.member.id.eq(request.memberId()));
 
 		switch (readOption) {
 			// 구매자 기준 채팅방 조회
@@ -76,18 +81,23 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 						chatRoom.createdAt,
 						chatRoom.lastMessageAt,
 						chatRoom.lastMessage,
-						member.id,
-						member.name,
+						otherMember.id,
+						otherMember.name,
 						product.id,
 						product.itemId,
 						product.itemType,
 						wifi.startTime,
 						wifi.endTime
 				))
-				.from(chatParticipant)
-				.join(chatParticipant.chatRoom, chatRoom)
-				.join(chatParticipant.member, member)
+				.from(myChatParticipant)
+				.join(myChatParticipant.chatRoom, chatRoom)
 				.join(chatRoom.product, product)
+				.join(otherChatParticipant).on(
+						otherChatParticipant.chatRoom.id.eq(chatRoom.id)
+								.and(otherChatParticipant.member.id.ne(request.memberId()))
+				)
+				.join(otherChatParticipant.member, otherMember)
+
 				.leftJoin(wifi).on(
 						product.itemId.eq(wifi.id)
 								.and(product.itemType.eq(ItemType.WIFI))
