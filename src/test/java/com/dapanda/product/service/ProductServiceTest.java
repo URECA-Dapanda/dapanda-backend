@@ -1020,8 +1020,6 @@ class ProductServiceTest {
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(oldProduct));
 				given(productRepository.findById(PRODUCT_ID + 1)).willReturn(
 						Optional.of(recentProduct));
-				given(productRepository.findAllBeforeThisMonthAndIsActive()).willReturn(
-						List.of(oldProduct));
 
 				// when
 				productService.hidePreviousMobileDataProducts();
@@ -1032,8 +1030,7 @@ class ProductServiceTest {
 				Product updateRecentProduct = productRepository.findById(recentProduct.getId())
 						.orElseThrow();
 
-				assertThat(updateOldProduct.getState()).isEqualTo(ProductState.HIDDEN);
-				assertThat(updateRecentProduct.getState()).isEqualTo(ProductState.ACTIVE);
+				verify(productRepository).updateAllBeforeThisMonthAndIsActive();
 			}
 		}
 	}

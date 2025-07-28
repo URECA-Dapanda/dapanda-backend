@@ -332,10 +332,6 @@ public class ProductService {
 	@Transactional
 	public void hidePreviousMobileDataProducts() {
 
-		List<Product> products = productRepository.findAllBeforeThisMonthAndIsActive();
-
-		for (Product product : products) {
-			product.changeState(ProductState.HIDDEN);
-		}
+		productRepository.updateAllBeforeThisMonthAndIsActive();
 	}
 }
