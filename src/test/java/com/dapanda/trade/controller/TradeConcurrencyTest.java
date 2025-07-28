@@ -39,6 +39,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 @Execution(ExecutionMode.SAME_THREAD)  // 병렬 실행 막기
 @SpringBootTest
 @ActiveProfiles("test")
+@DisplayName("상품 거래 동시성 테스트")
 public class TradeConcurrencyTest {
 
 	private static final int THREAD_COUNT = 1000;

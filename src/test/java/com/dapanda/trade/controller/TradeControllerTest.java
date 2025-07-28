@@ -1,6 +1,5 @@
 package com.dapanda.trade.controller;
 
-
 import static com.dapanda.TestConstants.Member.CASH_5000;
 import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
@@ -27,8 +26,7 @@ import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.plan.entity.Plan;
-import com.dapanda.plan.entity.PlanFixture;
+import com.dapanda.plan.entity.*;
 import com.dapanda.plan.repository.PlanRepository;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
@@ -445,7 +443,7 @@ class TradeControllerTest {
 
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2, REMAIN_AMOUNT_1,
-								PRICE_PER_100MB_300));
+								PRICE_PER_100MB_150));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								seller));
@@ -668,6 +666,14 @@ class TradeControllerTest {
 				List<Member> members = Arrays.asList(seller1, seller2, buyer);
 				memberRepository.saveAll(members);
 
+				Plan buyerPlan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, buyer);
+				Plan sellerPlan1 = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, seller1);
+				Plan sellerPlan2 = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, seller2);
+				planRepository.saveAll(List.of(buyerPlan, sellerPlan1, sellerPlan2));
+
 				MobileData mobileData1 = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
 						REMAIN_AMOUNT_1, PRICE_PER_100MB_150);
 				MobileData mobileData2 = MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2,
@@ -878,6 +884,14 @@ class TradeControllerTest {
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 				List<Member> members = Arrays.asList(seller1, seller2, buyer);
 				memberRepository.saveAll(members);
+
+				Plan buyerPlan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, buyer);
+				Plan sellerPlan1 = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, seller1);
+				Plan sellerPlan2 = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, seller2);
+				planRepository.saveAll(List.of(buyerPlan, sellerPlan1, sellerPlan2));
 
 				MobileData mobileData1 = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
 						BigDecimal.ZERO, PRICE_PER_100MB_150);
