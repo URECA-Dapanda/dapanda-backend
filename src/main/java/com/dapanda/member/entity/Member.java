@@ -77,6 +77,12 @@ public class Member extends BaseEntity {
 				.build();
 	}
 
+	public void resetDataAmount() {
+
+		this.buyingData = BigDecimal.ZERO;
+		this.sellingData = BigDecimal.ZERO;
+	}
+
 	public void increaseReportedCount() {
 
 		this.reportedCount++;
@@ -92,7 +98,6 @@ public class Member extends BaseEntity {
 		this.cash -= amount;
 	}
 
-	// TODO: 매달 1일 초기화 메서드
 	public void addBuyingData(BigDecimal buyingData) {
 
 		this.buyingData = this.buyingData.add(buyingData);
