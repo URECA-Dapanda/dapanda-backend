@@ -1,9 +1,11 @@
 package com.dapanda.plan.service;
 
+import static com.dapanda.TestConstants.Member.MEMBER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import com.dapanda.member.entity.Member;
+import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.plan.dto.response.PlanInfoResponse;
 import com.dapanda.plan.entity.*;
 import com.dapanda.plan.repository.PlanRepository;
@@ -15,7 +17,7 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("PlanService 단위 테스트")
+@DisplayName("요금제 서비스 테스트")
 class PlanServiceTest {
 
 	@Mock
@@ -138,6 +140,31 @@ class PlanServiceTest {
 						() -> planService.findMobileDataInfoByMemberId(memberId)
 				);
 				verify(planRepository, times(1)).findByMemberId(memberId);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("회원의 요금제 데이터 초기화")
+	class resetMemberMobileDataPlan {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("회원의 요금제 데이터를 초기화한다")
+			void resetMemberMobileDataPlan() throws Exception {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				Plan plan = PlanFixture.createPlan(member, BigDecimal.valueOf(10.0));
+
+				// when
+				planService.resetMemberMobileDataPlan();
+
+				// then
+				verify(planRepository).resetMemberMobileDataPlan();
 			}
 		}
 	}
