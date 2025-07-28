@@ -5,6 +5,7 @@ import static com.dapanda.product.entity.QMobileData.mobileData;
 import static com.dapanda.product.entity.QProduct.product;
 import static com.dapanda.product.entity.QProductImage.productImage;
 import static com.dapanda.product.entity.QWifi.wifi;
+import static com.dapanda.trade.entity.QTrade.trade;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.dto.MobileDataSummary;
@@ -13,6 +14,7 @@ import com.dapanda.product.dto.request.ReadSellingProductRequest;
 import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.*;
 import com.dapanda.trade.dto.MobileDataScrap;
+import com.dapanda.trade.entity.TradeType;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
@@ -433,24 +435,22 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 		// 와이파이 상품
 		Integer recentPrice = queryFactory
-				.select(product.price)
-				.from(product)
+				.select(trade.tradingPrice)
+				.from(trade)
 				.where(
-						product.itemType.eq(itemType),
-						product.updatedAt.after(oneMonthAgo),
-						product.state.eq(ProductState.SOLD_OUT)
+						trade.tradeType.eq(TradeType.SALE_WIFI),
+						trade.createdAt.after(oneMonthAgo)
 				)
-				.orderBy(product.updatedAt.desc())
+				.orderBy(trade.createdAt.desc())
 				.limit(1)
 				.fetchOne();
 
 		Double averagePrice = queryFactory
-				.select(product.price.avg())
-				.from(product)
+				.select(trade.tradingPrice.avg())
+				.from(trade)
 				.where(
-						product.itemType.eq(itemType),
-						product.updatedAt.after(oneMonthAgo),
-						product.state.eq(ProductState.SOLD_OUT)
+						trade.tradeType.eq(TradeType.SALE_WIFI),
+						trade.createdAt.after(oneMonthAgo)
 				)
 				.fetchOne();
 
