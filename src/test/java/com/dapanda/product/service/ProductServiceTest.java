@@ -39,6 +39,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("상품 서비스 테스트")
@@ -990,6 +991,46 @@ class ProductServiceTest {
 				// then
 				assertThat(result.getRecentPrice()).isEqualTo(expectedRecentPrice);
 				assertThat(result.getAveragePrice()).isEqualTo(expectedAveragePrice);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("매월 1일 이전 등록된 데이터 상품 상태 변경")
+	class hidePreviousMonthProducts {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("매월 1일 이전 등록된 데이터 상품 상태 변경한다")
+			public void changeMobileDataProductState() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+
+				LocalDateTime lastMonth = LocalDateTime.now().minusMonths(1).withDayOfMonth(1);
+				Product oldProduct = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
+						MOBILE_DATA_ID, PRICE_500, member);
+				ReflectionTestUtils.setField(oldProduct, "createdAt", lastMonth);
+				Product recentProduct = ProductFixture.createMobileDataProductWithId(PRODUCT_ID + 1,
+						MOBILE_DATA_ID, PRICE_500, member);
+
+				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(oldProduct));
+				given(productRepository.findById(PRODUCT_ID + 1)).willReturn(
+						Optional.of(recentProduct));
+
+				// when
+				productService.hidePreviousMobileDataProducts();
+
+				// then
+				Product updateOldProduct = productRepository.findById(oldProduct.getId())
+						.orElseThrow();
+				Product updateRecentProduct = productRepository.findById(recentProduct.getId())
+						.orElseThrow();
+
+				verify(productRepository).updateAllBeforeThisMonthAndIsActive();
 			}
 		}
 	}

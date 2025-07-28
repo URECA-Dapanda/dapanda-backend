@@ -212,8 +212,9 @@ public class ProductService {
 		validateProductOwner(savedProduct, memberId);
 		validateDataAmount(request.changedAmount(), savedMobileData, memberId);
 
-		int changedPricePer100MB = (int) Math.ceil(
-				request.price() / (savedMobileData.getDataAmount().floatValue() * 10));
+		int changedPricePer100MB = new BigDecimal(request.price())
+				.divide(request.changedAmount().multiply(BigDecimal.TEN), 0,
+						java.math.RoundingMode.CEILING).intValue();
 
 		savedProduct.updatePrice(request.price());
 		savedMobileData.updateMobileData(request.changedAmount(), changedPricePer100MB,
@@ -329,4 +330,9 @@ public class ProductService {
 		return productRepository.findMarketPrice(ItemType.valueOf(productType));
 	}
 
+	@Transactional
+	public void hidePreviousMobileDataProducts() {
+
+		productRepository.updateAllBeforeThisMonthAndIsActive();
+	}
 }
