@@ -3,8 +3,9 @@ package com.dapanda.member.entity;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.common.entity.BaseEntity;
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 import lombok.*;
+
+import java.math.BigDecimal;
 
 @Entity
 @Getter
@@ -81,6 +82,11 @@ public class Member extends BaseEntity {
 
 		this.buyingData = BigDecimal.ZERO;
 		this.sellingData = BigDecimal.ZERO;
+  }
+  
+	public void updateMemberRole(MemberRole role) {
+
+		this.role = role;
 	}
 
 	public void increaseReportedCount() {
