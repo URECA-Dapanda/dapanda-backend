@@ -54,8 +54,6 @@ public class PaymentService {
 
 		tradeRepository.save(Trade.of(request.amount(), TradeType.CHARGE, member));
 
-		member.addCash(request.amount());
-
 		return ChargeCashResponse.of(payment.getId(), response.totalAmount());
 	}
 
