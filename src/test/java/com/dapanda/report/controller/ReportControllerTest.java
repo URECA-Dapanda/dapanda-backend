@@ -1,5 +1,16 @@
 package com.dapanda.report.controller;
 
+import static com.dapanda.TestConstants.Report.REASON;
+import static com.dapanda.TestConstants.Report.REPORT_TARGET_CATEGORY_PRODUCT;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
@@ -15,10 +26,7 @@ import com.dapanda.report.entity.ReportFixture;
 import com.dapanda.report.repository.ReportRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,17 +39,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
-
-import static com.dapanda.TestConstants.Report.REASON;
-import static com.dapanda.TestConstants.Report.REPORT_TARGET_CATEGORY_PRODUCT;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -87,8 +84,8 @@ class ReportControllerTest {
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
 
-		jdbcTemplate.execute("TRUNCATE TABLE member");
-		jdbcTemplate.execute("TRUNCATE TABLE product");
+		jdbcTemplate.execute("DELETE FROM member");
+		jdbcTemplate.execute("DELETE FROM product");
 		jdbcTemplate.execute("TRUNCATE TABLE report");
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
@@ -107,12 +104,14 @@ class ReportControllerTest {
 			public void createReportTest() throws Exception {
 
 				//given
-				CreateReportRequest request = new CreateReportRequest(REASON, REPORT_TARGET_CATEGORY_PRODUCT);
+				CreateReportRequest request = new CreateReportRequest(REASON,
+						REPORT_TARGET_CATEGORY_PRODUCT);
 
 				Member reporter = memberRepository.save(MemberFixture.createMember1());
 				Member reportedMember = memberRepository.save(MemberFixture.createMember2());
 
-				Product product = productRepository.save(ProductFixture.createProduct1(reportedMember));
+				Product product = productRepository.save(
+						ProductFixture.createProduct1(reportedMember));
 
 				CustomUserDetails userDetails = CustomUserDetails.from(reporter);
 
@@ -134,7 +133,8 @@ class ReportControllerTest {
 										),
 										requestFields(
 												fieldWithPath("reason").description("신고 사유 (필수)"),
-												fieldWithPath("targetCategory").description("신고 대상 아이디 유형 (필수)")
+												fieldWithPath("targetCategory").description(
+														"신고 대상 아이디 유형 (필수)")
 										),
 										responseFields(
 												fieldWithPath("code").description("상태 코드"),
@@ -156,14 +156,17 @@ class ReportControllerTest {
 			public void duplicateReportTest() throws Exception {
 
 				//given
-				CreateReportRequest request = new CreateReportRequest(REASON, REPORT_TARGET_CATEGORY_PRODUCT);
+				CreateReportRequest request = new CreateReportRequest(REASON,
+						REPORT_TARGET_CATEGORY_PRODUCT);
 
 				Member reporter = memberRepository.save(MemberFixture.createMember1());
 				Member reportedMember = memberRepository.save(MemberFixture.createMember2());
 
-				Product product = productRepository.save(ProductFixture.createProduct1(reportedMember));
+				Product product = productRepository.save(
+						ProductFixture.createProduct1(reportedMember));
 
-				Report report = ReportFixture.createReportFromProduct1(product, REPORT_TARGET_CATEGORY_PRODUCT, reporter);
+				Report report = ReportFixture.createReportFromProduct1(product,
+						REPORT_TARGET_CATEGORY_PRODUCT, reporter);
 
 				reportRepository.save(report);
 
@@ -191,7 +194,8 @@ class ReportControllerTest {
 				Member reporter = memberRepository.save(MemberFixture.createMember1());
 				Member reportedMember = memberRepository.save(MemberFixture.createMember2());
 
-				Product product = productRepository.save(ProductFixture.createProduct1(reportedMember));
+				Product product = productRepository.save(
+						ProductFixture.createProduct1(reportedMember));
 
 				CustomUserDetails userDetails = CustomUserDetails.from(reporter);
 

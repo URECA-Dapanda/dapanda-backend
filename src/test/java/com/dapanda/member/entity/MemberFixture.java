@@ -9,7 +9,7 @@ public class MemberFixture {
 	public static Member createMember1() {
 
 		Member member = Member.ofOAuthMember(
-				"dummy1@email.com",
+				"dummy1 + @email.com",
 				"dummy1Name",
 				OAuthProvider.KAKAO,
 				MemberRole.ROLE_MEMBER

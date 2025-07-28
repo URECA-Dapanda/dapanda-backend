@@ -1,9 +1,7 @@
 package com.dapanda.trade.repository;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
-import com.dapanda.trade.dto.CashHistoryMonthlySummary;
-import com.dapanda.trade.dto.CashHistorySummary;
-import com.dapanda.trade.dto.PurchaseHistorySummary;
+import com.dapanda.trade.dto.*;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -18,4 +16,7 @@ public interface TradeCustomRepository {
 			Long memberId, int year, int month);
 
 	public CashHistoryMonthlySummary calculateMonthlySummary(Long memberId, int year, int month);
+
+	boolean existsByProductId(Long productId);
+
 }

@@ -90,15 +90,13 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 		String redirectUrl;
 		if (isLocal) {
-			redirectUrl = "http://localhost:3000";
+			redirectUrl = "http://localhost:3000/data";
 		} else {
-			redirectUrl = "https://dapanda.org";
+			redirectUrl = "https://dapanda.org/data";
 		}
 
 		if (role.equals(MemberRole.ROLE_NEW_MEMBER.name())) {
-			redirectUrl += "/on-boarding";
-		} else {
-			redirectUrl += "/data";
+			redirectUrl += "?on-boarding=true";
 		}
 
 		response.sendRedirect(redirectUrl);
