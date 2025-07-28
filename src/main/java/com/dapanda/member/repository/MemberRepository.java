@@ -3,6 +3,7 @@ package com.dapanda.member.repository;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.member.entity.Member;
 import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
@@ -20,6 +21,7 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("SELECT m FROM Member m WHERE m.id = :id")
+	@QueryHints({@QueryHint(name = "jakarta.persistence.lock.timeout", value = "10000")})
 	Optional<Member> findByIdForUpdate(Long id);
 
 	@Modifying
