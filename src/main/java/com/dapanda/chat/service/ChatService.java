@@ -12,12 +12,14 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.entity.Product;
 import com.dapanda.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -25,6 +27,7 @@ public class ChatService {
 	private final ChatRoomRepository chatRoomRepository;
 	private final ChatMessageRepository chatMessageRepository;
 	private final ChatParticipantRepository chatParticipantRepository;
+	private final ChatMessageReadStatusRepository chatMessageReadStatusRepository;
 	private final ProductRepository productRepository;
 	private final MemberRepository memberRepository;
 
@@ -145,11 +148,36 @@ public class ChatService {
 		return CreateMessageResponse.of(chatMessage.getId(), request.message(), chatMessage.getCreatedAt());
 	}
 
+	public void updateReadStatus(Long chatRoomId, UpdateReadStatusRequest request, Long memberId) {
+
+		validateChatMessageId(chatRoomId, request.chatMessageId(), memberId);
+
+		Member member = memberRepository.getReferenceById(memberId);
+		ChatMessage chatMessage = chatMessageRepository.getReferenceById(request.chatMessageId());
+		ChatRoom chatRoom = chatRoomRepository.getReferenceById(chatRoomId);
+
+		ChatMessageReadStatus chatMessageReadStatus = ChatMessageReadStatus.of(member, chatRoom, chatMessage);
+
+		chatMessageReadStatusRepository.save(chatMessageReadStatus);
+	}
+
 	private void validateParticipant(Long chatRoomId, Long memberId){
 
 		if (!chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoomId, memberId)){
 
 			throw new GlobalException(ResultCode.CHAT_ROOM_ACCESS_DENIED);
+		}
+	}
+
+	private void validateChatMessageId(Long chatRoomId, Long chatMessageId, Long memberId) {
+
+		if (!chatMessageRepository.existsByIdAndMember_IdAndChatRoom_Id(chatMessageId, memberId, chatRoomId)) {
+
+			log.error("chatRoomId : {}, chatMessageId : {}, memberId : {}", chatRoomId, chatMessageId, memberId);
+
+			validateParticipant(chatRoomId, memberId);
+
+			throw new GlobalException(ResultCode.CHAT_MESSAGE_NOT_FOUND);
 		}
 	}
 }

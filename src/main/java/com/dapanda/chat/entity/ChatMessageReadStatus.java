@@ -15,9 +15,6 @@ public class ChatMessageReadStatus {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Enumerated(EnumType.STRING)
-	private ReadStatus readStatus;
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id")
 	private Member member;
@@ -29,4 +26,13 @@ public class ChatMessageReadStatus {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "chat_message_id")
 	private ChatMessage chatMessage;
+
+	public static ChatMessageReadStatus of(Member member, ChatRoom chatRoom, ChatMessage chatMessage) {
+
+		return ChatMessageReadStatus.builder()
+				.member(member)
+				.chatRoom(chatRoom)
+				.chatMessage(chatMessage)
+				.build();
+	}
 }
