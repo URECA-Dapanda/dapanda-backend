@@ -35,6 +35,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
+@Tag("performance")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)  // 순서 보장
 @Execution(ExecutionMode.SAME_THREAD)  // 병렬 실행 막기
 @SpringBootTest
