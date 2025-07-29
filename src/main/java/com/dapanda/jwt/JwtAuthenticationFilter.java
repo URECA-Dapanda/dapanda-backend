@@ -9,17 +9,14 @@ import com.dapanda.refreshToken.service.RefreshTokenService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -61,6 +58,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			}
 		}
 
+		log.info("accessToken : {}", accessToken);
+		log.info("refreshToken : {}", refreshToken);
+
 		// 2. Access Token이 만료(또는 없음) & Refresh Token으로 재발급 시도
 		if (!authenticated && refreshToken != null) {
 			try {
@@ -69,7 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 					OAuthProvider provider = jwtTokenProvider.getProviderFromToken(refreshToken);
 					Member member = memberService.findUserByEmailAndProvider(email, provider);
 
-					var savedToken = refreshTokenService.findByUser(member).orElse(null);
+					var savedToken = refreshTokenService.findByUserAndState(member).orElse(null);
 					if (savedToken != null &&
 							savedToken.getToken().equals(refreshToken) &&
 							savedToken.getState() == TokenState.VALID) {
@@ -106,9 +106,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		CustomUserDetails userDetails = jwtTokenProvider.getAuthentication(email, provider);
 		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
 				userDetails, null, userDetails.getAuthorities());
+		log.info("[JwtAuthFilter] 인증 설정 완료 - principal: {}", userDetails.getUsername());
 
 		auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 		SecurityContextHolder.getContext().setAuthentication(auth);
+		log.info("최종 인증 상태 isAuthenticated: {}", auth.isAuthenticated());
 	}
 
 	private void setJwtCookie(HttpServletResponse response, String name, String token,
