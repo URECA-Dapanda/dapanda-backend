@@ -153,6 +153,22 @@ include::{snippets}/member/get-selling-data/response-fields.adoc[]
 
 `/sub/{chatRoomId}` : chatRoomId 로 채팅 메시지 구독(sub)
 
+==== 마지막으로 읽은 채팅 메시지 업데이트
+
+`GET /api/chat-message/{chatMessageId}/read-status`
+
+===== 요청 파라미터
+
+include::{snippets}/chat/update-chat-message-read-status/path-parameters.adoc[]
+
+===== 응답
+
+include::{snippets}/chat/update-chat-message-read-status/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/chat/update-chat-message-read-status/response-fields.adoc[]
+
 ==== 내가 참여한 채팅방 조회
 
 `GET /api/chat-room`

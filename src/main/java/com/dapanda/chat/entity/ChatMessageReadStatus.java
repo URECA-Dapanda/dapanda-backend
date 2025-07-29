@@ -26,4 +26,13 @@ public class ChatMessageReadStatus {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "chat_message_id")
 	private ChatMessage chatMessage;
+
+	public static ChatMessageReadStatus of(Member member, ChatRoom chatRoom, ChatMessage chatMessage) {
+
+		return ChatMessageReadStatus.builder()
+				.member(member)
+				.chatRoom(chatRoom)
+				.chatMessage(chatMessage)
+				.build();
+	}
 }
