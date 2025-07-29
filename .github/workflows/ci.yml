@@ -66,5 +66,3 @@ jobs:
 
       - name: Gradle 빌드 only
         run: ./gradlew clean build -x test --stacktrace
-
-

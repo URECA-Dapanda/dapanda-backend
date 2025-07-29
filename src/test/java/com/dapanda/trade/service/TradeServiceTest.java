@@ -95,9 +95,15 @@ class TradeServiceTest {
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
 						Optional.of(buyer));
+				given(memberRepository.findById(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
 				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID)).willReturn(
 						Optional.of(seller));
+				given(memberRepository.findById(SELLER_MEMBER_ID)).willReturn(
+						Optional.of(seller));
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
+						Optional.of(product));
+				given(productRepository.findById(PRODUCT_ID)).willReturn(
 						Optional.of(product));
 				given(mobileDataRepository.findById(MOBILE_DATA_ID)).willReturn(
 						Optional.of(mobileData));
@@ -146,9 +152,15 @@ class TradeServiceTest {
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
 						Optional.of(buyer));
+				given(memberRepository.findById(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
 				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID)).willReturn(
 						Optional.of(seller));
+				given(memberRepository.findById(SELLER_MEMBER_ID)).willReturn(
+						Optional.of(seller));
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
+						Optional.of(product));
+				given(productRepository.findById(PRODUCT_ID)).willReturn(
 						Optional.of(product));
 				given(mobileDataRepository.findById(MOBILE_DATA_ID)).willReturn(
 						Optional.of(mobileData));
@@ -245,10 +257,12 @@ class TradeServiceTest {
 				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						PRODUCT_ID, MOBILE_DATA_ID, null);
 
+				given(memberRepository.findById(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
 						Optional.of(buyer));
-				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID)).willReturn(
-						Optional.of(seller));
+				given(productRepository.findById(PRODUCT_ID)).willReturn(
+						Optional.of(product));
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
 						Optional.of(product));
 				given(mobileDataRepository.findById(MOBILE_DATA_ID)).willReturn(
@@ -271,22 +285,31 @@ class TradeServiceTest {
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				ReflectionTestUtils.setField(buyer, "cash", CASH_3000);
 
+				Plan buyerPlan = PlanFixture.createPlan(buyer, DATA_AMOUNT_2);
+				Plan sellerPlan = PlanFixture.createPlan(seller, DATA_AMOUNT_2);
+
 				MobileData mobileData = MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2,
-						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
+						REMAIN_AMOUNT_1, PRICE_PER_100MB_150);
 				Product product = ProductFixture.createMobileDataProductWithId(
 						PRODUCT_ID, MOBILE_DATA_ID, PRICE_3000, seller);
 
 				DefaultPurchaseMobileDataRequest request = new DefaultPurchaseMobileDataRequest(
 						PRODUCT_ID, MOBILE_DATA_ID, DATA_AMOUNT_2);
 
+				given(memberRepository.findById(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
 						Optional.of(buyer));
 				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID)).willReturn(
 						Optional.of(seller));
+				given(productRepository.findById(PRODUCT_ID)).willReturn(
+						Optional.of(product));
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
 						Optional.of(product));
 				given(mobileDataRepository.findById(MOBILE_DATA_ID)).willReturn(
 						Optional.of(mobileData));
+				given(planRepository.findByMember(buyer)).willReturn(Optional.of(buyerPlan));
+				given(planRepository.findByMember(seller)).willReturn(Optional.of(sellerPlan));
 
 				// when & then
 				assertThatThrownBy(
@@ -407,9 +430,12 @@ class TradeServiceTest {
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 
+				Plan buyerPlan = PlanFixture.createPlan(buyer, DATA_AMOUNT_2);
+				Plan sellerPlan1 = PlanFixture.createPlan(seller1, DATA_AMOUNT_2);
+				Plan sellerPlan2 = PlanFixture.createPlan(seller2, DATA_AMOUNT_2);
+
 				MobileData mobileData1 = MobileDataFixture.createMobileDataWithId(MOBILE_DATA_ID,
-						DATA_AMOUNT_1,
-						REMAIN_AMOUNT_1, PRICE_PER_100MB_150);
+						DATA_AMOUNT_1, REMAIN_AMOUNT_1, PRICE_PER_100MB_150);
 				MobileData mobileData2 = MobileDataFixture.createMobileDataSplitTypeWithId(
 						MOBILE_DATA_ID + 1, DATA_AMOUNT_2,
 						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
@@ -429,20 +455,29 @@ class TradeServiceTest {
 						DATA_AMOUNT_2,
 						PRICE_1500 + PRICE_3000, mobileDataScrapList);
 
+				given(memberRepository.findById(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
 						Optional.of(buyer));
+				given(memberRepository.findById(SELLER_MEMBER_ID)).willReturn(
+						Optional.of(seller1));
 				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID)).willReturn(
 						Optional.of(seller1));
+				given(memberRepository.findById(SELLER_MEMBER_ID + 1)).willReturn(
+						Optional.of(seller2));
 				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID + 1)).willReturn(
 						Optional.of(seller2));
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
 						Optional.of(product1));
 				given(productRepository.findByIdForUpdate(PRODUCT_ID + 1)).willReturn(
 						Optional.of(product2));
-				given(mobileDataRepository.findById(mobileData1.getId())).willReturn(
+				given(mobileDataRepository.findByIdForUpdate(MOBILE_DATA_ID)).willReturn(
 						Optional.of(mobileData1));
-				given(mobileDataRepository.findById(mobileData2.getId())).willReturn(
+				given(mobileDataRepository.findByIdForUpdate(MOBILE_DATA_ID + 1)).willReturn(
 						Optional.of(mobileData2));
+				given(planRepository.findByMember(buyer)).willReturn(Optional.of(buyerPlan));
+				given(planRepository.findByMember(seller1)).willReturn(Optional.of(sellerPlan1));
+				given(planRepository.findByMember(seller2)).willReturn(Optional.of(sellerPlan2));
 
 				// when
 				tradeService.scrapPurchaseMobileData(BUYER_MEMBER_ID, request);
@@ -499,6 +534,8 @@ class TradeServiceTest {
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
 						Optional.of(buyer));
+				given(memberRepository.findById(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
 
 				// when & then
 				assertThatThrownBy(
@@ -516,6 +553,8 @@ class TradeServiceTest {
 				Member seller2 = MemberFixture.createMember1WithId(SELLER_MEMBER_ID + 1);
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
+
+				Plan buyerPlan = PlanFixture.createPlan(buyer, DATA_AMOUNT_2);
 
 				MobileData mobileData1 = MobileDataFixture.createMobileDataWithId(MOBILE_DATA_ID,
 						DATA_AMOUNT_1, BigDecimal.ZERO, PRICE_PER_100MB_150);
@@ -537,14 +576,17 @@ class TradeServiceTest {
 						DATA_AMOUNT_2,
 						PRICE_1500 + PRICE_3000, mobileDataScrapList);
 
+				given(memberRepository.findById(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
 						Optional.of(buyer));
-				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID)).willReturn(
+				given(memberRepository.findById(SELLER_MEMBER_ID)).willReturn(
 						Optional.of(seller1));
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
 						Optional.of(product1));
-				given(mobileDataRepository.findById(mobileData1.getId())).willReturn(
+				given(mobileDataRepository.findByIdForUpdate(MOBILE_DATA_ID)).willReturn(
 						Optional.of(mobileData1));
+				given(planRepository.findByMember(buyer)).willReturn(Optional.of(buyerPlan));
 
 				// when & then
 				assertThatThrownBy(
@@ -584,7 +626,11 @@ class TradeServiceTest {
 
 				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
 						Optional.of(buyer));
+				given(memberRepository.findById(BUYER_MEMBER_ID)).willReturn(
+						Optional.of(buyer));
 				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID)).willReturn(
+						Optional.of(seller));
+				given(memberRepository.findById(SELLER_MEMBER_ID)).willReturn(
 						Optional.of(seller));
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
 						Optional.of(product));
@@ -622,8 +668,6 @@ class TradeServiceTest {
 				PurchaseWifiRequest request = new PurchaseWifiRequest(PRODUCT_ID, WIFI_ID,
 						LocalDateTime.of(2025, 3, 4, 23, 0), LocalDateTime.of(2025, 3, 4, 23, 30));
 
-				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
-						Optional.of(buyer));
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
 						Optional.of(product));
 				given(wifiRepository.findById(WIFI_ID)).willReturn(
@@ -653,8 +697,6 @@ class TradeServiceTest {
 				PurchaseWifiRequest request = new PurchaseWifiRequest(PRODUCT_ID, WIFI_ID + 1,
 						LocalDateTime.of(2025, 3, 4, 10, 0), LocalDateTime.of(2025, 3, 4, 10, 30));
 
-				given(memberRepository.findByIdForUpdate(BUYER_MEMBER_ID)).willReturn(
-						Optional.of(buyer));
 				given(productRepository.findByIdForUpdate(PRODUCT_ID)).willReturn(
 						Optional.of(product));
 

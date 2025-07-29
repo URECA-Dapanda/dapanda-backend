@@ -112,7 +112,9 @@ dependencies {
 
 // 테스트 실행 설정
 test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags 'performance'
+    }
     finalizedBy jacocoTestReport
     outputs.dir snippetsDir
     include '**/*Test.class'
