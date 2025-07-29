@@ -124,7 +124,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 								.and(otherChatParticipant.member.id.ne(request.memberId()))
 				)
 				.join(otherChatParticipant.member, otherMember)
-				.join(chatMessageReadStatus.chatRoom, chatRoom)
 				.leftJoin(wifi).on(
 						product.itemId.eq(wifi.id)
 								.and(product.itemType.eq(ItemType.WIFI))

@@ -16,7 +16,7 @@ public class ReadJoiningChatRoomResponse {
 	private LocalDateTime createdAt;
 	private LocalDateTime lastMessageAt;
 	private String lastMessage;
-	private Integer unreadCount;
+	private Long unreadCount;
 
 	//Member
 	private Long senderId;
