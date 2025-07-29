@@ -1,13 +1,13 @@
 package com.dapanda.chat.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
-import com.dapanda.chat.dto.request.ReadChatMessageHistoryRequest;
-import com.dapanda.chat.dto.request.ReadJoiningChatRoomRequest;
+import com.dapanda.chat.dto.request.*;
 import com.dapanda.chat.dto.response.*;
 import com.dapanda.chat.entity.ChatRoomReadOption;
 import com.dapanda.chat.service.ChatService;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.CommonResponse;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -54,5 +54,16 @@ public class ChatController {
 		ReadChatMessageHistoryRequest request = new ReadChatMessageHistoryRequest(cursorId, size, userDetails.getId(), chatRoomId);
 
 		return CommonResponse.success(chatService.readChatMessageHistory(request));
+	}
+
+	@PostMapping("/chat-room/{chatRoomId}/read-status")
+	public CommonResponse<Void> updateReadStatus(
+			@PathVariable Long chatRoomId,
+			@RequestBody @Valid UpdateReadStatusRequest request,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		chatService.updateReadStatus(chatRoomId, request, userDetails.getId());
+
+		return CommonResponse.success(null);
 	}
 }
