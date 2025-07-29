@@ -10,6 +10,7 @@ import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
@@ -31,6 +33,7 @@ import java.util.List;
 
 import static com.dapanda.TestConstants.Pagination.CHAT_MESSAGE_HISTORY_DEFAULT_SIZE;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -73,6 +76,10 @@ class ChatControllerTest {
 	private ChatMessageRepository chatMessageRepository;
 	@Autowired
 	private WifiRepository wifiRepository;
+	@Autowired
+	private ObjectMapper objectMapper;
+	@Autowired
+	private ChatMessageReadStatusRepository chatMessageReadStatusRepository;
 
 	@BeforeEach
 	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
@@ -179,7 +186,6 @@ class ChatControllerTest {
 			}
 		}
 	}
-
 
 	@Nested
 	@DisplayName("참여중인 채팅방 조회 API")
@@ -432,6 +438,62 @@ class ChatControllerTest {
 										fieldWithPath("data.pageInfo.nextCursorId").description("다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)")
 								)
 						));
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("메시지 읽음 상태 업데이트 API")
+	class UpdateChatMessageReadStatus {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("마지막으로 읽은 메시지 아이디를 저장한다")
+			public void updateLastMessageId() throws Exception {
+
+				//given
+				Member seller = memberRepository.save(MemberFixture.createMember1());
+				Member buyer = memberRepository.save(MemberFixture.createMember2());
+
+				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
+
+				Wifi wifi = wifiRepository.save(WifiFixture.createWifi());
+
+				Product product = productRepository.save(ProductFixture.createWifiProduct(seller, wifi));
+
+				ChatRoom chatRoom = chatRoomRepository.save(ChatRoomFixture.createChatRoom(product));
+
+				chatParticipantRepository.saveAll(ChatParticipantFixture.createChatParticipant(chatRoom, buyer, seller));
+
+				List<ChatMessage> chatMessageList = chatMessageRepository.saveAll(
+						ChatMessageFixture.createChatMessageList(chatRoom, buyer, seller)
+				);
+
+				ChatMessage lastChatMessage = chatMessageList.get(chatMessageList.size() - 1);
+
+				System.out.println("lastChatMessage = " + lastChatMessage.getMember());
+
+				//when & then
+				mockMvc.perform(post("/api/chat-messages/{chatMessageId}/read-status", lastChatMessage.getId())
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
+						.andDo(print())
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()));
+
+				ChatMessageReadStatus savedReadStatus = chatMessageReadStatusRepository
+						.findFirstByChatRoomAndChatMessageAndMember(chatRoom, lastChatMessage, buyer)
+						.orElseThrow();
+
+				assertThat(savedReadStatus.getChatMessage().getId()).isEqualTo(lastChatMessage.getId());
+				assertThat(savedReadStatus.getChatRoom().getId()).isEqualTo(chatRoom.getId());
+				assertThat(savedReadStatus.getMember().getId()).isEqualTo(buyer.getId());
 			}
 		}
 	}
