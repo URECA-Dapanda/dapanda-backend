@@ -148,15 +148,26 @@ public class ChatService {
 		return CreateMessageResponse.of(chatMessage.getId(), request.message(), chatMessage.getCreatedAt());
 	}
 
-	public void updateReadStatus(Long chatRoomId, UpdateReadStatusRequest request, Long memberId) {
+	@Transactional
+	public void updateReadStatus(Long chatMessageId, Long memberId) {
 
-		validateChatMessageId(chatRoomId, request.chatMessageId(), memberId);
+		ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId)
+				.orElseThrow(() -> new GlobalException(ResultCode.CHAT_MESSAGE_NOT_FOUND));
+
+		if (chatMessage.getChatRoom() == null) {
+
+			throw new GlobalException(ResultCode.CHAT_ROOM_NOT_FOUND);
+		}
+
+		validateParticipant(chatMessage.getChatRoom().getId(), memberId);
 
 		Member member = memberRepository.getReferenceById(memberId);
-		ChatMessage chatMessage = chatMessageRepository.getReferenceById(request.chatMessageId());
-		ChatRoom chatRoom = chatRoomRepository.getReferenceById(chatRoomId);
 
-		ChatMessageReadStatus chatMessageReadStatus = ChatMessageReadStatus.of(member, chatRoom, chatMessage);
+		ChatMessageReadStatus chatMessageReadStatus = ChatMessageReadStatus.of(
+				member,
+				chatMessage.getChatRoom(),
+				chatMessage
+		);
 
 		chatMessageReadStatusRepository.save(chatMessageReadStatus);
 	}
@@ -166,18 +177,6 @@ public class ChatService {
 		if (!chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoomId, memberId)){
 
 			throw new GlobalException(ResultCode.CHAT_ROOM_ACCESS_DENIED);
-		}
-	}
-
-	private void validateChatMessageId(Long chatRoomId, Long chatMessageId, Long memberId) {
-
-		if (!chatMessageRepository.existsByIdAndMember_IdAndChatRoom_Id(chatMessageId, memberId, chatRoomId)) {
-
-			log.error("chatRoomId : {}, chatMessageId : {}, memberId : {}", chatRoomId, chatMessageId, memberId);
-
-			validateParticipant(chatRoomId, memberId);
-
-			throw new GlobalException(ResultCode.CHAT_MESSAGE_NOT_FOUND);
 		}
 	}
 }

@@ -56,13 +56,12 @@ public class ChatController {
 		return CommonResponse.success(chatService.readChatMessageHistory(request));
 	}
 
-	@PostMapping("/chat-room/{chatRoomId}/read-status")
+	@PostMapping("/chat-messages/{chatMessageId}/read-status")
 	public CommonResponse<Void> updateReadStatus(
-			@PathVariable Long chatRoomId,
-			@RequestBody @Valid UpdateReadStatusRequest request,
+			@PathVariable Long chatMessageId,
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
 
-		chatService.updateReadStatus(chatRoomId, request, userDetails.getId());
+		chatService.updateReadStatus(chatMessageId, userDetails.getId());
 
 		return CommonResponse.success(null);
 	}
