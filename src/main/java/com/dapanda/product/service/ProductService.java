@@ -217,11 +217,7 @@ public class ProductService {
 		MobileData savedMobileData = mobileDataRepository.findById(savedProduct.getItemId())
 				.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
 
-		if (tradeRepository.existsByProductId(request.productId())
-				&& savedMobileData.isSplitType()) {
-			throw new GlobalException(ResultCode.PRODUCT_CANNOT_TRADE);
-		}
-
+		validateProductTradeAvailability(request.productId(), savedMobileData);
 		validateProductOwner(savedProduct, memberId);
 		validateDataAmount(request.changedAmount(), savedMobileData, memberId);
 
@@ -370,4 +366,11 @@ public class ProductService {
 
 		productRepository.updateAllBeforeThisMonthAndIsActive();
 	}
+
+	private void validateProductTradeAvailability(Long productId, MobileData mobileData) {
+		if (tradeRepository.existsByProductId(productId) && mobileData.isSplitType()) {
+			throw new GlobalException(ResultCode.PRODUCT_CANNOT_TRADE);
+		}
+	}
+
 }
