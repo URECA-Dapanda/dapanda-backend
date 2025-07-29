@@ -66,7 +66,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						eqDataAmount(dataAmount)
 				)
 				.orderBy(
-						productSortOption == ProductSortOption.PRICE_ASC ? product.price.asc() :
+						productSortOption == ProductSortOption.PRICE_ASC
+								? mobileData.pricePer100MB.asc() :
 								productSortOption == ProductSortOption.AMOUNT_ASC
 										? mobileData.remainAmount.asc() :
 										productSortOption == ProductSortOption.AMOUNT_DESC
