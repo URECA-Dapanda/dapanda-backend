@@ -17,15 +17,17 @@ public class RefreshTokenService {
 	public void save(Member member, String refreshToken) {
 
 		refreshTokenRepository.findByMember(member).ifPresentOrElse(
-				token -> refreshTokenRepository.save(token.toBuilder().token(refreshToken).build()),
-				() -> refreshTokenRepository.save(
-						RefreshToken.builder()
-								.member(member)
-								.token(refreshToken)
-								.build()
-				)
+				existing -> {
+					RefreshToken updated = RefreshToken.of(refreshToken, TokenState.VALID, member);
+					refreshTokenRepository.save(updated);
+				},
+				() -> {
+					RefreshToken created = RefreshToken.of(refreshToken, TokenState.VALID, member);
+					refreshTokenRepository.save(created);
+				}
 		);
 	}
+
 
 	public void invalidateRefreshToken(Member member) {
 
@@ -39,16 +41,16 @@ public class RefreshTokenService {
 	public void issueRefreshToken(Member member, String newTokenValue) {
 
 		refreshTokenRepository.findByMemberAndState(member, TokenState.VALID)
-				.ifPresent(token -> token.setState(TokenState.INVALID));
+				.ifPresent(token -> {
+					token.setState(TokenState.INVALID);
+					refreshTokenRepository.save(token);
+				});
 
 		refreshTokenRepository.save(
-				RefreshToken.builder()
-						.member(member)
-						.token(newTokenValue)
-						.state(TokenState.VALID)
-						.build()
+				RefreshToken.of(newTokenValue, TokenState.VALID, member)
 		);
 	}
+
 
 	public Optional<RefreshToken> findByUserAndState(Member member) {
 
