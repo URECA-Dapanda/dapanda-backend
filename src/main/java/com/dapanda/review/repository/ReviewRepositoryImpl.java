@@ -1,14 +1,10 @@
 package com.dapanda.review.repository;
 
 import com.dapanda.member.entity.QMember;
-import com.dapanda.product.entity.QProduct;
 import com.dapanda.review.dto.request.ReadReviewRequest;
 import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
 import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
-import com.dapanda.review.entity.QReview;
 import com.dapanda.review.entity.ReviewSortOption;
-import com.dapanda.trade.entity.QTrade;
-import com.dapanda.trade.entity.QTradeDetails;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -18,7 +14,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+import static com.dapanda.product.entity.QProduct.product;
+import static com.dapanda.product.entity.QWifi.wifi;
 import static com.dapanda.review.entity.QReview.review;
+import static com.dapanda.trade.entity.QTrade.trade;
+import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
 
 @Repository
 @RequiredArgsConstructor
@@ -35,10 +35,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
 		QMember buyer = new QMember(BUYER);
 		QMember seller = new QMember(SELLER);
-		QReview review = QReview.review;
-		QTrade trade = QTrade.trade;
-		QTradeDetails tradeDetails = QTradeDetails.tradeDetails;
-		QProduct product = QProduct.product;
 
 		return queryFactory
 				.select(Projections.constructor(ReadReceivedReviewResponse.class,
@@ -52,7 +48,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 						trade.id,
 						trade.timeAmount,
 						product.id,
-						product.itemType
+						product.itemType,
+						wifi.title
 				))
 				.from(review)
 				.join(review.trade, trade)
@@ -60,6 +57,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 				.join(tradeDetails.product, product)
 				.join(trade.member, buyer)
 				.join(product.member, seller)
+				.join(wifi).on(wifi.id.eq(product.itemId))
 				.where(buildWhereClause(request, seller))
 				.orderBy(getOrderSpecifier(ReviewSortOption.valueOf(request.reviewSortOption())))
 				.limit(request.size() + 1)
@@ -71,10 +69,6 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
 		QMember buyer = new QMember(BUYER);
 		QMember seller = new QMember(SELLER);
-		QReview review = QReview.review;
-		QTrade trade = QTrade.trade;
-		QTradeDetails tradeDetails = QTradeDetails.tradeDetails;
-		QProduct product = QProduct.product;
 
 		return queryFactory
 				.select(Projections.constructor(ReadWrittenReviewResponse.class,
