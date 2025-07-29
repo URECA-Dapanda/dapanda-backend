@@ -97,6 +97,8 @@ class ChatControllerTest {
 
 		jdbcTemplate.execute("TRUNCATE TABLE chat_room");
 		jdbcTemplate.execute("TRUNCATE TABLE chat_participant");
+		jdbcTemplate.execute("TRUNCATE TABLE chat_message");
+		jdbcTemplate.execute("TRUNCATE TABLE chat_message_read_status");
 		jdbcTemplate.execute("TRUNCATE TABLE product");
 		jdbcTemplate.execute("TRUNCATE TABLE member");
 
@@ -485,7 +487,16 @@ class ChatControllerTest {
 						.andDo(print())
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
-						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()));
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andDo(document("chat/update-chat-message-read-status",
+								pathParameters(
+										parameterWithName("chatMessageId").description("마지막으로 읽은 메시지 아이디")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지")
+								)
+						));
 
 				ChatMessageReadStatus savedReadStatus = chatMessageReadStatusRepository
 						.findFirstByChatRoomAndChatMessageAndMember(chatRoom, lastChatMessage, buyer)
