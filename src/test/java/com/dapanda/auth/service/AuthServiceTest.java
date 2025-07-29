@@ -1,8 +1,6 @@
 package com.dapanda.auth.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -18,10 +16,7 @@ import com.dapanda.refreshToken.entity.RefreshToken;
 import com.dapanda.refreshToken.entity.TokenState;
 import com.dapanda.refreshToken.repository.RefreshTokenRepository;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
@@ -58,11 +53,7 @@ class AuthServiceTest {
 				provider,
 				role
 		);
-		final RefreshToken savedToken = RefreshToken.builder()
-				.token(refreshToken)
-				.member(member)
-				.state(TokenState.VALID)
-				.build();
+		final RefreshToken savedToken = RefreshToken.of(refreshToken, TokenState.VALID, member);
 
 		@Nested
 		@DisplayName("성공 케이스")
@@ -133,10 +124,8 @@ class AuthServiceTest {
 			void shouldThrowIfTokenDoesNotMatch() {
 
 				String wrongToken = "wrongToken";
-				RefreshToken mismatchedToken = RefreshToken.builder()
-						.token(wrongToken)
-						.member(member)
-						.build();
+				RefreshToken mismatchedToken = RefreshToken.of(wrongToken, TokenState.VALID,
+						member);
 
 				when(jwtTokenProvider.validateToken(refreshToken)).thenReturn(true);
 				when(jwtTokenProvider.getUserEmailFromToken(refreshToken)).thenReturn(email);
