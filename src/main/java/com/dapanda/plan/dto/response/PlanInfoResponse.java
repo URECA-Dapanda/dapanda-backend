@@ -20,7 +20,7 @@ public class PlanInfoResponse {
 		return PlanInfoResponse.builder().
 				name(plan.getName()).
 				currentDataAmount(plan.getCurrentDataAmount()).
-				providingDataAmount(plan.getCurrentDataAmount()).
+				providingDataAmount(plan.getProvidingDataAmount()).
 				monthlyPrice(plan.getMonthlyPrice()).
 				build();
 	}
