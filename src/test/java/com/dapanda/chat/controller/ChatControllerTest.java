@@ -237,6 +237,7 @@ class ChatControllerTest {
 										fieldWithPath("data.data[].createdAt").description("채팅방 생성 시간"),
 										fieldWithPath("data.data[].lastMessageAt").description("마지막 메시지 시간"),
 										fieldWithPath("data.data[].lastMessage").description("마지막 메시지"),
+										fieldWithPath("data.data[].unreadCount").description("읽지 않은 메시지 수"),
 										fieldWithPath("data.data[].senderId").description("채팅 상대 회원 아이디"),
 										fieldWithPath("data.data[].senderName").description("채팅 상대 회원 이름"),
 										fieldWithPath("data.data[].senderProfileImageUrl").description("채팅 상대 이미지 URL"),
