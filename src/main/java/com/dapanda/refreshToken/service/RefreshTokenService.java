@@ -4,10 +4,9 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.refreshToken.entity.RefreshToken;
 import com.dapanda.refreshToken.entity.TokenState;
 import com.dapanda.refreshToken.repository.RefreshTokenRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,19 +39,19 @@ public class RefreshTokenService {
 	public void issueRefreshToken(Member member, String newTokenValue) {
 
 		refreshTokenRepository.findByMemberAndState(member, TokenState.VALID)
-				.orElseGet(() -> {
-					RefreshToken newToken = RefreshToken.builder()
-							.member(member)
-							.token(newTokenValue)
-							.state(TokenState.VALID)
-							.build();
+				.ifPresent(token -> token.setState(TokenState.INVALID));
 
-					return refreshTokenRepository.save(newToken);
-				});
+		refreshTokenRepository.save(
+				RefreshToken.builder()
+						.member(member)
+						.token(newTokenValue)
+						.state(TokenState.VALID)
+						.build()
+		);
 	}
 
-	public Optional<RefreshToken> findByUser(Member member) {
+	public Optional<RefreshToken> findByUserAndState(Member member) {
 
-		return refreshTokenRepository.findByMember(member);
+		return refreshTokenRepository.findByMemberAndState(member, TokenState.VALID);
 	}
 }
