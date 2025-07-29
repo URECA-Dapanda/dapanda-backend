@@ -30,6 +30,8 @@ public class ReadReceivedReviewResponse {
 	//Product
 	private Long productId;
 	private ItemType itemType;
+	//Wifi
+	private String title;
 
 	public static ReadReceivedReviewResponse of(
 			Long reviewId,

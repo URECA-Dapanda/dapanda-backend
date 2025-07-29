@@ -1,5 +1,41 @@
 package com.dapanda.review.controller;
 
+import com.dapanda.TestConfig;
+import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.common.exception.ResultCode;
+import com.dapanda.member.entity.Member;
+import com.dapanda.member.entity.MemberFixture;
+import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.ProductRepository;
+import com.dapanda.product.repository.WifiRepository;
+import com.dapanda.review.dto.request.CreateReviewRequest;
+import com.dapanda.review.dto.request.UpdateReviewRequest;
+import com.dapanda.review.entity.Review;
+import com.dapanda.review.entity.ReviewFixture;
+import com.dapanda.review.repository.ReviewRepository;
+import com.dapanda.trade.entity.*;
+import com.dapanda.trade.repository.TradeDetailsRepository;
+import com.dapanda.trade.repository.TradeRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.context.WebApplicationContext;
+
+import java.util.*;
+
 import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_REVIEW_SORT_OPTION;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
@@ -15,41 +51,6 @@ import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.dapanda.TestConfig;
-import com.dapanda.auth.entity.CustomUserDetails;
-import com.dapanda.common.exception.ResultCode;
-import com.dapanda.member.entity.Member;
-import com.dapanda.member.entity.MemberFixture;
-import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.product.entity.Product;
-import com.dapanda.product.entity.ProductFixture;
-import com.dapanda.product.repository.ProductRepository;
-import com.dapanda.review.dto.request.CreateReviewRequest;
-import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.entity.Review;
-import com.dapanda.review.entity.ReviewFixture;
-import com.dapanda.review.repository.ReviewRepository;
-import com.dapanda.trade.entity.*;
-import com.dapanda.trade.repository.TradeDetailsRepository;
-import com.dapanda.trade.repository.TradeRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import java.util.*;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -87,6 +88,9 @@ class ReviewControllerTest {
 	@Autowired
 	private TradeDetailsRepository tradeDetailsRepository;
 
+	@Autowired
+	private WifiRepository wifiRepository;
+
 	@BeforeEach
 	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
 
@@ -105,6 +109,7 @@ class ReviewControllerTest {
 		jdbcTemplate.execute("TRUNCATE TABLE trade_details");
 		jdbcTemplate.execute("TRUNCATE TABLE trade");
 		jdbcTemplate.execute("TRUNCATE TABLE product");
+		jdbcTemplate.execute("TRUNCATE TABLE wifi");
 		jdbcTemplate.execute("TRUNCATE TABLE member");
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
@@ -213,8 +218,9 @@ class ReviewControllerTest {
 						MemberFixture.createMember5()
 				));
 
-				Product product = productRepository.save(
-						ProductFixture.createMobileDataProduct(10000, 1L, seller));
+				Wifi wifi = wifiRepository.save(WifiFixture.createWifi());
+
+				Product product = productRepository.save(ProductFixture.createWifiProduct(seller, wifi));
 
 				List<Trade> tradeFixtures = new ArrayList<>();
 
@@ -224,8 +230,8 @@ class ReviewControllerTest {
 
 				List<Trade> trades = tradeRepository.saveAll(tradeFixtures);
 
-				// Save TradeDetails for each trade
 				List<TradeDetails> tradeDetailsFixtures = new ArrayList<>();
+
 				for (Trade trade : trades) {
 					tradeDetailsFixtures.add(
 							TradeDetailsFixture.createTradeDetails(product, trade));
@@ -300,6 +306,9 @@ class ReviewControllerTest {
 												"리뷰가 작성된 상품 아이디"),
 										fieldWithPath("data.data[].itemType").description(
 												"상품 유형 (예: MOBILE_DATA, TIME 등)"),
+										// Wifi 정보
+										fieldWithPath("data.data[].title").description(
+												"WIFI 상품의 제목"),
 										// data.pageInfo 필드
 										fieldWithPath("data.pageInfo").description("페이지 정보"),
 										fieldWithPath("data.pageInfo.size").description(
@@ -336,8 +345,9 @@ class ReviewControllerTest {
 						MemberFixture.createMember5()
 				));
 
-				Product product = productRepository.save(
-						ProductFixture.createMobileDataProduct(10000, 1L, seller));
+				Wifi wifi = wifiRepository.save(WifiFixture.createWifi());
+
+				Product product = productRepository.save(ProductFixture.createWifiProduct(seller, wifi));
 
 				List<Trade> tradeFixtures = new ArrayList<>();
 
@@ -347,12 +357,13 @@ class ReviewControllerTest {
 
 				List<Trade> trades = tradeRepository.saveAll(tradeFixtures);
 
-				// Save TradeDetails for each trade
 				List<TradeDetails> tradeDetailsFixtures = new ArrayList<>();
+
 				for (Trade trade : trades) {
 					tradeDetailsFixtures.add(
 							TradeDetailsFixture.createTradeDetails(product, trade));
 				}
+
 				tradeDetailsRepository.saveAll(tradeDetailsFixtures);
 
 				List<Review> reviewFixtures = new ArrayList<>();
@@ -422,6 +433,9 @@ class ReviewControllerTest {
 												"리뷰가 작성된 상품 아이디"),
 										fieldWithPath("data.data[].itemType").description(
 												"상품 유형 (예: MOBILE_DATA, TIME 등)"),
+										// Wifi 정보
+										fieldWithPath("data.data[].title").description(
+												"WIFI 상품의 제목"),
 										// data.pageInfo 필드
 										fieldWithPath("data.pageInfo").description("페이지 정보"),
 										fieldWithPath("data.pageInfo.size").description(
