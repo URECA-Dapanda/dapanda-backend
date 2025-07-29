@@ -33,7 +33,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Gradle 테스트 only (빌드 없이 테스트만)
-        run: ./gradlew clean test --exclude-tag performance asciidoctor bootJar --stacktrace
+        run: ./gradlew clean test asciidoctor bootJar --stacktrace
 
       - name: PR에 코드 커버리지 측정 레포트 생성
         id: jacoco
