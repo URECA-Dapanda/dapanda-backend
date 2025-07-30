@@ -1,7 +1,10 @@
 package com.dapanda.member.entity;
 
+import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.auth.entity.OAuthProvider;
 import java.math.BigDecimal;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 public class MemberFixture {
@@ -126,4 +129,14 @@ public class MemberFixture {
 
 		return member;
 	}
+
+	public static void setAuthentication(Long id, String email, String provider, MemberRole role) {
+		CustomUserDetails userDetails = new CustomUserDetails(
+				id, email, "password", provider, role
+		);
+		TestingAuthenticationToken authentication = new TestingAuthenticationToken(userDetails,
+				null);
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+	}
+
 }
