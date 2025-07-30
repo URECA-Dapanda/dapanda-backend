@@ -62,6 +62,7 @@ public class ReadSellingProductResponse {
 			ProductState state,
 			LocalDateTime startTime,
 			LocalDateTime endTime,
+			String title,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt) {
 
@@ -71,6 +72,7 @@ public class ReadSellingProductResponse {
 				.state(state)
 				.startTime(startTime)
 				.endTime(endTime)
+				.title(title)
 				.createdAt(createdAt)
 				.updatedAt(updatedAt)
 				.build();

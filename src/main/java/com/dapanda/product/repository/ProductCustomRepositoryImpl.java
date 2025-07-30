@@ -253,6 +253,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						mobileData.remainAmount,
 						wifi.startTime,
 						wifi.endTime,
+						wifi.title,
 						product.createdAt,
 						product.updatedAt
 				)
@@ -299,6 +300,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 							tuple.get(product.state),
 							tuple.get(wifi.startTime),
 							tuple.get(wifi.endTime),
+							tuple.get(wifi.title),
 							tuple.get(product.createdAt),
 							tuple.get(product.updatedAt)
 					);
