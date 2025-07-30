@@ -42,3 +42,6 @@ out/
 
 ### REST Docs ###
 /src/main/resources/static/*
+
+### FireBase ###
+src/main/resources/firebase
