@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface ChatMessageReadStatusRepository extends JpaRepository<ChatMessageReadStatus, Long> {
 
 	Optional<ChatMessageReadStatus> findFirstByChatRoomAndChatMessageAndMember(ChatRoom chatRoom, ChatMessage chatMessage, Member member);
+
+	Optional<ChatMessageReadStatus> findFirstByChatRoomAndMember(ChatRoom chatRoom, Member member);
 }

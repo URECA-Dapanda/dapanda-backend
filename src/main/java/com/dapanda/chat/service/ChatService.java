@@ -163,11 +163,11 @@ public class ChatService {
 
 		Member member = memberRepository.getReferenceById(memberId);
 
-		ChatMessageReadStatus chatMessageReadStatus = ChatMessageReadStatus.of(
-				member,
-				chatMessage.getChatRoom(),
-				chatMessage
-		);
+		ChatMessageReadStatus chatMessageReadStatus = chatMessageReadStatusRepository
+				.findFirstByChatRoomAndMember(chatMessage.getChatRoom(), member)
+				.orElseGet(() -> ChatMessageReadStatus.of(member, chatMessage.getChatRoom(), chatMessage));
+
+		chatMessageReadStatus.updateLastReadChatMessage(chatMessage);
 
 		chatMessageReadStatusRepository.save(chatMessageReadStatus);
 	}
