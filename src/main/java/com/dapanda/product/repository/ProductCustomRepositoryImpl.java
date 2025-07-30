@@ -117,7 +117,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						member.averageRating,
 						distance.divide(METER_TO_KILOMETER),
 						isCurrentTimeWithinTimeRange(),
-						product.updatedAt
+						Expressions.stringTemplate("TIME({0})", wifi.startTime),
+						Expressions.stringTemplate("TIME({0})", wifi.endTime)
 				))
 				.from(product)
 				.groupBy(product.id)
@@ -395,8 +396,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				"(CASE WHEN TIME({1}) < TIME({0}) " +
 						"THEN TIME(CURRENT_TIMESTAMP) >= TIME({0}) OR TIME(CURRENT_TIMESTAMP) <= TIME({1}) "
 						+ "ELSE TIME(CURRENT_TIMESTAMP) BETWEEN TIME({0}) AND TIME({1}) END)",
-				wifi.startTime,
-				wifi.endTime
+				wifi.startTime, wifi.endTime
 		);
 	}
 

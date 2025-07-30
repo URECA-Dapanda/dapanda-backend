@@ -39,7 +39,7 @@ public class PaymentService {
 		Member member = memberRepository.findByIdForUpdate(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
-		if (!isValidAmount(request.amount())) {
+		if (request.amount() <= 0) {
 			throw new GlobalException(ResultCode.INVALID_PAYMENT_AMOUNT);
 		}
 
@@ -49,22 +49,13 @@ public class PaymentService {
 		LocalDateTime approvedAt = LocalDateTime.parse(response.approvedAt(), formatter);
 
 		Payment payment = paymentRepository.save(
-				Payment.of(response.paymentKey(), response.totalAmount(),
-						approvedAt, member));
+				Payment.of(response.paymentKey(), response.totalAmount(), approvedAt, member));
 
 		tradeRepository.save(Trade.of(request.amount(), TradeType.CHARGE, member));
 
+		member.addCash(request.amount());
+
 		return ChargeCashResponse.of(payment.getId(), response.totalAmount());
-	}
-
-	// TODO: 성능 고도화 시 동시성 처리(락)
-	@Transactional
-	public void updateCash(Long memberId, int amount) {
-
-		Member member = memberRepository.findByIdForUpdate(memberId)
-				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
-
-		member.addCash(amount);
 	}
 
 	/**
@@ -112,10 +103,5 @@ public class PaymentService {
 		} catch (PessimisticLockingFailureException e) {
 			throw new GlobalException(ResultCode.REQUEST_TIMEOUT);
 		}
-	}
-
-	private boolean isValidAmount(int amount) {
-
-		return amount > 0;
 	}
 }

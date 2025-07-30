@@ -4,6 +4,7 @@ import com.dapanda.report.entity.ReportTargetCategory;
 import com.dapanda.review.entity.ReviewSortOption;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public final class TestConstants {
 
@@ -97,10 +98,13 @@ public final class TestConstants {
 		public static final String ADDRESS = "서울특별시 강남구";
 		public static final String IMAGE_URL_1 = "image1";
 		public static final String IMAGE_URL_2 = "image2";
-		public static final LocalDateTime START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0);
-		public static final LocalDateTime WRONG_START_TIME = LocalDateTime.of(2025, 3, 4, 10, 0);
-		public static final LocalDateTime END_TIME = LocalDateTime.of(2025, 3, 4, 21, 0);
-		public static final LocalDateTime WRONG_END_TIME = LocalDateTime.of(2024, 3, 4, 21, 0);
+		public static final LocalDateTime START_DATETIME = LocalDateTime.of(2025, 3, 4, 10, 0);
+		public static final LocalDateTime WRONG_START_DATETIME = LocalDateTime.of(2025, 3, 4, 10,
+				0);
+		public static final LocalDateTime END_DATETIME = LocalDateTime.of(2025, 3, 4, 21, 0);
+		public static final LocalDateTime WRONG_END_DATETIME = LocalDateTime.of(2024, 3, 4, 21, 0);
+		public static final LocalTime START_TIME = LocalTime.of(10, 0);
+		public static final LocalTime END_TIME = LocalTime.of(22, 0);
 	}
 
 	public static final class Plan {

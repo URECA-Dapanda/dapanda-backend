@@ -189,124 +189,6 @@ class MemberControllerTest {
 	}
 
 	@Nested
-	@DisplayName("프로필 이미지 변경 API")
-	class UpdateProfileImage {
-
-		@Nested
-		@DisplayName("성공 케이스")
-		class Success {
-
-			@Test
-			@DisplayName("정상적으로 프로필 이미지를 변경한다")
-			void updateProfileImage_success() throws Exception {
-				// given
-				Member member = MemberFixture.createMember1();
-				memberRepository.save(member);
-				CustomUserDetails userDetails = CustomUserDetails.from(member);
-
-				String imageUrl = "https://dapanda.org/profile/test.jpg";
-				var request = new UpdateProfileImageRequest(imageUrl);
-
-				// when & then
-				mockMvc.perform(
-								MockMvcRequestBuilders.post("/api/members/profile-image")
-										.contentType(MediaType.APPLICATION_JSON)
-										.content(objectMapper.writeValueAsString(request))
-										.with(authentication(new UsernamePasswordAuthenticationToken(
-												userDetails, null, userDetails.getAuthorities()
-										)))
-						)
-						.andExpect(status().isOk())
-						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
-						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
-						.andDo(document("member/post-profile-image-success",
-								requestFields(
-										fieldWithPath("imageUrl").description("프로필 이미지 URL")
-								),
-								responseFields(
-										fieldWithPath("code").description("상태 코드"),
-										fieldWithPath("message").description("처리 결과 메시지")
-								)
-						));
-
-			}
-		}
-
-		@Nested
-		@DisplayName("실패 케이스")
-		class Fail {
-
-			@Test
-			@DisplayName("유효하지 않은 확장자일 때 예외를 반환한다")
-			void updateProfileImage_invalidExtension() throws Exception {
-				// given
-				Member member = MemberFixture.createMember1();
-				memberRepository.save(member);
-				CustomUserDetails userDetails = CustomUserDetails.from(member);
-
-				String imageUrl = "https://dapanda.org/profile/test.gif"; // gif 확장자 (지원 안함)
-				var request = new UpdateProfileImageRequest(imageUrl);
-
-				// when & then
-				mockMvc.perform(
-								MockMvcRequestBuilders.post("/api/members/profile-image")
-										.contentType(MediaType.APPLICATION_JSON)
-										.content(objectMapper.writeValueAsString(request))
-										.with(authentication(new UsernamePasswordAuthenticationToken(
-												userDetails, null, userDetails.getAuthorities()
-										)))
-						)
-						.andExpect(status().isBadRequest())
-						.andExpect(
-								jsonPath("$.code").value(ResultCode.INVALID_IMAGE_FORMAT.getCode()))
-						.andExpect(jsonPath("$.message").value(
-								ResultCode.INVALID_IMAGE_FORMAT.getMessage()))
-						.andDo(document("member/post-profile-image-invalid-extension-error",
-								requestFields(
-										fieldWithPath("imageUrl").description("프로필 이미지 URL")
-								),
-								responseFields(
-										fieldWithPath("code").description("상태 코드"),
-										fieldWithPath("message").description("에러 메시지")
-								)
-						));
-
-			}
-
-			@Test
-			@DisplayName("이미지 URL이 빈 값이면 예외를 반환한다")
-			void updateProfileImage_blankImageUrl() throws Exception {
-				// given
-				Member member = MemberFixture.createMember1();
-				memberRepository.save(member);
-				CustomUserDetails userDetails = CustomUserDetails.from(member);
-
-				var request = new UpdateProfileImageRequest("");
-
-				// when & then
-				mockMvc.perform(
-								MockMvcRequestBuilders.post("/api/members/profile-image")
-										.contentType(MediaType.APPLICATION_JSON)
-										.content(objectMapper.writeValueAsString(request))
-										.with(authentication(new UsernamePasswordAuthenticationToken(
-												userDetails, null, userDetails.getAuthorities()
-										)))
-						)
-						.andDo(document("member/post-profile-image-blank-url-error",
-								requestFields(
-										fieldWithPath("imageUrl").description("프로필 이미지 URL")
-								),
-								responseFields(
-										fieldWithPath("code").description("상태 코드"),
-										fieldWithPath("message").description("에러 메시지")
-								)
-						));
-
-			}
-		}
-	}
-
-	@Nested
 	@DisplayName("회원 정보 조회 API")
 	class GetMemberInfo {
 
@@ -438,6 +320,122 @@ class MemberControllerTest {
 
 		}
 
+	}
+
+	@Nested
+	@DisplayName("프로필 이미지 변경 API")
+	class UpdateProfileImage {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("정상적으로 프로필 이미지를 변경한다")
+			void updateProfileImage_success() throws Exception {
+
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+				String imageUrl = "https://dapanda.org/profile/test.jpg"; // 유효한 확장자
+				var request = new UpdateProfileImageRequest(imageUrl);
+
+				// when & then
+				mockMvc.perform(
+								MockMvcRequestBuilders.post("/api/members/profile-image")
+										.contentType(MediaType.APPLICATION_JSON)
+										.content(objectMapper.writeValueAsString(request))
+										.with(authentication(new UsernamePasswordAuthenticationToken(
+												userDetails, null, userDetails.getAuthorities()
+										)))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andDo(document("member/post-profile-image-success",
+								requestFields(
+										fieldWithPath("imageUrl").description("프로필 이미지 URL")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("처리 결과 메시지")
+								)
+						));
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("지원하지 않는 이미지 확장자면 예외를 반환한다")
+			void updateProfileImage_invalidExtension() throws Exception {
+
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+				String imageUrl = "https://dapanda.org/profile/invalid.bmp"; // 지원하지 않는 확장자
+				var request = new UpdateProfileImageRequest(imageUrl);
+
+				// when & then
+				mockMvc.perform(
+								MockMvcRequestBuilders.post("/api/members/profile-image")
+										.contentType(MediaType.APPLICATION_JSON)
+										.content(objectMapper.writeValueAsString(request))
+										.with(authentication(new UsernamePasswordAuthenticationToken(
+												userDetails, null, userDetails.getAuthorities()
+										)))
+						)
+						.andExpect(status().isBadRequest())
+						.andExpect(
+								jsonPath("$.code").value(ResultCode.INVALID_IMAGE_FORMAT.getCode()))
+						.andExpect(jsonPath("$.message").value(
+								ResultCode.INVALID_IMAGE_FORMAT.getMessage()))
+						.andDo(document("member/post-profile-image-invalid-extension-error",
+								requestFields(
+										fieldWithPath("imageUrl").description("프로필 이미지 URL")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("에러 메시지")
+								)
+						));
+			}
+
+			@Test
+			@DisplayName("이미지 URL이 빈 값이면 예외를 반환한다")
+			void updateProfileImage_blankImageUrl() throws Exception {
+
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+				var request = new UpdateProfileImageRequest("");
+
+				// when & then
+				mockMvc.perform(
+								MockMvcRequestBuilders.post("/api/members/profile-image")
+										.contentType(MediaType.APPLICATION_JSON)
+										.content(objectMapper.writeValueAsString(request))
+										.with(authentication(new UsernamePasswordAuthenticationToken(
+												userDetails, null, userDetails.getAuthorities()
+										)))
+						)
+						.andExpect(status().isBadRequest())
+						.andExpect(jsonPath("$.code").value(ResultCode.INVALID_PARAMETER.getCode()))
+						.andExpect(jsonPath("$.message").exists())
+						.andDo(document("member/post-profile-image-blank-url-error",
+								requestFields(
+										fieldWithPath("imageUrl").description(
+												"프로필 이미지 URL (비어있으면 안 됨)")
+								),
+								responseFields(
+										fieldWithPath("code").description("상태 코드"),
+										fieldWithPath("message").description("에러 메시지")
+								)
+						));
+			}
+		}
 	}
 
 }
