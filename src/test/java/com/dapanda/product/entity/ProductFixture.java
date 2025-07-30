@@ -19,16 +19,18 @@ public class ProductFixture {
 				ProductState.ACTIVE,
 				LocalDateTime.now(),
 				LocalDateTime.now(),
+				"title1",
 				LocalDateTime.now(),
 				LocalDateTime.now()
 		);
 
 		ReadSellingProductResponse response2 = ReadSellingProductResponse.createWifiResponse(
-				1L,
+				2L,
 				ItemType.MOBILE_DATA,
 				ProductState.ACTIVE,
 				LocalDateTime.now(),
 				LocalDateTime.now(),
+				"title2",
 				LocalDateTime.now(),
 				LocalDateTime.now()
 		);
