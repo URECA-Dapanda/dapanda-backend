@@ -78,12 +78,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 						String newAccessToken = jwtTokenProvider.generateAccessToken(member);
 
 						// 쿠키에 새 토큰 세팅
-						setJwtCookie(response, JwtPrinciple.ACCESS_TOKEN.getKey(), newAccessToken,
+						setJwtCookie(request, response, JwtPrinciple.ACCESS_TOKEN.getKey(),
+								newAccessToken,
 								jwtTokenProvider.getAccessTokenExpirationSec());
+
 						// (Refresh Token은 만료 전이면 그대로 둠, 만료 시 재발급 로직 추가 가능)
 
 						setAuthentication(newAccessToken, request);
-						authenticated = true;
 						log.info("AccessToken 자동 재발급 및 인증 완료");
 					}
 				}
@@ -113,14 +114,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		log.info("최종 인증 상태 isAuthenticated: {}", auth.isAuthenticated());
 	}
 
-	private void setJwtCookie(HttpServletResponse response, String name, String token,
-			int maxAgeSec) {
+	private void setJwtCookie(HttpServletRequest request, HttpServletResponse response, String name,
+			String token, int maxAgeSec) {
+		String origin = request.getHeader("Origin");
+		String host = request.getHeader("Host");
+
+		boolean isLocal = (origin != null && origin.contains("localhost")) ||
+				(host != null && host.contains("localhost"));
 
 		Cookie cookie = new Cookie(name, token);
 		cookie.setHttpOnly(true);
 		cookie.setSecure(true);
 		cookie.setPath("/");
 		cookie.setMaxAge(maxAgeSec);
+
+		if (!isLocal) {
+			cookie.setDomain("dapanda.org");
+		}
+
 		response.addCookie(cookie);
 	}
+
 }
