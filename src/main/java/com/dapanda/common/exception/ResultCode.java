@@ -95,6 +95,7 @@ public enum ResultCode {
 	// 이벤트 10000번대
 
 	// 알림 11000번대
+	FCM_NOT_FOUND(HttpStatus.BAD_REQUEST, 11000, "FCM 토큰이 존재하지 않습니다.")
 
 	// 요금제 추천 12000번대
 
