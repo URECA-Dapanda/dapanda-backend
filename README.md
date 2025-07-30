@@ -4,9 +4,9 @@
 
 ### 🧾 프로젝트 개요
 
-- **프로젝트 명**: **DaPanDa**
+- **프로젝트명**: **DaPanDa**
 - **팀명**: 다판다
-- **개발 기간**: 2025.06.30 (월) ~ 2025.08.08 (금)
+- **개발 기간**: 2025.06.30 (월) ~ 2025.08.07 (목)
 
 ### 💡 기획 배경
 
@@ -16,8 +16,6 @@
 
 단순한 거래를 넘어 **데이터, 핫스팟, 와이파이 등 다양한 네트워크 자산을 등록·판매**할 수 있도록 하여, **개인부터 소상공인까지 참여 가능한 디지털 공유 생태계**를
 지향합니다.
-
-사용자는 **데이터 거래와 함께 리워드, 참여형 기능 등을 즐기며**, **새로운 데이터 유통 시대**를 경험할 수 있습니다.
 
 ## 🎯 문제 정의와 솔루션
 
@@ -41,7 +39,7 @@
 
 2. **자투리 구매 & 분할 판매 기능 제공**
     - 구매자는 원하는 데이터 용량을 입력하면, **최저가로 여러 판매자의 자투리 데이터를 조합**해 **최적의 구매 조합**을 제안받습니다.
-    - 판매자는 10GB와 같은 대용량 등록도 **알아서 자동 분할 판매**가 되어 효율적인 수익화를 기대할 수 있습니다.
+    - 판매자가 데이터를 등록하면 **알아서 자동 분할 판매**가 되어 효율적인 수익화를 기대할 수 있습니다.
 
 3. **다양한 무선인터넷 용량 자산 거래 지원**
     - 단순한 데이터 거래를 넘어서, **개인의 핫스팟, 매장 단위 와이파이 등 네트워크 자산을 등록 및 판매 가능**하게 함으로써 **소상공인까지 아우르는 새로운 시장**을
@@ -64,11 +62,11 @@
 
 - 원하는 데이터 용량을 입력하면, **여러 판매자의 자투리 데이터를 조합**해 **가장 저렴한 가격의 최적 조합**으로 제공해줍니다.
 
-- 판매자는 10GB처럼 큰 용량을 등록하더라도, **구매자가 원하는 단위로 자동 분할 판매**되어 **신경 쓰지 않아도 되는 수익화가 가능**합니다.
+- 판매자가 데이터를 등록하면 **구매자가 원하는 단위로 자동 분할 판매**되어 **신경 쓰지 않아도 되는 수익화가 가능**합니다.
 
 #### ✅ 2. **와이파이 판매까지 지원하는 유일한 플랫폼**
 
-- 단순한 데이터 공유를 넘어서, **개인이 보유한 핫스팟**을 일정 시간 동안 판매하거나 **빨래방, 카페, 편의점 등 매장 와이파이도 등록 및 거래**할 수 있는 구조를
+- 단순한 데이터 공유를 넘어서 **빨래방, 카페, 편의점 등 매장 와이파이도 등록 및 거래**할 수 있는 구조를
   갖추었습니다.
 
 - 이를 통해 실질적인 **오프라인 유휴 네트워크 자원도 수익화**할 수 있게 됩니다.
@@ -76,27 +74,28 @@
 ### ✨ 핵심 기능 요약
 
 - **소셜 로그인 및 마이페이지 기반 인증/인가 시스템**
-- **데이터 / 핫스팟 / 와이파이 상품 등록 및 실시간 거래**
-- **실시간 채팅 기능 및 거래 알림 시스템**
-- **PG 연동 결제 시스템 + 캐시 충전 및 환불**
-- **리뷰 등록 / 신고 접수 / 관리자 제재 시스템**
-- **요금제 추천 시스템**을 통한 통신비 최적화
-- **출석체크, 거래 리워드, 판다 도감 등 참여형 이벤트 시스템**
+- **데이터 / 와이파이 상품 등록 및 실시간 거래**
+- **실시간 채팅 기능 및 거래 알림**
+- **PG 연동 결제 + 캐시 충전 및 환불**
+- **리뷰 등록 / 신고 접수**
+- **시스템 모니터링**
 
 ## ⚙️ 기술 스택
 
-| Category           | Technologies    |
-|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Backend**        | ![Java](https://img.shields.io/badge/Java-007396?style=for-the-badge&logo=openjdk&logoColor=white) ![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white) ![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white) ![OAuth2](https://img.shields.io/badge/OAuth2-F26D00?style=for-the-badge&logoColor=white) ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white) ![QueryDSL](https://img.shields.io/badge/QueryDSL-009688?style=for-the-badge&logoColor=white) ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white) ![WebSocket](https://img.shields.io/badge/WebSocket-3C3C3C?style=for-the-badge&logo=websocket&logoColor=white) ![STOMP](https://img.shields.io/badge/STOMP-800080?style=for-the-badge&logoColor=white) ![JUnit 5](https://img.shields.io/badge/JUnit_5-25A162?style=for-the-badge&logo=junit5&logoColor=white) ![Mockito](https://img.shields.io/badge/Mockito-FFCB2B?style=for-the-badge&logo=java&logoColor=white) ![Jacoco](https://img.shields.io/badge/Jacoco-B40000?style=for-the-badge&logoColor=white) ![Spring REST Docs](https://img.shields.io/badge/Spring_REST_Docs-6DB33F?style=for-the-badge&logo=spring&logoColor=white) ![JMeter](https://img.shields.io/badge/JMeter-D22128?style=for-the-badge&logo=apachejmeter&logoColor=white) |
-| **Infra / DevOps** | ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white) ![AWS](https://img.shields.io/badge/AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white) ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)                                                                                                                                                      | **협업**             | ![Jira](https://img.shields.io/badge/Jira-0052CC?style=for-the-badge&logo=jira&logoColor=white) ![Slack](https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white) ![Notion](https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)                                                                                                                                                                                                                                         |
+| Category           | Technologies                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Backend**        | ![Java](https://img.shields.io/badge/Java-007396?style=for-the-badge&logo=openjdk&logoColor=white) ![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white) ![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white) ![OAuth2](https://img.shields.io/badge/OAuth2-F26D00?style=for-the-badge&logoColor=white) ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white) ![QueryDSL](https://img.shields.io/badge/QueryDSL-009688?style=for-the-badge&logoColor=white) ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white) ![WebSocket](https://img.shields.io/badge/WebSocket-3C3C3C?style=for-the-badge&logo=websocket&logoColor=white) ![JUnit 5](https://img.shields.io/badge/JUnit_5-25A162?style=for-the-badge&logo=junit5&logoColor=white) ![Mockito](https://img.shields.io/badge/Mockito-FFCB2B?style=for-the-badge&logo=java&logoColor=white) ![Jacoco](https://img.shields.io/badge/Jacoco-B40000?style=for-the-badge&logoColor=white) ![Spring REST Docs](https://img.shields.io/badge/Spring_REST_Docs-6DB33F?style=for-the-badge&logo=spring&logoColor=white) ![JMeter](https://img.shields.io/badge/JMeter-D22128?style=for-the-badge&logo=apachejmeter&logoColor=white) |
+| **Infra / DevOps** | ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white) ![AWS](https://img.shields.io/badge/AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white) ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | **협업**             | ![Jira](https://img.shields.io/badge/Jira-0052CC?style=for-the-badge&logo=jira&logoColor=white) ![Slack](https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white) ![Notion](https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)                                                                                                                                                                                                                                         |
+| **Monitoring**     | ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white) ![Grafana](https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **협업**             | ![Jira](https://img.shields.io/badge/Jira-0052CC?style=for-the-badge&logo=jira&logoColor=white) ![Slack](https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white) ![Notion](https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 ## 🛠️ 시스템 아키텍처
 
-<img width="1209" height="812" alt="Image" src="https://github.com/user-attachments/assets/8551c240-48dc-4fdb-a310-62ca25a16103" />
+<img width="1209" height="812" alt="시스템 아키텍처" src="https://github.com/user-attachments/assets/55d7cfcb-d299-4f9a-8214-5be3490602bb" />
 
 ## 🧱 ERD
 
-<img width="1992" height="1202" alt="ERD" src="https://github.com/user-attachments/assets/d6f7c0c3-b9f7-4320-a9e9-fa9eb0ea2e47" />
+<img width="1992" height="1202" alt="ERD"  src="https://github.com/user-attachments/assets/fc9935dd-023e-4fff-8554-024d3c540cb6" />
 
 ## 🔁 시퀀스 다이어그램
 
@@ -105,32 +104,32 @@
 <div markdown="1">
 
 <br>
-<img width="1334" height="3840" alt="데이터 상품 시퀀스 다이어그램" src="https://github.com/user-attachments/assets/cf1535ca-2843-4938-8b8f-b5988bae164e" />
+<img width="1334" height="3840" alt="데이터 상품 시퀀스 다이어그램" src="https://github.com/user-attachments/assets/b1747823-5956-408c-af69-86051d46fae1" />
 
 </div>
 </details>
 <br>
 
 <details>
-<summary><b>와이파이 / 핫스팟 상품</b></summary>
+<summary><b>와이파이 상품</b></summary>
 <div markdown="1">
 
 <br>
-<img width="2905" height="3840" alt="와이파이 / 핫스팟 상품 시퀀스 다이어그램" src="https://github.com/user-attachments/assets/6440fb2b-1afb-427c-b8b2-669e9d8664cc" />
+<img width="2905" height="3840" alt="와이파이 / 핫스팟 상품 시퀀스 다이어그램" src="https://github.com/user-attachments/assets/dd4cef78-ab44-44c6-a40d-7f1ef3c16c5b" />
 
 </div>
 </details>
 
 ## 📄 API 명세서
+
 [🔗 Spring REST Docs](https://api.dapanda.org/docs/api-docs.html)
 
-[🔗 Notion](https://elastic-blue-594.notion.site/API-22445e92a0218025a92ee846417d99c5?source=copy_link)
-
 ## [📚 Github Wiki](https://github.com/URECA-Dapanda/dapanda-backend/wiki)
+
 > 더 자세한 내용은 Github Wiki를 확인해주세요 ☺️
 
 ## 🧑🏻‍💻 역할 분담
 
 | <img src="https://avatars.githubusercontent.com/yereumi" width="120"><br><a href="https://github.com/yereumi">신예지</a> | <img src="https://avatars.githubusercontent.com/hyeonZIP" width="120"><br><a href="https://github.com/hyeonZIP">임재현</a> | <img src="https://github.com/user-attachments/assets/4304fcd3-369c-46d1-b369-d4ca0569e4e3" width="120"><br><a href="https://github.com/tmdals1207">홍승민</a> |
 |-----------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|  
-| <ul><li>Backend 개발 환경 구성</li><li>Jira 구성</li><li>상품 시스템</li><li>거래 시스템</li><li>결제 시스템</li><li>이벤트 시스템</li></ul>       | <ul><li>채팅 시스템</li><li>거래 시스템</li><li>리뷰 시스템</li><li>신고 시스템</li><li>관리자 시스템 개발</li><li>요금제 추천 시스템</li></ul>             | <ul><li>인프라, CI/CD 구성</li><li>인증/인가 시스템</li><li>회원 시스템</li><li>상품 시스템</li><li>알림 시스템</li></ul>                                                             |
+| <ul><li>Backend 개발 환경 구성</li><li>Jira 구성</li><li>상품 시스템</li><li>거래 시스템</li><li>결제 시스템</li><li>모니터링 시스템</li></ul>      | <ul><li>채팅 시스템</li><li>거래 시스템</li><li>리뷰 시스템</li><li>신고 시스템</li></ul>                                                   | <ul><li>인프라, CI/CD 구성</li><li>인증/인가 시스템</li><li>회원 시스템</li><li>상품 시스템</li><li>알림 시스템</li><li>모니터링 시스템</li></ul>                                            |
