@@ -1387,3 +1387,42 @@ include::{snippets}/plan/get-my-plan-info-no-plan-error/http-request.adoc[]
 include::{snippets}/plan/get-my-plan-info-no-plan-error/http-response.adoc[]
 
 include::{snippets}/plan/get-my-plan-info-no-plan-error/response-fields.adoc[]
+
+[[resources-fcm-token]]
+=== FCM 토큰
+
+==== FCM 토큰 저장
+
+`POST /api/fcm/save`
+
+클라이언트에서 발급된 FCM 토큰을 서버에 저장합니다.
+
+===== 요청
+
+include::{snippets}/fcm-token-save/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/fcm-token-save/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/fcm-token-save/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 토큰이 `null`인 경우
+
+include::{snippets}/fcm-token-save-invalid-null/http-request.adoc[]
+
+include::{snippets}/fcm-token-save-invalid-null/http-response.adoc[]
+
+include::{snippets}/fcm-token-save-invalid-null/response-fields.adoc[]
+
+====== 토큰이 빈 문자열인 경우
+
+include::{snippets}/fcm-token-save-invalid-blank/http-request.adoc[]
+
+include::{snippets}/fcm-token-save-invalid-blank/http-response.adoc[]
+
+include::{snippets}/fcm-token-save-invalid-blank/response-fields.adoc[]
