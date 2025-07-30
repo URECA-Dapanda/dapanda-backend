@@ -48,6 +48,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -94,7 +95,7 @@ class TradeControllerTest {
 	private TradeService tradeService;
 	@Autowired
 	private FcmTokenRepository fcmTokenRepository;
-	@Autowired
+	@Mock
 	private FcmTokenService fcmTokenService;
 
 	private MockMvc mockMvc;
