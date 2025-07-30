@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.*;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.*;
+
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
@@ -18,16 +20,18 @@ public class ReadSellingProductResponse {
 	private ProductState state;
 
 	// Mobile Data
-	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@JsonInclude(Include.NON_NULL)
 	private BigDecimal dataAmount;
-	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@JsonInclude(Include.NON_NULL)
 	private BigDecimal remainAmount;
 
 	// WIFI
-	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@JsonInclude(Include.NON_NULL)
 	private LocalDateTime startTime;
-	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@JsonInclude(Include.NON_NULL)
 	private LocalDateTime endTime;
+	@JsonInclude(Include.NON_NULL)
+	private String title;
 
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
@@ -58,6 +62,7 @@ public class ReadSellingProductResponse {
 			ProductState state,
 			LocalDateTime startTime,
 			LocalDateTime endTime,
+			String title,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt) {
 
@@ -67,6 +72,7 @@ public class ReadSellingProductResponse {
 				.state(state)
 				.startTime(startTime)
 				.endTime(endTime)
+				.title(title)
 				.createdAt(createdAt)
 				.updatedAt(updatedAt)
 				.build();

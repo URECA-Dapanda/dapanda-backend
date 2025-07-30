@@ -66,7 +66,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						eqDataAmount(dataAmount)
 				)
 				.orderBy(
-						productSortOption == ProductSortOption.PRICE_ASC ? product.price.asc() :
+						productSortOption == ProductSortOption.PRICE_ASC
+								? mobileData.pricePer100MB.asc() :
 								productSortOption == ProductSortOption.AMOUNT_ASC
 										? mobileData.remainAmount.asc() :
 										productSortOption == ProductSortOption.AMOUNT_DESC
@@ -253,6 +254,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						mobileData.remainAmount,
 						wifi.startTime,
 						wifi.endTime,
+						wifi.title,
 						product.createdAt,
 						product.updatedAt
 				)
@@ -299,6 +301,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 							tuple.get(product.state),
 							tuple.get(wifi.startTime),
 							tuple.get(wifi.endTime),
+							tuple.get(wifi.title),
 							tuple.get(product.createdAt),
 							tuple.get(product.updatedAt)
 					);
