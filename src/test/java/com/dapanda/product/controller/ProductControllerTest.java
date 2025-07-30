@@ -605,8 +605,10 @@ class ProductControllerTest {
 										fieldWithPath("data.data[].distanceKm").description(
 												"현 위치로부터 거리 (km)"),
 										fieldWithPath("data.data[].open").description("영업중 여부"),
-										fieldWithPath("data.data[].updatedAt").description(
-												"수정된 날짜"),
+										fieldWithPath("data.data[].startTime").description(
+												"시작 시간"),
+										fieldWithPath("data.data[].endTime").description(
+												"종료 시간"),
 										fieldWithPath("data.pageInfo.nextCursorId").description(
 												"다음 커서 아이디"),
 										fieldWithPath("data.pageInfo.hasNext").description(
@@ -819,7 +821,7 @@ class ProductControllerTest {
 
 				Wifi wifi = wifiRepository.save(
 						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-								START_TIME, END_TIME));
+								START_DATETIME, END_DATETIME));
 
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
@@ -934,7 +936,7 @@ class ProductControllerTest {
 
 				Wifi wifi = wifiRepository.save(
 						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE,
-								ADDRESS, START_TIME, END_TIME));
+								ADDRESS, START_DATETIME, END_DATETIME));
 
 				Product product = productRepository.save(
 						ProductFixture.createWifiProductInactive(PRICE_3000, wifi.getId(), member));
@@ -1185,7 +1187,7 @@ class ProductControllerTest {
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				Wifi wifi = wifiRepository.save(
 						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-								START_TIME, END_TIME));
+								START_DATETIME, END_DATETIME));
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
 
@@ -1196,7 +1198,7 @@ class ProductControllerTest {
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, imageUrls, START_TIME, END_TIME);
+						ADDRESS, imageUrls, START_DATETIME, END_DATETIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")
@@ -1254,7 +1256,7 @@ class ProductControllerTest {
 				Member member2 = memberRepository.save(MemberFixture.createMember2());
 				Wifi wifi = wifiRepository.save(
 						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-								START_TIME, END_TIME));
+								START_DATETIME, END_DATETIME));
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member1));
 				List<String> imageUrls = List.of("image1.jpg", "image2.jpg", "image3.jpg");
@@ -1264,7 +1266,7 @@ class ProductControllerTest {
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, imageUrls, START_TIME, END_TIME);
+						ADDRESS, imageUrls, START_DATETIME, END_DATETIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")
@@ -1303,7 +1305,7 @@ class ProductControllerTest {
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				Wifi wifi = wifiRepository.save(
 						WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-								START_TIME, END_TIME));
+								START_DATETIME, END_DATETIME));
 				Product product = productRepository.save(
 						ProductFixture.createWifiProduct(PRICE_3000, wifi.getId(), member));
 				List<String> imageUrls = List.of("image1.jpg", "image2.jpg", "image3.jpg");
@@ -1313,7 +1315,7 @@ class ProductControllerTest {
 
 				UpdateWifiRequest request = new UpdateWifiRequest(product.getId(), NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, imageUrls, WRONG_START_TIME, WRONG_END_TIME);
+						ADDRESS, imageUrls, WRONG_START_DATETIME, WRONG_END_DATETIME);
 
 				// when & then
 				mockMvc.perform(put("/api/products/wifi")

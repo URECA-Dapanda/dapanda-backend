@@ -996,7 +996,7 @@ class TradeControllerTest {
 				memberRepository.saveAll(members);
 
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME, END_TIME);
+						START_DATETIME, END_DATETIME);
 				wifiRepository.save(wifi);
 
 				Product product = ProductFixture.createWifiProduct(PRICE_500, wifi.getId(), seller);
@@ -1059,8 +1059,7 @@ class TradeControllerTest {
 				memberRepository.saveAll(members);
 
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME,
-						END_TIME);
+						START_DATETIME, END_DATETIME);
 				wifiRepository.save(wifi);
 
 				Product product = ProductFixture.createWifiProduct(PRICE_500, wifi.getId(), seller);
@@ -1112,8 +1111,8 @@ class TradeControllerTest {
 				memberRepository.saveAll(members);
 
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME,
-						END_TIME);
+						START_DATETIME,
+						END_DATETIME);
 				wifiRepository.save(wifi);
 
 				Product product = ProductFixture.createWifiProduct(PRICE_500, wifi.getId(), seller);
@@ -1171,9 +1170,9 @@ class TradeControllerTest {
 				memberRepository.save(buyer);
 
 				Wifi wifi1 = WifiFixture.createWifi(TITLE + 1, CONTENT, LATITUDE, LONGITUDE,
-						ADDRESS, START_TIME, END_TIME);
+						ADDRESS, START_DATETIME, END_DATETIME);
 				Wifi wifi2 = WifiFixture.createWifi(TITLE + 2, CONTENT, LATITUDE, LONGITUDE,
-						ADDRESS, START_TIME, END_TIME);
+						ADDRESS, START_DATETIME, END_DATETIME);
 				wifiRepository.saveAll(new ArrayList<>(Arrays.asList(wifi1, wifi2)));
 
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
