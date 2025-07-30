@@ -22,9 +22,7 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.payment.dto.request.*;
 import com.dapanda.payment.dto.response.RefundCashResponse;
 import com.dapanda.payment.dto.response.TossConfirmResponse;
-import com.dapanda.payment.service.PaymentService;
 import com.dapanda.payment.service.TossPaymentService;
-import com.dapanda.trade.repository.TradeRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
@@ -33,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpSession;
@@ -45,7 +42,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -57,8 +53,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 class PaymentControllerTest {
 
 	@Autowired
-	PlatformTransactionManager transactionManager;
-	@Autowired
 	private WebApplicationContext context;
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -69,27 +63,17 @@ class PaymentControllerTest {
 	@Autowired
 	private MemberRepository memberRepository;
 	@Autowired
-	private TradeRepository tradeRepository;
-	@Autowired
 	private RedisTemplate<String, String> redisTemplate;
 	private MockMvc mockMvc;
 	@MockitoBean
 	private WebClient tossWebClient;
 	@MockitoBean
 	private TossPaymentService tossPaymentService;
-	@Autowired
-	private PaymentService paymentService;
 
 	@BeforeEach
 	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
 
 		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
-	}
-
-	@BeforeEach
-	void setRedisTemplate() {
-
-		ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
 	}
 
 	@BeforeEach
@@ -548,7 +532,6 @@ class PaymentControllerTest {
 						));
 			}
 
-			// TODO: 비관적 락 테스트
 //			@Test
 //			@DisplayName("캐시 환불 요청이 지연될 경우 예외를 던진다")
 //			public void throwsExceptionWhenRequestDelay() throws Exception {
