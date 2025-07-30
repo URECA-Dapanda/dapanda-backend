@@ -108,6 +108,11 @@ class TradeControllerTest {
 		cleanupDatabase();
 	}
 
+	@BeforeEach
+	void setUp() {
+		ReflectionTestUtils.setField(tradeService, "fcmTokenService", fcmTokenService);
+	}
+
 	private void cleanupDatabase() {
 
 		entityManager.clear();
