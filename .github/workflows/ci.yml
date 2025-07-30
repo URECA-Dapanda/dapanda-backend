@@ -71,12 +71,6 @@ jobs:
           mkdir -p src/main/resources/firebase
           echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > src/main/resources/firebase/firebase-service-account.json
 
-      - name: 🔍 Firebase JSON 존재 여부 출력
-        run: |
-          echo "📦 firebase-service-account.json 존재 여부:"
-          ls -l src/main/resources/firebase || echo "❌ firebase 디렉토리 없음"
-          cat src/main/resources/firebase/firebase-service-account.json | head -n 10 || echo "❌ firebase-service-account.json 없음 또는 내용 없음"
-
       - name: Gradle 권한 부여
         run: chmod +x ./gradlew
 
