@@ -548,7 +548,6 @@ class PaymentControllerTest {
 						));
 			}
 
-			// TODO: 비관적 락 테스트
 //			@Test
 //			@DisplayName("캐시 환불 요청이 지연될 경우 예외를 던진다")
 //			public void throwsExceptionWhenRequestDelay() throws Exception {
