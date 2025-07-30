@@ -8,12 +8,17 @@ import com.dapanda.member.entity.QMember;
 import com.dapanda.product.entity.ItemType;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Optional;
 
+import static com.dapanda.chat.entity.QChatMessage.chatMessage;
+import static com.dapanda.chat.entity.QChatMessageReadStatus.chatMessageReadStatus;
 import static com.dapanda.chat.entity.QChatParticipant.chatParticipant;
 import static com.dapanda.chat.entity.QChatRoom.chatRoom;
 import static com.dapanda.product.entity.QProduct.product;
@@ -52,6 +57,26 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 		QChatParticipant otherChatParticipant = new QChatParticipant("otherChatParticipant");
 		QMember otherMember = new QMember("otherMember");
 
+		JPQLQuery<Long> lastReadMessageIdSubQuery = JPAExpressions
+				.select(chatMessageReadStatus.chatMessage.id.max())
+				.from(chatMessageReadStatus)
+				.where(
+						chatMessageReadStatus.chatRoom.id.eq(chatRoom.id)
+								.and(chatMessageReadStatus.member.id.eq(request.memberId()))
+				);
+
+		JPQLQuery<Long> unreadCountSubQuery = JPAExpressions
+				.select(chatMessage.count())
+				.from(chatMessage)
+				.where(
+						chatMessage.chatRoom.id.eq(chatRoom.id)
+								.and(chatMessage.id.gt(
+										Expressions.cases()
+												.when(lastReadMessageIdSubQuery.isNull()).then(0L)
+												.otherwise(lastReadMessageIdSubQuery)
+								))
+				);
+
 		whereClause.and(myChatParticipant.member.id.eq(request.memberId()));
 
 		switch (readOption) {
@@ -81,6 +106,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 						chatRoom.createdAt,
 						chatRoom.lastMessageAt,
 						chatRoom.lastMessage,
+						unreadCountSubQuery,
 						otherMember.id,
 						otherMember.name,
 						otherMember.profileImageUrl,
@@ -98,7 +124,6 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 								.and(otherChatParticipant.member.id.ne(request.memberId()))
 				)
 				.join(otherChatParticipant.member, otherMember)
-
 				.leftJoin(wifi).on(
 						product.itemId.eq(wifi.id)
 								.and(product.itemType.eq(ItemType.WIFI))

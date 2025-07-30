@@ -12,12 +12,14 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.entity.Product;
 import com.dapanda.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -25,6 +27,7 @@ public class ChatService {
 	private final ChatRoomRepository chatRoomRepository;
 	private final ChatMessageRepository chatMessageRepository;
 	private final ChatParticipantRepository chatParticipantRepository;
+	private final ChatMessageReadStatusRepository chatMessageReadStatusRepository;
 	private final ProductRepository productRepository;
 	private final MemberRepository memberRepository;
 
@@ -142,7 +145,31 @@ public class ChatService {
 
 		chatRoom.updateLastMessage(chatMessage);
 
-		return CreateMessageResponse.of(chatMessage.getId(), request.message(), chatMessage.getCreatedAt());
+		return CreateMessageResponse.of(chatRoomId, chatMessage.getId(), request.message(), chatMessage.getCreatedAt());
+	}
+
+	@Transactional
+	public void updateReadStatus(Long chatMessageId, Long memberId) {
+
+		ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId)
+				.orElseThrow(() -> new GlobalException(ResultCode.CHAT_MESSAGE_NOT_FOUND));
+
+		if (chatMessage.getChatRoom() == null) {
+
+			throw new GlobalException(ResultCode.CHAT_ROOM_NOT_FOUND);
+		}
+
+		validateParticipant(chatMessage.getChatRoom().getId(), memberId);
+
+		Member member = memberRepository.getReferenceById(memberId);
+
+		ChatMessageReadStatus chatMessageReadStatus = chatMessageReadStatusRepository
+				.findFirstByChatRoomAndMember(chatMessage.getChatRoom(), member)
+				.orElseGet(() -> ChatMessageReadStatus.of(member, chatMessage.getChatRoom(), chatMessage));
+
+		chatMessageReadStatus.updateLastReadChatMessage(chatMessage);
+
+		chatMessageReadStatusRepository.save(chatMessageReadStatus);
 	}
 
 	private void validateParticipant(Long chatRoomId, Long memberId){

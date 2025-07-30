@@ -66,7 +66,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						eqDataAmount(dataAmount)
 				)
 				.orderBy(
-						productSortOption == ProductSortOption.PRICE_ASC ? product.price.asc() :
+						productSortOption == ProductSortOption.PRICE_ASC
+								? mobileData.pricePer100MB.asc() :
 								productSortOption == ProductSortOption.AMOUNT_ASC
 										? mobileData.remainAmount.asc() :
 										productSortOption == ProductSortOption.AMOUNT_DESC
@@ -116,7 +117,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						member.averageRating,
 						distance.divide(METER_TO_KILOMETER),
 						isCurrentTimeWithinTimeRange(),
-						product.updatedAt
+						Expressions.stringTemplate("TIME({0})", wifi.startTime),
+						Expressions.stringTemplate("TIME({0})", wifi.endTime)
 				))
 				.from(product)
 				.groupBy(product.id)
@@ -253,6 +255,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						mobileData.remainAmount,
 						wifi.startTime,
 						wifi.endTime,
+						wifi.title,
 						product.createdAt,
 						product.updatedAt
 				)
@@ -299,6 +302,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 							tuple.get(product.state),
 							tuple.get(wifi.startTime),
 							tuple.get(wifi.endTime),
+							tuple.get(wifi.title),
 							tuple.get(product.createdAt),
 							tuple.get(product.updatedAt)
 					);
@@ -392,8 +396,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				"(CASE WHEN TIME({1}) < TIME({0}) " +
 						"THEN TIME(CURRENT_TIMESTAMP) >= TIME({0}) OR TIME(CURRENT_TIMESTAMP) <= TIME({1}) "
 						+ "ELSE TIME(CURRENT_TIMESTAMP) BETWEEN TIME({0}) AND TIME({1}) END)",
-				wifi.startTime,
-				wifi.endTime
+				wifi.startTime, wifi.endTime
 		);
 	}
 

@@ -89,17 +89,10 @@ public enum ResultCode {
 	CHAT_ROOM_NOT_FOUND(HttpStatus.BAD_REQUEST, 8001, "채팅방을 찾을 수 없습니다."),
 	CHAT_ROOM_ACCESS_DENIED(HttpStatus.BAD_REQUEST, 8002, "해당 채팅방의 참가자가 아닙니다."),
 	STOMP_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, 8003, "인증되지 않은 사용자 입니다."),
+	CHAT_MESSAGE_NOT_FOUND(HttpStatus.BAD_REQUEST, 8004, "채팅 메시지를 찾을 수 없습니다."),
 
-	// 관리자 9000번대
-
-	// 이벤트 10000번대
-
-	// 알림 11000번대
-	FCM_NOT_FOUND(HttpStatus.BAD_REQUEST, 11000, "FCM 토큰이 존재하지 않습니다.")
-
-	// 요금제 추천 12000번대
-
-	;
+	// 알림 9000번대
+	FCM_NOT_FOUND(HttpStatus.BAD_REQUEST, 9000, "FCM 토큰이 존재하지 않습니다.");
 
 	private final HttpStatus status;
 	private final int code;

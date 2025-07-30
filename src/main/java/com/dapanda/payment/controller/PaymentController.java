@@ -52,7 +52,6 @@ public class PaymentController {
 		Long memberId = customUserDetails.getId();
 
 		ChargeCashResponse response = paymentService.chargeCash(memberId, request);
-		paymentService.updateCash(memberId, response.getTotalAmount());
 
 		return CommonResponse.success(response);
 	}

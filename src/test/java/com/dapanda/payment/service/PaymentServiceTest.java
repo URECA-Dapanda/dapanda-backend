@@ -161,7 +161,7 @@ class PaymentServiceTest {
 
 				@Test
 				@DisplayName("캐시 충전을 성공한다")
-				void updateCashTest() throws Exception {
+				void chargeCashTest() throws Exception {
 
 					// given
 					Member member = MemberFixture.createMember1WithId(MEMBER_ID);
@@ -170,9 +170,15 @@ class PaymentServiceTest {
 							CHARGE_AMOUNT_3000);
 					given(memberRepository.findByIdForUpdate(MEMBER_ID)).willReturn(
 							Optional.of(member));
+					given(tossPaymentService.confirmPayment(request)).willReturn(
+							new TossConfirmResponse("orderId123", "paymentKey", CHARGE_AMOUNT_3000,
+									APPROVED_AT));
+					given(paymentRepository.save(any(Payment.class))).willReturn(
+							Payment.of("paymentKey", CHARGE_AMOUNT_3000,
+									LocalDateTime.of(2025, 7, 29, 3, 35), member));
 
 					// when
-					paymentService.updateCash(MEMBER_ID, CHARGE_AMOUNT_3000);
+					paymentService.chargeCash(MEMBER_ID, request);
 
 					// then
 					Member updateMember = memberRepository.findByIdForUpdate(MEMBER_ID)

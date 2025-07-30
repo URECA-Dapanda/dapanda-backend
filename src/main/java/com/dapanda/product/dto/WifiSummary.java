@@ -1,6 +1,6 @@
 package com.dapanda.product.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,11 +16,13 @@ public class WifiSummary extends ProductSummary {
 	private float averageRate;
 	private double distanceKm;
 	private boolean open;
-	private LocalDateTime updatedAt;
+	private LocalTime startTime;
+	private LocalTime endTime;
 
 	public WifiSummary(Long id, int price, Long itemId, String memberName, String profileImageUrl,
 			String title, String imageUrl, double latitude, double longitude, String address,
-			float averageRate, double distanceKm, boolean open, LocalDateTime updatedAt) {
+			float averageRate, double distanceKm, boolean open, String startTime,
+			String endTime) {
 
 		super(id, price, itemId, memberName, profileImageUrl);
 		this.title = title;
@@ -31,6 +33,7 @@ public class WifiSummary extends ProductSummary {
 		this.averageRate = averageRate;
 		this.distanceKm = distanceKm;
 		this.open = open;
-		this.updatedAt = updatedAt;
+		this.startTime = LocalTime.parse(startTime);
+		this.endTime = LocalTime.parse(endTime);
 	}
 }
