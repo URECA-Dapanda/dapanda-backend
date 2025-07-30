@@ -145,7 +145,7 @@ public class ChatService {
 
 		chatRoom.updateLastMessage(chatMessage);
 
-		return CreateMessageResponse.of(chatMessage.getId(), request.message(), chatMessage.getCreatedAt());
+		return CreateMessageResponse.of(chatRoomId, chatMessage.getId(), request.message(), chatMessage.getCreatedAt());
 	}
 
 	@Transactional
@@ -163,11 +163,11 @@ public class ChatService {
 
 		Member member = memberRepository.getReferenceById(memberId);
 
-		ChatMessageReadStatus chatMessageReadStatus = ChatMessageReadStatus.of(
-				member,
-				chatMessage.getChatRoom(),
-				chatMessage
-		);
+		ChatMessageReadStatus chatMessageReadStatus = chatMessageReadStatusRepository
+				.findFirstByChatRoomAndMember(chatMessage.getChatRoom(), member)
+				.orElseGet(() -> ChatMessageReadStatus.of(member, chatMessage.getChatRoom(), chatMessage));
+
+		chatMessageReadStatus.updateLastReadChatMessage(chatMessage);
 
 		chatMessageReadStatusRepository.save(chatMessageReadStatus);
 	}

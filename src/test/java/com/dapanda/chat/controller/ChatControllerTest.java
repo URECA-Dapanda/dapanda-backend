@@ -499,7 +499,7 @@ class ChatControllerTest {
 						));
 
 				ChatMessageReadStatus savedReadStatus = chatMessageReadStatusRepository
-						.findFirstByChatRoomAndChatMessageAndMember(chatRoom, lastChatMessage, buyer)
+						.findFirstByChatRoomAndMember(chatRoom, buyer)
 						.orElseThrow();
 
 				assertThat(savedReadStatus.getChatMessage().getId()).isEqualTo(lastChatMessage.getId());

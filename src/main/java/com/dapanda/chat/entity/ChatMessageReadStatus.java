@@ -35,4 +35,9 @@ public class ChatMessageReadStatus {
 				.chatMessage(chatMessage)
 				.build();
 	}
+
+	public void updateLastReadChatMessage(ChatMessage chatMessage) {
+
+		this.chatMessage = chatMessage;
+	}
 }
