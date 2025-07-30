@@ -145,7 +145,7 @@ public class ChatService {
 
 		chatRoom.updateLastMessage(chatMessage);
 
-		return CreateMessageResponse.of(chatMessage.getId(), request.message(), chatMessage.getCreatedAt());
+		return CreateMessageResponse.of(chatRoomId, chatMessage.getId(), request.message(), chatMessage.getCreatedAt());
 	}
 
 	@Transactional
