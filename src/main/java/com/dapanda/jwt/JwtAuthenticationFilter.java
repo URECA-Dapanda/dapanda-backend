@@ -58,9 +58,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			}
 		}
 
-		log.info("accessToken : {}", accessToken);
-		log.info("refreshToken : {}", refreshToken);
-
 		// 2. Access Token이 만료(또는 없음) & Refresh Token으로 재발급 시도
 		if (!authenticated && refreshToken != null) {
 			try {
@@ -107,11 +104,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		CustomUserDetails userDetails = jwtTokenProvider.getAuthentication(email, provider);
 		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
 				userDetails, null, userDetails.getAuthorities());
-		log.info("[JwtAuthFilter] 인증 설정 완료 - principal: {}", userDetails.getUsername());
 
 		auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 		SecurityContextHolder.getContext().setAuthentication(auth);
-		log.info("최종 인증 상태 isAuthenticated: {}", auth.isAuthenticated());
 	}
 
 	private void setJwtCookie(HttpServletRequest request, HttpServletResponse response, String name,
