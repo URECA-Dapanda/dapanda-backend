@@ -70,6 +70,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 				.from(chatMessage)
 				.where(
 						chatMessage.chatRoom.id.eq(chatRoom.id)
+								.and(chatMessage.member.id.ne(request.memberId()))
 								.and(chatMessage.id.gt(
 										Expressions.cases()
 												.when(lastReadMessageIdSubQuery.isNull()).then(0L)
