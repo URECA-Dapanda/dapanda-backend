@@ -727,6 +727,41 @@ include::{snippets}/member/get-other-info/response-fields.adoc[]
 include::{snippets}/member/get-member-info-notfound/http-request.adoc[]
 include::{snippets}/member/get-member-info-notfound/http-response.adoc[]
 
+==== 프로필 이미지 변경
+
+`POST /api/members/profile-image`
+
+회원의 프로필 이미지를 변경합니다.
+
+===== 요청
+
+include::{snippets}/member/post-profile-image-success/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/member/post-profile-image-success/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/member/post-profile-image-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/member/post-profile-image-success/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 지원하지 않는 확장자
+
+include::{snippets}/member/post-profile-image-invalid-extension-error/http-request.adoc[]
+include::{snippets}/member/post-profile-image-invalid-extension-error/http-response.adoc[]
+
+====== 빈 이미지 URL
+
+include::{snippets}/member/post-profile-image-blank-url-error/http-request.adoc[]
+include::{snippets}/member/post-profile-image-blank-url-error/http-response.adoc[]
+
+
 ---
 
 [[resources-product]]
