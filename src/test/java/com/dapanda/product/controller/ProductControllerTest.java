@@ -518,9 +518,9 @@ class ProductControllerTest {
 			void getWifiByCursorTest() throws Exception {
 
 				// given
-				Long cursorId = 1L;
+				Long cursorId = null;
 				int size = 2;
-				String productSortOption = "DISTANCE_ASC";
+				String productSortOption = "PRICE_ASC";
 				boolean isOpen = false;
 				double latitude = 30.0;
 				double longitude = 127.0;
@@ -548,6 +548,8 @@ class ProductControllerTest {
 				Product product2 = ProductFixture.createWifiProduct(4000, wifi2.getId(), member);
 				Product product3 = ProductFixture.createWifiProduct(5000, wifi3.getId(), member);
 				productRepository.saveAll(List.of(product1, product2, product3));
+
+				cursorId = product1.getId();
 
 				CustomUserDetails userDetails = CustomUserDetails.from(member);
 
@@ -595,11 +597,11 @@ class ProductControllerTest {
 										fieldWithPath("data.data[].profileImageUrl").description(
 												"상품을 등록한 회원의 프로필 이미지 URL"),
 										fieldWithPath("data.data[].title").description("게시물 제목"),
-										fieldWithPath("data.data[].imageUrl").description(
-												"대표 이미지 URL").optional(),
 										fieldWithPath("data.data[].latitude").description("위도"),
 										fieldWithPath("data.data[].longitude").description("경도"),
 										fieldWithPath("data.data[].address").description("주소"),
+										fieldWithPath("data.data[].imageUrl").description(
+												"대표 이미지 URL").optional(),
 										fieldWithPath("data.data[].averageRate").description(
 												"평균 평점"),
 										fieldWithPath("data.data[].distanceKm").description(
