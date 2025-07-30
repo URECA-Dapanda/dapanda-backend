@@ -1,8 +1,8 @@
 package com.dapanda.product.service;
 
 import static com.dapanda.TestConstants.Member.*;
-import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
 import static com.dapanda.TestConstants.MobileData.*;
+import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Product.*;
@@ -359,7 +359,7 @@ class ProductServiceTest {
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 100 + i, (long) i,
 									"회원" + i, "상품제목" + i, 37.0 + i, 127.0 + i, ADDRESS, 3F, i,
-									true, UPDATED_AT));
+									true, START_TIME, END_TIME));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -396,7 +396,8 @@ class ProductServiceTest {
 							3F,
 							i % 2 == 0 ? 2 : 1,
 							true,
-							UPDATED_AT
+							START_TIME,
+							END_TIME
 					));
 				}
 
@@ -429,7 +430,7 @@ class ProductServiceTest {
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 1000, (long) i,
 									"회원" + i, "상품제목" + idx, 37.0 + idx, 127.0 + idx, ADDRESS,
-									1F + i, idx, true, UPDATED_AT));
+									1F + i, idx, true, START_TIME, END_TIME));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -456,11 +457,13 @@ class ProductServiceTest {
 				summaries.add(
 						new WifiSummary(1L, 1000, 1L, "회원1", "image.jpg",
 								"상품제목1", "imageUrl", 37.0, 127.0,
-								ADDRESS, 5, 5, true, UPDATED_AT));
+								ADDRESS, 5, 5, true, START_TIME.toString(),
+								END_TIME.toString()));
 				summaries.add(
 						new WifiSummary(2L, 2000, 2L, "회원2", "image.jpg",
 								"상품제목2", "imageUrl", 37.1, 127.1,
-								ADDRESS, 10, 10, true, UPDATED_AT));
+								ADDRESS, 10, 10, true, START_TIME.toString(),
+								END_TIME.toString()));
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(2L, false, 2));
 
@@ -586,12 +589,12 @@ class ProductServiceTest {
 				// given
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE,
-						ADDRESS, START_TIME, END_TIME);
+						ADDRESS, START_DATETIME, END_DATETIME);
 				WifiInfoResponse expectedResponse = new WifiInfoResponse(PRODUCT_ID,
 						wifi.getId(), PRICE_3000, member.getId(), member.getName(),
 						PROFILE_IMAGE_URL, TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						AVERAGE_RATE, REVIEW_COUNT, false, null, START_TIME,
-						END_TIME, true, UPDATED_AT);
+						AVERAGE_RATE, REVIEW_COUNT, false, null, START_DATETIME,
+						END_DATETIME, true, UPDATED_AT);
 
 				given(productRepository.existsById(PRODUCT_ID))
 						.willReturn(true);
@@ -790,11 +793,11 @@ class ProductServiceTest {
 
 				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, imageUrls, START_TIME, END_TIME);
+						ADDRESS, imageUrls, START_DATETIME, END_DATETIME);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME, END_TIME);
+						START_DATETIME, END_DATETIME);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						wifi.getId(), PRICE_3000, member);
 
@@ -829,11 +832,11 @@ class ProductServiceTest {
 
 				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, imageUrls, START_TIME, END_TIME);
+						ADDRESS, imageUrls, START_DATETIME, END_DATETIME);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME, END_TIME);
+						START_DATETIME, END_DATETIME);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						wifi.getId(), PRICE_3000, member);
 
@@ -856,11 +859,11 @@ class ProductServiceTest {
 
 				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, imageUrls, WRONG_START_TIME, WRONG_END_TIME);
+						ADDRESS, imageUrls, WRONG_START_DATETIME, WRONG_END_DATETIME);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME, END_TIME);
+						START_DATETIME, END_DATETIME);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						wifi.getId(), PRICE_3000, member);
 

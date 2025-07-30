@@ -615,7 +615,7 @@ class TradeServiceTest {
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME, END_TIME);
+						START_DATETIME, END_DATETIME);
 				ReflectionTestUtils.setField(wifi, "id", WIFI_ID);
 
 				Product product = ProductFixture.createWifiProductWithId(
@@ -659,7 +659,7 @@ class TradeServiceTest {
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME, END_TIME);
+						START_DATETIME, END_DATETIME);
 				ReflectionTestUtils.setField(wifi, "id", WIFI_ID);
 
 				Product product = ProductFixture.createWifiProductWithId(
@@ -688,7 +688,7 @@ class TradeServiceTest {
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME, END_TIME);
+						START_DATETIME, END_DATETIME);
 				ReflectionTestUtils.setField(wifi, "id", WIFI_ID);
 
 				Product product = ProductFixture.createWifiProductWithId(
