@@ -47,7 +47,7 @@ public class FcmTokenService {
 		String itemTypeKo = convertItemTypeToKorean(itemType);
 
 		String title = "상품 판매 완료";
-		String body = String.format("\"%s %s\"에 올리신 \"%s\" 상품이 팔렸어요", date, itemTypeKo);
+		String body = String.format("\"%s\"에 올리신 \"%s\" 상품이 팔렸어요", date, itemTypeKo);
 
 		sendNotification(token, title, body);
 	}
