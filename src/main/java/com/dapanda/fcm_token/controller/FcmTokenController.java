@@ -2,8 +2,10 @@ package com.dapanda.fcm_token.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.CommonResponse;
-import com.dapanda.fcm_token.dto.SaveFcmTokenRequest;
+import com.dapanda.fcm_token.dto.request.SaveFcmTokenRequest;
+import com.dapanda.fcm_token.dto.response.NotificationResponse;
 import com.dapanda.fcm_token.service.FcmTokenService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +23,24 @@ public class FcmTokenController {
 
 		fcmTokenService.saveOrUpdateFcmToken(userDetails.getId(), request.token());
 
+		return CommonResponse.success(null);
+	}
+
+	@GetMapping("/notifications")
+	public CommonResponse<List<NotificationResponse>> getMyNotifications(
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		List<NotificationResponse> notifications = fcmTokenService.getNotificationsByMemberId(
+				userDetails.getId());
+		return CommonResponse.success(notifications);
+	}
+
+	@DeleteMapping("/notifications/{notificationId}")
+	public CommonResponse<Void> deleteNotification(
+			@PathVariable Long notificationId,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		fcmTokenService.deleteNotification(notificationId, userDetails.getId());
 		return CommonResponse.success(null);
 	}
 }

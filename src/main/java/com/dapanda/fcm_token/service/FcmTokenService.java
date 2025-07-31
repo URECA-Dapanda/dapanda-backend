@@ -2,13 +2,17 @@ package com.dapanda.fcm_token.service;
 
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.fcm_token.dto.response.NotificationResponse;
 import com.dapanda.fcm_token.entity.FcmToken;
+import com.dapanda.fcm_token.entity.NotificationEntity;
 import com.dapanda.fcm_token.repository.FcmTokenRepository;
+import com.dapanda.fcm_token.repository.NotificationRepository;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.entity.ItemType;
 import com.google.firebase.messaging.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class FcmTokenService {
 
 	private final FcmTokenRepository fcmTokenRepository;
+	private final NotificationRepository notificationRepository;
 	private final MemberRepository memberRepository;
 
 	@Transactional
@@ -42,6 +47,9 @@ public class FcmTokenService {
 
 	public void notifyProductSold(Long sellerId, LocalDateTime createdAt, ItemType itemType) {
 
+		Member seller = memberRepository.findById(sellerId)
+				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+
 		String token = extractTokenOrThrow(sellerId);
 		String date = createdAt.toLocalDate().toString();
 		String itemTypeKo = convertItemTypeToKorean(itemType);
@@ -50,6 +58,7 @@ public class FcmTokenService {
 		String body = String.format("\"%s\"에 올리신 \"%s\" 상품이 팔렸어요", date, itemTypeKo);
 
 		sendNotification(token, title, body);
+		saveNotification(title, body, seller);
 	}
 
 	public void sendNotification(String token, String title, String body) {
@@ -88,5 +97,35 @@ public class FcmTokenService {
 			default -> "상품";
 		};
 	}
+
+	private void saveNotification(String title, String body, Member member) {
+
+		NotificationEntity notificationEntity = NotificationEntity.of(title, body, member);
+		notificationRepository.save(notificationEntity);
+	}
+
+
+	public List<NotificationResponse> getNotificationsByMemberId(Long memberId) {
+
+		Member member = memberRepository.findById(memberId)
+				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+
+		return notificationRepository.findByMemberOrderByCreatedAtDesc(member).stream()
+				.map(NotificationResponse::from)
+				.toList();
+	}
+
+	public void deleteNotification(Long notificationId, Long memberId) {
+
+		NotificationEntity notificationEntity = notificationRepository.findById(notificationId)
+				.orElseThrow(() -> new GlobalException(ResultCode.NOTIFICATION_NOT_FOUND));
+
+		if (!notificationEntity.getMember().getId().equals(memberId)) {
+			throw new GlobalException(ResultCode.FORBIDDEN);
+		}
+
+		notificationRepository.delete(notificationEntity);
+	}
+
 
 }
