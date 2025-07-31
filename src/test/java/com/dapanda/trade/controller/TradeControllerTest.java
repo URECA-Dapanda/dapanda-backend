@@ -1,5 +1,25 @@
 package com.dapanda.trade.controller;
 
+import static com.dapanda.TestConstants.Member.CASH_5000;
+import static com.dapanda.TestConstants.MobileData.*;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
+import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
+import static com.dapanda.TestConstants.Product.*;
+import static com.dapanda.TestConstants.Wifi.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
@@ -22,6 +42,10 @@ import com.dapanda.trade.repository.TradeRepository;
 import com.dapanda.trade.service.TradeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -37,31 +61,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-
-import static com.dapanda.TestConstants.Member.CASH_5000;
-import static com.dapanda.TestConstants.MobileData.*;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
-import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
-import static com.dapanda.TestConstants.Product.*;
-import static com.dapanda.TestConstants.Wifi.*;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -120,14 +119,14 @@ class TradeControllerTest {
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
 
+		jdbcTemplate.execute("TRUNCATE TABLE fcm_token");
+		jdbcTemplate.execute("TRUNCATE TABLE trade");
+		jdbcTemplate.execute("TRUNCATE TABLE trade_details");
 		jdbcTemplate.execute("TRUNCATE TABLE wifi");
 		jdbcTemplate.execute("TRUNCATE TABLE mobile_data");
 		jdbcTemplate.execute("TRUNCATE TABLE product");
-		jdbcTemplate.execute("TRUNCATE TABLE member");
 		jdbcTemplate.execute("TRUNCATE TABLE plan");
-		jdbcTemplate.execute("TRUNCATE TABLE trade");
-		jdbcTemplate.execute("TRUNCATE TABLE trade_details");
-		jdbcTemplate.execute("TRUNCATE TABLE fcm_token");
+		jdbcTemplate.execute("TRUNCATE TABLE member");
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
