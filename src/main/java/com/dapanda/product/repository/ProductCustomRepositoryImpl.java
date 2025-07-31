@@ -8,6 +8,8 @@ import static com.dapanda.product.entity.QWifi.wifi;
 import static com.dapanda.trade.entity.QTrade.trade;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
+import com.dapanda.member.entity.Member;
+import com.dapanda.member.entity.QMember;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.ReadSellingProductRequest;
@@ -61,8 +63,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.from(product)
 				.join(mobileData).on(mobileData.id.eq(product.itemId))
 				.where(isActiveProduct(),
-						productSortOption == ProductSortOption.RECENT ? ltCursorId(cursorId)
-								: gtCursorId(cursorId),
+						mobileDataCondition(cursorId, productSortOption),
 						eqDataAmount(dataAmount)
 				)
 				.orderBy(
@@ -78,7 +79,6 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.limit(size + 1)
 				.fetch();
 
-		// TODO: 메서드로 뺴기
 		boolean hasNext = content.size() > size;
 		if (hasNext) {
 			content.remove(size);
@@ -134,14 +134,13 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 								))
 				)
 				.where(isActiveProduct(),
-						gtCursorId(cursorId),
+						wifiCursorCondition(cursorId, productSortOption, latitude, longitude),
 						isOpenNow(isOpen)
 				)
 				.orderBy(
 						productSortOption == ProductSortOption.PRICE_ASC ? product.price.asc() :
 								productSortOption == ProductSortOption.AVERAGE_RATE_DESC
-										? member.averageRating.desc() :
-										distance.asc(),
+										? member.averageRating.desc() : distance.asc(),
 						product.id.asc()
 				)
 				.limit(size + 1)
@@ -358,6 +357,104 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		return sum != null ? sum : new BigDecimal("0");
 	}
 
+
+	private BooleanExpression mobileDataCondition(Long cursorId,
+			ProductSortOption productSortOption) {
+
+		if (cursorId == null) {
+
+			return null;
+		}
+
+		Product product = queryFactory
+				.select(QProduct.product)
+				.from(QProduct.product)
+				.where(QProduct.product.id.eq(cursorId))
+				.fetchOne();
+
+		MobileData mobileData = queryFactory
+				.select(QMobileData.mobileData)
+				.from(QProduct.product)
+				.join(QMobileData.mobileData)
+				.on(QProduct.product.itemId.eq(QMobileData.mobileData.id))
+				.where(QProduct.product.id.eq(cursorId))
+				.fetchOne();
+
+		if (productSortOption == ProductSortOption.PRICE_ASC) {
+
+			return QMobileData.mobileData.pricePer100MB.gt(mobileData.getPricePer100MB())
+					.or(QMobileData.mobileData.pricePer100MB.eq(mobileData.getPricePer100MB())
+							.and(QProduct.product.id.gt(cursorId)));
+		} else if (productSortOption == ProductSortOption.AMOUNT_ASC) {
+
+			return QMobileData.mobileData.remainAmount.gt(mobileData.getRemainAmount())
+					.or(QMobileData.mobileData.remainAmount.eq(mobileData.getRemainAmount()))
+					.and(QProduct.product.id.gt(cursorId));
+		} else if (productSortOption == ProductSortOption.AMOUNT_DESC) {
+
+			return QMobileData.mobileData.remainAmount.lt(mobileData.getRemainAmount())
+					.or(QMobileData.mobileData.remainAmount.eq(mobileData.getRemainAmount()))
+					.and(QProduct.product.id.gt(cursorId));
+		} else { // ProductSortOption.RECENT
+
+			return QProduct.product.updatedAt.gt(product.getUpdatedAt())
+					.or(QProduct.product.updatedAt.eq(product.getUpdatedAt())
+							.and(QProduct.product.id.gt(cursorId)));
+		}
+	}
+
+	private BooleanExpression wifiCursorCondition(Long cursorId,
+			ProductSortOption productSortOption, Double latitude, Double longitude) {
+
+		if (cursorId == null) {
+
+			return null;
+		}
+
+		Product product = queryFactory
+				.select(QProduct.product)
+				.from(QProduct.product)
+				.where(QProduct.product.id.eq(cursorId))
+				.fetchOne();
+
+		Wifi wifi = queryFactory
+				.select(QWifi.wifi)
+				.from(QProduct.product)
+				.join(QWifi.wifi).on(QProduct.product.itemId.eq(QWifi.wifi.id))
+				.where(QProduct.product.id.eq(cursorId))
+				.fetchOne();
+
+		Member member = queryFactory
+				.select(QMember.member)
+				.from(QProduct.product)
+				.join(QMember.member).on(QProduct.product.member.eq(QMember.member))
+				.where(QProduct.product.id.eq(cursorId))
+				.fetchOne();
+
+		if (productSortOption == ProductSortOption.PRICE_ASC) {
+
+			return QProduct.product.price.gt(product.getPrice())
+					.or(QProduct.product.price.eq(product.getPrice())
+							.and(QProduct.product.id.gt(cursorId)));
+		} else if (productSortOption == ProductSortOption.AVERAGE_RATE_DESC) {
+
+			return QMember.member.averageRating.lt(member.getAverageRating())
+					.or(QMember.member.averageRating.eq(member.getAverageRating()))
+					.and(QProduct.product.id.gt(cursorId));
+		} else { // ProductSortOption.DISTANCE_ASC
+
+			NumberExpression<Double> cursorDistance = Expressions.numberTemplate(Double.class,
+					DISTANCE_TEMPLATE, longitude, latitude, wifi.getLongitude(),
+					wifi.getLatitude());
+			NumberExpression<Double> productDistance = Expressions.numberTemplate(Double.class,
+					DISTANCE_TEMPLATE, longitude, latitude, QWifi.wifi.longitude,
+					QWifi.wifi.latitude);
+
+			return productDistance.gt(cursorDistance)
+					.or(productDistance.eq(cursorDistance).and(QProduct.product.id.gt(cursorId)));
+		}
+	}
+
 	private BooleanExpression isActiveProduct() {
 
 		return product.state.eq(ProductState.ACTIVE);
@@ -366,16 +463,6 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	private BooleanExpression isActiveOrSoldOutProduct() {
 
 		return product.state.in(ProductState.ACTIVE, ProductState.SOLD_OUT);
-	}
-
-	private BooleanExpression gtCursorId(Long cursorId) {
-
-		return cursorId != null ? product.id.gt(cursorId) : null;
-	}
-
-	private BooleanExpression ltCursorId(Long cursorId) {
-
-		return cursorId != null ? product.id.lt(cursorId) : null;
 	}
 
 	private BooleanExpression eqDataAmount(BigDecimal dataAmount) {
