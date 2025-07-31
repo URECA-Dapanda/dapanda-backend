@@ -1,5 +1,25 @@
 package com.dapanda.trade.controller;
 
+import static com.dapanda.TestConstants.Member.CASH_5000;
+import static com.dapanda.TestConstants.MobileData.*;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
+import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
+import static com.dapanda.TestConstants.Product.*;
+import static com.dapanda.TestConstants.Wifi.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
@@ -22,6 +42,10 @@ import com.dapanda.trade.repository.TradeRepository;
 import com.dapanda.trade.service.TradeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -37,31 +61,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-
-import static com.dapanda.TestConstants.Member.CASH_5000;
-import static com.dapanda.TestConstants.MobileData.*;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
-import static com.dapanda.TestConstants.Plan.PROVIDING_DATA_AMOUNT_10;
-import static com.dapanda.TestConstants.Product.*;
-import static com.dapanda.TestConstants.Wifi.*;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -86,6 +85,8 @@ class TradeControllerTest {
 	private MobileDataRepository mobileDataRepository;
 	@Autowired
 	private WifiRepository wifiRepository;
+	@Autowired
+	private ProductImageRepository productImageRepository;
 	@Autowired
 	private TradeRepository tradeRepository;
 	@Autowired
@@ -1223,6 +1224,10 @@ class TradeControllerTest {
 						buyer
 				));
 
+				ProductImage productImage1 = ProductImage.of(PRODUCT_IMAGE_URL, 1, wifi1.getId());
+				ProductImage productImage2 = ProductImage.of(PRODUCT_IMAGE_URL, 1, wifi2.getId());
+				productImageRepository.saveAll(List.of(productImage1, productImage2));
+
 				tradeRepository.saveAll(new ArrayList<>(List.of(trade1, trade2, trade3)));
 				tradeDetailsRepository.save(TradeDetails.of(wifiProduct1, trade1));
 				tradeDetailsRepository.save(TradeDetails.of(wifiProduct2, trade2));
@@ -1249,6 +1254,7 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.data.trades.data[0].tradeType").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].dataAmount").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].title").exists())
+						.andExpect(jsonPath("$.data.trades.data[0].productImageUrl").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].createdAt").exists())
 						.andExpect(jsonPath("$.data.trades.pageInfo").exists())
 						.andExpect(jsonPath("$.data.trades.pageInfo.size").exists())
@@ -1278,6 +1284,9 @@ class TradeControllerTest {
 												"거래 데이터양 (데이터)"),
 										fieldWithPath("data.trades.data[].title").description(
 												"거래 상품 제목 (와이파이)"),
+										fieldWithPath(
+												"data.trades.data[].productImageUrl").description(
+												"거래 상품 대표 이미지 URL (와이파이)"),
 										fieldWithPath("data.trades.data[].createdAt").description(
 												"거래 생성 시간"),
 										fieldWithPath("data.trades.pageInfo").description("페이지 정보"),
