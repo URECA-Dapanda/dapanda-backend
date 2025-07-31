@@ -33,6 +33,11 @@ jobs:
           mkdir -p src/main/resources
           echo "${{ secrets.APPLICATION_PROD_PROPERTIES }}" > src/main/resources/application-prod.properties
 
+      - name: Firebase Service Account 생성
+        run: |
+          mkdir -p src/main/resources/firebase
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > src/main/resources/firebase/firebase-service-account.json
+
       - name: Gradle 권한 부여
         run: chmod +x ./gradlew
 

@@ -18,6 +18,9 @@ import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse.PageInfo;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.fcm_token.entity.FcmToken;
+import com.dapanda.fcm_token.repository.FcmTokenRepository;
+import com.dapanda.fcm_token.service.FcmTokenService;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
@@ -62,9 +65,14 @@ class TradeServiceTest {
 	private TradeDetailsRepository tradeDetailsRepository;
 	@Mock
 	private PlanRepository planRepository;
+	@Mock
+	private FcmTokenService fcmTokenService;
+	@Mock
+	private FcmTokenRepository fcmTokenRepository;
 
 	@InjectMocks
 	private TradeService tradeService;
+
 
 	@Nested
 	@DisplayName("데이터 상품 일반 구매")
@@ -80,6 +88,7 @@ class TradeServiceTest {
 
 				// given
 				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				fcmTokenRepository.save(FcmToken.of("test_token", seller));
 				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
 				ReflectionTestUtils.setField(buyer, "cash", CASH_3000);
 				Plan sellerPlan = PlanFixture.createPlan(seller, PROVIDING_DATA_AMOUNT_10);

@@ -3,6 +3,7 @@ package com.dapanda.trade.service;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.fcm_token.service.FcmTokenService;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.plan.entity.Plan;
@@ -37,17 +38,13 @@ public class TradeService {
 	private final MemberRepository memberRepository;
 	private final TradeDetailsRepository tradeDetailsRepository;
 	private final PlanRepository planRepository;
+	private final FcmTokenService fcmTokenService;
 
 	/**
-	 * 1. 데이터 일반 상품 구매 요청
-	 * 2. 해당 상품 재고 조회
-	 * 3. 재고 유효하면 Lock 걸기, 재고 유효하지 않으면 Exception
-	 * 4. 캐시 결제 -> 캐시에 Lock, 결제 완료되면 Lock 해제 // 캐시 잔고 부족하면 예외
-	 * 5. 해당 상품 SOLD_OUT 처리
-	 * 6. Trade, TradeDetails 순서대로 생성
-	 * 7. 구매자: 데이터 추가 / 판매자: 데이터 차감 / 공통 필드(캐시) 갱신
-	 * 8. 알림, 로그 -> EventListener(트랜잭션 이후)
-	 * 9. Response: 구매 데이터양, 내 총 데이터양
+	 * 1. 데이터 일반 상품 구매 요청 2. 해당 상품 재고 조회 3. 재고 유효하면 Lock 걸기, 재고 유효하지 않으면 Exception 4. 캐시 결제 -> 캐시에
+	 * Lock, 결제 완료되면 Lock 해제 // 캐시 잔고 부족하면 예외 5. 해당 상품 SOLD_OUT 처리 6. Trade, TradeDetails 순서대로 생성 7.
+	 * 구매자: 데이터 추가 / 판매자: 데이터 차감 / 공통 필드(캐시) 갱신 8. 알림, 로그 -> EventListener(트랜잭션 이후) 9. Response: 구매
+	 * 데이터양, 내 총 데이터양
 	 */
 	@Transactional
 	public TradeProductResponse defaultPurchaseMobileData(Long buyerId,
@@ -395,6 +392,13 @@ public class TradeService {
 
 		if (mobileData.getRemainAmount().compareTo(BigDecimal.ZERO) == 0) {
 			product.changeState(ProductState.SOLD_OUT);
+
+			fcmTokenService.notifyProductSold(
+					product.getMember().getId(),
+					product.getCreatedAt(),
+					product.getItemType()
+			);
+
 		} else {
 			product.updatePrice(product.getPrice() - price);
 			mobileData.update100MBPerPrice(price, mobileData.getRemainAmount());
