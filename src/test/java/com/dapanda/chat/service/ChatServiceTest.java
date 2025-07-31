@@ -5,6 +5,7 @@ import com.dapanda.chat.dto.response.*;
 import com.dapanda.chat.entity.*;
 import com.dapanda.chat.repository.*;
 import com.dapanda.common.dto.response.CursorPageResponse;
+import com.dapanda.common.dto.response.ReceiverCursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
@@ -367,7 +368,7 @@ public class ChatServiceTest {
 				given(chatMessageRepository.findChatMessageHistory(request)).willReturn(response);
 
 				//when
-				CursorPageResponse<ReadChatMessageHistoryResponse> pageResponse = chatService.readChatMessageHistory(request);
+				ReceiverCursorPageResponse<ReadChatMessageHistoryResponse> pageResponse = chatService.readChatMessageHistory(request);
 
 				//then
 				assertThat(pageResponse.getData().size()).isEqualTo(CHAT_MESSAGE_HISTORY_DEFAULT_SIZE);
