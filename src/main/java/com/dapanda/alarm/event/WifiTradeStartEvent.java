@@ -1,8 +1,7 @@
 package com.dapanda.alarm.event;
 
+import java.time.LocalTime;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -12,10 +11,11 @@ public class WifiTradeStartEvent {
 
 	private Long tradeId;
 	private Long memberId;
-	private LocalDateTime startTime;
-	private LocalDateTime endTime;
+	private LocalTime startTime;
+	private LocalTime endTime;
 
-	public static WifiTradeStartEvent of(Long tradeId, Long memberId, LocalDateTime startTime, LocalDateTime endTime) {
+	public static WifiTradeStartEvent of(Long tradeId, Long memberId, LocalTime startTime,
+			LocalTime endTime) {
 
 		return WifiTradeStartEvent.builder()
 				.tradeId(tradeId)
