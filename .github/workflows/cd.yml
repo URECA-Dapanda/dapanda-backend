@@ -1,7 +1,7 @@
 name: Dapanda CD
 
 on:
-  push:
+  pull_request:
     branches: [ main, dev ]
     paths-ignore:
       - 'README.md'
@@ -33,10 +33,10 @@ jobs:
           mkdir -p src/main/resources
           echo "${{ secrets.APPLICATION_PROD_PROPERTIES }}" > src/main/resources/application-prod.properties
 
-      - name: Firebase Service Account 생성
+      - name: Firebase Service Account 생성 (base64 디코딩)
         run: |
           mkdir -p src/main/resources/firebase
-          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > src/main/resources/firebase/firebase-service-account.json
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" | base64 -d > src/main/resources/firebase/firebase-service-account.json
 
       - name: Gradle 권한 부여
         run: chmod +x ./gradlew
