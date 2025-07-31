@@ -14,6 +14,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
+import com.dapanda.alarm.scheduler.WifiTradeNotificationScheduler;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse.PageInfo;
 import com.dapanda.common.exception.GlobalException;
@@ -69,6 +70,8 @@ class TradeServiceTest {
 	private FcmTokenService fcmTokenService;
 	@Mock
 	private FcmTokenRepository fcmTokenRepository;
+	@Mock
+	private WifiTradeNotificationScheduler wifiTradeNotificationScheduler;
 
 	@InjectMocks
 	private TradeService tradeService;
