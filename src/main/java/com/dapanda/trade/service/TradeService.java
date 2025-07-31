@@ -1,9 +1,10 @@
 package com.dapanda.trade.service;
 
+import com.dapanda.alarm.scheduler.WifiTradeNotificationScheduler;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
-import com.dapanda.fcm_token.service.FcmTokenService;
+import com.dapanda.fcmToken.service.FcmTokenService;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.plan.entity.Plan;
@@ -39,6 +40,7 @@ public class TradeService {
 	private final TradeDetailsRepository tradeDetailsRepository;
 	private final PlanRepository planRepository;
 	private final FcmTokenService fcmTokenService;
+	private final WifiTradeNotificationScheduler wifiTradeNotificationScheduler;
 
 	/**
 	 * 1. 데이터 일반 상품 구매 요청 2. 해당 상품 재고 조회 3. 재고 유효하면 Lock 걸기, 재고 유효하지 않으면 Exception 4. 캐시 결제 -> 캐시에
@@ -285,7 +287,11 @@ public class TradeService {
 		Trade buyerTrade = createWifiTradeAndTradeDetails(product, buyerId,
 				product.getMember().getId(), totalPrice, timeAmount);
 
-		// 6. 응답 반환
+		// 6. 알림 저장
+		wifiTradeNotificationScheduler.scheduleNotification(buyerTrade.getId(),
+				buyerId, requestStart, requestEnd);
+
+		// 7. 응답 반환
 		return TradeProductResponse.of(buyerTrade.getId());
 	}
 
