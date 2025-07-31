@@ -3,7 +3,6 @@ package com.dapanda.chat.config;
 import com.dapanda.common.config.AllowedOriginPath;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.*;
 
@@ -12,14 +11,13 @@ import org.springframework.web.socket.config.annotation.*;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-	private final OutboundInterceptor outboundInterceptor;
-
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 
 		registry.addEndpoint(WebSocketPath.CONN.getPath())
 				.setAllowedOrigins(AllowedOriginPath.LOCAL.getPath(), AllowedOriginPath.PROD.getPath())
-				.withSockJS();
+				.withSockJS()
+				.setSessionCookieNeeded(true);
 	}
 
 	@Override
@@ -30,12 +28,5 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 		// 메시지를 수신(sub, 구독)하기 위한 url 패턴 지정
 		registry.enableSimpleBroker(WebSocketPath.SUB.getPath());
-	}
-
-
-	@Override
-	public void configureClientOutboundChannel(ChannelRegistration registration) {
-
-		registration.interceptors(outboundInterceptor);
 	}
 }

@@ -362,6 +362,7 @@ class ChatControllerTest {
 						.andExpect(jsonPath("$.data.pageInfo.size").isNumber())
 						.andExpect(jsonPath("$.data.pageInfo.nextCursorId").isNumber())
 						.andExpect(jsonPath("$.data.data[*].chatMessageId", Matchers.contains(expectedSortedIds.toArray(new Integer[0]))))
+						.andExpect(jsonPath("$.data.memberId").isNumber())
 						.andDo(document("chat/read-chat-message-history",
 								pathParameters(
 										parameterWithName("chatRoomId").description("채팅 이력을 조회할 채팅방 아이디 (필수)")
@@ -383,7 +384,8 @@ class ChatControllerTest {
 										fieldWithPath("data.pageInfo").description("페이지 정보"),
 										fieldWithPath("data.pageInfo.size").description("현재 페이지 크기"),
 										fieldWithPath("data.pageInfo.hasNext").description("다음 페이지 존재 여부"),
-										fieldWithPath("data.pageInfo.nextCursorId").description("다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)")
+										fieldWithPath("data.pageInfo.nextCursorId").description("다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)"),
+										fieldWithPath("data.memberId").description("조회하는 회원의 아이디")
 								)
 						));
 			}
@@ -411,7 +413,6 @@ class ChatControllerTest {
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, userDetails.getAuthorities()
 								))))
-						.andDo(print())
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
@@ -421,6 +422,7 @@ class ChatControllerTest {
 						.andExpect(jsonPath("$.data.pageInfo.hasNext").value(false))
 						.andExpect(jsonPath("$.data.pageInfo.size").value(CHAT_MESSAGE_HISTORY_DEFAULT_SIZE))
 						.andExpect(jsonPath("$.data.pageInfo.nextCursorId").doesNotExist())
+						.andExpect(jsonPath("$.data.memberId").isNumber())
 						.andDo(document("chat/read-chat-message-history-empty-list",
 								pathParameters(
 										parameterWithName("chatRoomId").description("채팅 이력을 조회할 채팅방 아이디 (필수)")
@@ -437,7 +439,8 @@ class ChatControllerTest {
 										fieldWithPath("data.pageInfo").description("페이지 정보"),
 										fieldWithPath("data.pageInfo.size").description("현재 페이지 크기"),
 										fieldWithPath("data.pageInfo.hasNext").description("다음 페이지 존재 여부"),
-										fieldWithPath("data.pageInfo.nextCursorId").description("다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)")
+										fieldWithPath("data.pageInfo.nextCursorId").description("다음 페이지 조회 시 사용할 커서 아이디 (다음 페이지가 없으면 null)"),
+										fieldWithPath("data.memberId").description("조회하는 회원의 아이디")
 								)
 						));
 			}

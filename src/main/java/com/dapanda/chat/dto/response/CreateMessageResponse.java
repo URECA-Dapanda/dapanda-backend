@@ -12,18 +12,21 @@ public class CreateMessageResponse {
 
 	private Long chatRoomId;
 	private Long chatMessageId;
+	private Long senderId;
 	private String message;
 	private LocalDateTime createdAt;
 
 	public static CreateMessageResponse of(
 			Long chatRoomId,
 			Long chatMessageId,
+			Long senderId,
 			String message,
 			LocalDateTime createdAt) {
 
 		return CreateMessageResponse.builder()
 				.chatRoomId(chatRoomId)
 				.chatMessageId(chatMessageId)
+				.senderId(senderId)
 				.message(message)
 				.createdAt(createdAt)
 				.build();

@@ -1,13 +1,14 @@
 package com.dapanda.chat.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
-import com.dapanda.chat.dto.request.*;
+import com.dapanda.chat.dto.request.ReadChatMessageHistoryRequest;
+import com.dapanda.chat.dto.request.ReadJoiningChatRoomRequest;
 import com.dapanda.chat.dto.response.*;
 import com.dapanda.chat.entity.ChatRoomReadOption;
 import com.dapanda.chat.service.ChatService;
 import com.dapanda.common.dto.response.CursorPageResponse;
+import com.dapanda.common.dto.response.ReceiverCursorPageResponse;
 import com.dapanda.common.exception.CommonResponse;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class ChatController {
 	}
 
 	@GetMapping("/chat-room/{chatRoomId}/history")
-	public CommonResponse<CursorPageResponse<ReadChatMessageHistoryResponse>> readChatHistory(
+	public CommonResponse<ReceiverCursorPageResponse<ReadChatMessageHistoryResponse>> readChatHistory(
 			@PathVariable Long chatRoomId,
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@RequestParam(required = false) Long cursorId,
