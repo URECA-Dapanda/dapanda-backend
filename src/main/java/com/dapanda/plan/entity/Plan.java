@@ -21,6 +21,8 @@ public class Plan extends BaseEntity {
 
 	private String name;
 
+	private BigDecimal currentDataAmount;
+
 	private BigDecimal providingDataAmount;
 
 	private int monthlyPrice;
@@ -41,6 +43,7 @@ public class Plan extends BaseEntity {
 
 		return Plan.builder()
 				.name(name)
+				.currentDataAmount(providingDataAmount)
 				.providingDataAmount(providingDataAmount)
 				.monthlyPrice(monthlyPrice)
 				.category(category)
@@ -51,11 +54,11 @@ public class Plan extends BaseEntity {
 
 	public void addMobileData(BigDecimal dataAmount) {
 
-		this.providingDataAmount = this.providingDataAmount.add(dataAmount);
+		this.currentDataAmount = this.currentDataAmount.add(dataAmount);
 	}
 
 	public void deductMobileData(BigDecimal dataAmount) {
 
-		this.providingDataAmount = this.providingDataAmount.subtract(dataAmount);
+		this.currentDataAmount = this.currentDataAmount.subtract(dataAmount);
 	}
 }

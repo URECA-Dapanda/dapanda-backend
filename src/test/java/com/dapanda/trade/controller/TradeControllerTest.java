@@ -1,6 +1,5 @@
 package com.dapanda.trade.controller;
 
-
 import static com.dapanda.TestConstants.Member.CASH_5000;
 import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
@@ -24,11 +23,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.fcm_token.entity.FcmToken;
+import com.dapanda.fcm_token.repository.FcmTokenRepository;
+import com.dapanda.fcm_token.service.FcmTokenService;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.plan.entity.Plan;
-import com.dapanda.plan.entity.PlanFixture;
+import com.dapanda.plan.entity.*;
 import com.dapanda.plan.repository.PlanRepository;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
@@ -47,6 +48,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -91,6 +93,10 @@ class TradeControllerTest {
 	private PlanRepository planRepository;
 	@Autowired
 	private TradeService tradeService;
+	@Autowired
+	private FcmTokenRepository fcmTokenRepository;
+	@Mock
+	private FcmTokenService fcmTokenService;
 
 	private MockMvc mockMvc;
 
@@ -102,6 +108,11 @@ class TradeControllerTest {
 		cleanupDatabase();
 	}
 
+	@BeforeEach
+	void setUp() {
+		ReflectionTestUtils.setField(tradeService, "fcmTokenService", fcmTokenService);
+	}
+
 	private void cleanupDatabase() {
 
 		entityManager.clear();
@@ -110,11 +121,12 @@ class TradeControllerTest {
 
 		jdbcTemplate.execute("TRUNCATE TABLE wifi");
 		jdbcTemplate.execute("TRUNCATE TABLE mobile_data");
-		jdbcTemplate.execute("TRUNCATE TABLE product");
-		jdbcTemplate.execute("TRUNCATE TABLE member");
+		jdbcTemplate.execute("DELETE FROM product");
+		jdbcTemplate.execute("DELETE FROM member");
 		jdbcTemplate.execute("TRUNCATE TABLE plan");
-		jdbcTemplate.execute("TRUNCATE TABLE trade");
-		jdbcTemplate.execute("TRUNCATE TABLE trade_details");
+		jdbcTemplate.execute("DELETE FROM trade");
+		jdbcTemplate.execute("DELETE FROM trade_details");
+		jdbcTemplate.execute("DELETE FROM fcm_token");
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
@@ -136,6 +148,7 @@ class TradeControllerTest {
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 				memberRepository.save(buyer);
+				fcmTokenRepository.save(FcmToken.of("test_token", seller));
 
 				Plan sellerPlan = planRepository.save(
 						PlanFixture.createPlan(seller, PROVIDING_DATA_AMOUNT_10));
@@ -192,9 +205,9 @@ class TradeControllerTest {
 				assertThat(soldOutProduct.getState()).isEqualTo(ProductState.SOLD_OUT);
 				assertThat(soldOutMobileData.getRemainAmount()).isEqualByComparingTo(
 						BigDecimal.ZERO);
-				assertThat(afterBuyerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+				assertThat(afterBuyerPlan.getCurrentDataAmount()).isEqualByComparingTo(
 						PROVIDING_DATA_AMOUNT_10.add(mobileData.getDataAmount()));
-				assertThat(afterSellerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+				assertThat(afterSellerPlan.getCurrentDataAmount()).isEqualByComparingTo(
 						PROVIDING_DATA_AMOUNT_10.subtract(mobileData.getDataAmount()));
 				assertThat(afterBuyer.getBuyingData()).isEqualByComparingTo(
 						mobileData.getDataAmount());
@@ -267,9 +280,9 @@ class TradeControllerTest {
 				assertThat(soldOutProduct.getState()).isEqualTo(ProductState.ACTIVE);
 				assertThat(soldOutMobileData.getRemainAmount()).isEqualByComparingTo(
 						DATA_AMOUNT_2.subtract(DATA_AMOUNT_1));
-				assertThat(afterBuyerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+				assertThat(afterBuyerPlan.getCurrentDataAmount()).isEqualByComparingTo(
 						PROVIDING_DATA_AMOUNT_10.add(DATA_AMOUNT_1));
-				assertThat(afterSellerPlan.getProvidingDataAmount()).isEqualByComparingTo(
+				assertThat(afterSellerPlan.getCurrentDataAmount()).isEqualByComparingTo(
 						PROVIDING_DATA_AMOUNT_10.subtract(DATA_AMOUNT_1));
 				assertThat(afterBuyer.getBuyingData()).isEqualByComparingTo(DATA_AMOUNT_1);
 				assertThat(afterSeller.getSellingData()).isEqualByComparingTo(DATA_AMOUNT_1);
@@ -445,7 +458,7 @@ class TradeControllerTest {
 
 				MobileData mobileData = mobileDataRepository.save(
 						MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2, REMAIN_AMOUNT_1,
-								PRICE_PER_100MB_300));
+								PRICE_PER_100MB_150));
 				Product product = productRepository.save(
 						ProductFixture.createMobileDataProduct(PRICE_3000, mobileData.getId(),
 								seller));
@@ -666,7 +679,18 @@ class TradeControllerTest {
 				Member buyer = MemberFixture.createMember3();
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 				List<Member> members = Arrays.asList(seller1, seller2, buyer);
+
 				memberRepository.saveAll(members);
+				fcmTokenRepository.save(FcmToken.of("test_token", seller1));
+				fcmTokenRepository.save(FcmToken.of("test_token", seller2));
+
+				Plan buyerPlan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, buyer);
+				Plan sellerPlan1 = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, seller1);
+				Plan sellerPlan2 = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, seller2);
+				planRepository.saveAll(List.of(buyerPlan, sellerPlan1, sellerPlan2));
 
 				MobileData mobileData1 = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
 						REMAIN_AMOUNT_1, PRICE_PER_100MB_150);
@@ -690,8 +714,7 @@ class TradeControllerTest {
 						Arrays.asList(mobileDataScrap1, mobileDataScrap2));
 
 				ScrapPurchaseMobileDataRequest request = new ScrapPurchaseMobileDataRequest(
-						DATA_AMOUNT_2,
-						PRICE_1500 + PRICE_3000, mobileDataScrapList);
+						DATA_AMOUNT_2, PRICE_1500 + PRICE_3000, mobileDataScrapList);
 
 				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
@@ -879,6 +902,14 @@ class TradeControllerTest {
 				List<Member> members = Arrays.asList(seller1, seller2, buyer);
 				memberRepository.saveAll(members);
 
+				Plan buyerPlan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, buyer);
+				Plan sellerPlan1 = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, seller1);
+				Plan sellerPlan2 = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, seller2);
+				planRepository.saveAll(List.of(buyerPlan, sellerPlan1, sellerPlan2));
+
 				MobileData mobileData1 = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
 						BigDecimal.ZERO, PRICE_PER_100MB_150);
 				MobileData mobileData2 = MobileDataFixture.createMobileDataSplitType(DATA_AMOUNT_2,
@@ -982,7 +1013,7 @@ class TradeControllerTest {
 				memberRepository.saveAll(members);
 
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME, END_TIME);
+						START_DATETIME, END_DATETIME);
 				wifiRepository.save(wifi);
 
 				Product product = ProductFixture.createWifiProduct(PRICE_500, wifi.getId(), seller);
@@ -1045,8 +1076,7 @@ class TradeControllerTest {
 				memberRepository.saveAll(members);
 
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME,
-						END_TIME);
+						START_DATETIME, END_DATETIME);
 				wifiRepository.save(wifi);
 
 				Product product = ProductFixture.createWifiProduct(PRICE_500, wifi.getId(), seller);
@@ -1098,8 +1128,8 @@ class TradeControllerTest {
 				memberRepository.saveAll(members);
 
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME,
-						END_TIME);
+						START_DATETIME,
+						END_DATETIME);
 				wifiRepository.save(wifi);
 
 				Product product = ProductFixture.createWifiProduct(PRICE_500, wifi.getId(), seller);
@@ -1157,9 +1187,9 @@ class TradeControllerTest {
 				memberRepository.save(buyer);
 
 				Wifi wifi1 = WifiFixture.createWifi(TITLE + 1, CONTENT, LATITUDE, LONGITUDE,
-						ADDRESS, START_TIME, END_TIME);
+						ADDRESS, START_DATETIME, END_DATETIME);
 				Wifi wifi2 = WifiFixture.createWifi(TITLE + 2, CONTENT, LATITUDE, LONGITUDE,
-						ADDRESS, START_TIME, END_TIME);
+						ADDRESS, START_DATETIME, END_DATETIME);
 				wifiRepository.saveAll(new ArrayList<>(Arrays.asList(wifi1, wifi2)));
 
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,

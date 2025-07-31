@@ -25,12 +25,15 @@ import com.dapanda.common.service.S3Service;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.plan.entity.*;
+import com.dapanda.plan.repository.PlanRepository;
 import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.*;
 import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
+import com.dapanda.trade.repository.TradeRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -39,6 +42,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("상품 서비스 테스트")
@@ -59,6 +63,12 @@ class ProductServiceTest {
 	@Mock
 	private MemberRepository memberRepository;
 
+	@Mock
+	private PlanRepository planRepository;
+
+	@Mock
+	private TradeRepository tradeRepository;
+
 	@InjectMocks
 	private ProductService productService;
 
@@ -76,6 +86,10 @@ class ProductServiceTest {
 			// given
 			Long memberId = 1L;
 			Member member = MemberFixture.createMember1WithId(memberId);
+			Plan plan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+					PlanCategory._5G, AgeGroup.YOUTH, member);
+			given(planRepository.findByMemberId(memberId)).willReturn(Optional.of(plan));
+
 			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
 					BigDecimal.valueOf(1.0), false);
 
@@ -114,14 +128,18 @@ class ProductServiceTest {
 
 		@Test
 		@DisplayName("실패: 판매 데이터 2GB 초과")
-		void failCreateMobileDataIfOverLimit() {
+		void failCreateMobileDataIfOver2GB() {
 
 			// given
 			Long memberId = 1L;
 			Member member = MemberFixture.createMember1WithId(memberId);
+			Plan plan = Plan.of("청년 요금제", BigDecimal.valueOf(30), 10000, PlanCategory._5G,
+					AgeGroup.YOUTH, member);
+			given(planRepository.findByMemberId(memberId)).willReturn(Optional.of(plan));
+
 			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
-					new BigDecimal("2000.0"),
-					false); // 2GB 추가
+					new BigDecimal(3),
+					false);
 
 			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 			given(productRepository.sumSoldMobileDataAmountByMemberId(memberId)).willReturn(
@@ -131,6 +149,32 @@ class ProductServiceTest {
 			assertThatThrownBy(() -> productService.createMobileData(request, memberId))
 					.isInstanceOf(GlobalException.class)
 					.hasMessage(ResultCode.EXCEEDED_TRANSFER_LIMIT.getMessage());
+		}
+
+		@Test
+		@DisplayName("실패: 판매 데이터가 보유 데이터 양을 초과")
+		void failCreateMobileDataIfOverLimit() {
+
+			// given
+			Long memberId = 1L;
+			Member member = MemberFixture.createMember1WithId(memberId);
+			Plan plan = Plan.of("요금제", BigDecimal.valueOf(0.5), 10000,
+					PlanCategory._5G, AgeGroup.YOUTH, member);
+
+			given(planRepository.findByMemberId(memberId)).willReturn(Optional.of(plan));
+
+			CreateMobileDataRequest request = new CreateMobileDataRequest(12000,
+					new BigDecimal("1.0"),
+					false);
+
+			given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
+			given(productRepository.sumSoldMobileDataAmountByMemberId(memberId)).willReturn(
+					BigDecimal.valueOf(1));
+
+			// when/then
+			assertThatThrownBy(() -> productService.createMobileData(request, memberId))
+					.isInstanceOf(GlobalException.class)
+					.hasMessage(ResultCode.NOT_ENOUGH_DATA.getMessage());
 		}
 	}
 
@@ -315,7 +359,7 @@ class ProductServiceTest {
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 100 + i, (long) i,
 									"회원" + i, "상품제목" + i, 37.0 + i, 127.0 + i, ADDRESS, 3F, i,
-									true, UPDATED_AT));
+									true, START_TIME, END_TIME));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -352,7 +396,8 @@ class ProductServiceTest {
 							3F,
 							i % 2 == 0 ? 2 : 1,
 							true,
-							UPDATED_AT
+							START_TIME,
+							END_TIME
 					));
 				}
 
@@ -385,7 +430,7 @@ class ProductServiceTest {
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 1000, (long) i,
 									"회원" + i, "상품제목" + idx, 37.0 + idx, 127.0 + idx, ADDRESS,
-									1F + i, idx, true, UPDATED_AT));
+									1F + i, idx, true, START_TIME, END_TIME));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -412,11 +457,13 @@ class ProductServiceTest {
 				summaries.add(
 						new WifiSummary(1L, 1000, 1L, "회원1", "image.jpg",
 								"상품제목1", "imageUrl", 37.0, 127.0,
-								ADDRESS, 5, 5, true, UPDATED_AT));
+								ADDRESS, 5, 5, true, START_TIME.toString(),
+								END_TIME.toString()));
 				summaries.add(
 						new WifiSummary(2L, 2000, 2L, "회원2", "image.jpg",
 								"상품제목2", "imageUrl", 37.1, 127.1,
-								ADDRESS, 10, 10, true, UPDATED_AT));
+								ADDRESS, 10, 10, true, START_TIME.toString(),
+								END_TIME.toString()));
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(2L, false, 2));
 
@@ -542,12 +589,12 @@ class ProductServiceTest {
 				// given
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE,
-						ADDRESS, START_TIME, END_TIME);
+						ADDRESS, START_DATETIME, END_DATETIME);
 				WifiInfoResponse expectedResponse = new WifiInfoResponse(PRODUCT_ID,
 						wifi.getId(), PRICE_3000, member.getId(), member.getName(),
 						PROFILE_IMAGE_URL, TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						AVERAGE_RATE, REVIEW_COUNT, false, null, START_TIME,
-						END_TIME, true, UPDATED_AT);
+						AVERAGE_RATE, REVIEW_COUNT, false, null, START_DATETIME,
+						END_DATETIME, true, UPDATED_AT);
 
 				given(productRepository.existsById(PRODUCT_ID))
 						.willReturn(true);
@@ -615,6 +662,11 @@ class ProductServiceTest {
 						NEW_PRICE_9000, CHANGED_AMOUNT, SPLIT_TYPE);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				Plan plan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, member);
+
+				given(planRepository.findByMemberId(MEMBER_ID)).willReturn(Optional.of(plan));
+
 				MobileData mobileData = MobileDataFixture.createMobileData(BEFORE_DATA_AMOUNT,
 						BEFORE_REMAIN_AMOUNT, PRICE_PER_100MB_300);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
@@ -741,11 +793,11 @@ class ProductServiceTest {
 
 				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, imageUrls, START_TIME, END_TIME);
+						ADDRESS, imageUrls, START_DATETIME, END_DATETIME);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME, END_TIME);
+						START_DATETIME, END_DATETIME);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						wifi.getId(), PRICE_3000, member);
 
@@ -780,11 +832,11 @@ class ProductServiceTest {
 
 				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, imageUrls, START_TIME, END_TIME);
+						ADDRESS, imageUrls, START_DATETIME, END_DATETIME);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME, END_TIME);
+						START_DATETIME, END_DATETIME);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						wifi.getId(), PRICE_3000, member);
 
@@ -807,11 +859,11 @@ class ProductServiceTest {
 
 				UpdateWifiRequest request = new UpdateWifiRequest(PRODUCT_ID, NEW_PRICE_9000,
 						CHANGED_TITLE, CHANGED_CONTENT, CHANGED_LATITUDE, CHANGED_LONGITUDE,
-						ADDRESS, imageUrls, WRONG_START_TIME, WRONG_END_TIME);
+						ADDRESS, imageUrls, WRONG_START_DATETIME, WRONG_END_DATETIME);
 
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						START_TIME, END_TIME);
+						START_DATETIME, END_DATETIME);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						wifi.getId(), PRICE_3000, member);
 
@@ -841,12 +893,19 @@ class ProductServiceTest {
 
 				// given
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				Plan plan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, member);
+
+				given(planRepository.findByMemberId(MEMBER_ID)).willReturn(Optional.of(plan));
+
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
 						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
 				Product product = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
 						mobileData.getId(), PRICE_3000, member);
 
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+				given(mobileDataRepository.findById(mobileData.getId())).willReturn(
+						Optional.of(mobileData));
 
 				// when
 				productService.deleteProduct(PRODUCT_ID, MEMBER_ID);
@@ -883,12 +942,19 @@ class ProductServiceTest {
 
 				// given
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+				Plan plan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
+						PlanCategory._5G, AgeGroup.YOUTH, member);
+
+				given(planRepository.findByMemberId(MEMBER_ID)).willReturn(Optional.of(plan));
+
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
 						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
 				Product product = ProductFixture.createMobileDataProductWithIdWithState(PRODUCT_ID,
 						mobileData.getId(), ProductState.DELETED, member);
 
 				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+				given(mobileDataRepository.findById(mobileData.getId())).willReturn(
+						Optional.of(mobileData));
 
 				// when & then
 				assertThatThrownBy(() -> productService.deleteProduct(PRODUCT_ID, MEMBER_ID))
@@ -990,6 +1056,46 @@ class ProductServiceTest {
 				// then
 				assertThat(result.getRecentPrice()).isEqualTo(expectedRecentPrice);
 				assertThat(result.getAveragePrice()).isEqualTo(expectedAveragePrice);
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("매월 1일 이전 등록된 데이터 상품 상태 변경")
+	class hidePreviousMonthProducts {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("매월 1일 이전 등록된 데이터 상품 상태 변경한다")
+			public void changeMobileDataProductState() {
+
+				// given
+				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
+
+				LocalDateTime lastMonth = LocalDateTime.now().minusMonths(1).withDayOfMonth(1);
+				Product oldProduct = ProductFixture.createMobileDataProductWithId(PRODUCT_ID,
+						MOBILE_DATA_ID, PRICE_500, member);
+				ReflectionTestUtils.setField(oldProduct, "createdAt", lastMonth);
+				Product recentProduct = ProductFixture.createMobileDataProductWithId(PRODUCT_ID + 1,
+						MOBILE_DATA_ID, PRICE_500, member);
+
+				given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(oldProduct));
+				given(productRepository.findById(PRODUCT_ID + 1)).willReturn(
+						Optional.of(recentProduct));
+
+				// when
+				productService.hidePreviousMobileDataProducts();
+
+				// then
+				Product updateOldProduct = productRepository.findById(oldProduct.getId())
+						.orElseThrow();
+				Product updateRecentProduct = productRepository.findById(recentProduct.getId())
+						.orElseThrow();
+
+				verify(productRepository).updateAllBeforeThisMonthAndIsActive();
 			}
 		}
 	}

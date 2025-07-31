@@ -29,6 +29,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Firebase Service Account 생성 (base64 디코딩)
+        run: |
+          mkdir -p src/main/resources/firebase
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" | base64 -d > src/main/resources/firebase/firebase-service-account.json
+
       - name: Gradle 권한 부여
         run: chmod +x ./gradlew
 
@@ -61,10 +66,13 @@ jobs:
           mkdir -p src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" > src/main/resources/application.yml
 
+      - name: Firebase Service Account 생성 (base64 디코딩)
+        run: |
+          mkdir -p src/main/resources/firebase
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" | base64 -d > src/main/resources/firebase/firebase-service-account.json
+
       - name: Gradle 권한 부여
         run: chmod +x ./gradlew
 
       - name: Gradle 빌드 only
         run: ./gradlew clean build -x test --stacktrace
-
-

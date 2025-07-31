@@ -48,6 +48,9 @@ public class ChatServiceTest {
 	private ChatParticipantRepository chatParticipantRepository;
 
 	@Mock
+	private ChatMessageReadStatusRepository chatMessageReadStatusRepository;
+
+	@Mock
 	private ChatMessageRepository chatMessageRepository;
 
 	@Mock
@@ -406,6 +409,76 @@ public class ChatServiceTest {
 				assertThatThrownBy(() -> chatService.readChatMessageHistory(request))
 						.isInstanceOf(GlobalException.class)
 						.hasMessage(ResultCode.CHAT_ROOM_ACCESS_DENIED.getMessage());
+			}
+		}
+	}
+
+	@Nested
+	@DisplayName("채팅 메시지 읽음 상태 업데이트")
+	class UpdateChatMessageReadStatus {
+
+		@Nested
+		@DisplayName("성공 케이스")
+		class Success {
+
+			@Test
+			@DisplayName("마지막으로 읽은 채팅 메시지 아이디를 저장한다")
+			public void updateLastMessageId() throws Exception {
+
+				//given
+				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+
+				Wifi wifi = WifiFixture.createWifiWithId(WIFI_ID);
+
+				Product product = ProductFixture.createWifiProductWithId(wifi, seller, PRODUCT_ID);
+
+				ChatRoom chatRoom = ChatRoomFixture.createChatRoomWithId(product, CHAT_ROOM_ID);
+
+				ChatMessage chatMessage = ChatMessageFixture.createChatMessageWithId(chatRoom, seller, CHAT_MESSAGE_ID);
+
+				given(chatMessageRepository.findById(chatMessage.getId())).willReturn(Optional.of(chatMessage));
+				given(chatParticipantRepository.existsByChatRoom_IdAndMember_Id(chatRoom.getId(), buyer.getId()))
+						.willReturn(true);
+				given(memberRepository.getReferenceById(buyer.getId())).willReturn(buyer);
+
+				//when
+				chatService.updateReadStatus(chatMessage.getId(), buyer.getId());
+
+				//then
+				verify(chatMessageReadStatusRepository).save(any(ChatMessageReadStatus.class));
+			}
+		}
+
+		@Nested
+		@DisplayName("실패 케이스")
+		class Fail {
+
+			@Test
+			@DisplayName("채팅 메시지를 찾을 수 없으면 예외가 발생한다")
+			public void chatMessageNotFoundTest() throws Exception {
+
+				//given
+				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member buyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
+
+				Wifi wifi = WifiFixture.createWifiWithId(WIFI_ID);
+
+				Product product = ProductFixture.createWifiProductWithId(wifi, seller, PRODUCT_ID);
+
+				ChatRoom chatRoom = ChatRoomFixture.createChatRoomWithId(product, CHAT_ROOM_ID);
+
+				ChatMessage chatMessage = ChatMessageFixture.createChatMessageWithId(chatRoom, seller, CHAT_MESSAGE_ID);
+
+				given(chatMessageRepository.findById(chatMessage.getId())).willReturn(Optional.empty());
+
+				//when & then
+				assertThatThrownBy(() -> chatService.updateReadStatus(chatMessage.getId(), buyer.getId()))
+						.isInstanceOf(GlobalException.class)
+						.hasMessage(ResultCode.CHAT_MESSAGE_NOT_FOUND.getMessage());
+
+				//then
+				verify(chatMessageReadStatusRepository, never()).save(any(ChatMessageReadStatus.class));
 			}
 		}
 	}

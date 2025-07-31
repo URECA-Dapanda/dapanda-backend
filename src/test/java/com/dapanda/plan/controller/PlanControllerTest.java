@@ -36,7 +36,7 @@ import org.springframework.web.context.WebApplicationContext;
 @Import(TestConfig.class)
 @ActiveProfiles("test")
 @ExtendWith(RestDocumentationExtension.class)
-@DisplayName("플랜 컨트롤러 테스트")
+@DisplayName("요금제 컨트롤러 테스트")
 class PlanControllerTest {
 
 	@Autowired
@@ -64,8 +64,8 @@ class PlanControllerTest {
 
 		entityManager.clear();
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-		jdbcTemplate.execute("TRUNCATE TABLE plan");
-		jdbcTemplate.execute("TRUNCATE TABLE member");
+		jdbcTemplate.execute("DELETE FROM plan");
+		jdbcTemplate.execute("DELETE FROM member");
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
 
@@ -110,18 +110,20 @@ class PlanControllerTest {
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(0))
 						.andExpect(jsonPath("$.data.name").value("청년 Value 베이직"))
+						.andExpect(jsonPath("$.data.currentDataAmount").value(30.0))
 						.andExpect(jsonPath("$.data.providingDataAmount").value(30.0))
 						.andExpect(jsonPath("$.data.monthlyPrice").value(15000))
 						.andDo(document("plans/get-my-plan-info",
 								responseFields(
-										// (CommonResponse에 맞게 필드 설명 작성)
-										// 예시:
 										org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath(
 												"code").description("상태 코드"),
 										org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath(
 												"message").description("처리 결과 메시지"),
 										org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath(
 												"data.name").description("플랜 이름"),
+										org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath(
+														"data.currentDataAmount")
+												.description("사용 가능 데이터 양"),
 										org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath(
 												"data.providingDataAmount").description("제공 데이터 양"),
 										org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath(
@@ -131,7 +133,7 @@ class PlanControllerTest {
 
 				// 실제 서비스로직 검증 (Optional)
 				var result = planRepository.findByMemberId(member.getId()).orElseThrow();
-				assertThat(result.getProvidingDataAmount()).isEqualByComparingTo(
+				assertThat(result.getCurrentDataAmount()).isEqualByComparingTo(
 						BigDecimal.valueOf(30.0));
 			}
 		}

@@ -9,8 +9,6 @@ import com.dapanda.payment.dto.response.RefundCashResponse;
 import com.dapanda.payment.service.PaymentService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,13 +52,12 @@ public class PaymentController {
 		Long memberId = customUserDetails.getId();
 
 		ChargeCashResponse response = paymentService.chargeCash(memberId, request);
-		paymentService.updateCash(memberId, response.getTotalAmount());
 
 		return CommonResponse.success(response);
 	}
 
 	@PostMapping("/payments/refund")
-	public ResponseEntity<CommonResponse<RefundCashResponse>> refundCash(
+	public CommonResponse<RefundCashResponse> refundCash(
 			@AuthenticationPrincipal CustomUserDetails customUserDetails,
 			@RequestBody RefundCashRequest request) {
 
@@ -68,6 +65,6 @@ public class PaymentController {
 
 		RefundCashResponse response = paymentService.refundCash(memberId, request);
 
-		return new ResponseEntity<>(CommonResponse.success(response), HttpStatus.NO_CONTENT);
+		return CommonResponse.success(response);
 	}
 }

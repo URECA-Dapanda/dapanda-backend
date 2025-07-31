@@ -3,8 +3,9 @@ package com.dapanda.member.entity;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.common.entity.BaseEntity;
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 import lombok.*;
+
+import java.math.BigDecimal;
 
 @Entity
 @Getter
@@ -77,6 +78,17 @@ public class Member extends BaseEntity {
 				.build();
 	}
 
+	public void resetDataAmount() {
+
+		this.buyingData = BigDecimal.ZERO;
+		this.sellingData = BigDecimal.ZERO;
+  }
+  
+	public void updateMemberRole(MemberRole role) {
+
+		this.role = role;
+	}
+
 	public void increaseReportedCount() {
 
 		this.reportedCount++;
@@ -92,7 +104,6 @@ public class Member extends BaseEntity {
 		this.cash -= amount;
 	}
 
-	// TODO: 매달 1일 초기화 메서드
 	public void addBuyingData(BigDecimal buyingData) {
 
 		this.buyingData = this.buyingData.add(buyingData);

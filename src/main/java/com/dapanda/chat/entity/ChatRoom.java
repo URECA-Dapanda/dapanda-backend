@@ -27,6 +27,8 @@ public class ChatRoom extends CreatedAtEntity {
 
 	private LocalDateTime lastMessageAt;
 
+	private String lastMessage;
+
 	public static ChatRoom of(Product product){
 
 		return ChatRoom.builder()
@@ -39,5 +41,6 @@ public class ChatRoom extends CreatedAtEntity {
 	public void updateLastMessage(ChatMessage chatMessage) {
 
 		this.lastMessageAt = chatMessage.getCreatedAt();
+		this.lastMessage = chatMessage.getMessage();
 	}
 }

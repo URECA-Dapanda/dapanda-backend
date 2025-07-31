@@ -92,4 +92,10 @@ public class PlanService {
 		return PlanInfoResponse.of(plan);
 	}
 
+	@Transactional
+	public void resetMemberMobileDataPlan() {
+
+		planRepository.resetMemberMobileDataPlan();
+	}
+
 }

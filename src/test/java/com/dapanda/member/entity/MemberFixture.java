@@ -1,7 +1,10 @@
 package com.dapanda.member.entity;
 
+import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.auth.entity.OAuthProvider;
 import java.math.BigDecimal;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 public class MemberFixture {
@@ -9,7 +12,7 @@ public class MemberFixture {
 	public static Member createMember1() {
 
 		Member member = Member.ofOAuthMember(
-				"dummy1@email.com",
+				"dummy1 + @email.com",
 				"dummy1Name",
 				OAuthProvider.KAKAO,
 				MemberRole.ROLE_MEMBER
@@ -17,6 +20,8 @@ public class MemberFixture {
 
 		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
 		ReflectionTestUtils.setField(member, "sellingData", BigDecimal.ZERO);
+
+		member.updateProfileImage("test-image1.jpg");
 
 		return member;
 	}
@@ -32,6 +37,8 @@ public class MemberFixture {
 
 		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
 		ReflectionTestUtils.setField(member, "sellingData", BigDecimal.ZERO);
+
+		member.updateProfileImage("test-image2.jpg");
 
 		return member;
 	}
@@ -122,4 +129,14 @@ public class MemberFixture {
 
 		return member;
 	}
+
+	public static void setAuthentication(Long id, String email, String provider, MemberRole role) {
+		CustomUserDetails userDetails = new CustomUserDetails(
+				id, email, "password", provider, role
+		);
+		TestingAuthenticationToken authentication = new TestingAuthenticationToken(userDetails,
+				null);
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+	}
+
 }

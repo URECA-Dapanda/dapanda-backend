@@ -3,9 +3,7 @@ package com.dapanda.auth.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -19,10 +17,7 @@ import com.dapanda.refreshToken.entity.RefreshToken;
 import com.dapanda.refreshToken.entity.TokenState;
 import com.dapanda.refreshToken.repository.RefreshTokenRepository;
 import jakarta.servlet.http.Cookie;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -323,11 +318,7 @@ class AuthControllerTest {
 			void logout_success() throws Exception {
 
 				String jwt = jwtTokenProvider.generateAccessToken(savedMember);
-				RefreshToken token = RefreshToken.builder()
-						.token(jwt)
-						.member(savedMember)
-						.state(TokenState.VALID)
-						.build();
+				RefreshToken token = RefreshToken.of(jwt, TokenState.VALID, savedMember);
 				refreshTokenRepository.save(token);
 
 				mockMvc.perform(post("/api/auth/logout")

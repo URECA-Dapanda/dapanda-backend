@@ -4,10 +4,9 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.refreshToken.entity.RefreshToken;
 import com.dapanda.refreshToken.entity.TokenState;
 import com.dapanda.refreshToken.repository.RefreshTokenRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,15 +17,17 @@ public class RefreshTokenService {
 	public void save(Member member, String refreshToken) {
 
 		refreshTokenRepository.findByMember(member).ifPresentOrElse(
-				token -> refreshTokenRepository.save(token.toBuilder().token(refreshToken).build()),
-				() -> refreshTokenRepository.save(
-						RefreshToken.builder()
-								.member(member)
-								.token(refreshToken)
-								.build()
-				)
+				existing -> {
+					RefreshToken updated = RefreshToken.of(refreshToken, TokenState.VALID, member);
+					refreshTokenRepository.save(updated);
+				},
+				() -> {
+					RefreshToken created = RefreshToken.of(refreshToken, TokenState.VALID, member);
+					refreshTokenRepository.save(created);
+				}
 		);
 	}
+
 
 	public void invalidateRefreshToken(Member member) {
 
@@ -40,19 +41,19 @@ public class RefreshTokenService {
 	public void issueRefreshToken(Member member, String newTokenValue) {
 
 		refreshTokenRepository.findByMemberAndState(member, TokenState.VALID)
-				.orElseGet(() -> {
-					RefreshToken newToken = RefreshToken.builder()
-							.member(member)
-							.token(newTokenValue)
-							.state(TokenState.VALID)
-							.build();
-
-					return refreshTokenRepository.save(newToken);
+				.ifPresent(token -> {
+					token.setState(TokenState.INVALID);
+					refreshTokenRepository.save(token);
 				});
+
+		refreshTokenRepository.save(
+				RefreshToken.of(newTokenValue, TokenState.VALID, member)
+		);
 	}
 
-	public Optional<RefreshToken> findByUser(Member member) {
 
-		return refreshTokenRepository.findByMember(member);
+	public Optional<RefreshToken> findByUserAndState(Member member) {
+
+		return refreshTokenRepository.findByMemberAndState(member, TokenState.VALID);
 	}
 }

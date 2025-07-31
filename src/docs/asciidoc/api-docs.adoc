@@ -153,6 +153,22 @@ include::{snippets}/member/get-selling-data/response-fields.adoc[]
 
 `/sub/{chatRoomId}` : chatRoomId 로 채팅 메시지 구독(sub)
 
+==== 마지막으로 읽은 채팅 메시지 업데이트
+
+`GET /api/chat-message/{chatMessageId}/read-status`
+
+===== 요청 파라미터
+
+include::{snippets}/chat/update-chat-message-read-status/path-parameters.adoc[]
+
+===== 응답
+
+include::{snippets}/chat/update-chat-message-read-status/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/chat/update-chat-message-read-status/response-fields.adoc[]
+
 ==== 내가 참여한 채팅방 조회
 
 `GET /api/chat-room`
@@ -266,7 +282,7 @@ include::{snippets}/report/create-report/validation-error/http-response.adoc[]
 [[resources-payment-save-amount]]
 ==== 결제 금액 임시 저장
 
-`POST /api/payments/cash-charge-save-amount`
+`POST /api/payments/save-amount`
 주문 아이디와 결제 금액을 세션에 임시 저장합니다.
 
 ===== 요청
@@ -710,6 +726,41 @@ include::{snippets}/member/get-other-info/response-fields.adoc[]
 
 include::{snippets}/member/get-member-info-notfound/http-request.adoc[]
 include::{snippets}/member/get-member-info-notfound/http-response.adoc[]
+
+==== 프로필 이미지 변경
+
+`POST /api/members/profile-image`
+
+회원의 프로필 이미지를 변경합니다.
+
+===== 요청
+
+include::{snippets}/member/post-profile-image-success/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/member/post-profile-image-success/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/member/post-profile-image-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/member/post-profile-image-success/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 지원하지 않는 확장자
+
+include::{snippets}/member/post-profile-image-invalid-extension-error/http-request.adoc[]
+include::{snippets}/member/post-profile-image-invalid-extension-error/http-response.adoc[]
+
+====== 빈 이미지 URL
+
+include::{snippets}/member/post-profile-image-blank-url-error/http-request.adoc[]
+include::{snippets}/member/post-profile-image-blank-url-error/http-response.adoc[]
+
 
 ---
 
@@ -1356,3 +1407,73 @@ include::{snippets}/trade/get-cash-history/http-response.adoc[]
 ===== 응답 필드
 
 include::{snippets}/trade/get-cash-history/response-fields.adoc[]
+
+[[resources-plan]]
+=== 요금제
+
+==== 나의 플랜 조회
+
+`GET /api/plans/my-data`
+
+회원이 보유한 통신 플랜 정보를 조회합니다.
+
+===== 요청
+
+include::{snippets}/plans/get-my-plan-info/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/plans/get-my-plan-info/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/plans/get-my-plan-info/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 플랜이 없는 경우
+
+include::{snippets}/plan/get-my-plan-info-no-plan-error/http-request.adoc[]
+
+include::{snippets}/plan/get-my-plan-info-no-plan-error/http-response.adoc[]
+
+include::{snippets}/plan/get-my-plan-info-no-plan-error/response-fields.adoc[]
+
+[[resources-fcm-token]]
+=== FCM 토큰
+
+==== FCM 토큰 저장
+
+`POST /api/fcm/save`
+
+클라이언트에서 발급된 FCM 토큰을 서버에 저장합니다.
+
+===== 요청
+
+include::{snippets}/fcm-token-save/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/fcm-token-save/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/fcm-token-save/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 토큰이 `null`인 경우
+
+include::{snippets}/fcm-token-save-invalid-null/http-request.adoc[]
+
+include::{snippets}/fcm-token-save-invalid-null/http-response.adoc[]
+
+include::{snippets}/fcm-token-save-invalid-null/response-fields.adoc[]
+
+====== 토큰이 빈 문자열인 경우
+
+include::{snippets}/fcm-token-save-invalid-blank/http-request.adoc[]
+
+include::{snippets}/fcm-token-save-invalid-blank/http-response.adoc[]
+
+include::{snippets}/fcm-token-save-invalid-blank/response-fields.adoc[]

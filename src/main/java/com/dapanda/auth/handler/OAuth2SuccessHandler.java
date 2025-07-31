@@ -4,12 +4,11 @@ import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.jwt.JwtPrinciple;
 import com.dapanda.jwt.JwtTokenProvider;
 import com.dapanda.member.entity.Member;
+import com.dapanda.member.entity.MemberRole;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.plan.service.PlanService;
 import com.dapanda.refreshToken.service.RefreshTokenService;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +17,6 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
 
 @Slf4j
 @Component
@@ -37,11 +34,14 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			HttpServletResponse response,
 			Authentication authentication) throws IOException {
 
+		//TODO 리팩터링 필요
+
 		DefaultOAuth2User oAuth2User = (DefaultOAuth2User) authentication.getPrincipal();
 		String email = (String) oAuth2User.getAttributes().get("email");
+		String role = oAuth2User.getAuthorities().stream().iterator().next().getAuthority();
 
 		String uri = request.getRequestURI();
-		String providerStr = null;
+		String providerStr;
 		if (uri.contains("/login/oauth2/code/")) {
 			providerStr = uri.substring(uri.lastIndexOf("/") + 1);
 		} else {
@@ -59,6 +59,9 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 		String accessToken = jwtTokenProvider.generateAccessToken(member);
 		String refreshToken = jwtTokenProvider.generateRefreshToken(member);
+
+		log.info("accessToken: {}", accessToken);
+		log.info("refreshToken: {}", refreshToken);
 
 		refreshTokenService.issueRefreshToken(member, refreshToken);
 
@@ -92,6 +95,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			redirectUrl = "http://localhost:3000/data";
 		} else {
 			redirectUrl = "https://dapanda.org/data";
+		}
+
+		if (role.equals(MemberRole.ROLE_NEW_MEMBER.name())) {
+			redirectUrl += "?on-boarding=true";
 		}
 
 		response.sendRedirect(redirectUrl);

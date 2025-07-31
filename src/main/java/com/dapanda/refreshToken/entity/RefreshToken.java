@@ -2,31 +2,17 @@ package com.dapanda.refreshToken.entity;
 
 import com.dapanda.common.entity.CreatedAtEntity;
 import com.dapanda.member.entity.Member;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Getter
 @Setter
+@Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder(toBuilder = true)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class RefreshToken extends CreatedAtEntity {
 
 	@Id
@@ -44,5 +30,14 @@ public class RefreshToken extends CreatedAtEntity {
 	@JoinColumn(name = "member_id")
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Member member;
+
+	public static RefreshToken of(String token, TokenState state, Member member) {
+
+		return RefreshToken.builder()
+				.token(token)
+				.state(state)
+				.member(member)
+				.build();
+	}
 
 }

@@ -53,6 +53,8 @@ public enum ResultCode {
 	NOT_FOUND_PLAN(HttpStatus.BAD_REQUEST, 3011, "회원의 요금제 정보가 존재하지 않습니다."),
 	START_TIME_BEFORE_NOW(HttpStatus.BAD_REQUEST, 3012, "현재보다 더 일찍 시작할 수 없습니다."),
 	INVALID_IMAGE_FORMAT(HttpStatus.BAD_REQUEST, 3013, "허용되지 않은 이미지 형식입니다."),
+	NOT_ENOUGH_DATA(HttpStatus.BAD_REQUEST, 3014, "현재 보유한 데이터 양보다 많은 양을 판매할 수 없습니다."),
+	PRODUCT_CANNOT_TRADE(HttpStatus.BAD_REQUEST, 3015, "다른 회원이 이미 구매한 분할 판매 상품은 변경할 수 없습니다."),
 
 	// 거래 4000번대
 	TRADE_NOT_FOUND(HttpStatus.BAD_REQUEST, 4000, "거래 이력을 찾을 수 없습니다."),
@@ -87,16 +89,10 @@ public enum ResultCode {
 	CHAT_ROOM_NOT_FOUND(HttpStatus.BAD_REQUEST, 8001, "채팅방을 찾을 수 없습니다."),
 	CHAT_ROOM_ACCESS_DENIED(HttpStatus.BAD_REQUEST, 8002, "해당 채팅방의 참가자가 아닙니다."),
 	STOMP_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, 8003, "인증되지 않은 사용자 입니다."),
+	CHAT_MESSAGE_NOT_FOUND(HttpStatus.BAD_REQUEST, 8004, "채팅 메시지를 찾을 수 없습니다."),
 
-	// 관리자 9000번대
-
-	// 이벤트 10000번대
-
-	// 알림 11000번대
-
-	// 요금제 추천 12000번대
-
-	;
+	// 알림 9000번대
+	FCM_NOT_FOUND(HttpStatus.BAD_REQUEST, 9000, "FCM 토큰이 존재하지 않습니다.");
 
 	private final HttpStatus status;
 	private final int code;
