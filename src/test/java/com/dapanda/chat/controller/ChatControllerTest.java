@@ -1,5 +1,6 @@
 package com.dapanda.chat.controller;
 
+import com.dapanda.RedisTestContainerConfig;
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.chat.entity.*;
@@ -46,7 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@Import(TestConfig.class)
+@Import({TestConfig.class, RedisTestContainerConfig.class})
 @ActiveProfiles("test")
 @ExtendWith(RestDocumentationExtension.class)
 @DisplayName("채팅 컨트롤러 테스트")

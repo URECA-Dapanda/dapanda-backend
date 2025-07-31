@@ -7,6 +7,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.dapanda.RedisTestContainerConfig;
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.jwt.JwtTokenProvider;
@@ -32,7 +33,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import({TestConfig.class})
+@Import({TestConfig.class, RedisTestContainerConfig.class})
 @ActiveProfiles("test")
 @ExtendWith(RestDocumentationExtension.class)
 @DisplayName("인증/인가 컨트롤러 통합 테스트")
