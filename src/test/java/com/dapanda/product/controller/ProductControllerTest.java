@@ -2,7 +2,6 @@ package com.dapanda.product.controller;
 
 import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
 import static com.dapanda.TestConstants.MobileData.*;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static com.dapanda.TestConstants.Product.*;
 import static com.dapanda.TestConstants.Wifi.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -1490,14 +1489,25 @@ class ProductControllerTest {
 				//given
 				Member seller = memberRepository.save(MemberFixture.createMember1());
 
-				List<MobileData> mobileDataList = mobileDataRepository.saveAll(
-						MobileDataFixture.createMobileDataList());
+				Wifi wifi1 = wifiRepository.save(WifiFixture.createWifi());
+				Wifi wifi2 = wifiRepository.save(WifiFixture.createWifi());
 
-				List<Product> productActivList = productRepository.saveAll(
-						ProductFixture.createProductList(seller, mobileDataList,
-								ProductState.ACTIVE));
-				productRepository.saveAll(ProductFixture.createProductList(seller, mobileDataList,
-						ProductState.SOLD_OUT));
+				ProductImage productImage1 = productImageRepository.save(
+						ProductImage.of(PRODUCT_IMAGE_URL, 1, wifi1.getId()));
+				ProductImage productImage2 = productImageRepository.save(
+						ProductImage.of(PRODUCT_IMAGE_URL, 1, wifi2.getId()));
+
+				Product wifiProduct1 = productRepository.save(
+						ProductFixture.createWifiProduct(seller, wifi1));
+				Product wifiProduct2 = productRepository.save(
+						ProductFixture.createWifiProduct(seller, wifi2));
+
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
+								PRICE_PER_100MB_150));
+				Product mobileDataProduct = productRepository.save(
+						ProductFixture.createMobileDataProduct(PRICE_500, mobileData.getId(),
+								seller));
 
 				CustomUserDetails userDetails = mock(CustomUserDetails.class);
 
@@ -1506,7 +1516,7 @@ class ProductControllerTest {
 				//when & then
 				mockMvc.perform(get("/api/members/{memberId}/selling-products", seller.getId())
 								.param("productState", ProductState.ACTIVE.name())
-								.param("size", String.valueOf(DEFAULT_SIZE_2))
+								.param("size", String.valueOf(2))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, Collections.emptyList()
 								))))
@@ -1514,11 +1524,10 @@ class ProductControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data.data").exists())
-						.andExpect(jsonPath("$.data.data.length()").value(
-								Math.min(DEFAULT_SIZE_2, productActivList.size())))
+						.andExpect(jsonPath("$.data.data.length()").value(2))
 						.andExpect(jsonPath("$.data.pageInfo").exists())
 						.andExpect(jsonPath("$.data.pageInfo.hasNext").value(true))
-						.andExpect(jsonPath("$.data.pageInfo.size").value(DEFAULT_SIZE_2))
+						.andExpect(jsonPath("$.data.pageInfo.size").value(2))
 						.andExpect(jsonPath("$.data.pageInfo.nextCursorId").exists())
 						.andDo(document("product/read-selling-product",
 								pathParameters(
@@ -1547,12 +1556,18 @@ class ProductControllerTest {
 												.optional(),
 										fieldWithPath("data.data[].remainAmount").description(
 												"모바일 데이터 잔량").type(JsonFieldType.NUMBER).optional(),
-										fieldWithPath("data.data[].startTime").description(
-														"와이파이 판매 시작 시간").type(JsonFieldType.NUMBER)
-												.optional(),
-										fieldWithPath("data.data[].endTime").description(
-												"와이파이 판매 종료 시간").type(
-												JsonFieldType.NUMBER).optional(),
+										fieldWithPath("data.data[].startTime").type(
+												JsonFieldType.STRING).description(
+												"와이파이 판매 시작 시간").optional(),
+										fieldWithPath("data.data[].endTime").type(
+												JsonFieldType.STRING).description(
+												"와이파이 판매 종료 시간").optional(),
+										fieldWithPath("data.data[].title").type(
+												JsonFieldType.STRING).description(
+												"와이파이 제목").optional(),
+										fieldWithPath("data.data[].productImageUrl").type(
+												JsonFieldType.STRING).description(
+												"와이파이 이미지 URL").optional(),
 										fieldWithPath("data.data[].createdAt").description(
 												"상품 등록 시간"),
 										fieldWithPath("data.data[].updatedAt").description(
@@ -1646,21 +1661,32 @@ class ProductControllerTest {
 				//given
 				Member seller = memberRepository.save(MemberFixture.createMember1());
 
-				List<MobileData> mobileDataList = mobileDataRepository.saveAll(
-						MobileDataFixture.createMobileDataList());
+				Wifi wifi1 = wifiRepository.save(WifiFixture.createWifi());
+				Wifi wifi2 = wifiRepository.save(WifiFixture.createWifi());
 
-				List<Product> productActivList = productRepository.saveAll(
-						ProductFixture.createProductList(seller, mobileDataList,
-								ProductState.ACTIVE));
-				productRepository.saveAll(ProductFixture.createProductList(seller, mobileDataList,
-						ProductState.SOLD_OUT));
+				ProductImage productImage1 = productImageRepository.save(
+						ProductImage.of(PRODUCT_IMAGE_URL, 1, wifi1.getId()));
+				ProductImage productImage2 = productImageRepository.save(
+						ProductImage.of(PRODUCT_IMAGE_URL, 1, wifi2.getId()));
+
+				Product wifiProduct1 = productRepository.save(
+						ProductFixture.createWifiProduct(seller, wifi1));
+				Product wifiProduct2 = productRepository.save(
+						ProductFixture.createWifiProduct(seller, wifi2));
+
+				MobileData mobileData = mobileDataRepository.save(
+						MobileDataFixture.createMobileData(DATA_AMOUNT_1, REMAIN_AMOUNT_1,
+								PRICE_PER_100MB_150));
+				Product mobileDataProduct = productRepository.save(
+						ProductFixture.createMobileDataProduct(PRICE_500, mobileData.getId(),
+								seller));
 
 				CustomUserDetails userDetails = CustomUserDetails.from(seller);
 
 				//when & then
 				mockMvc.perform(get("/api/selling-products", seller.getId())
 								.param("productState", ProductState.ACTIVE.name())
-								.param("size", String.valueOf(DEFAULT_SIZE_2))
+								.param("size", String.valueOf(2))
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, userDetails.getAuthorities()
 								))))
@@ -1668,11 +1694,10 @@ class ProductControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data.data").exists())
-						.andExpect(jsonPath("$.data.data.length()").value(
-								Math.min(DEFAULT_SIZE_2, productActivList.size())))
+						.andExpect(jsonPath("$.data.data.length()").value(2))
 						.andExpect(jsonPath("$.data.pageInfo").exists())
 						.andExpect(jsonPath("$.data.pageInfo.hasNext").value(true))
-						.andExpect(jsonPath("$.data.pageInfo.size").value(DEFAULT_SIZE_2))
+						.andExpect(jsonPath("$.data.pageInfo.size").value(2))
 						.andExpect(jsonPath("$.data.pageInfo.nextCursorId").exists())
 						.andDo(document("product/read-my-selling-product",
 								queryParameters(
@@ -1697,12 +1722,18 @@ class ProductControllerTest {
 												.optional(),
 										fieldWithPath("data.data[].remainAmount").description(
 												"모바일 데이터 잔량").type(JsonFieldType.NUMBER).optional(),
-										fieldWithPath("data.data[].startTime").description(
-														"와이파이 판매 시작 시간").type(JsonFieldType.NUMBER)
-												.optional(),
-										fieldWithPath("data.data[].endTime").description(
-												"와이파이 판매 종료 시간").type(
-												JsonFieldType.NUMBER).optional(),
+										fieldWithPath("data.data[].startTime").type(
+												JsonFieldType.STRING).description(
+												"와이파이 판매 시작 시간").optional(),
+										fieldWithPath("data.data[].endTime").type(
+												JsonFieldType.STRING).description(
+												"와이파이 판매 종료 시간").optional(),
+										fieldWithPath("data.data[].title").type(
+												JsonFieldType.STRING).description(
+												"와이파이 제목").optional(),
+										fieldWithPath("data.data[].productImageUrl").type(
+												JsonFieldType.STRING).description(
+												"와이파이 이미지 URL").optional(),
 										fieldWithPath("data.data[].createdAt").description(
 												"상품 등록 시간"),
 										fieldWithPath("data.data[].updatedAt").description(

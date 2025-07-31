@@ -1,13 +1,14 @@
 package com.dapanda.product.entity;
 
+import static com.dapanda.TestConstants.Wifi.PRODUCT_IMAGE_URL;
+
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.product.dto.response.ReadSellingProductResponse;
-import org.springframework.test.util.ReflectionTestUtils;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class ProductFixture {
 
@@ -20,6 +21,7 @@ public class ProductFixture {
 				LocalDateTime.now(),
 				LocalDateTime.now(),
 				"title1",
+				PRODUCT_IMAGE_URL,
 				LocalDateTime.now(),
 				LocalDateTime.now()
 		);
@@ -31,6 +33,7 @@ public class ProductFixture {
 				LocalDateTime.now(),
 				LocalDateTime.now(),
 				"title2",
+				PRODUCT_IMAGE_URL,
 				LocalDateTime.now(),
 				LocalDateTime.now()
 		);
@@ -189,7 +192,8 @@ public class ProductFixture {
 
 	public static Product createWifiProductWithId(Wifi wifi, Member seller, Long productId) {
 
-		Product product = Product.of(ProductState.ACTIVE, 1000, wifi.getId(), ItemType.WIFI, seller);
+		Product product = Product.of(ProductState.ACTIVE, 1000, wifi.getId(), ItemType.WIFI,
+				seller);
 
 		ReflectionTestUtils.setField(product, "id", productId);
 
