@@ -92,7 +92,7 @@ public enum ResultCode {
 	CHAT_MESSAGE_NOT_FOUND(HttpStatus.BAD_REQUEST, 8004, "채팅 메시지를 찾을 수 없습니다."),
 
 	// 알림 9000번대
-	;
+	FCM_NOT_FOUND(HttpStatus.BAD_REQUEST, 9000, "FCM 토큰이 존재하지 않습니다.");
 
 	private final HttpStatus status;
 	private final int code;

@@ -23,6 +23,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.fcm_token.entity.FcmToken;
+import com.dapanda.fcm_token.repository.FcmTokenRepository;
+import com.dapanda.fcm_token.service.FcmTokenService;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
@@ -45,6 +48,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -89,6 +93,10 @@ class TradeControllerTest {
 	private PlanRepository planRepository;
 	@Autowired
 	private TradeService tradeService;
+	@Autowired
+	private FcmTokenRepository fcmTokenRepository;
+	@Mock
+	private FcmTokenService fcmTokenService;
 
 	private MockMvc mockMvc;
 
@@ -98,6 +106,11 @@ class TradeControllerTest {
 		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
 
 		cleanupDatabase();
+	}
+
+	@BeforeEach
+	void setUp() {
+		ReflectionTestUtils.setField(tradeService, "fcmTokenService", fcmTokenService);
 	}
 
 	private void cleanupDatabase() {
@@ -113,6 +126,7 @@ class TradeControllerTest {
 		jdbcTemplate.execute("TRUNCATE TABLE plan");
 		jdbcTemplate.execute("DELETE FROM trade");
 		jdbcTemplate.execute("DELETE FROM trade_details");
+		jdbcTemplate.execute("DELETE FROM fcm_token");
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
@@ -134,6 +148,7 @@ class TradeControllerTest {
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 				memberRepository.save(buyer);
+				fcmTokenRepository.save(FcmToken.of("test_token", seller));
 
 				Plan sellerPlan = planRepository.save(
 						PlanFixture.createPlan(seller, PROVIDING_DATA_AMOUNT_10));
@@ -664,7 +679,10 @@ class TradeControllerTest {
 				Member buyer = MemberFixture.createMember3();
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 				List<Member> members = Arrays.asList(seller1, seller2, buyer);
+
 				memberRepository.saveAll(members);
+				fcmTokenRepository.save(FcmToken.of("test_token", seller1));
+				fcmTokenRepository.save(FcmToken.of("test_token", seller2));
 
 				Plan buyerPlan = Plan.of("요금제", BigDecimal.valueOf(5.0), 10000,
 						PlanCategory._5G, AgeGroup.YOUTH, buyer);
@@ -696,8 +714,7 @@ class TradeControllerTest {
 						Arrays.asList(mobileDataScrap1, mobileDataScrap2));
 
 				ScrapPurchaseMobileDataRequest request = new ScrapPurchaseMobileDataRequest(
-						DATA_AMOUNT_2,
-						PRICE_1500 + PRICE_3000, mobileDataScrapList);
+						DATA_AMOUNT_2, PRICE_1500 + PRICE_3000, mobileDataScrapList);
 
 				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
