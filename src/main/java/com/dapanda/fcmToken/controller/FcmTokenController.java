@@ -1,9 +1,9 @@
-package com.dapanda.fcm_token.controller;
+package com.dapanda.fcmToken.controller;
 
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.CommonResponse;
-import com.dapanda.fcm_token.dto.SaveFcmTokenRequest;
-import com.dapanda.fcm_token.service.FcmTokenService;
+import com.dapanda.fcmToken.dto.SaveFcmTokenRequest;
+import com.dapanda.fcmToken.service.FcmTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

@@ -1,48 +1,5 @@
 package com.dapanda.trade.controller;
 
-import com.dapanda.TestConfig;
-import com.dapanda.auth.entity.CustomUserDetails;
-import com.dapanda.common.exception.ResultCode;
-import com.dapanda.fcm_token.entity.FcmToken;
-import com.dapanda.fcm_token.repository.FcmTokenRepository;
-import com.dapanda.fcm_token.service.FcmTokenService;
-import com.dapanda.member.entity.Member;
-import com.dapanda.member.entity.MemberFixture;
-import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.plan.entity.*;
-import com.dapanda.plan.repository.PlanRepository;
-import com.dapanda.product.entity.*;
-import com.dapanda.product.repository.*;
-import com.dapanda.trade.dto.MobileDataScrap;
-import com.dapanda.trade.dto.request.*;
-import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
-import com.dapanda.trade.entity.*;
-import com.dapanda.trade.repository.TradeDetailsRepository;
-import com.dapanda.trade.repository.TradeRepository;
-import com.dapanda.trade.service.TradeService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-
 import static com.dapanda.TestConstants.Member.CASH_5000;
 import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
@@ -62,6 +19,48 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.dapanda.TestConfig;
+import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.common.exception.ResultCode;
+import com.dapanda.fcmToken.entity.FcmToken;
+import com.dapanda.fcmToken.repository.FcmTokenRepository;
+import com.dapanda.fcmToken.service.FcmTokenService;
+import com.dapanda.member.entity.Member;
+import com.dapanda.member.entity.MemberFixture;
+import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.plan.entity.*;
+import com.dapanda.plan.repository.PlanRepository;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.*;
+import com.dapanda.trade.dto.MobileDataScrap;
+import com.dapanda.trade.dto.request.*;
+import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
+import com.dapanda.trade.entity.*;
+import com.dapanda.trade.repository.TradeDetailsRepository;
+import com.dapanda.trade.repository.TradeRepository;
+import com.dapanda.trade.service.TradeService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest
 @Import(TestConfig.class)

@@ -9,8 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
-import com.dapanda.fcm_token.dto.SaveFcmTokenRequest;
-import com.dapanda.fcm_token.service.FcmTokenService;
+import com.dapanda.fcmToken.dto.SaveFcmTokenRequest;
+import com.dapanda.fcmToken.service.FcmTokenService;
 import com.dapanda.member.entity.*;
 import com.dapanda.member.repository.MemberRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
