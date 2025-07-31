@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.dapanda.RedisTestContainerConfig;
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.config.TestS3Config;
@@ -35,7 +36,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest
-@Import({TestConfig.class, TestS3Config.class})
+@Import({TestConfig.class, TestS3Config.class, RedisTestContainerConfig.class})
 @ExtendWith(RestDocumentationExtension.class)
 @DisplayName("S3 Controller 테스트")
 @ActiveProfiles("test")
