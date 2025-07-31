@@ -100,7 +100,7 @@
 ## 🔁 시퀀스 다이어그램
 
 <details>
-<summary><b>데이터 상품</b></summary>
+<summary><h3>데이터 상품</h3></summary>
 <div markdown="1">
 
 <br>
@@ -108,14 +108,13 @@
 
 </div>
 </details>
-<br>
 
 <details>
-<summary><b>와이파이 상품</b></summary>
+<summary><h3>와이파이 상품</h3></summary>
 <div markdown="1">
 
 <br>
-<img width="2905" height="3840" alt="와이파이 / 핫스팟 상품 시퀀스 다이어그램" src="https://github.com/user-attachments/assets/dd4cef78-ab44-44c6-a40d-7f1ef3c16c5b" />
+<img width="2905" height="3840" alt="와이파이 상품 시퀀스 다이어그램" src="https://github.com/user-attachments/assets/dd4cef78-ab44-44c6-a40d-7f1ef3c16c5b" />
 
 </div>
 </details>
@@ -130,6 +129,63 @@
 
 ## 🧑🏻‍💻 역할 분담
 
-| <img src="https://avatars.githubusercontent.com/yereumi" width="120"><br><a href="https://github.com/yereumi">신예지</a> | <img src="https://avatars.githubusercontent.com/hyeonZIP" width="120"><br><a href="https://github.com/hyeonZIP">임재현</a> | <img src="https://github.com/user-attachments/assets/4304fcd3-369c-46d1-b369-d4ca0569e4e3" width="120"><br><a href="https://github.com/tmdals1207">홍승민</a> |
-|-----------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|  
-| <ul><li>Backend 개발 환경 구성</li><li>Jira 구성</li><li>상품 시스템</li><li>거래 시스템</li><li>결제 시스템</li><li>모니터링 시스템</li></ul>      | <ul><li>채팅 시스템</li><li>거래 시스템</li><li>리뷰 시스템</li><li>신고 시스템</li></ul>                                                   | <ul><li>인프라, CI/CD 구성</li><li>인증/인가 시스템</li><li>회원 시스템</li><li>상품 시스템</li><li>알림 시스템</li><li>모니터링 시스템</li></ul>                                            |
+<table cellspacing="0" cellpadding="10" style="text-align: center;">
+  <tr>
+    <td>
+      <img src="https://avatars.githubusercontent.com/yereumi" width="200"><br>
+    </td>
+    <td>
+      <img src="https://avatars.githubusercontent.com/hyeonZIP" width="200"><br>
+    </td>
+    <td>
+      <img src="https://github.com/user-attachments/assets/4304fcd3-369c-46d1-b369-d4ca0569e4e3" width="200"><br>
+    </td>
+  </tr>
+  <tr>
+    <td >
+        <div align="center">
+            <a href="https://github.com/yereumi">신예지</a>
+        </div>
+    </td>
+    <td>
+        <div align="center">
+      <a href="https://github.com/hyeonZIP">임재현</a>
+        </div>
+    </td>
+    <td>
+        <div align="center">
+      <a href="https://github.com/tmdals1207">홍승민</a>
+        </div>
+    </td>
+  </tr>
+  <tr>
+    <td style="text-align: left;">
+      <ul>
+        <li>Backend 개발 환경 구성</li>
+        <li>Jira 구성</li>
+        <li>상품 시스템</li>
+        <li>거래 시스템</li>
+        <li>결제 시스템</li>
+        <li>모니터링 시스템</li>
+      </ul>
+    </td>
+    <td style="text-align: left;">
+      <ul>
+        <li>채팅 시스템</li>
+        <li>거래 시스템</li>
+        <li>리뷰 시스템</li>
+        <li>신고 시스템</li>
+      </ul>
+    </td>
+    <td style="text-align: left;">
+      <ul>
+        <li>인프라, CI/CD 구성</li>
+        <li>인증/인가 시스템</li>
+        <li>회원 시스템</li>
+        <li>상품 시스템</li>
+        <li>알림 시스템</li>
+        <li>모니터링 시스템</li>
+      </ul>
+    </td>
+  </tr>
+</table>
