@@ -105,12 +105,12 @@ class ReviewControllerTest {
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
 
-		jdbcTemplate.execute("TRUNCATE TABLE review");
-		jdbcTemplate.execute("TRUNCATE TABLE trade_details");
-		jdbcTemplate.execute("TRUNCATE TABLE trade");
-		jdbcTemplate.execute("TRUNCATE TABLE product");
-		jdbcTemplate.execute("TRUNCATE TABLE wifi");
-		jdbcTemplate.execute("TRUNCATE TABLE member");
+		jdbcTemplate.execute("DELETE FROM review");
+		jdbcTemplate.execute("DELETE FROM trade_details");
+		jdbcTemplate.execute("DELETE FROM trade");
+		jdbcTemplate.execute("DELETE FROM product");
+		jdbcTemplate.execute("DELETE FROM wifi");
+		jdbcTemplate.execute("DELETE FROM member");
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
