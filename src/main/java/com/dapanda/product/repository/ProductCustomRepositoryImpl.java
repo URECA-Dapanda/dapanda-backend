@@ -238,6 +238,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	@Override
 	public List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request) {
 
+		QProductImage productImageSub = new QProductImage("productImageSub");
+
 		BooleanBuilder cursorCondition = new BooleanBuilder();
 
 		if (request.cursorId() != null && request.cursorId() != 0L) {
@@ -255,6 +257,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						wifi.startTime,
 						wifi.endTime,
 						wifi.title,
+						productImage.imageUrl.coalesce(""),
 						product.createdAt,
 						product.updatedAt
 				)
@@ -266,6 +269,14 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.leftJoin(wifi).on(
 						product.itemId.eq(wifi.id)
 								.and(product.itemType.eq(ItemType.WIFI))
+				)
+				.leftJoin(productImage).on(
+						productImage.wifiId.eq(wifi.id)
+								.and(productImage.priority.eq(
+										JPAExpressions.select(productImageSub.priority.min())
+												.from(productImageSub)
+												.where(productImageSub.wifiId.eq(wifi.id))
+								))
 				)
 				.where(
 						product.member.id.eq(request.memberId()),
@@ -302,6 +313,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 							tuple.get(wifi.startTime),
 							tuple.get(wifi.endTime),
 							tuple.get(wifi.title),
+							tuple.get(productImage.imageUrl),
 							tuple.get(product.createdAt),
 							tuple.get(product.updatedAt)
 					);
