@@ -5,6 +5,7 @@ import com.dapanda.chat.dto.response.*;
 import com.dapanda.chat.entity.*;
 import com.dapanda.chat.repository.*;
 import com.dapanda.common.dto.response.CursorPageResponse;
+import com.dapanda.common.dto.response.ReceiverCursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
@@ -31,7 +32,7 @@ public class ChatService {
 	private final ProductRepository productRepository;
 	private final MemberRepository memberRepository;
 
-	public CursorPageResponse<ReadChatMessageHistoryResponse> readChatMessageHistory(ReadChatMessageHistoryRequest request) {
+	public ReceiverCursorPageResponse<ReadChatMessageHistoryResponse> readChatMessageHistory(ReadChatMessageHistoryRequest request) {
 
 		validateParticipant(request.chatRoomId(), request.memberId());
 
@@ -47,13 +48,13 @@ public class ChatService {
 				? response.get(response.size() - 1).getChatMessageId()
 				: null;
 
-		CursorPageResponse.PageInfo pageInfo = CursorPageResponse.PageInfo.of(
+		ReceiverCursorPageResponse.PageInfo pageInfo = ReceiverCursorPageResponse.PageInfo.of(
 				nextCursorId,
 				hasNext,
 				request.size()
 		);
 
-		return CursorPageResponse.of(response, pageInfo);
+		return ReceiverCursorPageResponse.of(response, pageInfo, request.memberId());
 	}
 
 	public CursorPageResponse<ReadJoiningChatRoomResponse> readChatRoom(ReadJoiningChatRoomRequest request) {
