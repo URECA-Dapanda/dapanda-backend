@@ -6,6 +6,7 @@ import com.dapanda.auth.info.OAuth2UserInfoFactory;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberRole;
 import com.dapanda.member.repository.MemberRepository;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,8 +16,6 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
 
 @Slf4j
 @Service
@@ -67,6 +66,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 				provider,
 				MemberRole.ROLE_NEW_MEMBER
 		);
+		member.resetDataAmount();
 
 		return memberRepository.save(member);
 	}
