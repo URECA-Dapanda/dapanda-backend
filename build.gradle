@@ -99,6 +99,9 @@ dependencies {
     // Redis & Spring Data Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    // Prometheus
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    
     // Test
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
