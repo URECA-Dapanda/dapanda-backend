@@ -87,8 +87,8 @@ public class TradeService {
 		updateMobileDataProduct(mobileData, product, product.getPrice(),
 				mobileData.getDataAmount());
 
-		Trade trade = createMobileDataTradeAndTradeDetails(product, mobileData, buyerId,
-				product.getMember().getId(), product.getPrice());
+		Trade trade = createMobileDataTradeAndTradeDetails(product, mobileData.getRemainAmount(),
+				buyerId, product.getMember().getId(), product.getPrice());
 
 		return TradeProductResponse.of(trade.getId());
 	}
@@ -105,8 +105,8 @@ public class TradeService {
 		updateSellerCashAndDataAmount(product.getMember().getId(), price, dataAmount);
 		updateMobileDataProduct(mobileData, product, price, dataAmount);
 
-		Trade trade = createMobileDataTradeAndTradeDetails(product, mobileData, buyerId,
-				product.getMember().getId(), product.getPrice());
+		Trade trade = createMobileDataTradeAndTradeDetails(product, dataAmount, buyerId,
+				product.getMember().getId(), price);
 
 		return TradeProductResponse.of(trade.getId());
 	}
@@ -156,9 +156,22 @@ public class TradeService {
 					sumPrice += (int) (needed.doubleValue() * 10 * item.getPricePer100MB());
 					temp.add(partialScrap);
 				} else {
+					MobileDataScrap fullScrap = new MobileDataScrap(
+							item.getProductId(),
+							item.getMobileDataId(),
+							item.getMemberName(),
+							item.getPrice(),
+							item.getPrice(), // purchasePrice
+							item.getRemainAmount(),
+							item.getRemainAmount(), // purchaseAmount
+							item.getPricePer100MB(),
+							true,
+							item.getUpdatedAt()
+					);
+
 					sumAmount = sumAmount.add(amount);
 					sumPrice += item.getPrice();
-					temp.add(item);
+					temp.add(fullScrap);
 				}
 
 				if (sumAmount.compareTo(target) == 0) { // 5. 목표 용량을 정확히 채운 조합은 후보군에 추가
@@ -241,8 +254,8 @@ public class TradeService {
 					purchaseAmount);
 
 			// 4-5. 거래 저장
-			Trade sellerTrade = Trade.of(totalAmount, null, totalPrice,
-					TradeType.PURCHASE_MOBILE_COMPOSITE, seller);
+			Trade sellerTrade = Trade.of(purchaseAmount, null, purchasePrice,
+					TradeType.SALE_MOBILE_DATA, seller);
 			tradeRepository.save(sellerTrade);
 
 			TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
@@ -268,14 +281,19 @@ public class TradeService {
 				.orElseThrow(() -> new GlobalException(ResultCode.WIFI_NOT_FOUND));
 
 		// 3. 유효성 검사
-		int timeAmount = (int) Duration.between(request.startTime(), request.endTime())
-				.toMinutes();
-		int totalPrice = product.getPrice() * timeAmount / 10;
-
 		LocalTime requestStart = request.startTime().toLocalTime();
 		LocalTime requestEnd = request.endTime().toLocalTime();
 		LocalTime wifiStart = wifi.getStartTime().toLocalTime();
 		LocalTime wifiEnd = wifi.getEndTime().toLocalTime();
+
+		int timeAmount;
+		if (requestStart.isBefore(requestEnd)) {
+			timeAmount = (int) Duration.between(requestStart, requestEnd).toMinutes();
+		} else {
+			timeAmount = (int) Duration.between(requestStart, requestEnd.plusHours(24)).toMinutes();
+		}
+
+		int totalPrice = product.getPrice() * timeAmount / 10;
 
 		validateProduct(product.getId(), buyerId);
 		validateWifiTime(requestStart, requestEnd, wifiStart, wifiEnd);
@@ -424,16 +442,14 @@ public class TradeService {
 		buyer.deductCash(totalPrice);
 	}
 
-	private Trade createMobileDataTradeAndTradeDetails(Product product, MobileData mobileData,
+	private Trade createMobileDataTradeAndTradeDetails(Product product, BigDecimal dataAmount,
 			Long buyerId, Long sellerId, int price) {
 
 		Member buyer = memberRepository.findById(buyerId).orElseThrow();
 		Member seller = memberRepository.findById(sellerId).orElseThrow();
 
-		Trade buyerTrade = Trade.of(mobileData.getDataAmount(), price,
-				TradeType.PURCHASE_MOBILE_SINGLE, buyer);
-		Trade sellerTrade = Trade.of(mobileData.getDataAmount(), price, TradeType.SALE_MOBILE_DATA,
-				seller);
+		Trade buyerTrade = Trade.of(dataAmount, price, TradeType.PURCHASE_MOBILE_SINGLE, buyer);
+		Trade sellerTrade = Trade.of(dataAmount, price, TradeType.SALE_MOBILE_DATA, seller);
 		tradeRepository.saveAll(List.of(buyerTrade, sellerTrade));
 
 		TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
