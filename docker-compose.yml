@@ -1,0 +1,10 @@
+version: "3.7"
+
+services:
+  promtail:
+    image: grafana/promtail:2.9.4
+    container_name: promtail
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/promtail-config.yml
+      - /var/log/app:/var/log/app
+    command: -config.file=/etc/promtail/promtail-config.yml
