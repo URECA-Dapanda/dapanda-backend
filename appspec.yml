@@ -23,4 +23,4 @@ hooks:
 
     - location: scripts/start-promtail.sh
       timeout: 120
-      runas: ubuntu
+      runas: root
