@@ -1,12 +1,12 @@
-package com.dapanda.fcm_token.service;
+package com.dapanda.fcmToken.service;
 
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.fcmToken.entity.FcmToken;
+import com.dapanda.fcmToken.repository.FcmTokenRepository;
+import com.dapanda.fcmToken.repository.NotificationRepository;
 import com.dapanda.fcm_token.dto.response.NotificationResponse;
-import com.dapanda.fcm_token.entity.FcmToken;
 import com.dapanda.fcm_token.entity.NotificationEntity;
-import com.dapanda.fcm_token.repository.FcmTokenRepository;
-import com.dapanda.fcm_token.repository.NotificationRepository;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.entity.ItemType;
@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 @Slf4j
 @Service

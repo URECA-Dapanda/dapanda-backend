@@ -1,4 +1,4 @@
-package com.dapanda.fcm_token.repository;
+package com.dapanda.fcmToken.repository;
 
 import com.dapanda.fcm_token.entity.NotificationEntity;
 import com.dapanda.member.entity.Member;

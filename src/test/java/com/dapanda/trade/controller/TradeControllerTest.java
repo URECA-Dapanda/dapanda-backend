@@ -23,9 +23,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
-import com.dapanda.fcm_token.entity.FcmToken;
-import com.dapanda.fcm_token.repository.FcmTokenRepository;
-import com.dapanda.fcm_token.service.FcmTokenService;
+import com.dapanda.fcmToken.entity.FcmToken;
+import com.dapanda.fcmToken.repository.FcmTokenRepository;
+import com.dapanda.fcmToken.service.FcmTokenService;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;

@@ -1,4 +1,4 @@
-package com.dapanda.fcm_token.entity;
+package com.dapanda.fcmToken.entity;
 
 import com.dapanda.common.entity.CreatedAtEntity;
 import com.dapanda.member.entity.Member;

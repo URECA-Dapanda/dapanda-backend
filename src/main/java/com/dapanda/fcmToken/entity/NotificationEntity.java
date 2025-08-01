@@ -30,6 +30,7 @@ public class NotificationEntity extends CreatedAtEntity {
 	private Member member;
 
 	public static NotificationEntity of(String title, String body, Member member) {
+
 		return NotificationEntity.builder()
 				.title(title)
 				.body(body)
