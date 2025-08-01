@@ -1,6 +1,6 @@
-package com.dapanda.fcm_token.repository;
+package com.dapanda.fcmToken.repository;
 
-import com.dapanda.fcm_token.entity.FcmToken;
+import com.dapanda.fcmToken.entity.FcmToken;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 

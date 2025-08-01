@@ -537,7 +537,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 		// 와이파이 상품
 		Integer recentPrice = queryFactory
-				.select(trade.tradingPrice)
+				.select(trade.tradingPrice.multiply(10).divide(trade.timeAmount)) // 10분당 가격
 				.from(trade)
 				.where(
 						trade.tradeType.eq(TradeType.SALE_WIFI),
@@ -548,7 +548,9 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.fetchOne();
 
 		Double averagePrice = queryFactory
-				.select(trade.tradingPrice.avg())
+				.select(
+						trade.tradingPrice.multiply(10).divide(trade.timeAmount).avg()
+				)
 				.from(trade)
 				.where(
 						trade.tradeType.eq(TradeType.SALE_WIFI),

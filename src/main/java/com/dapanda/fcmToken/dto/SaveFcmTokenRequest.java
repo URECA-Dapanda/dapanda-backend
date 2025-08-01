@@ -1,4 +1,4 @@
-package com.dapanda.fcm_token.dto;
+package com.dapanda.fcmToken.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

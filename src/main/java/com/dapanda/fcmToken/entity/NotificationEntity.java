@@ -12,30 +12,29 @@ import org.hibernate.annotations.OnDeleteAction;
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class FcmToken extends CreatedAtEntity {
+public class NotificationEntity extends CreatedAtEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@Column(nullable = false)
-	private String token;
+	private String title;
+
+	@Column(nullable = false, columnDefinition = "TEXT")
+	private String body;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "member_id")
+	@JoinColumn(name = "member_id", nullable = false)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Member member;
 
-	public static FcmToken of(String token, Member member) {
+	public static NotificationEntity of(String title, String body, Member member) {
 
-		return FcmToken.builder()
-				.token(token)
+		return NotificationEntity.builder()
+				.title(title)
+				.body(body)
 				.member(member)
 				.build();
-	}
-
-	public void updateToken(String token) {
-
-		this.token = token;
 	}
 }
