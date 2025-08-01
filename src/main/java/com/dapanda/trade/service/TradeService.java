@@ -165,7 +165,7 @@ public class TradeService {
 							item.getRemainAmount(),
 							item.getRemainAmount(), // purchaseAmount
 							item.getPricePer100MB(),
-							true,
+							false,
 							item.getUpdatedAt()
 					);
 
