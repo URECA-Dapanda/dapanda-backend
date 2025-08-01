@@ -48,6 +48,7 @@ sudo usermod -aG docker $USER || true
 
 # 5. Docker Compose 실행
 echo "📦 Docker Compose 서비스 재시작..."
+cd /home/ubuntu
 docker compose down || true
 docker compose up -d
 
