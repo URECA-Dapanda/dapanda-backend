@@ -4,6 +4,8 @@ os: linux
 files:
   - source: app.jar
     destination: /home/ubuntu/app
+  - source: docker-compose.yml
+    destination: /home/ubuntu
 
 hooks:
   BeforeInstall:
