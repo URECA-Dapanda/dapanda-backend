@@ -85,7 +85,7 @@ cloud:
 
 logging:
   level:
-    com.dapanda: WARN
+    com.dapanda: INFO
 
 
 ---
