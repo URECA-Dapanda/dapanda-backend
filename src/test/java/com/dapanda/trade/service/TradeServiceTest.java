@@ -745,6 +745,7 @@ class TradeServiceTest {
 						PURCHASE_WIFI,
 						BigDecimal.valueOf(0),
 						TITLE,
+						PROFILE_IMAGE_URL,
 						trade1.getCreatedAt()
 				);
 
@@ -754,6 +755,7 @@ class TradeServiceTest {
 						PURCHASE_WIFI,
 						BigDecimal.valueOf(0),
 						TITLE + 1,
+						PROFILE_IMAGE_URL,
 						trade2.getCreatedAt()
 				);
 

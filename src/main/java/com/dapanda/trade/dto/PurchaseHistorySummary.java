@@ -14,5 +14,6 @@ public class PurchaseHistorySummary {
 	private TradeType tradeType;
 	private BigDecimal dataAmount; // 데이터 상품
 	private String title; // 와이파이 상품
+	private String productImageUrl; // 와이파이 상품
 	private LocalDateTime createdAt;
 }

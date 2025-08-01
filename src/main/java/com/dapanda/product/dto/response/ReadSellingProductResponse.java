@@ -1,13 +1,13 @@
 package com.dapanda.product.dto.response;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.ProductState;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.*;
-
-import static com.fasterxml.jackson.annotation.JsonInclude.*;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -32,6 +32,8 @@ public class ReadSellingProductResponse {
 	private LocalDateTime endTime;
 	@JsonInclude(Include.NON_NULL)
 	private String title;
+	@JsonInclude(Include.NON_NULL)
+	private String productImageUrl;
 
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
@@ -63,6 +65,7 @@ public class ReadSellingProductResponse {
 			LocalDateTime startTime,
 			LocalDateTime endTime,
 			String title,
+			String productImageUrl,
 			LocalDateTime createdAt,
 			LocalDateTime updatedAt) {
 
@@ -73,6 +76,7 @@ public class ReadSellingProductResponse {
 				.startTime(startTime)
 				.endTime(endTime)
 				.title(title)
+				.productImageUrl(productImageUrl)
 				.createdAt(createdAt)
 				.updatedAt(updatedAt)
 				.build();

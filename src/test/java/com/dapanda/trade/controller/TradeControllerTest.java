@@ -86,6 +86,8 @@ class TradeControllerTest {
 	@Autowired
 	private WifiRepository wifiRepository;
 	@Autowired
+	private ProductImageRepository productImageRepository;
+	@Autowired
 	private TradeRepository tradeRepository;
 	@Autowired
 	private TradeDetailsRepository tradeDetailsRepository;
@@ -1222,6 +1224,10 @@ class TradeControllerTest {
 						buyer
 				));
 
+				ProductImage productImage1 = ProductImage.of(PRODUCT_IMAGE_URL, 1, wifi1.getId());
+				ProductImage productImage2 = ProductImage.of(PRODUCT_IMAGE_URL, 1, wifi2.getId());
+				productImageRepository.saveAll(List.of(productImage1, productImage2));
+
 				tradeRepository.saveAll(new ArrayList<>(List.of(trade1, trade2, trade3)));
 				tradeDetailsRepository.save(TradeDetails.of(wifiProduct1, trade1));
 				tradeDetailsRepository.save(TradeDetails.of(wifiProduct2, trade2));
@@ -1248,6 +1254,7 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.data.trades.data[0].tradeType").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].dataAmount").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].title").exists())
+						.andExpect(jsonPath("$.data.trades.data[0].productImageUrl").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].createdAt").exists())
 						.andExpect(jsonPath("$.data.trades.pageInfo").exists())
 						.andExpect(jsonPath("$.data.trades.pageInfo.size").exists())
@@ -1277,6 +1284,9 @@ class TradeControllerTest {
 												"거래 데이터양 (데이터)"),
 										fieldWithPath("data.trades.data[].title").description(
 												"거래 상품 제목 (와이파이)"),
+										fieldWithPath(
+												"data.trades.data[].productImageUrl").description(
+												"거래 상품 대표 이미지 URL (와이파이)"),
 										fieldWithPath("data.trades.data[].createdAt").description(
 												"거래 생성 시간"),
 										fieldWithPath("data.trades.pageInfo").description("페이지 정보"),

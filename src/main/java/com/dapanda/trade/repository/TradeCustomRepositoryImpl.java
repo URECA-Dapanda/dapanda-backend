@@ -2,16 +2,19 @@ package com.dapanda.trade.repository;
 
 import static com.dapanda.product.entity.QMobileData.mobileData;
 import static com.dapanda.product.entity.QProduct.product;
+import static com.dapanda.product.entity.QProductImage.productImage;
 import static com.dapanda.product.entity.QWifi.wifi;
 import static com.dapanda.trade.entity.QTrade.trade;
 import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.entity.ItemType;
+import com.dapanda.product.entity.QProductImage;
 import com.dapanda.trade.dto.*;
 import com.dapanda.trade.entity.TradeType;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.*;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
 import java.time.*;
@@ -29,12 +32,15 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 	public CursorPageResponse<PurchaseHistorySummary> findTradeHistoryByCursor(Long cursorId,
 			int size, Long memberId) {
 
+		QProductImage productImageSub = new QProductImage("productImageSub");
+
 		List<PurchaseHistorySummary> content = queryFactory
 				.select(Projections.constructor(PurchaseHistorySummary.class,
 						trade.id,
 						trade.tradeType,
 						trade.dataAmount.coalesce(new BigDecimal("0")),
 						wifi.title.coalesce(""),
+						productImage.imageUrl.coalesce(""),
 						trade.createdAt
 				))
 				.from(trade)
@@ -43,6 +49,14 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 				.leftJoin(wifi).on(
 						product.itemType.eq(ItemType.WIFI)
 								.and(product.itemId.eq(wifi.id))
+				)
+				.leftJoin(productImage).on(
+						productImage.wifiId.eq(wifi.id)
+								.and(productImage.priority.eq(
+										JPAExpressions.select(productImageSub.priority.min())
+												.from(productImageSub)
+												.where(productImageSub.wifiId.eq(wifi.id))
+								))
 				)
 				.where(eqMemberId(memberId),
 						ltCursorId(cursorId),

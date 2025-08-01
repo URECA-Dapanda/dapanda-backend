@@ -105,6 +105,7 @@ public final class TestConstants {
 		public static final LocalDateTime WRONG_END_DATETIME = LocalDateTime.of(2024, 3, 4, 21, 0);
 		public static final LocalTime START_TIME = LocalTime.of(10, 0);
 		public static final LocalTime END_TIME = LocalTime.of(22, 0);
+		public static final String PRODUCT_IMAGE_URL = "imageUrl.jpg";
 	}
 
 	public static final class Plan {
