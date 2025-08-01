@@ -60,6 +60,22 @@ public class FcmTokenService {
 		saveNotification(title, body, seller);
 	}
 
+	@Transactional
+	public void notifyWifiStart(Long memberId) {
+
+		Member member = memberRepository.findById(memberId)
+				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+
+		String token = extractTokenOrThrow(memberId);
+
+		String title = "와이파이 사용 시작";
+		String body = "예약하신 와이파이 사용이 지금부터 시작됩니다.";
+
+		sendNotification(token, title, body);
+		saveNotification(title, body, member);
+	}
+
+
 	public void sendNotification(String token, String title, String body) {
 
 		Message message = Message.builder()
