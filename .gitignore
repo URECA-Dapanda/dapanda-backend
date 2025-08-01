@@ -43,6 +43,8 @@ out/
 ### REST Docs ###
 /src/main/resources/static/*
 
-
 ### Firebase ###
 src/main/resources/firebase/firebase-service-account.json
+
+### logs ###
+logs/
