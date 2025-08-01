@@ -216,6 +216,15 @@ tasks.register('cleanUnwantedSnippets') {
     }
 }
 
+tasks.register("startWithPromtail") {
+    doFirst {
+        exec {
+            commandLine("docker", "compose", "up", "-d", "promtail")
+        }
+    }
+    dependsOn("bootRun")
+}
+
 // Jacoco 설정 (기존과 동일)
 jacoco {
     toolVersion = "0.8.11"
