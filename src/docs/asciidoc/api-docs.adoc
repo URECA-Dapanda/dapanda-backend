@@ -126,19 +126,36 @@ include::{snippets}/member/get-buying-data/response-fields.adoc[]
 
 ==== 판매 데이터양 조회
 
-`GET` 회원이 판매한 데이터양 조회
+`GET` 회원이 올린 상품 중 실제로 판매된 데이터양 조회
 
 ===== 요청
 
-include::{snippets}/member/get-selling-data/http-request.adoc[]
+include::{snippets}/member/get-sold-data/http-request.adoc[]
 
 ===== 응답
 
-include::{snippets}/member/get-selling-data/http-response.adoc[]
+include::{snippets}/member/get-sold-data/http-response.adoc[]
 
 ===== 응답 필드
 
-include::{snippets}/member/get-selling-data/response-fields.adoc[]
+include::{snippets}/member/get-sold-data/response-fields.adoc[]
+
+==== 판매 데이터양 조회
+
+`GET` 회원이 상품 등록한 총 데이터양 조회
+
+===== 요청
+
+include::{snippets}/member/get-selling-data-total/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/member/get-selling-data-total/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/member/get-selling-data-total/response-fields.adoc[]
+
 
 ---
 
