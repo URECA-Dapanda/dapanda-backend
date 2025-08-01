@@ -87,7 +87,7 @@ public class TradeService {
 		updateMobileDataProduct(mobileData, product, product.getPrice(),
 				mobileData.getDataAmount());
 
-		Trade trade = createMobileDataTradeAndTradeDetails(product, mobileData.getRemainAmount(),
+		Trade trade = createMobileDataTradeAndTradeDetails(product, mobileData.getDataAmount(),
 				buyerId, product.getMember().getId(), product.getPrice());
 
 		return TradeProductResponse.of(trade.getId());
