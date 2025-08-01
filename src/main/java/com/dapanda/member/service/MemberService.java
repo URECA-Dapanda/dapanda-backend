@@ -15,6 +15,8 @@ import com.dapanda.member.dto.response.*;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberRole;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.product.repository.ProductRepository;
+import com.dapanda.product.service.ProductService;
 import com.dapanda.refreshToken.service.RefreshTokenService;
 import com.dapanda.trade.repository.TradeRepository;
 import jakarta.servlet.http.Cookie;
@@ -33,10 +35,12 @@ public class MemberService {
 			"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 	private final MemberRepository memberRepository;
 	private final TradeRepository tradeRepository;
+	private final ProductRepository productRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RefreshTokenService refreshTokenService;
 	private final S3Service s3Service;
+	private final ProductService productService;
 
 	public Member findById(Long memberId) {
 
@@ -148,9 +152,16 @@ public class MemberService {
 		return FindDataResponse.of(buyingData);
 	}
 
+	public FindDataResponse findSoldData(Long memberId) {
+
+		BigDecimal soldData = memberRepository.findById(memberId).orElseThrow().getSellingData();
+
+		return FindDataResponse.of(soldData);
+	}
+
 	public FindDataResponse findSellingData(Long memberId) {
 
-		BigDecimal sellingData = memberRepository.findById(memberId).orElseThrow().getSellingData();
+		BigDecimal sellingData = productRepository.sumSoldMobileDataAmountByMemberId(memberId);
 
 		return FindDataResponse.of(sellingData);
 	}
