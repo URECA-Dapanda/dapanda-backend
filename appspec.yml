@@ -15,3 +15,7 @@ hooks:
     - location: scripts/start.sh
       timeout: 180
       runas: ubuntu
+
+    - location: scripts/start-promtail.sh
+      timeout: 60
+      runas: ubuntu
