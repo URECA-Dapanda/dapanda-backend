@@ -6,7 +6,7 @@ positions:
   filename: /tmp/positions.yaml
 
 clients:
-  - url: http://monitoring.dapanda.org/loki/api/v1/push
+  - url: ${LOKI_URL}
 
 scrape_configs:
   - job_name: dapanda-log
