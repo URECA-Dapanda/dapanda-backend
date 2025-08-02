@@ -127,9 +127,12 @@ class ReviewControllerTest {
 			public void createReviewTest() throws Exception {
 
 				//given
+				Member seller = memberRepository.save(MemberFixture.createMember1());
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
-				Trade trade = tradeRepository.save(
-						TradeFixture.createTradeWifi(buyer));
+
+				Product product = productRepository.save(ProductFixture.createProduct1(seller));
+				Trade trade = tradeRepository.save(TradeFixture.createTradeWifi(buyer));
+				tradeDetailsRepository.save(TradeDetailsFixture.createTradeDetails(product, trade));
 
 				CreateReviewRequest request = new CreateReviewRequest(RATING, COMMENT);
 
