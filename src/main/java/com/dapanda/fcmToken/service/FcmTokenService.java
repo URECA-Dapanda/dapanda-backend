@@ -75,6 +75,20 @@ public class FcmTokenService {
 		saveNotification(title, body, member);
 	}
 
+	public void notifyWifiEnd(Long memberId) {
+
+		Member member = memberRepository.findById(memberId)
+				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+
+		String token = extractTokenOrThrow(memberId);
+
+		String title = "와이파이 사용 종료";
+		String body = "사용하신 와이파이 사용 시간이 종료되었습니다.";
+
+		sendNotification(token, title, body);
+		saveNotification(title, body, member);
+	}
+
 
 	public void sendNotification(String token, String title, String body) {
 
