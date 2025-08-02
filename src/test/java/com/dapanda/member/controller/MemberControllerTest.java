@@ -286,6 +286,7 @@ class MemberControllerTest {
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").exists())
 						.andExpect(jsonPath("$.message").exists())
+						.andExpect(jsonPath("$.data.memberId").value(member.getId()))
 						.andExpect(jsonPath("$.data.name").value(member.getName()))
 						.andExpect(
 								jsonPath("$.data.profileImageUrl").value(
@@ -299,6 +300,7 @@ class MemberControllerTest {
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
 										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data.memberId").description("회원 아이디"),
 										fieldWithPath("data.name").description("회원 이름"),
 										fieldWithPath("data.profileImageUrl").description(
 												"프로필 이미지 URL"),
@@ -333,6 +335,7 @@ class MemberControllerTest {
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").exists())
 						.andExpect(jsonPath("$.message").exists())
+						.andExpect(jsonPath("$.data.memberId").value(other.getId()))
 						.andExpect(jsonPath("$.data.name").value(other.getName()))
 						.andExpect(jsonPath("$.data.profileImageUrl").value(
 								other.getProfileImageUrl()))
@@ -344,6 +347,7 @@ class MemberControllerTest {
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
 										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data.memberId").description("회원 아이디"),
 										fieldWithPath("data.name").description("회원 이름"),
 										fieldWithPath("data.profileImageUrl").description(
 												"프로필 이미지 URL"),
