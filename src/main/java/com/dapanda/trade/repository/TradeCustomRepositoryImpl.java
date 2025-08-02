@@ -41,6 +41,7 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 						trade.dataAmount.coalesce(new BigDecimal("0")),
 						wifi.title.coalesce(""),
 						productImage.imageUrl.coalesce(""),
+						trade.timeAmount.coalesce(0),
 						trade.createdAt
 				))
 				.from(trade)

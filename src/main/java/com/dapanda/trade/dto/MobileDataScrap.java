@@ -12,6 +12,7 @@ public class MobileDataScrap {
 	private Long productId;
 	private Long mobileDataId;
 	private String memberName;
+	private String profileImageUrl;
 	private int price;
 	private int purchasePrice;
 	private BigDecimal remainAmount;
