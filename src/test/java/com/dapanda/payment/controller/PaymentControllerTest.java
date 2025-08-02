@@ -28,6 +28,7 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -63,7 +64,9 @@ class PaymentControllerTest {
 	@Autowired
 	private MemberRepository memberRepository;
 	@Autowired
+	@Qualifier("chatPubSub")
 	private RedisTemplate<String, String> redisTemplate;
+
 	private MockMvc mockMvc;
 	@MockitoBean
 	private WebClient tossWebClient;

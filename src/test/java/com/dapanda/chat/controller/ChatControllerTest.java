@@ -1,5 +1,6 @@
 package com.dapanda.chat.controller;
 
+import com.dapanda.RedisTestContainerConfig;
 import static com.dapanda.TestConstants.Pagination.CHAT_MESSAGE_HISTORY_DEFAULT_SIZE;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -136,8 +137,7 @@ class ChatControllerTest {
 						.andExpect(jsonPath("$.data.chatRoomId").exists())
 						.andDo(document("chat/create-chat-room",
 										pathParameters(
-												parameterWithName("productId").description(
-														"채팅방을 생성할 상품의 아이디 (필수)")
+												parameterWithName("productId").description("채팅방을 생성할 상품의 아이디 (필수)")
 										),
 										responseFields(
 												fieldWithPath("code").description("상태 코드"),
@@ -176,8 +176,7 @@ class ChatControllerTest {
 						.andExpect(jsonPath("$.data.chatRoomId").value(chatRoom.getId()))
 						.andDo(document("chat/chat-room-already-exist",
 										pathParameters(
-												parameterWithName("productId").description(
-														"채팅방을 생성할 상품의 아이디 (필수)")
+												parameterWithName("productId").description("채팅방을 생성할 상품의 아이디 (필수)")
 										),
 										responseFields(
 												fieldWithPath("code").description("상태 코드"),
@@ -209,8 +208,7 @@ class ChatControllerTest {
 
 				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
-				List<MobileData> mobileDataList = mobileDataRepository.saveAll(
-						MobileDataFixture.createMobileDataList());
+				List<MobileData> mobileDataList = mobileDataRepository.saveAll(MobileDataFixture.createMobileDataList());
 
 				List<Product> productList = productRepository.saveAll(
 						ProductFixture.createProductList(seller, mobileDataList,

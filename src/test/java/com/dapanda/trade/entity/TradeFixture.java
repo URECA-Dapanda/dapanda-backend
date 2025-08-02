@@ -32,7 +32,7 @@ public class TradeFixture {
 			int purchasePrice, BigDecimal purchaseDataAmount) {
 
 		return new MobileDataScrap(product.getId(), mobileData.getId(),
-				product.getMember().getName(), product.getPrice(), purchasePrice,
+				product.getMember().getName(), "", product.getPrice(), purchasePrice,
 				mobileData.getRemainAmount(), purchaseDataAmount, mobileData.getPricePer100MB(),
 				mobileData.isSplitType(), product.getUpdatedAt());
 	}

@@ -70,7 +70,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, prometheus
+        include: health, info, prometheus, metrics
+  metrics:
+    enable:
+      logging: true
 
 cloud:
   aws:
@@ -79,6 +82,10 @@ cloud:
       secret-key: ${AWS_SECRET_KEY}
     region:
       static: ${AWS_REGION}
+
+logging:
+  level:
+    com.dapanda: INFO
 
 
 ---

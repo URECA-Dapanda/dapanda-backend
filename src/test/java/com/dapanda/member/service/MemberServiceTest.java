@@ -92,7 +92,7 @@ class MemberServiceTest {
 				given(memberRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
 
 				// when
-				FindDataResponse response = memberService.findSellingData(MEMBER_ID);
+				FindDataResponse response = memberService.findSoldData(MEMBER_ID);
 
 				// then
 				assertThat(response.getData()).isEqualTo(SELLING_DATA);

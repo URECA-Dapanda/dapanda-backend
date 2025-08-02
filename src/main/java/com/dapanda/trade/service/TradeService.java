@@ -87,7 +87,7 @@ public class TradeService {
 		updateMobileDataProduct(mobileData, product, product.getPrice(),
 				mobileData.getDataAmount());
 
-		Trade trade = createMobileDataTradeAndTradeDetails(product, mobileData.getRemainAmount(),
+		Trade trade = createMobileDataTradeAndTradeDetails(product, mobileData.getDataAmount(),
 				buyerId, product.getMember().getId(), product.getPrice());
 
 		return TradeProductResponse.of(trade.getId());
@@ -142,6 +142,7 @@ public class TradeService {
 							item.getProductId(),
 							item.getMobileDataId(),
 							item.getMemberName(),
+							item.getProfileImageUrl(),
 							item.getPrice(),
 							(int) (needed.doubleValue() * 10 * item.getPricePer100MB()),
 							// purchasePrice
@@ -160,6 +161,7 @@ public class TradeService {
 							item.getProductId(),
 							item.getMobileDataId(),
 							item.getMemberName(),
+							item.getProfileImageUrl(),
 							item.getPrice(),
 							item.getPrice(), // purchasePrice
 							item.getRemainAmount(),
@@ -425,7 +427,7 @@ public class TradeService {
 
 		} else {
 			product.updatePrice(product.getPrice() - price);
-			mobileData.update100MBPerPrice(price, mobileData.getRemainAmount());
+			mobileData.update100MBPerPrice(product.getPrice(), mobileData.getRemainAmount());
 		}
 	}
 

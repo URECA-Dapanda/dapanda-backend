@@ -15,8 +15,12 @@ import com.dapanda.member.dto.request.UpdateProfileImageRequest;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.MobileDataRepository;
+import com.dapanda.product.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +54,10 @@ class MemberControllerTest {
 	private EntityManager entityManager;
 	@Autowired
 	private MemberRepository memberRepository;
+	@Autowired
+	private MobileDataRepository mobileDataRepository;
+	@Autowired
+	private ProductRepository productRepository;
 
 	private MockMvc mockMvc;
 
@@ -166,7 +174,7 @@ class MemberControllerTest {
 				CustomUserDetails userDetails = CustomUserDetails.from(member);
 
 				// when & then
-				mockMvc.perform(get("/api/members/selling-data")
+				mockMvc.perform(get("/api/members/selling-data/sold")
 								.contentType(MediaType.APPLICATION_JSON)
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, userDetails.getAuthorities()
@@ -176,7 +184,7 @@ class MemberControllerTest {
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data.data").value(SELLING_DATA))
-						.andDo(document("member/get-selling-data",
+						.andDo(document("member/get-sold-data",
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
 										fieldWithPath("message").description("처리 결과 메시지"),
@@ -185,6 +193,68 @@ class MemberControllerTest {
 								))
 						);
 			}
+
+			@Test
+			@DisplayName("회원의 판매 중 + 판매 완료 데이터를 조회한다 (1.5GB 중 1.0GB 판매 완료)")
+			void findAllSellingData() throws Exception {
+
+				// given
+				Member member = MemberFixture.createMember1();
+				memberRepository.save(member);
+
+				// 판매 완료된 모바일 데이터 등록 (1.0GB)
+				MobileData soldMobileData = mobileDataRepository.save(
+						MobileData.of(BigDecimal.valueOf(1.0), BigDecimal.valueOf(0.0), 100, false)
+				);
+				Product soldProduct = Product.of(
+						ProductState.SOLD_OUT,
+						1000,
+						soldMobileData.getId(),
+						ItemType.MOBILE_DATA,
+						member
+				);
+				productRepository.save(soldProduct);
+
+				// 판매 등록만 되어 있는 모바일 데이터 (0.5GB)
+				MobileData activeMobileData = mobileDataRepository.save(
+						MobileData.of(BigDecimal.valueOf(0.5), BigDecimal.valueOf(0.5), 100, false)
+				);
+				Product activeProduct = Product.of(
+						ProductState.ACTIVE,
+						500,
+						activeMobileData.getId(),
+						ItemType.MOBILE_DATA,
+						member
+				);
+				productRepository.save(activeProduct);
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
+				// when & then
+				mockMvc.perform(get("/api/members/selling-data")
+								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
+						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
+						.andExpect(jsonPath("$.data.data").value(1.5)
+						)
+						.andDo(document("member/get-selling-data-total",
+										responseFields(
+												fieldWithPath("code").description("상태 코드"),
+												fieldWithPath("message").description("처리 결과 메시지"),
+												fieldWithPath("data").description("응답 데이터"),
+												fieldWithPath("data.data").description(
+														"회원이 등록한 판매 완료 및 판매 중 상품의 데이터 총합 (GB)")
+										)
+								)
+						);
+			}
+
+
 		}
 	}
 
@@ -216,6 +286,7 @@ class MemberControllerTest {
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").exists())
 						.andExpect(jsonPath("$.message").exists())
+						.andExpect(jsonPath("$.data.memberId").value(member.getId()))
 						.andExpect(jsonPath("$.data.name").value(member.getName()))
 						.andExpect(
 								jsonPath("$.data.profileImageUrl").value(
@@ -229,6 +300,7 @@ class MemberControllerTest {
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
 										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data.memberId").description("회원 아이디"),
 										fieldWithPath("data.name").description("회원 이름"),
 										fieldWithPath("data.profileImageUrl").description(
 												"프로필 이미지 URL"),
@@ -263,6 +335,7 @@ class MemberControllerTest {
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").exists())
 						.andExpect(jsonPath("$.message").exists())
+						.andExpect(jsonPath("$.data.memberId").value(other.getId()))
 						.andExpect(jsonPath("$.data.name").value(other.getName()))
 						.andExpect(jsonPath("$.data.profileImageUrl").value(
 								other.getProfileImageUrl()))
@@ -274,6 +347,7 @@ class MemberControllerTest {
 								responseFields(
 										fieldWithPath("code").description("상태 코드"),
 										fieldWithPath("message").description("처리 결과 메시지"),
+										fieldWithPath("data.memberId").description("회원 아이디"),
 										fieldWithPath("data.name").description("회원 이름"),
 										fieldWithPath("data.profileImageUrl").description(
 												"프로필 이미지 URL"),

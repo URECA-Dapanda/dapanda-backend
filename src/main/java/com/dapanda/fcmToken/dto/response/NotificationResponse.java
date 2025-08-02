@@ -1,4 +1,4 @@
-package com.dapanda.fcm_token.dto.response;
+package com.dapanda.fcmToken.dto.response;
 
 import com.dapanda.fcm_token.entity.NotificationEntity;
 import java.time.LocalDateTime;
