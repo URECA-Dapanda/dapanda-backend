@@ -19,6 +19,7 @@ import com.dapanda.trade.dto.MobileDataScrap;
 import com.dapanda.trade.entity.TradeType;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.JPAExpressions;
@@ -247,6 +248,9 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 			cursorCondition.and((product.id.lt(request.cursorId())));
 		}
 
+		Expression<String> imageUrlExpr =
+				productImage.imageUrl.coalesce("").as("productImageUrl");
+
 		List<Tuple> tuples = queryFactory
 				.select(
 						product.id,
@@ -257,7 +261,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						wifi.startTime,
 						wifi.endTime,
 						wifi.title,
-						productImage.imageUrl.coalesce(""),
+						imageUrlExpr,
 						product.createdAt,
 						product.updatedAt
 				)
@@ -273,14 +277,16 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.leftJoin(productImage).on(
 						productImage.wifiId.eq(wifi.id)
 								.and(productImage.priority.eq(
-										JPAExpressions.select(productImageSub.priority.min())
+										JPAExpressions.select(
+														productImageSub.priority.min())
 												.from(productImageSub)
 												.where(productImageSub.wifiId.eq(wifi.id))
 								))
 				)
 				.where(
 						product.member.id.eq(request.memberId()),
-						request.productState() != null ? product.state.eq(request.productState())
+						request.productState() != null ? product.state.eq(
+								request.productState())
 								: null,
 						cursorCondition
 				)
@@ -313,7 +319,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 							tuple.get(wifi.startTime),
 							tuple.get(wifi.endTime),
 							tuple.get(wifi.title),
-							tuple.get(productImage.imageUrl),
+							tuple.get(imageUrlExpr),
 							tuple.get(product.createdAt),
 							tuple.get(product.updatedAt)
 					);
