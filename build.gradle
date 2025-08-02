@@ -237,17 +237,20 @@ def jacocoExcludePatterns = [
         '**/dto/**',
         '**/config/**',
         '**/test/**',
-        'com/dapanda/auth/handler/OAuth2FailureHandler.class',
-        'com/dapanda/auth/handler/OAuth2SuccessHandler.class',
-        'com/dapanda/auth/service/CustomOAuth2UserService.class',
+
+        // Auth 관련
+        'com/dapanda/auth/handler/*.class',
+        'com/dapanda/auth/service/*.class',
+        'com/dapanda/auth/security/*.class',
+        'com/dapanda/auth/oauth2/*.class',
+
+        // JWT 필터
         'com/dapanda/jwt/JwtAuthenticationFilter.class',
-        'com/dapanda/auth/oauth2/OAuth2UserInfo.class',
-        'com/dapanda/auth/oauth2/KakaoOAuth2UserInfo.class',
-        'com/dapanda/auth/oauth2/GoogleOAuth2UserInfo.class',
-        'com/dapanda/auth/oauth2/NaverOAuth2UserInfo.class',
-        'com/dapanda/auth/oauth2/OAuth2UserInfoFactory.class',
-        'com/dapanda/auth/service/CustomUserDetailsService.class',
-        'com/dapanda/auth/security/CustomUserDetails.class'
+
+        // Alarm 관련
+        'com/dapanda/alarm/event/*.java',
+        'com/dapanda/alarm/handler/*.java',
+        'com/dapanda/alarm/scheduler/*.java'
 ]
 
 jacocoTestReport {

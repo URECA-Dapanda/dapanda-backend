@@ -1022,6 +1022,8 @@ class TradeControllerTest {
 				ReflectionTestUtils.setField(buyer, "cash", CASH_5000);
 				List<Member> members = new ArrayList<>(Arrays.asList(seller, buyer));
 				memberRepository.saveAll(members);
+				fcmTokenRepository.save(FcmToken.of("test_token1", seller));
+				fcmTokenRepository.save(FcmToken.of("test_token2", buyer));
 
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
 						START_DATETIME, END_DATETIME);
@@ -1043,6 +1045,7 @@ class TradeControllerTest {
 										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
+						.andDo(print())
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))

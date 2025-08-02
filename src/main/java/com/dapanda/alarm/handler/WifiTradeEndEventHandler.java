@@ -1,6 +1,6 @@
 package com.dapanda.alarm.handler;
 
-import com.dapanda.alarm.event.WifiTradeStartEvent;
+import com.dapanda.alarm.event.WifiTradeEndEvent;
 import com.dapanda.chat.config.WebSocketPath;
 import com.dapanda.fcmToken.service.FcmTokenService;
 import lombok.RequiredArgsConstructor;
@@ -10,19 +10,18 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
-public class WifiTradeStartEventHandler {
+@Slf4j
+public class WifiTradeEndEventHandler {
 
 	private final SimpMessagingTemplate messagingTemplate;
 	private final FcmTokenService fcmTokenService;
 
 	@Async
 	@EventListener
-	public void handleWifiTradeStart(WifiTradeStartEvent event) {
-
-		log.info("WIFI 사용 시작 이벤트 tradeId : {}, memberId : {}", event.getTradeId(),
+	public void handleWifiTradeEnd(WifiTradeEndEvent event) {
+		log.info("WIFI 사용 종료 이벤트 tradeId : {}, memberId : {}", event.getTradeId(),
 				event.getMemberId());
 
 		messagingTemplate.convertAndSend(
@@ -31,6 +30,6 @@ public class WifiTradeStartEventHandler {
 				event
 		);
 
-		fcmTokenService.notifyWifiStart(event.getMemberId());
+		fcmTokenService.notifyWifiEnd(event.getMemberId());
 	}
 }
