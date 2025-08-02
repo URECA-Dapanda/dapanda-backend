@@ -329,6 +329,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.id,
 						mobileData.id,
 						product.member.name,
+						product.member.profileImageUrl.coalesce(""),
 						product.price,
 						Expressions.constant(0),
 						mobileData.remainAmount,

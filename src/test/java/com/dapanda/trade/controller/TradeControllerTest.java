@@ -567,6 +567,9 @@ class TradeControllerTest {
 												"데이터 가격"),
 										fieldWithPath("data.combinations[].memberName").description(
 												"판매자 이름"),
+										fieldWithPath(
+												"data.combinations[].profileImageUrl").description(
+												"판매자 프로필 이미지 URL"),
 										fieldWithPath("data.combinations[].price").description(
 												"상품 가격"),
 										fieldWithPath(
@@ -745,6 +748,8 @@ class TradeControllerTest {
 												"데이터 가격"),
 										fieldWithPath("combinations[].memberName").description(
 												"판매자 이름"),
+										fieldWithPath("combinations[].profileImageUrl").description(
+												"판매자 프로필 이미지 URL"),
 										fieldWithPath("combinations[].price").description(
 												"상품 가격"),
 										fieldWithPath(
@@ -866,6 +871,8 @@ class TradeControllerTest {
 												"데이터 가격"),
 										fieldWithPath("combinations[].memberName").description(
 												"판매자 이름"),
+										fieldWithPath("combinations[].profileImageUrl").description(
+												"판매자 프로필 이미지 URL"),
 										fieldWithPath("combinations[].price").description(
 												"상품 가격"),
 										fieldWithPath(
@@ -966,6 +973,8 @@ class TradeControllerTest {
 												"데이터 가격"),
 										fieldWithPath("combinations[].memberName").description(
 												"판매자 이름"),
+										fieldWithPath("combinations[].profileImageUrl").description(
+												"판매자 프로필 이미지 URL"),
 										fieldWithPath("combinations[].price").description(
 												"상품 가격"),
 										fieldWithPath(
