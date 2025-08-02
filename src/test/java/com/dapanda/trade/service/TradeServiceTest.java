@@ -746,6 +746,7 @@ class TradeServiceTest {
 						BigDecimal.valueOf(0),
 						TITLE,
 						PROFILE_IMAGE_URL,
+						10,
 						trade1.getCreatedAt()
 				);
 
@@ -756,6 +757,7 @@ class TradeServiceTest {
 						BigDecimal.valueOf(0),
 						TITLE + 1,
 						PROFILE_IMAGE_URL,
+						10,
 						trade2.getCreatedAt()
 				);
 
