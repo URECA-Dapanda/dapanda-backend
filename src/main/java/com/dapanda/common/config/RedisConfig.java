@@ -1,14 +1,23 @@
 package com.dapanda.common.config;
 
+import com.dapanda.chat.service.RedisPubSubService;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.listener.PatternTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.*;
 
@@ -22,45 +31,45 @@ public class RedisConfig {
 	@Value("${spring.data.redis.port}")
 	private int port;
 
-//	@Bean
-//	@Qualifier("chatPubSub")
-//	public RedisConnectionFactory chatPubSubFactor() {
-//
-//		RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
-//
-//		configuration.setHostName(host);
-//		configuration.setPort(port);
-//
-//		return new LettuceConnectionFactory(configuration);
-//	}
-//
-//	@Bean
-//	@Qualifier("chatPubSub")
-//	public StringRedisTemplate stringRedisTemplate(
-//			@Qualifier("chatPubSub") RedisConnectionFactory redisConnectionFactory) {
-//
-//		return new StringRedisTemplate(redisConnectionFactory);
-//	}
-//
-//	@Bean
-//	public RedisMessageListenerContainer redisMessageListenerContainer(
-//			@Qualifier("chatPubSub") RedisConnectionFactory redisConnectionFactory,
-//			MessageListenerAdapter messageListenerAdapter) {
-//
-//		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-//
-//		container.setConnectionFactory(redisConnectionFactory);
-//		container.addMessageListener(messageListenerAdapter, new PatternTopic("chat"));
-//
-//		return container;
-//	}
-//
-//	@Bean
-//	public MessageListenerAdapter messageListenerAdapter(RedisPubSubService redisPubSubService) {
-//
-//		// RedisPubSubService 의 특정 메서드가 수신된 메시지를 처리할수 있도록 지정
-//		return new MessageListenerAdapter(redisPubSubService, "onMessage");
-//	}
+	@Bean
+	@Qualifier("chatPubSub")
+	public RedisConnectionFactory chatPubSubFactor() {
+
+		RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
+
+		configuration.setHostName(host);
+		configuration.setPort(port);
+
+		return new LettuceConnectionFactory(configuration);
+	}
+
+	@Bean
+	@Qualifier("chatPubSub")
+	public StringRedisTemplate stringRedisTemplate(
+			@Qualifier("chatPubSub") RedisConnectionFactory redisConnectionFactory) {
+
+		return new StringRedisTemplate(redisConnectionFactory);
+	}
+
+	@Bean
+	public RedisMessageListenerContainer redisMessageListenerContainer(
+			@Qualifier("chatPubSub") RedisConnectionFactory redisConnectionFactory,
+			MessageListenerAdapter messageListenerAdapter) {
+
+		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+
+		container.setConnectionFactory(redisConnectionFactory);
+		container.addMessageListener(messageListenerAdapter, new PatternTopic("chat"));
+
+		return container;
+	}
+
+	@Bean
+	public MessageListenerAdapter messageListenerAdapter(RedisPubSubService redisPubSubService) {
+
+		// RedisPubSubService 의 특정 메서드가 수신된 메시지를 처리할수 있도록 지정
+		return new MessageListenerAdapter(redisPubSubService, "onMessage");
+	}
 
 	@Bean
 	public GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer() {

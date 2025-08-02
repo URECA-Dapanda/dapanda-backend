@@ -107,8 +107,8 @@ class ReviewControllerTest {
 		jdbcTemplate.execute("DELETE FROM review");
 		jdbcTemplate.execute("DELETE FROM trade_details");
 		jdbcTemplate.execute("DELETE FROM trade");
-		jdbcTemplate.execute("DELETE FROM wifi");
 		jdbcTemplate.execute("DELETE FROM product");
+		jdbcTemplate.execute("DELETE FROM wifi");
 		jdbcTemplate.execute("DELETE FROM member");
 
 		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
