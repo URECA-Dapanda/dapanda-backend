@@ -5,18 +5,15 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.review.dto.request.CreateReviewRequest;
-import com.dapanda.review.dto.request.ReadReviewRequest;
-import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.dto.response.CreateReviewResponse;
-import com.dapanda.review.dto.response.ReadReceivedReviewResponse;
-import com.dapanda.review.dto.response.ReadReviewResponse;
-import com.dapanda.review.dto.response.ReadWrittenReviewResponse;
-import com.dapanda.review.dto.response.ReviewStatsResponse;
-import com.dapanda.review.dto.response.UpdateReviewResponse;
+import com.dapanda.product.entity.Product;
+import com.dapanda.product.repository.ProductRepository;
+import com.dapanda.review.dto.request.*;
+import com.dapanda.review.dto.response.*;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.repository.ReviewRepository;
 import com.dapanda.trade.entity.Trade;
+import com.dapanda.trade.entity.TradeDetails;
+import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +29,8 @@ public class ReviewService {
 	private final ReviewRepository reviewRepository;
 	private final TradeRepository tradeRepository;
 	private final MemberRepository memberRepository;
+	private final ProductRepository productRepository;
+	private final TradeDetailsRepository tradeDetailsRepository;
 
 	public ReadReviewResponse readReview(Long reviewId, Long memberId) {
 
@@ -99,7 +98,11 @@ public class ReviewService {
 
 		validateTradeOwner(trade, memberId);
 
-		Member member = trade.getMember();
+		TradeDetails tradeDetails = tradeDetailsRepository.findByTrade_Id(tradeId);
+
+		Product product = tradeDetails.getProduct();
+
+		Member member = product.getMember();
 
 		ReviewStatsResponse stats = findReviewStatsByMember(member);
 		int prevReviewCount = stats.reviewCount();

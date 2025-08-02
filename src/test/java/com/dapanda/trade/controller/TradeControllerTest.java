@@ -1,48 +1,5 @@
 package com.dapanda.trade.controller;
 
-import com.dapanda.TestConfig;
-import com.dapanda.auth.entity.CustomUserDetails;
-import com.dapanda.common.exception.ResultCode;
-import com.dapanda.fcm_token.entity.FcmToken;
-import com.dapanda.fcm_token.repository.FcmTokenRepository;
-import com.dapanda.fcm_token.service.FcmTokenService;
-import com.dapanda.member.entity.Member;
-import com.dapanda.member.entity.MemberFixture;
-import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.plan.entity.*;
-import com.dapanda.plan.repository.PlanRepository;
-import com.dapanda.product.entity.*;
-import com.dapanda.product.repository.*;
-import com.dapanda.trade.dto.MobileDataScrap;
-import com.dapanda.trade.dto.request.*;
-import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
-import com.dapanda.trade.entity.*;
-import com.dapanda.trade.repository.TradeDetailsRepository;
-import com.dapanda.trade.repository.TradeRepository;
-import com.dapanda.trade.service.TradeService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-
 import static com.dapanda.TestConstants.Member.CASH_5000;
 import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
@@ -62,6 +19,48 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.dapanda.TestConfig;
+import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.common.exception.ResultCode;
+import com.dapanda.fcmToken.entity.FcmToken;
+import com.dapanda.fcmToken.repository.FcmTokenRepository;
+import com.dapanda.fcmToken.service.FcmTokenService;
+import com.dapanda.member.entity.Member;
+import com.dapanda.member.entity.MemberFixture;
+import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.plan.entity.*;
+import com.dapanda.plan.repository.PlanRepository;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.*;
+import com.dapanda.trade.dto.MobileDataScrap;
+import com.dapanda.trade.dto.request.*;
+import com.dapanda.trade.dto.response.FindMobileDataScrapResponse;
+import com.dapanda.trade.entity.*;
+import com.dapanda.trade.repository.TradeDetailsRepository;
+import com.dapanda.trade.repository.TradeRepository;
+import com.dapanda.trade.service.TradeService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -86,6 +85,8 @@ class TradeControllerTest {
 	private MobileDataRepository mobileDataRepository;
 	@Autowired
 	private WifiRepository wifiRepository;
+	@Autowired
+	private ProductImageRepository productImageRepository;
 	@Autowired
 	private TradeRepository tradeRepository;
 	@Autowired
@@ -566,6 +567,9 @@ class TradeControllerTest {
 												"데이터 가격"),
 										fieldWithPath("data.combinations[].memberName").description(
 												"판매자 이름"),
+										fieldWithPath(
+												"data.combinations[].profileImageUrl").description(
+												"판매자 프로필 이미지 URL"),
 										fieldWithPath("data.combinations[].price").description(
 												"상품 가격"),
 										fieldWithPath(
@@ -744,6 +748,8 @@ class TradeControllerTest {
 												"데이터 가격"),
 										fieldWithPath("combinations[].memberName").description(
 												"판매자 이름"),
+										fieldWithPath("combinations[].profileImageUrl").description(
+												"판매자 프로필 이미지 URL"),
 										fieldWithPath("combinations[].price").description(
 												"상품 가격"),
 										fieldWithPath(
@@ -865,6 +871,8 @@ class TradeControllerTest {
 												"데이터 가격"),
 										fieldWithPath("combinations[].memberName").description(
 												"판매자 이름"),
+										fieldWithPath("combinations[].profileImageUrl").description(
+												"판매자 프로필 이미지 URL"),
 										fieldWithPath("combinations[].price").description(
 												"상품 가격"),
 										fieldWithPath(
@@ -965,6 +973,8 @@ class TradeControllerTest {
 												"데이터 가격"),
 										fieldWithPath("combinations[].memberName").description(
 												"판매자 이름"),
+										fieldWithPath("combinations[].profileImageUrl").description(
+												"판매자 프로필 이미지 URL"),
 										fieldWithPath("combinations[].price").description(
 												"상품 가격"),
 										fieldWithPath(
@@ -1223,6 +1233,10 @@ class TradeControllerTest {
 						buyer
 				));
 
+				ProductImage productImage1 = ProductImage.of(PRODUCT_IMAGE_URL, 1, wifi1.getId());
+				ProductImage productImage2 = ProductImage.of(PRODUCT_IMAGE_URL, 1, wifi2.getId());
+				productImageRepository.saveAll(List.of(productImage1, productImage2));
+
 				tradeRepository.saveAll(new ArrayList<>(List.of(trade1, trade2, trade3)));
 				tradeDetailsRepository.save(TradeDetails.of(wifiProduct1, trade1));
 				tradeDetailsRepository.save(TradeDetails.of(wifiProduct2, trade2));
@@ -1249,6 +1263,8 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.data.trades.data[0].tradeType").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].dataAmount").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].title").exists())
+						.andExpect(jsonPath("$.data.trades.data[0].productImageUrl").exists())
+						.andExpect(jsonPath("$.data.trades.data[0].timeAmount").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].createdAt").exists())
 						.andExpect(jsonPath("$.data.trades.pageInfo").exists())
 						.andExpect(jsonPath("$.data.trades.pageInfo.size").exists())
@@ -1278,6 +1294,11 @@ class TradeControllerTest {
 												"거래 데이터양 (데이터)"),
 										fieldWithPath("data.trades.data[].title").description(
 												"거래 상품 제목 (와이파이)"),
+										fieldWithPath(
+												"data.trades.data[].productImageUrl").description(
+												"거래 상품 대표 이미지 URL (와이파이)"),
+										fieldWithPath("data.trades.data[].timeAmount").description(
+												"거래 시간양 (와이파이)"),
 										fieldWithPath("data.trades.data[].createdAt").description(
 												"거래 생성 시간"),
 										fieldWithPath("data.trades.pageInfo").description("페이지 정보"),

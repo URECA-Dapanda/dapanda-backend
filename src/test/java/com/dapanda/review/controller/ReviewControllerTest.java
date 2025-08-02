@@ -1,5 +1,21 @@
 package com.dapanda.review.controller;
 
+import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_REVIEW_SORT_OPTION;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
+import static com.dapanda.TestConstants.Review.*;
+import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.mock;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.common.exception.ResultCode;
@@ -19,6 +35,7 @@ import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
+import java.util.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,24 +50,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.*;
-
-import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_REVIEW_SORT_OPTION;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
-import static com.dapanda.TestConstants.Review.*;
-import static com.dapanda.TestConstants.Trade.TRADE_ID_1;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.mock;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -128,9 +127,12 @@ class ReviewControllerTest {
 			public void createReviewTest() throws Exception {
 
 				//given
+				Member seller = memberRepository.save(MemberFixture.createMember1());
 				Member buyer = memberRepository.save(MemberFixture.createMember2());
-				Trade trade = tradeRepository.save(
-						TradeFixture.createTradeWifi(buyer));
+
+				Product product = productRepository.save(ProductFixture.createProduct1(seller));
+				Trade trade = tradeRepository.save(TradeFixture.createTradeWifi(buyer));
+				tradeDetailsRepository.save(TradeDetailsFixture.createTradeDetails(product, trade));
 
 				CreateReviewRequest request = new CreateReviewRequest(RATING, COMMENT);
 
@@ -220,7 +222,8 @@ class ReviewControllerTest {
 
 				Wifi wifi = wifiRepository.save(WifiFixture.createWifi());
 
-				Product product = productRepository.save(ProductFixture.createWifiProduct(seller, wifi));
+				Product product = productRepository.save(
+						ProductFixture.createWifiProduct(seller, wifi));
 
 				List<Trade> tradeFixtures = new ArrayList<>();
 
@@ -347,7 +350,8 @@ class ReviewControllerTest {
 
 				Wifi wifi = wifiRepository.save(WifiFixture.createWifi());
 
-				Product product = productRepository.save(ProductFixture.createWifiProduct(seller, wifi));
+				Product product = productRepository.save(
+						ProductFixture.createWifiProduct(seller, wifi));
 
 				List<Trade> tradeFixtures = new ArrayList<>();
 

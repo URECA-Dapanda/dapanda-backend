@@ -14,13 +14,14 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
+import com.dapanda.alarm.scheduler.WifiTradeNotificationScheduler;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse.PageInfo;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
-import com.dapanda.fcm_token.entity.FcmToken;
-import com.dapanda.fcm_token.repository.FcmTokenRepository;
-import com.dapanda.fcm_token.service.FcmTokenService;
+import com.dapanda.fcmToken.entity.FcmToken;
+import com.dapanda.fcmToken.repository.FcmTokenRepository;
+import com.dapanda.fcmToken.service.FcmTokenService;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
@@ -69,6 +70,8 @@ class TradeServiceTest {
 	private FcmTokenService fcmTokenService;
 	@Mock
 	private FcmTokenRepository fcmTokenRepository;
+	@Mock
+	private WifiTradeNotificationScheduler wifiTradeNotificationScheduler;
 
 	@InjectMocks
 	private TradeService tradeService;
@@ -742,6 +745,8 @@ class TradeServiceTest {
 						PURCHASE_WIFI,
 						BigDecimal.valueOf(0),
 						TITLE,
+						PROFILE_IMAGE_URL,
+						10,
 						trade1.getCreatedAt()
 				);
 
@@ -751,6 +756,8 @@ class TradeServiceTest {
 						PURCHASE_WIFI,
 						BigDecimal.valueOf(0),
 						TITLE + 1,
+						PROFILE_IMAGE_URL,
+						10,
 						trade2.getCreatedAt()
 				);
 

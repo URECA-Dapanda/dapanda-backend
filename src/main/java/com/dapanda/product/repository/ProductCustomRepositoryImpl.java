@@ -19,6 +19,7 @@ import com.dapanda.trade.dto.MobileDataScrap;
 import com.dapanda.trade.entity.TradeType;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.JPAExpressions;
@@ -238,12 +239,17 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 	@Override
 	public List<ReadSellingProductResponse> findSellingProduct(ReadSellingProductRequest request) {
 
+		QProductImage productImageSub = new QProductImage("productImageSub");
+
 		BooleanBuilder cursorCondition = new BooleanBuilder();
 
 		if (request.cursorId() != null && request.cursorId() != 0L) {
 
 			cursorCondition.and((product.id.lt(request.cursorId())));
 		}
+
+		Expression<String> imageUrlExpr =
+				productImage.imageUrl.coalesce("").as("productImageUrl");
 
 		List<Tuple> tuples = queryFactory
 				.select(
@@ -255,6 +261,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						wifi.startTime,
 						wifi.endTime,
 						wifi.title,
+						imageUrlExpr,
 						product.createdAt,
 						product.updatedAt
 				)
@@ -267,9 +274,19 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.itemId.eq(wifi.id)
 								.and(product.itemType.eq(ItemType.WIFI))
 				)
+				.leftJoin(productImage).on(
+						productImage.wifiId.eq(wifi.id)
+								.and(productImage.priority.eq(
+										JPAExpressions.select(
+														productImageSub.priority.min())
+												.from(productImageSub)
+												.where(productImageSub.wifiId.eq(wifi.id))
+								))
+				)
 				.where(
 						product.member.id.eq(request.memberId()),
-						request.productState() != null ? product.state.eq(request.productState())
+						request.productState() != null ? product.state.eq(
+								request.productState())
 								: null,
 						cursorCondition
 				)
@@ -302,6 +319,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 							tuple.get(wifi.startTime),
 							tuple.get(wifi.endTime),
 							tuple.get(wifi.title),
+							tuple.get(imageUrlExpr),
 							tuple.get(product.createdAt),
 							tuple.get(product.updatedAt)
 					);
@@ -317,6 +335,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						product.id,
 						mobileData.id,
 						product.member.name,
+						product.member.profileImageUrl.coalesce(""),
 						product.price,
 						Expressions.constant(0),
 						mobileData.remainAmount,
@@ -525,7 +544,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 		// 와이파이 상품
 		Integer recentPrice = queryFactory
-				.select(trade.tradingPrice)
+				.select(trade.tradingPrice.multiply(10).divide(trade.timeAmount)) // 10분당 가격
 				.from(trade)
 				.where(
 						trade.tradeType.eq(TradeType.SALE_WIFI),
@@ -536,7 +555,9 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.fetchOne();
 
 		Double averagePrice = queryFactory
-				.select(trade.tradingPrice.avg())
+				.select(
+						trade.tradingPrice.multiply(10).divide(trade.timeAmount).avg()
+				)
 				.from(trade)
 				.where(
 						trade.tradeType.eq(TradeType.SALE_WIFI),

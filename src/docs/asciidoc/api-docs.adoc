@@ -126,19 +126,36 @@ include::{snippets}/member/get-buying-data/response-fields.adoc[]
 
 ==== 판매 데이터양 조회
 
-`GET` 회원이 판매한 데이터양 조회
+`GET` 회원이 올린 상품 중 실제로 판매된 데이터양 조회
 
 ===== 요청
 
-include::{snippets}/member/get-selling-data/http-request.adoc[]
+include::{snippets}/member/get-sold-data/http-request.adoc[]
 
 ===== 응답
 
-include::{snippets}/member/get-selling-data/http-response.adoc[]
+include::{snippets}/member/get-sold-data/http-response.adoc[]
 
 ===== 응답 필드
 
-include::{snippets}/member/get-selling-data/response-fields.adoc[]
+include::{snippets}/member/get-sold-data/response-fields.adoc[]
+
+==== 판매 데이터양 조회
+
+`GET` 회원이 상품 등록한 총 데이터양 조회
+
+===== 요청
+
+include::{snippets}/member/get-selling-data-total/http-request.adoc[]
+
+===== 응답
+
+include::{snippets}/member/get-selling-data-total/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/member/get-selling-data-total/response-fields.adoc[]
+
 
 ---
 
@@ -1477,3 +1494,51 @@ include::{snippets}/fcm-token-save-invalid-blank/http-request.adoc[]
 include::{snippets}/fcm-token-save-invalid-blank/http-response.adoc[]
 
 include::{snippets}/fcm-token-save-invalid-blank/response-fields.adoc[]
+
+==== 알림 조회
+
+`GET /api/notifications`
+
+회원 본인의 알림 목록을 최신순으로 조회합니다.
+
+===== 응답
+
+include::{snippets}/get-my-notifications/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/get-my-notifications/response-fields.adoc[]
+
+==== 알림 삭제
+
+`DELETE /api/notifications/{notificationId}`
+
+회원 본인의 알림을 삭제합니다.
+
+===== 요청 경로 변수
+
+include::{snippets}/delete-notification/path-parameters.adoc[]
+
+===== 응답
+
+include::{snippets}/delete-notification/http-response.adoc[]
+
+include::{snippets}/delete-notification/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 다른 사용자의 알림을 삭제하려는 경우
+
+include::{snippets}/delete-notification-forbidden/path-parameters.adoc[]
+
+include::{snippets}/delete-notification-forbidden/http-response.adoc[]
+
+include::{snippets}/delete-notification-forbidden/response-fields.adoc[]
+
+====== 존재하지 않는 알림 ID로 삭제 시도한 경우
+
+include::{snippets}/delete-notification-not-found/path-parameters.adoc[]
+
+include::{snippets}/delete-notification-not-found/http-response.adoc[]
+
+include::{snippets}/delete-notification-not-found/response-fields.adoc[]

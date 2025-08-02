@@ -5,4 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TradeDetailsRepository extends JpaRepository<TradeDetails, Long> {
 
+	TradeDetails findByTrade_Id(Long tradeId);
+
+
 }

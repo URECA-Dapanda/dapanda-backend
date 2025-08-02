@@ -1,9 +1,10 @@
 package com.dapanda.trade.service;
 
+import com.dapanda.alarm.scheduler.WifiTradeNotificationScheduler;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
-import com.dapanda.fcm_token.service.FcmTokenService;
+import com.dapanda.fcmToken.service.FcmTokenService;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.plan.entity.Plan;
@@ -39,6 +40,7 @@ public class TradeService {
 	private final TradeDetailsRepository tradeDetailsRepository;
 	private final PlanRepository planRepository;
 	private final FcmTokenService fcmTokenService;
+	private final WifiTradeNotificationScheduler wifiTradeNotificationScheduler;
 
 	/**
 	 * 1. 데이터 일반 상품 구매 요청 2. 해당 상품 재고 조회 3. 재고 유효하면 Lock 걸기, 재고 유효하지 않으면 Exception 4. 캐시 결제 -> 캐시에
@@ -85,8 +87,8 @@ public class TradeService {
 		updateMobileDataProduct(mobileData, product, product.getPrice(),
 				mobileData.getDataAmount());
 
-		Trade trade = createMobileDataTradeAndTradeDetails(product, mobileData, buyerId,
-				product.getMember().getId(), product.getPrice());
+		Trade trade = createMobileDataTradeAndTradeDetails(product, mobileData.getDataAmount(),
+				buyerId, product.getMember().getId(), product.getPrice());
 
 		return TradeProductResponse.of(trade.getId());
 	}
@@ -103,8 +105,8 @@ public class TradeService {
 		updateSellerCashAndDataAmount(product.getMember().getId(), price, dataAmount);
 		updateMobileDataProduct(mobileData, product, price, dataAmount);
 
-		Trade trade = createMobileDataTradeAndTradeDetails(product, mobileData, buyerId,
-				product.getMember().getId(), product.getPrice());
+		Trade trade = createMobileDataTradeAndTradeDetails(product, dataAmount, buyerId,
+				product.getMember().getId(), price);
 
 		return TradeProductResponse.of(trade.getId());
 	}
@@ -140,6 +142,7 @@ public class TradeService {
 							item.getProductId(),
 							item.getMobileDataId(),
 							item.getMemberName(),
+							item.getProfileImageUrl(),
 							item.getPrice(),
 							(int) (needed.doubleValue() * 10 * item.getPricePer100MB()),
 							// purchasePrice
@@ -154,9 +157,23 @@ public class TradeService {
 					sumPrice += (int) (needed.doubleValue() * 10 * item.getPricePer100MB());
 					temp.add(partialScrap);
 				} else {
+					MobileDataScrap fullScrap = new MobileDataScrap(
+							item.getProductId(),
+							item.getMobileDataId(),
+							item.getMemberName(),
+							item.getProfileImageUrl(),
+							item.getPrice(),
+							item.getPrice(), // purchasePrice
+							item.getRemainAmount(),
+							item.getRemainAmount(), // purchaseAmount
+							item.getPricePer100MB(),
+							false,
+							item.getUpdatedAt()
+					);
+
 					sumAmount = sumAmount.add(amount);
 					sumPrice += item.getPrice();
-					temp.add(item);
+					temp.add(fullScrap);
 				}
 
 				if (sumAmount.compareTo(target) == 0) { // 5. 목표 용량을 정확히 채운 조합은 후보군에 추가
@@ -239,8 +256,8 @@ public class TradeService {
 					purchaseAmount);
 
 			// 4-5. 거래 저장
-			Trade sellerTrade = Trade.of(totalAmount, null, totalPrice,
-					TradeType.PURCHASE_MOBILE_COMPOSITE, seller);
+			Trade sellerTrade = Trade.of(purchaseAmount, null, purchasePrice,
+					TradeType.SALE_MOBILE_DATA, seller);
 			tradeRepository.save(sellerTrade);
 
 			TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);
@@ -266,14 +283,19 @@ public class TradeService {
 				.orElseThrow(() -> new GlobalException(ResultCode.WIFI_NOT_FOUND));
 
 		// 3. 유효성 검사
-		int timeAmount = (int) Duration.between(request.startTime(), request.endTime())
-				.toMinutes();
-		int totalPrice = product.getPrice() * timeAmount / 10;
-
 		LocalTime requestStart = request.startTime().toLocalTime();
 		LocalTime requestEnd = request.endTime().toLocalTime();
 		LocalTime wifiStart = wifi.getStartTime().toLocalTime();
 		LocalTime wifiEnd = wifi.getEndTime().toLocalTime();
+
+		int timeAmount;
+		if (requestStart.isBefore(requestEnd)) {
+			timeAmount = (int) Duration.between(requestStart, requestEnd).toMinutes();
+		} else {
+			timeAmount = (int) Duration.between(requestStart, requestEnd.plusHours(24)).toMinutes();
+		}
+
+		int totalPrice = product.getPrice() * timeAmount / 10;
 
 		validateProduct(product.getId(), buyerId);
 		validateWifiTime(requestStart, requestEnd, wifiStart, wifiEnd);
@@ -285,7 +307,11 @@ public class TradeService {
 		Trade buyerTrade = createWifiTradeAndTradeDetails(product, buyerId,
 				product.getMember().getId(), totalPrice, timeAmount);
 
-		// 6. 응답 반환
+		// 6. 알림 저장
+		wifiTradeNotificationScheduler.scheduleNotification(buyerTrade.getId(),
+				buyerId, requestStart, requestEnd);
+
+		// 7. 응답 반환
 		return TradeProductResponse.of(buyerTrade.getId());
 	}
 
@@ -401,7 +427,7 @@ public class TradeService {
 
 		} else {
 			product.updatePrice(product.getPrice() - price);
-			mobileData.update100MBPerPrice(price, mobileData.getRemainAmount());
+			mobileData.update100MBPerPrice(product.getPrice(), mobileData.getRemainAmount());
 		}
 	}
 
@@ -418,16 +444,14 @@ public class TradeService {
 		buyer.deductCash(totalPrice);
 	}
 
-	private Trade createMobileDataTradeAndTradeDetails(Product product, MobileData mobileData,
+	private Trade createMobileDataTradeAndTradeDetails(Product product, BigDecimal dataAmount,
 			Long buyerId, Long sellerId, int price) {
 
 		Member buyer = memberRepository.findById(buyerId).orElseThrow();
 		Member seller = memberRepository.findById(sellerId).orElseThrow();
 
-		Trade buyerTrade = Trade.of(mobileData.getDataAmount(), price,
-				TradeType.PURCHASE_MOBILE_SINGLE, buyer);
-		Trade sellerTrade = Trade.of(mobileData.getDataAmount(), price, TradeType.SALE_MOBILE_DATA,
-				seller);
+		Trade buyerTrade = Trade.of(dataAmount, price, TradeType.PURCHASE_MOBILE_SINGLE, buyer);
+		Trade sellerTrade = Trade.of(dataAmount, price, TradeType.SALE_MOBILE_DATA, seller);
 		tradeRepository.saveAll(List.of(buyerTrade, sellerTrade));
 
 		TradeDetails buyerTradeDetails = TradeDetails.of(product, buyerTrade);

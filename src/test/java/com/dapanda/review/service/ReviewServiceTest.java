@@ -17,13 +17,15 @@ import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.product.entity.Product;
+import com.dapanda.product.entity.ProductFixture;
 import com.dapanda.review.dto.request.*;
 import com.dapanda.review.dto.response.*;
 import com.dapanda.review.entity.Review;
 import com.dapanda.review.entity.ReviewFixture;
 import com.dapanda.review.repository.ReviewRepository;
-import com.dapanda.trade.entity.Trade;
-import com.dapanda.trade.entity.TradeFixture;
+import com.dapanda.trade.entity.*;
+import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
 import java.util.*;
 import org.junit.jupiter.api.*;
@@ -43,6 +45,9 @@ class ReviewServiceTest {
 	TradeRepository tradeRepository;
 
 	@Mock
+	TradeDetailsRepository tradeDetailsRepository;
+
+	@Mock
 	MemberRepository memberRepository;
 
 	@InjectMocks
@@ -59,29 +64,32 @@ class ReviewServiceTest {
 			@Test
 			@DisplayName("리뷰 등록 성공후 등록된 리뷰 아이디를 반환한다")
 			public void saveReviewTest() {
+				// given
+				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID);
+				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);
 
-				//given
-				Member savedBuyer = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
-				Trade savedTrade = TradeFixture.createTrade1WithId(savedBuyer,
-						TRADE_ID_1);
+				Product product = ProductFixture.createProduct1(seller);
+				Trade trade = TradeFixture.createTrade1WithId(buyer, TRADE_ID_1);
+				TradeDetails tradeDetails = TradeDetailsFixture.createTradeDetails(product, trade);
 
 				CreateReviewRequest request = new CreateReviewRequest(RATING, COMMENT);
+				Review savedReview = ReviewFixture.createReview1WithId(trade, REVIEW_ID);
 
-				Review savedReview = ReviewFixture.createReview1WithId(savedTrade, REVIEW_ID);
-
-				given(tradeRepository.findById(savedTrade.getId())).willReturn(
-						Optional.of(savedTrade));
+				given(tradeRepository.findById(trade.getId())).willReturn(Optional.of(trade));
+				given(tradeDetailsRepository.findByTrade_Id(trade.getId())).willReturn(
+						tradeDetails);
 				given(reviewRepository.save(any(Review.class))).willReturn(savedReview);
+				given(memberRepository.save(any(Member.class))).willReturn(seller);
 
-				//when
-				CreateReviewResponse response = reviewService.createReview(savedTrade.getId(),
-						request, BUYER_MEMBER_ID);
+				// when
+				CreateReviewResponse response = reviewService.createReview(trade.getId(), request,
+						BUYER_MEMBER_ID);
 
-				//then
+				// then
 				assertThat(response.getReviewId()).isEqualTo(savedReview.getId());
-
 				verify(reviewRepository).save(any(Review.class));
 			}
+
 
 			@Test
 			@DisplayName("리뷰 등록시 평균 평점과 리뷰 개수가 올바르게 반영된다")
@@ -92,28 +100,35 @@ class ReviewServiceTest {
 				int prevCount = 2;
 				float newRating = 5.0f;
 
-				Member member = MemberFixture.createMember1WithId(BUYER_MEMBER_ID);
-				member.updateReviewInfo(prevCount, prevAverage);
+				Member seller = MemberFixture.createMember1WithId(SELLER_MEMBER_ID); // 리뷰 받을 사람
+				Member buyer = MemberFixture.createMember2WithId(BUYER_MEMBER_ID);   // 리뷰 작성자
 
-				Trade trade = TradeFixture.createTrade1WithId(member, TRADE_ID_1);
+				seller.updateReviewInfo(prevCount, prevAverage);
+
+				Product product = ProductFixture.createProduct1(seller);
+				Trade trade = TradeFixture.createTrade1WithId(buyer, TRADE_ID_1);
+				TradeDetails tradeDetails = TradeDetailsFixture.createTradeDetails(product, trade);
+
+				Review review1 = ReviewFixture.createReviewWithRating(trade, 1L, 4.0f);
+				Review review2 = ReviewFixture.createReviewWithRating(trade, 2L, 4.0f);
 
 				CreateReviewRequest request = new CreateReviewRequest(newRating, COMMENT);
 				Review savedReview = ReviewFixture.createReview1WithId(trade, REVIEW_ID);
 
 				given(tradeRepository.findById(trade.getId())).willReturn(Optional.of(trade));
+				given(tradeDetailsRepository.findByTrade_Id(trade.getId())).willReturn(
+						tradeDetails);
 				given(reviewRepository.save(any(Review.class))).willReturn(savedReview);
-				given(reviewRepository.findByTradeMember(member)).willReturn(List.of(
-						ReviewFixture.createReviewWithRating(trade, 1L, 4.0f),
-						ReviewFixture.createReviewWithRating(trade, 2L, 4.0f)
-				));
+				given(reviewRepository.findByTradeMember(seller)).willReturn(
+						List.of(review1, review2));
+				given(memberRepository.save(any(Member.class))).willReturn(seller);
 
-				//when
+				// when
 				reviewService.createReview(trade.getId(), request, BUYER_MEMBER_ID);
 
-				//then
-				// (4.0*2 + 5.0) / 3 = 4.33...
-				assertThat(member.getReviewCount()).isEqualTo(3);
-				assertThat(member.getAverageRating()).isCloseTo(4.33f, within(0.01f));
+				// then
+				assertThat(seller.getReviewCount()).isEqualTo(3);
+				assertThat(seller.getAverageRating()).isCloseTo(4.33f, within(0.01f));
 			}
 		}
 

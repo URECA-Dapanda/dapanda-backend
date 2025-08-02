@@ -44,6 +44,13 @@ public class MemberController {
 		return CommonResponse.success(memberService.findBuyingData(userDetails.getId()));
 	}
 
+	@GetMapping("/members/selling-data/sold")
+	public CommonResponse<FindDataResponse> getSoldData(
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+		return CommonResponse.success(memberService.findSoldData(userDetails.getId()));
+	}
+
 	@GetMapping("/members/selling-data")
 	public CommonResponse<FindDataResponse> getSellingData(
 			@AuthenticationPrincipal CustomUserDetails userDetails) {
