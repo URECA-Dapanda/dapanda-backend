@@ -2,10 +2,10 @@ package com.dapanda.fcmToken.service;
 
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
+import com.dapanda.fcmToken.dto.response.NotificationResponse;
 import com.dapanda.fcmToken.entity.FcmToken;
 import com.dapanda.fcmToken.repository.FcmTokenRepository;
 import com.dapanda.fcmToken.repository.NotificationRepository;
-import com.dapanda.fcm_token.dto.response.NotificationResponse;
 import com.dapanda.fcm_token.entity.NotificationEntity;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
