@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberInfoResponse {
 
+	private Long memberId;
 	private String name;
 	private String profileImageUrl;
 	private LocalDate joinedAt;
@@ -17,6 +18,7 @@ public class MemberInfoResponse {
 	private int tradeCount;
 
 	public static MemberInfoResponse of(
+			Long memberId,
 			String name,
 			String profileImageUrl,
 			LocalDate joinedAt,
@@ -25,6 +27,7 @@ public class MemberInfoResponse {
 			int tradeCount
 	) {
 		return MemberInfoResponse.builder()
+				.memberId(memberId)
 				.name(name)
 				.profileImageUrl(profileImageUrl)
 				.joinedAt(joinedAt)

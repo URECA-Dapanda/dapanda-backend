@@ -193,6 +193,7 @@ public class MemberService {
 		Long tradeCount = tradeRepository.countTradeHistoryByMemberId(memberId);
 
 		return MemberInfoResponse.of(
+				memberId,
 				member.getName(),
 				member.getProfileImageUrl(),
 				member.getCreatedAt().toLocalDate(),
