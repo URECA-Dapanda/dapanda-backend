@@ -3,13 +3,13 @@ echo "==== APPLICATION START ===="
 
 APP_NAME="app.jar"
 APP_DIR="/home/ubuntu/app"
-LOG_DIR="/var/log/app"
-LOG_FILE="$LOG_DIR/app.log"
+#LOG_DIR="/var/log/app"
+#LOG_FILE="$LOG_DIR/app.log"
 CLOUDWATCH_AGENT_BIN="/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl"
 
 # 로그 디렉토리 생성
-sudo mkdir -p "$LOG_DIR"
-sudo chown ubuntu:ubuntu "$LOG_DIR"
+#sudo mkdir -p "$LOG_DIR"
+#sudo chown ubuntu:ubuntu "$LOG_DIR"
 
 # 앱 실행
 echo "Starting $APP_NAME with prod profile..."
