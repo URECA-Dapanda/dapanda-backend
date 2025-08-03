@@ -2,15 +2,8 @@ package com.dapanda.product.entity;
 
 import com.dapanda.common.entity.BaseEntity;
 import com.dapanda.member.entity.Member;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.dapanda.product.repository.WifiRepository;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,6 +37,13 @@ public class Product extends BaseEntity {
 	@JoinColumn(name = "member_id")
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Member member;
+
+	public Wifi getWifiFromRepository(WifiRepository wifiRepository) {
+		if (this.getItemType() == ItemType.WIFI && this.getItemId() != null) {
+			return wifiRepository.findById(this.getItemId()).orElse(null);
+		}
+		return null;
+	}
 
 	public static Product of(ProductState state, int price, Long itemId, ItemType itemType,
 			Member member) {

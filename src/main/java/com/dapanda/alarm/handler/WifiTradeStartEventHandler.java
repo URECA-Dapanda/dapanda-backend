@@ -1,14 +1,17 @@
 package com.dapanda.alarm.handler;
 
+import com.dapanda.alarm.dto.AlarmMessage;
 import com.dapanda.alarm.event.WifiTradeStartEvent;
 import com.dapanda.chat.config.WebSocketPath;
 import com.dapanda.fcmToken.service.FcmTokenService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Component
@@ -17,20 +20,27 @@ public class WifiTradeStartEventHandler {
 
 	private final SimpMessagingTemplate messagingTemplate;
 	private final FcmTokenService fcmTokenService;
+	private final ObjectMapper objectMapper;
 
 	@Async
 	@EventListener
 	public void handleWifiTradeStart(WifiTradeStartEvent event) {
+		log.info("WIFI 사용 시작 이벤트 tradeId : {}, memberId : {}", event.getTradeId(), event.getMemberId());
 
-		log.info("WIFI 사용 시작 이벤트 tradeId : {}, memberId : {}", event.getTradeId(),
-				event.getMemberId());
+		AlarmMessage message = new AlarmMessage(
+				event.getTradeId(),
+				event.getStartTime().toString(), // 예: "14:00"
+				event.getEndTime().toString()
+		);
+
+		log.info("💬 전송할 메시지 DTO: {}", message);
 
 		messagingTemplate.convertAndSend(
-				WebSocketPath.SUB.getPath() + "/" + WebSocketPath.ALARM.getPath()
-						+ event.getMemberId(),
-				event
+				"/sub/alarm" + event.getMemberId(),
+				message
 		);
 
 		fcmTokenService.notifyWifiStart(event.getMemberId());
 	}
+
 }

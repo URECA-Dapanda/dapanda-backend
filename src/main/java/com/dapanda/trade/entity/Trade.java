@@ -4,6 +4,9 @@ import com.dapanda.common.entity.CreatedAtEntity;
 import com.dapanda.member.entity.Member;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,6 +34,9 @@ public class Trade extends CreatedAtEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id")
 	private Member member;
+
+	@OneToMany(mappedBy = "trade", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<TradeDetails> tradeDetails = new ArrayList<>();
 
 	public static Trade of(BigDecimal dataAmount, Integer timeAmount, int tradingPrice,
 			TradeType tradeType, Member member) {

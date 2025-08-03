@@ -11,6 +11,7 @@ import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.entity.ItemType;
 import com.dapanda.product.entity.QProductImage;
 import com.dapanda.trade.dto.*;
+import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeType;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.*;
@@ -19,6 +20,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.List;
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -264,4 +267,28 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 
 		return count != null;
 	}
+
+	@Override
+	public Optional<Trade> findOngoingWifiTradeByMemberId(Long memberId) {
+		LocalDateTime now = LocalDateTime.of(LocalDate.now(), LocalTime.now());
+
+		Trade result = queryFactory
+				.select(trade)
+				.from(trade)
+				.join(tradeDetails).on(tradeDetails.trade.eq(trade))
+				.join(tradeDetails.product, product)
+				.join(wifi).on(product.itemType.eq(ItemType.WIFI)
+						.and(product.itemId.eq(wifi.id)))
+				.where(
+						trade.member.id.eq(memberId),
+						trade.tradeType.eq(TradeType.PURCHASE_WIFI),
+						wifi.startTime.loe(now),
+						wifi.endTime.goe(now)
+				)
+				.fetchFirst();
+
+		return Optional.ofNullable(result);
+	}
+
+
 }
