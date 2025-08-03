@@ -163,6 +163,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		return queryFactory
 				.select(Projections.constructor(MobileDataInfoResponse.class,
 						product.id,
+						product.state,
 						mobileData.id,
 						product.price,
 						product.member.id,
@@ -194,6 +195,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		return queryFactory
 				.select(Projections.constructor(WifiInfoResponse.class,
 						product.id,
+						product.state,
 						wifi.id,
 						product.price,
 						product.member.id,
