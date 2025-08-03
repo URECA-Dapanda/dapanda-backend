@@ -1,22 +1,5 @@
 package com.dapanda.product.service;
 
-import static com.dapanda.TestConstants.Member.*;
-import static com.dapanda.TestConstants.MobileData.*;
-import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
-import static com.dapanda.TestConstants.Product.*;
-import static com.dapanda.TestConstants.Review.AVERAGE_RATE;
-import static com.dapanda.TestConstants.Review.REVIEW_COUNT;
-import static com.dapanda.TestConstants.Wifi.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-
 import com.dapanda.common.dto.response.CountCursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
@@ -34,15 +17,33 @@ import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
 import com.dapanda.trade.repository.TradeRepository;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
+
+import static com.dapanda.TestConstants.Member.*;
+import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
+import static com.dapanda.TestConstants.MobileData.*;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
+import static com.dapanda.TestConstants.Product.*;
+import static com.dapanda.TestConstants.Review.AVERAGE_RATE;
+import static com.dapanda.TestConstants.Review.REVIEW_COUNT;
+import static com.dapanda.TestConstants.Wifi.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("상품 서비스 테스트")
@@ -517,10 +518,22 @@ class ProductServiceTest {
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				MobileData mobileData = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
 						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
-				MobileDataInfoResponse expectedResponse = new MobileDataInfoResponse(PRODUCT_ID,
-						mobileData.getId(), PRICE_3000, member.getId(), member.getName(),
-						PROFILE_IMAGE_URL, REMAIN_AMOUNT_1, PRICE_PER_100MB_300, AVERAGE_RATE,
-						REVIEW_COUNT, true, false, UPDATED_AT);
+				MobileDataInfoResponse expectedResponse = new MobileDataInfoResponse(
+						PRODUCT_ID,
+						ProductState.ACTIVE,
+						mobileData.getId(),
+						PRICE_3000,
+						member.getId(),
+						member.getName(),
+						PROFILE_IMAGE_URL,
+						REMAIN_AMOUNT_1,
+						PRICE_PER_100MB_300,
+						AVERAGE_RATE,
+						REVIEW_COUNT,
+						true,
+						false,
+						UPDATED_AT
+				);
 
 				given(productRepository.existsById(PRODUCT_ID))
 						.willReturn(true);
@@ -590,11 +603,28 @@ class ProductServiceTest {
 				Member member = MemberFixture.createMember1WithId(MEMBER_ID);
 				Wifi wifi = WifiFixture.createWifi(TITLE, CONTENT, LATITUDE, LONGITUDE,
 						ADDRESS, START_DATETIME, END_DATETIME);
-				WifiInfoResponse expectedResponse = new WifiInfoResponse(PRODUCT_ID,
-						wifi.getId(), PRICE_3000, member.getId(), member.getName(),
-						PROFILE_IMAGE_URL, TITLE, CONTENT, LATITUDE, LONGITUDE, ADDRESS,
-						AVERAGE_RATE, REVIEW_COUNT, false, null, START_DATETIME,
-						END_DATETIME, true, UPDATED_AT);
+				WifiInfoResponse expectedResponse = new WifiInfoResponse(
+						PRODUCT_ID,
+						ProductState.ACTIVE,
+						wifi.getId(),
+						PRICE_3000,
+						member.getId(),
+						member.getName(),
+						PROFILE_IMAGE_URL,
+						TITLE,
+						CONTENT,
+						LATITUDE,
+						LONGITUDE,
+						ADDRESS,
+						AVERAGE_RATE,
+						REVIEW_COUNT,
+						false,
+						null,
+						START_DATETIME,
+						END_DATETIME,
+						true,
+						UPDATED_AT
+				);
 
 				given(productRepository.existsById(PRODUCT_ID))
 						.willReturn(true);

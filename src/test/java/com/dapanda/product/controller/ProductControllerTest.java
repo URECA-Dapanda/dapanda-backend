@@ -713,6 +713,7 @@ class ProductControllerTest {
 										fieldWithPath("code").description("상태 코드"),
 										fieldWithPath("message").description("처리 결과 메시지"),
 										fieldWithPath("data.productId").description("상품 아이디"),
+										fieldWithPath("data.productState").description("상품 상태"),
 										fieldWithPath("data.itemId").description("데이터 아이디"),
 										fieldWithPath("data.price").description("가격"),
 										fieldWithPath("data.memberId").description(
@@ -867,6 +868,7 @@ class ProductControllerTest {
 										fieldWithPath("code").description("상태 코드"),
 										fieldWithPath("message").description("처리 결과 메시지"),
 										fieldWithPath("data.productId").description("상품 아이디"),
+										fieldWithPath("data.productState").description("상품 상태"),
 										fieldWithPath("data.itemId").description("데이터 아이디"),
 										fieldWithPath("data.price").description("가격"),
 										fieldWithPath("data.memberId").description(
