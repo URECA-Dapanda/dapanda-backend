@@ -416,7 +416,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 					.and(QProduct.product.id.gt(cursorId));
 		} else { // ProductSortOption.RECENT
 
-			return QProduct.product.updatedAt.gt(product.getUpdatedAt())
+			return QProduct.product.updatedAt.lt(product.getUpdatedAt())
 					.or(QProduct.product.updatedAt.eq(product.getUpdatedAt())
 							.and(QProduct.product.id.gt(cursorId)));
 		}
