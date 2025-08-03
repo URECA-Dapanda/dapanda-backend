@@ -4,7 +4,14 @@ os: linux
 files:
   - source: app.jar
     destination: /home/ubuntu/app
+
   - source: docker-compose.yml
+    destination: /home/ubuntu
+
+  - source: .env
+    destination: /home/ubuntu
+
+  - source: promtail-config.yml
     destination: /home/ubuntu
 
 hooks:
@@ -12,6 +19,7 @@ hooks:
     - location: scripts/install.sh
       timeout: 300
       runas: ubuntu
+
     - location: scripts/install-docker.sh
       timeout: 300
       runas: root

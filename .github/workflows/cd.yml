@@ -68,9 +68,16 @@ jobs:
           echo "📦 Contents under static/docs/ in app.jar:"
           jar tf app.jar | grep 'static/docs/' || echo "  (static/docs/ 디렉터리가 없습니다)"              
 
+      - name: Create .env from secrets
+        run: |
+          cat <<EOF > .env
+          LOKI_URL=${{ secrets.LOKI_URL }}
+          HOSTNAME=dapanda-app
+          EOF
+
       - name: 배포 패키지 압축(zip)
         run: |
-          zip -r app.zip app.jar appspec.yml docker-compose.yml scripts/
+          zip -r app.zip app.jar appspec.yml docker-compose.yml promtail-config.yml scripts/ .env 
 
       - name: AWS 자격증명 설정
         uses: aws-actions/configure-aws-credentials@v4
