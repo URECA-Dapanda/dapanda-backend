@@ -2,6 +2,8 @@ package com.dapanda.product.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import com.dapanda.product.entity.ProductState;
 import lombok.*;
 
 @Getter
@@ -11,6 +13,7 @@ import lombok.*;
 public class WifiInfoResponse {
 
 	private Long productId;
+	private ProductState productState;
 	private Long itemId;
 	private int price;
 	private Long memberId;
