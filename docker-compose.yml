@@ -1,8 +1,19 @@
 services:
   promtail:
     image: grafana/promtail:2.9.4
+
     container_name: promtail
+
+    ports:
+      - "9080:9080"
+
     volumes:
       - ./promtail-config.yml:/etc/promtail/promtail-config.yml
       - /var/log/app:/var/log/app
-    command: -config.file=/etc/promtail/promtail-config.yml
+
+    command:
+      - -config.file=/etc/promtail/promtail-config.yml
+      - -config.expand-env=true
+
+    env_file:
+      - /home/ubuntu/.env
