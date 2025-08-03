@@ -42,7 +42,7 @@
       <encoder>
         <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
       </encoder>
-      <file>/var/log/app/app.%d{yyyy-MM-dd}.log</file>
+      <file>/var/log/app/app.log</file>
       <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
         <fileNamePattern>/var/log/app/app.%d{yyyy-MM-dd}.log</fileNamePattern>
         <maxHistory>30</maxHistory>
