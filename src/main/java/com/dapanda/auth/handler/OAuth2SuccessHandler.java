@@ -1,5 +1,6 @@
 package com.dapanda.auth.handler;
 
+import com.dapanda.alarm.service.WifiTradeNotifier;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.jwt.JwtPrinciple;
 import com.dapanda.jwt.JwtTokenProvider;
@@ -27,6 +28,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 	private final RefreshTokenService refreshTokenService;
 	private final MemberRepository memberRepository;
 	private final PlanService planService;
+	private final WifiTradeNotifier wifiTradeNotifier;
 
 	@Override
 	@Transactional
@@ -55,6 +57,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		Member member = memberRepository.findByEmailAndProvider(email, provider)
 				.orElseThrow(() -> new IllegalArgumentException("OAuth 로그인 유저 DB에 없음"));
 
+		wifiTradeNotifier.notifyOngoingTradeIfExists(member);
 		planService.createRandomPlanForMember(member);
 
 		String accessToken = jwtTokenProvider.generateAccessToken(member);
