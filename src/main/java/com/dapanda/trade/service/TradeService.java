@@ -288,11 +288,10 @@ public class TradeService {
 		LocalTime wifiStart = wifi.getStartTime().toLocalTime();
 		LocalTime wifiEnd = wifi.getEndTime().toLocalTime();
 
-		int timeAmount;
-		if (requestStart.isBefore(requestEnd)) {
-			timeAmount = (int) Duration.between(requestStart, requestEnd).toMinutes();
-		} else {
-			timeAmount = (int) Duration.between(requestStart, requestEnd.plusHours(24)).toMinutes();
+		int timeAmount = (int) Duration.between(requestStart, requestEnd).toMinutes();
+
+		if (timeAmount < 0) {
+			timeAmount += 24 * 60;
 		}
 
 		int totalPrice = product.getPrice() * timeAmount / 10;
