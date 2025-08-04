@@ -3,18 +3,20 @@ echo "==== APPLICATION START ===="
 
 APP_NAME="app.jar"
 APP_DIR="/home/ubuntu/app"
-LOG_DIR="/var/log/app"
+#LOG_DIR="/var/log/app"
 #LOG_FILE="$LOG_DIR/app.log"
 CLOUDWATCH_AGENT_BIN="/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl"
 
 # 로그 디렉토리 생성
-sudo mkdir -p "$LOG_DIR"
-sudo chown ubuntu:ubuntu "$LOG_DIR"
+#sudo mkdir -p "$LOG_DIR"
+#sudo chown ubuntu:ubuntu "$LOG_DIR"
+
+# 서버 시간 서울로 설정
+sudo timedatectl set-timezone Asia/Seoul
 
 # 앱 실행
 echo "Starting $APP_NAME with prod profile..."
-#nohup java -jar "$APP_DIR/$APP_NAME" --spring.profiles.active=prod > "$LOG_FILE" 2>&1 &
-nohup java -jar "$APP_DIR/$APP_NAME" --spring.profiles.active=prod > /dev/null 2>&1 &
+nohup java -jar "$APP_DIR/$APP_NAME" --spring.profiles.active=prod > "$LOG_FILE" 2>&1 &
 
 # ===== CloudWatch Agent 설치 여부 확인 후 설치 =====
 echo "Checking CloudWatch Agent installation..."
