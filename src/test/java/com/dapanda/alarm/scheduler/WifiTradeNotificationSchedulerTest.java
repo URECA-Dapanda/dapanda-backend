@@ -1,16 +1,17 @@
 package com.dapanda.alarm.scheduler;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
-
-import com.dapanda.alarm.event.WifiTradeStartEvent;
-import java.time.LocalTime;
+import com.dapanda.alarm.event.WifiTradeEvent;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+
+import java.time.LocalTime;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class WifiTradeNotificationSchedulerTest {
@@ -41,6 +42,6 @@ class WifiTradeNotificationSchedulerTest {
 		// then: delay 이후에 이벤트가 발행됐는지 확인
 		Thread.sleep(1500); // 1.5초 기다림
 		verify(eventPublisher, timeout(2000).times(1))
-				.publishEvent(any(WifiTradeStartEvent.class));
+				.publishEvent(any(WifiTradeEvent.class));
 	}
 }
