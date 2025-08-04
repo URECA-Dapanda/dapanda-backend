@@ -1,14 +1,14 @@
 package com.dapanda.alarm.scheduler;
 
-import com.dapanda.alarm.event.WifiTradeEndEvent;
-import com.dapanda.alarm.event.WifiTradeStartEvent;
-import java.time.Duration;
-import java.time.LocalTime;
-import java.util.concurrent.*;
+import com.dapanda.alarm.event.WifiTradeEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.LocalTime;
+import java.util.concurrent.*;
 
 @Slf4j
 @Service
@@ -44,13 +44,13 @@ public class WifiTradeNotificationScheduler {
 	private void publishStartNow(Long tradeId, Long memberId, LocalTime startTime,
 			LocalTime endTime) {
 		log.info("와이파이 시작 알림 발행 -> memberId: {}, tradeId: {}", memberId, tradeId);
-		eventPublisher.publishEvent(WifiTradeStartEvent.of(tradeId, memberId, startTime, endTime));
+		eventPublisher.publishEvent(WifiTradeEvent.createStartEvent(tradeId, memberId, startTime, endTime));
 	}
 
 	private void publishEndNow(Long tradeId, Long memberId, LocalTime startTime,
 			LocalTime endTime) {
 		log.info("와이파이 종료 알림 발행 -> memberId: {}, tradeId: {}", memberId, tradeId);
-		eventPublisher.publishEvent(WifiTradeEndEvent.of(tradeId, memberId, startTime, endTime));
+		eventPublisher.publishEvent(WifiTradeEvent.createEndEvent(tradeId, memberId, startTime, endTime));
 	}
 
 }
