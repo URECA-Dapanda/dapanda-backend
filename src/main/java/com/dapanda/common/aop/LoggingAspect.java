@@ -23,7 +23,7 @@ public class LoggingAspect {
 		try {
 			result = joinPoint.proceed(); // 실제 메서드 실행
 		} catch (Throwable throwable) {
-			log.error("[EXCEPTION] {}: {}", methodName, throwable.getMessage());
+			log.warn("[EXCEPTION] {}: {}", methodName, throwable.getMessage());
 			throw throwable;
 		}
 
