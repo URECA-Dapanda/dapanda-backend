@@ -4,6 +4,12 @@ server:
 spring:
   profiles:
     active: dev
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: Asia/Seoul
+
   security:
     oauth2:
       client:
@@ -47,6 +53,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          time_zone: Asia/Seoul
 
   cache:
     type: redis
