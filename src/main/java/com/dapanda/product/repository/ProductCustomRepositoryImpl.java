@@ -287,8 +287,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 												.where(productImageSub.wifiId.eq(wifi.id))
 								))
 				)
-				.where(product.itemType.eq(ItemType.MOBILE_DATA),
-						product.member.id.eq(request.memberId()),
+				.where(product.member.id.eq(request.memberId()),
 						request.productState() != null ? product.state.eq(
 								request.productState())
 								: null,
