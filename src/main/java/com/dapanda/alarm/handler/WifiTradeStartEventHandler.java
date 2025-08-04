@@ -3,6 +3,7 @@ package com.dapanda.alarm.handler;
 import com.dapanda.alarm.dto.AlarmMessage;
 import com.dapanda.alarm.event.WifiTradeStartEvent;
 import com.dapanda.fcmToken.service.FcmTokenService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -17,6 +18,7 @@ public class WifiTradeStartEventHandler {
 
 	private final SimpMessagingTemplate messagingTemplate;
 	private final FcmTokenService fcmTokenService;
+	private final ObjectMapper objectMapper;
 
 	@Async
 	@EventListener
