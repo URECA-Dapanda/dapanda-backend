@@ -16,7 +16,7 @@ public class ReportFixture {
 		);
 	}
 
-	public static Report createReportFromProduct1WithId(Product product, ReportTargetCategory category, Member reporter, Long reportId) {
+	public static Report createReportFromProductWithId(Product product, ReportTargetCategory category, Member reporter, Long reportId) {
 
 		Report report = Report.of("너무 비싸게 올렸어요", product.getId(), category, reporter);
 

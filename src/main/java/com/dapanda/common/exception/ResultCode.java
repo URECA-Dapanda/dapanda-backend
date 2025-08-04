@@ -83,6 +83,7 @@ public enum ResultCode {
 
 	// 신고 7000번대
 	DUPLICATE_REPORT(HttpStatus.CONFLICT, 7001, "이미 신고되었습니다."),
+	SELF_REPORT(HttpStatus.BAD_REQUEST, 7002, "셀프 신고는 할 수 없습니다."),
 
 	// 채팅 8000번대
 	CHAT_OWN_PRODUCT(HttpStatus.BAD_REQUEST, 8000, "자기 상품의 채팅방은 생성할 수 없습니다."),

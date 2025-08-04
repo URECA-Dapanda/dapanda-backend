@@ -136,11 +136,10 @@ public class ChatService {
 
 		validateParticipant(chatRoomId, senderId);
 
-		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-				.orElseThrow(() -> new GlobalException(ResultCode.CHAT_ROOM_NOT_FOUND));
+		ChatRoom chatRoom = findChatRoomById(chatRoomId);
 
 		Member sender = memberRepository.findById(senderId)
-				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
+				.orElseThrow(()->new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
 		ChatMessage chatMessage = chatMessageRepository.save(ChatMessage.of(request.message(), chatRoom, sender));
 
@@ -158,8 +157,7 @@ public class ChatService {
 	@Transactional
 	public void updateReadStatus(Long chatMessageId, Long memberId) {
 
-		ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId)
-				.orElseThrow(() -> new GlobalException(ResultCode.CHAT_MESSAGE_NOT_FOUND));
+		ChatMessage chatMessage = findChatMessageById(chatMessageId);
 
 		if (chatMessage.getChatRoom() == null) {
 
@@ -185,5 +183,27 @@ public class ChatService {
 
 			throw new GlobalException(ResultCode.CHAT_ROOM_ACCESS_DENIED);
 		}
+	}
+
+	public Long findMemberIdByChatMessageId(Long chatMessageId, Long reporterId) {
+
+		ChatMessage chatMessage = findChatMessageById(chatMessageId);
+
+		validateParticipant(chatMessage.getChatRoom().getId(), reporterId);
+
+		return chatMessageRepository.findMemberIdByChatMessageId(chatMessageId)
+				.orElseThrow(() -> new GlobalException(ResultCode.CHAT_MESSAGE_NOT_FOUND));
+	}
+
+	private ChatMessage findChatMessageById(Long chatMessageId) {
+
+		return chatMessageRepository.findById(chatMessageId)
+				.orElseThrow(() -> new GlobalException(ResultCode.CHAT_MESSAGE_NOT_FOUND));
+	}
+
+	private ChatRoom findChatRoomById(Long chatRoomId) {
+
+		return chatRoomRepository.findById(chatRoomId)
+				.orElseThrow(() -> new GlobalException(ResultCode.CHAT_ROOM_NOT_FOUND));
 	}
 }

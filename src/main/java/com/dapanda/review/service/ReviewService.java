@@ -215,4 +215,9 @@ public class ReviewService {
 		return new ReviewStatsResponse(reviewCount, averageRating);
 	}
 
+	public Long findMemberIdByReviewId(Long reviewId){
+
+		return reviewRepository.findMemberIdByReviewId(reviewId)
+				.orElseThrow(()->new GlobalException(ResultCode.REVIEW_NOT_FOUND));
+	}
 }

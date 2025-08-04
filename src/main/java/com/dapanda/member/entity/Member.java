@@ -92,6 +92,11 @@ public class Member extends BaseEntity {
 	public void increaseReportedCount() {
 
 		this.reportedCount++;
+
+		if (this.reportedCount >= 5){
+
+			this.isBlocked = true;
+		}
 	}
 
 	public void addCash(int amount) {

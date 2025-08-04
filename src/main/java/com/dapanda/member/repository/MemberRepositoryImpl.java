@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+import static com.dapanda.chat.entity.QChatMessage.chatMessage;
 import static com.dapanda.member.entity.QMember.member;
 import static com.dapanda.product.entity.QProduct.product;
 import static com.dapanda.review.entity.QReview.review;
@@ -38,6 +39,17 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom{
 				.join(review.trade, trade)
 				.join(trade.member, member)
 				.where(review.id.eq(reviewId))
+				.fetchOne());
+	}
+
+	@Override
+	public Optional<Long> findMemberIdByChatMessageId(Long chatMessageId) {
+
+		return Optional.ofNullable(queryFactory
+				.select(member.id)
+				.from(chatMessage)
+				.join(chatMessage.member, member)
+				.where(chatMessage.id.eq(chatMessageId))
 				.fetchOne());
 	}
 }
