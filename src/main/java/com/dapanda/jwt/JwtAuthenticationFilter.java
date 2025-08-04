@@ -10,7 +10,6 @@ import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
-import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,10 +17,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.io.IOException;
+import java.nio.file.AccessDeniedException;
+
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+	private static final int MAX_REPORT_COUNT = 5;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final MemberService memberService;
 	private final RefreshTokenService refreshTokenService;
@@ -65,6 +68,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 					String email = jwtTokenProvider.getUserEmailFromToken(refreshToken);
 					OAuthProvider provider = jwtTokenProvider.getProviderFromToken(refreshToken);
 					Member member = memberService.findUserByEmailAndProvider(email, provider);
+
+					validateBlockedMember(member);
 
 					var savedToken = refreshTokenService.findByUserAndState(member).orElse(null);
 					if (savedToken != null &&
@@ -128,6 +133,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		}
 
 		response.addCookie(cookie);
+	}
+
+	private void validateBlockedMember(Member member) throws AccessDeniedException {
+
+		if (member.isBlocked() || member.getReportedCount() >= MAX_REPORT_COUNT) {
+
+			throw new AccessDeniedException("차단된 사용자 입니다");
+		}
 	}
 
 }
