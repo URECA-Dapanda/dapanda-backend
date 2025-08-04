@@ -6,6 +6,7 @@ import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.entity.*;
+import com.dapanda.product.service.ProductService;
 import com.dapanda.report.dto.request.CreateReportRequest;
 import com.dapanda.report.dto.response.CreateReportResponse;
 import com.dapanda.report.entity.Report;
@@ -39,6 +40,9 @@ class ReportServiceTest {
 	@Mock
 	private ReportRepository reportRepository;
 
+	@Mock
+	private ProductService productService;
+
 	@InjectMocks
 	private ReportService reportService;
 
@@ -64,10 +68,10 @@ class ReportServiceTest {
 
 				Report savedReport = ReportFixture.createReportFromProductWithId(product, request.targetCategory(), reporter, REPORT_ID);
 
+				given(productService.findMemberIdByProductId(product.getId())).willReturn(product.getMember().getId());
 				given(memberRepository.getReferenceById(USER_DETAILS_MEMBER_ID)).willReturn(reporter);
 				given(reportRepository.existsByReportTargetIdAndReportTargetCategoryAndReporterId(TARGET_ID, REPORT_TARGET_CATEGORY_PRODUCT, USER_DETAILS_MEMBER_ID)).willReturn(false);
 				given(reportRepository.save(any(Report.class))).willReturn(savedReport);
-				given(memberRepository.findMemberIdByProductId(PRODUCT_ID)).willReturn(Optional.of(SELLER_MEMBER_ID));
 				given(memberRepository.findByIdForUpdate(SELLER_MEMBER_ID)).willReturn(Optional.of(reportedMember));
 
 				//when
@@ -95,11 +99,11 @@ class ReportServiceTest {
 
 				Report report = ReportFixture.createReportFromProductWithId(product, request.targetCategory(), buyer, REPORT_ID);
 
+				given(productService.findMemberIdByProductId(product.getId())).willReturn(product.getMember().getId());
 				given(memberRepository.getReferenceById(buyer.getId())).willReturn(buyer);
 				given(reportRepository.existsByReportTargetIdAndReportTargetCategoryAndReporterId(
 						product.getId(), request.targetCategory(), buyer.getId())).willReturn(false);
 				given(reportRepository.save(any(Report.class))).willReturn(report);
-				given(memberRepository.findMemberIdByProductId(product.getId())).willReturn(Optional.of(seller.getId()));
 				given(memberRepository.findByIdForUpdate(seller.getId())).willReturn(Optional.of(seller));
 
 				//when
@@ -145,10 +149,9 @@ class ReportServiceTest {
 
 				CreateReportRequest request = new CreateReportRequest(REASON, REPORT_TARGET_CATEGORY_PRODUCT);
 
+				given(productService.findMemberIdByProductId(product.getId())).willReturn(product.getMember().getId());
 				given(reportRepository.existsByReportTargetIdAndReportTargetCategoryAndReporterId(
 						product.getId(), REPORT_TARGET_CATEGORY_PRODUCT, seller.getId())).willReturn(false);
-				given(memberRepository.findMemberIdByProductId(product.getId()))
-						.willReturn(Optional.of(seller.getId()));
 
 				//when & then
 				assertThatThrownBy(() -> reportService.createReport(product.getId(), seller.getId(), request))
