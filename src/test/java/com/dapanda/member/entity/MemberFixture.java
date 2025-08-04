@@ -2,10 +2,11 @@ package com.dapanda.member.entity;
 
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.auth.entity.OAuthProvider;
-import java.math.BigDecimal;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.math.BigDecimal;
 
 public class MemberFixture {
 
@@ -106,6 +107,18 @@ public class MemberFixture {
 		ReflectionTestUtils.setField(member, "id", memberId);
 		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
 		ReflectionTestUtils.setField(member, "sellingData", BigDecimal.ZERO);
+
+		return member;
+	}
+
+	public static Member createBlockedMemberWithId(Long memberId) {
+
+		Member member = createMember2();
+
+		ReflectionTestUtils.setField(member, "id", memberId);
+		ReflectionTestUtils.setField(member, "buyingData", BigDecimal.ZERO);
+		ReflectionTestUtils.setField(member, "sellingData", BigDecimal.ZERO);
+		ReflectionTestUtils.setField(member, "reportedCount", 4);
 
 		return member;
 	}
