@@ -16,7 +16,6 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -1045,7 +1044,6 @@ class TradeControllerTest {
 										userDetails, null, userDetails.getAuthorities()
 								)))
 						)
-						.andDo(print())
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
@@ -1268,12 +1266,12 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.data.trades.data[0].title").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].productImageUrl").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].timeAmount").exists())
+						.andExpect(jsonPath("$.data.trades.data[0].reviewed").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].createdAt").exists())
 						.andExpect(jsonPath("$.data.trades.pageInfo").exists())
 						.andExpect(jsonPath("$.data.trades.pageInfo.size").exists())
 						.andExpect(jsonPath("$.data.trades.pageInfo.hasNext").exists())
 						.andExpect(jsonPath("$.data.trades.pageInfo.nextCursorId").exists())
-						.andDo(print())
 						.andDo(document("trade/get-trade-purchase-history",
 								queryParameters(
 										parameterWithName("cursorId").description("커서 아이디 (선택)")
@@ -1302,6 +1300,8 @@ class TradeControllerTest {
 												"거래 상품 대표 이미지 URL (와이파이)"),
 										fieldWithPath("data.trades.data[].timeAmount").description(
 												"거래 시간양 (와이파이)"),
+										fieldWithPath("data.trades.data[].reviewed").description(
+												"리뷰 작성 여부"),
 										fieldWithPath("data.trades.data[].createdAt").description(
 												"거래 생성 시간"),
 										fieldWithPath("data.trades.pageInfo").description("페이지 정보"),
@@ -1391,7 +1391,6 @@ class TradeControllerTest {
 										"$.data.cashHistorySummary.data[0].classification").exists())
 						.andExpect(jsonPath("$.data.cashHistorySummary.data[0].createdAt").exists())
 						.andExpect(jsonPath("$.data.cashHistorySummary.pageInfo").exists())
-						.andDo(print())
 						.andDo(document("trade/get-cash-history",
 								queryParameters(
 										parameterWithName("cursorId").description("커서 아이디 (선택)")

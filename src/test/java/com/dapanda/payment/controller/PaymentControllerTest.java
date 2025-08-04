@@ -8,7 +8,6 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -269,7 +268,6 @@ class PaymentControllerTest {
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
-						.andDo(print())
 						.andDo(document("payments/charge-cash",
 								requestFields(
 										fieldWithPath("paymentKey").description("토스 결제 키"),
@@ -403,7 +401,6 @@ class PaymentControllerTest {
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
 						.andExpect(jsonPath("$.data.refundPrice").value(response.getRefundPrice()))
 						.andExpect(jsonPath("$.data.remainCash").value(response.getRemainCash()))
-						.andDo(print())
 						.andDo(document("payments/refund-cash",
 								requestFields(
 										fieldWithPath("requestId").description(
