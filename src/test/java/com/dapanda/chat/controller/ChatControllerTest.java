@@ -1,6 +1,5 @@
 package com.dapanda.chat.controller;
 
-import com.dapanda.RedisTestContainerConfig;
 import static com.dapanda.TestConstants.Pagination.CHAT_MESSAGE_HISTORY_DEFAULT_SIZE;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,7 +10,6 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -137,7 +135,8 @@ class ChatControllerTest {
 						.andExpect(jsonPath("$.data.chatRoomId").exists())
 						.andDo(document("chat/create-chat-room",
 										pathParameters(
-												parameterWithName("productId").description("채팅방을 생성할 상품의 아이디 (필수)")
+												parameterWithName("productId").description(
+														"채팅방을 생성할 상품의 아이디 (필수)")
 										),
 										responseFields(
 												fieldWithPath("code").description("상태 코드"),
@@ -176,7 +175,8 @@ class ChatControllerTest {
 						.andExpect(jsonPath("$.data.chatRoomId").value(chatRoom.getId()))
 						.andDo(document("chat/chat-room-already-exist",
 										pathParameters(
-												parameterWithName("productId").description("채팅방을 생성할 상품의 아이디 (필수)")
+												parameterWithName("productId").description(
+														"채팅방을 생성할 상품의 아이디 (필수)")
 										),
 										responseFields(
 												fieldWithPath("code").description("상태 코드"),
@@ -208,7 +208,8 @@ class ChatControllerTest {
 
 				CustomUserDetails userDetails = CustomUserDetails.from(buyer);
 
-				List<MobileData> mobileDataList = mobileDataRepository.saveAll(MobileDataFixture.createMobileDataList());
+				List<MobileData> mobileDataList = mobileDataRepository.saveAll(
+						MobileDataFixture.createMobileDataList());
 
 				List<Product> productList = productRepository.saveAll(
 						ProductFixture.createProductList(seller, mobileDataList,
@@ -310,7 +311,6 @@ class ChatControllerTest {
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, userDetails.getAuthorities()
 								))))
-						.andDo(print())
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
@@ -546,8 +546,6 @@ class ChatControllerTest {
 
 				ChatMessage lastChatMessage = chatMessageList.get(chatMessageList.size() - 1);
 
-				System.out.println("lastChatMessage = " + lastChatMessage.getMember());
-
 				//when & then
 				mockMvc.perform(post("/api/chat-messages/{chatMessageId}/read-status",
 								lastChatMessage.getId())
@@ -555,7 +553,6 @@ class ChatControllerTest {
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, userDetails.getAuthorities()
 								))))
-						.andDo(print())
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
