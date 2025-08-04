@@ -1,5 +1,22 @@
 package com.dapanda.product.service;
 
+import static com.dapanda.TestConstants.Member.*;
+import static com.dapanda.TestConstants.MobileData.*;
+import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
+import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
+import static com.dapanda.TestConstants.Product.*;
+import static com.dapanda.TestConstants.Review.AVERAGE_RATE;
+import static com.dapanda.TestConstants.Review.REVIEW_COUNT;
+import static com.dapanda.TestConstants.Wifi.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
 import com.dapanda.common.dto.response.CountCursorPageResponse;
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.common.exception.GlobalException;
@@ -17,33 +34,15 @@ import com.dapanda.product.dto.response.*;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
 import com.dapanda.trade.repository.TradeRepository;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.*;
-
-import static com.dapanda.TestConstants.Member.*;
-import static com.dapanda.TestConstants.MobileData.SELLING_DATA;
-import static com.dapanda.TestConstants.MobileData.*;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_CURSOR_ID;
-import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
-import static com.dapanda.TestConstants.Product.*;
-import static com.dapanda.TestConstants.Review.AVERAGE_RATE;
-import static com.dapanda.TestConstants.Review.REVIEW_COUNT;
-import static com.dapanda.TestConstants.Wifi.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("상품 서비스 테스트")
@@ -360,7 +359,7 @@ class ProductServiceTest {
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 100 + i, (long) i,
 									"회원" + i, "상품제목" + i, 37.0 + i, 127.0 + i, ADDRESS, 3F, i,
-									true, START_TIME, END_TIME));
+									true, START_DATETIME, END_DATETIME));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -397,8 +396,8 @@ class ProductServiceTest {
 							3F,
 							i % 2 == 0 ? 2 : 1,
 							true,
-							START_TIME,
-							END_TIME
+							START_DATETIME,
+							END_DATETIME
 					));
 				}
 
@@ -431,7 +430,7 @@ class ProductServiceTest {
 					summaries.add(
 							WifiFixture.createWifiSummary((long) i, 1000, (long) i,
 									"회원" + i, "상품제목" + idx, 37.0 + idx, 127.0 + idx, ADDRESS,
-									1F + i, idx, true, START_TIME, END_TIME));
+									1F + i, idx, true, START_DATETIME, END_DATETIME));
 				}
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(3L, false, 3));
@@ -458,13 +457,12 @@ class ProductServiceTest {
 				summaries.add(
 						new WifiSummary(1L, 1000, 1L, "회원1", "image.jpg",
 								"상품제목1", "imageUrl", 37.0, 127.0,
-								ADDRESS, 5, 5, true, START_TIME.toString(),
-								END_TIME.toString()));
+								ADDRESS, 5, 5, true, START_DATETIME, END_DATETIME));
 				summaries.add(
 						new WifiSummary(2L, 2000, 2L, "회원2", "image.jpg",
 								"상품제목2", "imageUrl", 37.1, 127.1,
-								ADDRESS, 10, 10, true, START_TIME.toString(),
-								END_TIME.toString()));
+								ADDRESS, 10, 10, true, START_DATETIME,
+								END_DATETIME));
 				CursorPageResponse<WifiSummary> response = CursorPageResponse.of(summaries,
 						CursorPageResponse.PageInfo.of(2L, false, 2));
 
