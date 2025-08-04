@@ -22,10 +22,11 @@ import com.dapanda.trade.repository.TradeRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
-import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -215,5 +216,11 @@ public class MemberService {
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
 		member.updateMemberRole(MemberRole.ROLE_MEMBER);
+	}
+
+	public Long findMemberId(Long memberId) {
+
+		return memberRepository.findById(memberId)
+				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND)).getId();
 	}
 }

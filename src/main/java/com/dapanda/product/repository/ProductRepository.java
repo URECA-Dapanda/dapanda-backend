@@ -3,10 +3,11 @@ package com.dapanda.product.repository;
 import com.dapanda.product.entity.Product;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long>, ProductCustomRepository {
@@ -22,4 +23,12 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
 	@Modifying
 	@Query("UPDATE Product p SET p.state = 'HIDDEN' WHERE p.createdAt < :CURRENT_TIMESTAMP AND p.state = 'ACTIVE'")
 	void updateAllBeforeThisMonthAndIsActive();
+
+	@Query("""
+			SELECT m.id
+			FROM Product p
+			JOIN p.member m
+			WHERE p.id = :productId
+			""")
+	Optional<Long> findMemberIdByProductId(Long productId);
 }

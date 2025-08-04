@@ -17,12 +17,13 @@ import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
 import com.dapanda.trade.repository.TradeRepository;
 import jakarta.transaction.Transactional;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -373,4 +374,9 @@ public class ProductService {
 		}
 	}
 
+	public Long findMemberIdByProductId(Long productId) {
+
+		return productRepository.findMemberIdByProductId(productId)
+				.orElseThrow(() -> new GlobalException(ResultCode.PRODUCT_NOT_FOUND));
+	}
 }
