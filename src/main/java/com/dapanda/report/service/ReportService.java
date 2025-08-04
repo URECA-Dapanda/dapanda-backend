@@ -25,20 +25,31 @@ public class ReportService {
 
 		validateDuplicateReport(targetId, request.targetCategory(), memberId);
 
+		Long reportedMemberId = findReportTargetMemberId(targetId, request.targetCategory());
+
+		validateSelfReport(reportedMemberId, memberId);
+
 		Member reporter = memberRepository.getReferenceById(memberId);
 
 		Report report = Report.of(request.reason(), targetId, request.targetCategory(), reporter);
 
 		Report savedReport = reportRepository.save(report);
 
-		Long reportTargetMemberId = findReportTargetMemberId(targetId, request.targetCategory());
-
-		Member reportedMember = memberRepository.findByIdForUpdate(reportTargetMemberId)
+		Member reportedMember = memberRepository.findByIdForUpdate(reportedMemberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
 		reportedMember.increaseReportedCount();
 
 		return CreateReportResponse.of(savedReport.getId());
+	}
+
+	private void validateSelfReport(Long reportedMemberId, Long reporterMemberId) {
+
+		if (reporterMemberId.equals(reportedMemberId)) {
+
+			throw new GlobalException(ResultCode.SELF_REPORT);
+		}
+
 	}
 
 	private Long findReportTargetMemberId(Long targetId, ReportTargetCategory category) {
