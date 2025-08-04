@@ -16,5 +16,6 @@ public class PurchaseHistorySummary {
 	private String title; // 와이파이 상품
 	private String productImageUrl; // 와이파이 상품
 	private Integer timeAmount; // 와이파이 상품
+	private boolean isReviewed;
 	private LocalDateTime createdAt;
 }
