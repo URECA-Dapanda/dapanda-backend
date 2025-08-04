@@ -4,5 +4,6 @@ public enum ReportTargetCategory {
 
 	MEMBER,
 	REVIEW,
-	PRODUCT
+	PRODUCT,
+	CHAT
 }

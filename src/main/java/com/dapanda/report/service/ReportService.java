@@ -64,6 +64,9 @@ public class ReportService {
 
 			case REVIEW -> memberRepository.findMemberIdByReviewId(targetId)
 					.orElseThrow(() -> new GlobalException(ResultCode.REVIEW_NOT_FOUND));
+
+			case CHAT -> memberRepository.findMemberIdByChatMessageId(targetId)
+					.orElseThrow(() -> new GlobalException(ResultCode.CHAT_MESSAGE_NOT_FOUND));
 		};
 	}
 

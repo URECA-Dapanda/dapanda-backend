@@ -7,4 +7,6 @@ public interface MemberRepositoryCustom {
 	Optional<Long> findMemberIdByProductId(Long productId);
 
 	Optional<Long> findMemberIdByReviewId(Long reviewId);
+
+	Optional<Long> findMemberIdByChatMessageId(Long chatMessageId);
 }
