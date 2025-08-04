@@ -1,6 +1,6 @@
 package com.dapanda.alarm.handler;
 
-import com.dapanda.alarm.event.WifiTradeEndEvent;
+import com.dapanda.alarm.event.WifiTradeEvent;
 import com.dapanda.chat.config.WebSocketPath;
 import com.dapanda.fcmToken.service.FcmTokenService;
 import lombok.RequiredArgsConstructor;
@@ -20,16 +20,17 @@ public class WifiTradeEndEventHandler {
 
 	@Async
 	@EventListener
-	public void handleWifiTradeEnd(WifiTradeEndEvent event) {
-		log.info("WIFI 사용 종료 이벤트 tradeId : {}, memberId : {}", event.getTradeId(),
-				event.getMemberId());
+	public void handleWifiTradeEnd(WifiTradeEvent event) {
+		log.info("WIFI 사용 종료 이벤트 tradeId : {}, memberId : {}", event.tradeId(),
+				event.memberId());
 
 		messagingTemplate.convertAndSend(
-				WebSocketPath.SUB.getPath() + "/" + WebSocketPath.ALARM.getPath()
-						+ event.getMemberId(),
+				WebSocketPath.SUB.getPath() + "/" +
+						WebSocketPath.ALARM.getPath() + "/" +
+						event.memberId(),
 				event
 		);
 
-		fcmTokenService.notifyWifiEnd(event.getMemberId());
+		fcmTokenService.notifyWifiEnd(event.memberId());
 	}
 }

@@ -1,7 +1,7 @@
 package com.dapanda.alarm.handler;
 
-import com.dapanda.alarm.dto.AlarmMessage;
-import com.dapanda.alarm.event.WifiTradeStartEvent;
+import com.dapanda.alarm.event.WifiTradeEvent;
+import com.dapanda.chat.config.WebSocketPath;
 import com.dapanda.fcmToken.service.FcmTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,20 +20,17 @@ public class WifiTradeStartEventHandler {
 
 	@Async
 	@EventListener
-	public void handleWifiTradeStart(WifiTradeStartEvent event) {
-		log.info("WIFI 사용 시작 이벤트 tradeId : {}, memberId : {}", event.getTradeId(),
-				event.getMemberId());
-
-		AlarmMessage message = new AlarmMessage(
-				event.getTradeId(),
-				event.getStartTime().toString(), // 예: "14:00"
-				event.getEndTime().toString()
-		);
+	public void handleWifiTradeStart(WifiTradeEvent event) {
+		log.info("WIFI 사용 시작 이벤트 tradeId : {}, memberId : {}", event.tradeId(),
+				event.memberId());
 
 		messagingTemplate.convertAndSend(
-				"/sub/alarm" + event.getMemberId(), message
+				WebSocketPath.SUB.getPath() + "/" +
+						WebSocketPath.ALARM.getPath() + "/" +
+						event.memberId(),
+				event
 		);
 
-		fcmTokenService.notifyWifiStart(event.getMemberId());
+		fcmTokenService.notifyWifiStart(event.memberId());
 	}
 }
