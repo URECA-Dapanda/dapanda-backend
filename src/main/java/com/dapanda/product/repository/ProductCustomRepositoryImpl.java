@@ -287,7 +287,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 												.where(productImageSub.wifiId.eq(wifi.id))
 								))
 				)
-				.where(
+				.where(product.itemType.eq(ItemType.MOBILE_DATA),
 						product.member.id.eq(request.memberId()),
 						request.productState() != null ? product.state.eq(
 								request.productState())
@@ -350,7 +350,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				))
 				.from(product)
 				.join(mobileData).on(product.itemId.eq(mobileData.id))
-				.where(
+				.where(product.itemType.eq(ItemType.MOBILE_DATA),
 						product.member.id.ne(memberId),
 						product.state.eq(ProductState.ACTIVE),
 						mobileData.remainAmount.gt(0)
@@ -371,7 +371,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				.select(mobileData.dataAmount.sum())
 				.from(product)
 				.join(mobileData).on(product.itemId.eq(mobileData.id))
-				.where(
+				.where(product.itemType.eq(ItemType.MOBILE_DATA),
 						product.member.id.eq(memberId),
 						product.state.in(ProductState.ACTIVE, ProductState.SOLD_OUT)
 				)
