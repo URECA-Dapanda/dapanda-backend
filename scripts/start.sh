@@ -14,7 +14,7 @@ sudo chown ubuntu:ubuntu "$LOG_DIR"
 # 앱 실행
 echo "Starting $APP_NAME with prod profile..."
 #nohup java -jar "$APP_DIR/$APP_NAME" --spring.profiles.active=prod > "$LOG_FILE" 2>&1 &
-nohup java -jar "$APP_DIR/$APP_NAME" --spring.profiles.active=prod &
+nohup java -jar "$APP_DIR/$APP_NAME" --spring.profiles.active=prod > /dev/null 2>&1 &
 
 # ===== CloudWatch Agent 설치 여부 확인 후 설치 =====
 echo "Checking CloudWatch Agent installation..."
