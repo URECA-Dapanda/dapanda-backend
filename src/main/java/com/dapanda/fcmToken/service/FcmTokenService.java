@@ -49,14 +49,16 @@ public class FcmTokenService {
 		Member seller = memberRepository.findById(sellerId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
-		String token = extractTokenOrThrow(sellerId);
+		String token = extractTokenOrNull(sellerId);
 		String date = createdAt.toLocalDate().toString();
 		String itemTypeKo = convertItemTypeToKorean(itemType);
 
 		String title = "상품 판매 완료";
 		String body = String.format("\"%s\"에 올리신 \"%s\" 상품이 팔렸어요", date, itemTypeKo);
 
-		sendNotification(token, title, body);
+		if (token != null) {
+			sendNotification(token, title, body);
+		}
 		saveNotification(title, body, seller);
 	}
 
@@ -66,12 +68,14 @@ public class FcmTokenService {
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
-		String token = extractTokenOrThrow(memberId);
+		String token = extractTokenOrNull(memberId);
 
 		String title = "와이파이 사용 시작";
 		String body = "예약하신 와이파이 사용이 지금부터 시작됩니다.";
 
-		sendNotification(token, title, body);
+		if (token != null) {
+			sendNotification(token, title, body);
+		}
 		saveNotification(title, body, member);
 	}
 
@@ -80,12 +84,14 @@ public class FcmTokenService {
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new GlobalException(ResultCode.MEMBER_NOT_FOUND));
 
-		String token = extractTokenOrThrow(memberId);
+		String token = extractTokenOrNull(memberId);
 
 		String title = "와이파이 사용 종료";
 		String body = "사용하신 와이파이 사용 시간이 종료되었습니다.";
 
-		sendNotification(token, title, body);
+		if (token != null) {
+			sendNotification(token, title, body);
+		}
 		saveNotification(title, body, member);
 	}
 
@@ -109,12 +115,11 @@ public class FcmTokenService {
 		}
 	}
 
-	private String extractTokenOrThrow(Long memberId) {
+	private String extractTokenOrNull(Long memberId) {
 
-		FcmToken fcmToken = fcmTokenRepository.findByMemberId(memberId)
-				.orElseThrow(() -> new GlobalException(ResultCode.FCM_NOT_FOUND));
-
-		return fcmToken.getToken();
+		return fcmTokenRepository.findByMemberId(memberId)
+				.map(FcmToken::getToken)
+				.orElse(null);
 	}
 
 	private String convertItemTypeToKorean(ItemType type) {
