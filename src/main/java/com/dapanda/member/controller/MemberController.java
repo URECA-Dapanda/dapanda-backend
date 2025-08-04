@@ -27,7 +27,7 @@ public class MemberController {
 
 		memberService.updateMemberRole(userDetails.getId());
 
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+		return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(null));
 	}
 
 	@GetMapping("/members/cash")
