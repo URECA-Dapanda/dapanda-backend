@@ -63,7 +63,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				))
 				.from(product)
 				.join(mobileData).on(mobileData.id.eq(product.itemId))
-				.where(isActiveProduct(),
+				.where(product.itemType.eq(ItemType.MOBILE_DATA),
+						isActiveProduct(),
 						mobileDataCondition(cursorId, productSortOption),
 						eqDataAmount(dataAmount)
 				)
@@ -134,7 +135,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 												.where(productImageSub.wifiId.eq(wifi.id))
 								))
 				)
-				.where(isActiveProduct(),
+				.where(product.itemType.eq(ItemType.WIFI),
+						isActiveProduct(),
 						wifiCursorCondition(cursorId, productSortOption, latitude, longitude),
 						isOpenNow(isOpen)
 				)
