@@ -593,4 +593,15 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 				)
 				.fetchOne();
 	}
+
+	@Override
+	public Wifi findWifiByProductId(Long productId) {
+
+		return queryFactory
+				.select(wifi)
+				.from(product)
+				.join(wifi).on(product.itemId.eq(wifi.id))
+				.where(product.id.eq(productId))
+				.fetchOne();
+	}
 }

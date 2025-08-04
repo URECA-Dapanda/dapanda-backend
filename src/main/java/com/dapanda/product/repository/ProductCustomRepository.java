@@ -5,8 +5,7 @@ import com.dapanda.product.dto.MobileDataSummary;
 import com.dapanda.product.dto.WifiSummary;
 import com.dapanda.product.dto.request.ReadSellingProductRequest;
 import com.dapanda.product.dto.response.*;
-import com.dapanda.product.entity.ItemType;
-import com.dapanda.product.entity.ProductSortOption;
+import com.dapanda.product.entity.*;
 import com.dapanda.trade.dto.MobileDataScrap;
 import java.math.BigDecimal;
 import java.util.List;
@@ -36,4 +35,6 @@ public interface ProductCustomRepository {
 	FindMarketPriceResponse findMarketPrice(ItemType itemType);
 
 	Long countSellingProduct(ReadSellingProductRequest request);
+
+	Wifi findWifiByProductId(Long productId);
 }
