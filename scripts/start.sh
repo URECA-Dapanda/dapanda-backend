@@ -16,7 +16,7 @@ sudo timedatectl set-timezone Asia/Seoul
 
 # 앱 실행
 echo "Starting $APP_NAME with prod profile..."
-nohup java -jar "$APP_DIR/$APP_NAME" --spring.profiles.active=prod > /dev/null 2>&1 &
+nohup java -Duser.timezone=Asia/Seoul -jar "$APP_DIR/$APP_NAME" --spring.profiles.active=prod > /dev/null 2>&1 &
 
 # ===== CloudWatch Agent 설치 여부 확인 후 설치 =====
 echo "Checking CloudWatch Agent installation..."
