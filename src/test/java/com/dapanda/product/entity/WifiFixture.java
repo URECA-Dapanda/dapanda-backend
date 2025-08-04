@@ -2,7 +2,6 @@ package com.dapanda.product.entity;
 
 import com.dapanda.product.dto.WifiSummary;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import org.springframework.test.util.ReflectionTestUtils;
 
 public class WifiFixture {
@@ -36,7 +35,7 @@ public class WifiFixture {
 
 	public static WifiSummary createWifiSummary(Long id, int price, Long itemId, String memberName,
 			String title, double latitude, double longitude, String address, float averageRate,
-			double distanceKm, boolean isOpen, LocalTime startTime, LocalTime endTime) {
+			double distanceKm, boolean isOpen, LocalDateTime startTime, LocalDateTime endTime) {
 
 		return new WifiSummary(
 				id,
@@ -52,8 +51,8 @@ public class WifiFixture {
 				averageRate,
 				distanceKm,
 				isOpen,
-				startTime.toString(),
-				endTime.toString()
+				startTime,
+				endTime
 		);
 	}
 

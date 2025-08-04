@@ -119,8 +119,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						member.averageRating,
 						distance.divide(METER_TO_KILOMETER),
 						isCurrentTimeWithinTimeRange(),
-						Expressions.stringTemplate("TIME({0})", wifi.startTime),
-						Expressions.stringTemplate("TIME({0})", wifi.endTime)
+						wifi.startTime,
+						wifi.endTime
 				))
 				.from(product)
 				.groupBy(product.id)
