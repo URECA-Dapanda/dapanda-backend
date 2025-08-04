@@ -747,6 +747,7 @@ class TradeServiceTest {
 						TITLE,
 						PROFILE_IMAGE_URL,
 						10,
+						true,
 						trade1.getCreatedAt()
 				);
 
@@ -758,6 +759,7 @@ class TradeServiceTest {
 						TITLE + 1,
 						PROFILE_IMAGE_URL,
 						10,
+						false,
 						trade2.getCreatedAt()
 				);
 

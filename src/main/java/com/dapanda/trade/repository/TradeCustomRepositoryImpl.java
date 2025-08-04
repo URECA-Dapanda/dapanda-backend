@@ -4,8 +4,10 @@ import static com.dapanda.product.entity.QMobileData.mobileData;
 import static com.dapanda.product.entity.QProduct.product;
 import static com.dapanda.product.entity.QProductImage.productImage;
 import static com.dapanda.product.entity.QWifi.wifi;
+import static com.dapanda.review.entity.QReview.review;
 import static com.dapanda.trade.entity.QTrade.trade;
 import static com.dapanda.trade.entity.QTradeDetails.tradeDetails;
+import static com.querydsl.core.types.dsl.Expressions.asBoolean;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.product.entity.ItemType;
@@ -42,6 +44,7 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 						wifi.title.coalesce(""),
 						productImage.imageUrl.coalesce(""),
 						trade.timeAmount.coalesce(0),
+						asBoolean(review.id.isNotNull()),
 						trade.createdAt
 				))
 				.from(trade)
@@ -58,6 +61,9 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 												.from(productImageSub)
 												.where(productImageSub.wifiId.eq(wifi.id))
 								))
+				)
+				.leftJoin(review).on(
+						review.trade.eq(trade)
 				)
 				.where(eqMemberId(memberId),
 						ltCursorId(cursorId),

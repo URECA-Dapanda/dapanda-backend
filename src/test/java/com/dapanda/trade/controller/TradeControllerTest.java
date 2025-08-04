@@ -1268,6 +1268,7 @@ class TradeControllerTest {
 						.andExpect(jsonPath("$.data.trades.data[0].title").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].productImageUrl").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].timeAmount").exists())
+						.andExpect(jsonPath("$.data.trades.data[0].isReviewed").exists())
 						.andExpect(jsonPath("$.data.trades.data[0].createdAt").exists())
 						.andExpect(jsonPath("$.data.trades.pageInfo").exists())
 						.andExpect(jsonPath("$.data.trades.pageInfo.size").exists())
@@ -1302,6 +1303,8 @@ class TradeControllerTest {
 												"거래 상품 대표 이미지 URL (와이파이)"),
 										fieldWithPath("data.trades.data[].timeAmount").description(
 												"거래 시간양 (와이파이)"),
+										fieldWithPath("data.trades.data[].isReviewed").description(
+												"리뷰 작성 여부"),
 										fieldWithPath("data.trades.data[].createdAt").description(
 												"거래 생성 시간"),
 										fieldWithPath("data.trades.pageInfo").description("페이지 정보"),
