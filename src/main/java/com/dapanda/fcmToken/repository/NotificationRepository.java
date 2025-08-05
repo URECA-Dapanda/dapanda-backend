@@ -1,6 +1,6 @@
 package com.dapanda.fcmToken.repository;
 
-import com.dapanda.fcm_token.entity.NotificationEntity;
+import com.dapanda.fcmToken.entity.NotificationEntity;
 import com.dapanda.member.entity.Member;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;

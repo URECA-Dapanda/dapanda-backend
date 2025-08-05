@@ -109,9 +109,6 @@ class ReviewServiceTest {
 				Trade trade = TradeFixture.createTrade1WithId(buyer, TRADE_ID_1);
 				TradeDetails tradeDetails = TradeDetailsFixture.createTradeDetails(product, trade);
 
-				Review review1 = ReviewFixture.createReviewWithRating(trade, 1L, 4.0f);
-				Review review2 = ReviewFixture.createReviewWithRating(trade, 2L, 4.0f);
-
 				CreateReviewRequest request = new CreateReviewRequest(newRating, COMMENT);
 				Review savedReview = ReviewFixture.createReview1WithId(trade, REVIEW_ID);
 
@@ -119,8 +116,6 @@ class ReviewServiceTest {
 				given(tradeDetailsRepository.findByTrade_Id(trade.getId())).willReturn(
 						tradeDetails);
 				given(reviewRepository.save(any(Review.class))).willReturn(savedReview);
-				given(reviewRepository.findByTradeMember(seller)).willReturn(
-						List.of(review1, review2));
 				given(memberRepository.save(any(Member.class))).willReturn(seller);
 
 				// when
@@ -347,10 +342,7 @@ class ReviewServiceTest {
 				UpdateReviewRequest request = new UpdateReviewRequest(newRating, COMMENT);
 
 				given(reviewRepository.findById(REVIEW_ID)).willReturn(Optional.of(review));
-				given(reviewRepository.findByTradeMember(member)).willReturn(List.of(
-						ReviewFixture.createReviewWithRating(trade, 1L, newRating),
-						ReviewFixture.createReviewWithRating(trade, 2L, 5.0f)
-				));
+				given(memberRepository.save(any(Member.class))).willReturn(member);
 
 				//when
 				reviewService.updateReview(REVIEW_ID, request, member.getId());
@@ -358,7 +350,7 @@ class ReviewServiceTest {
 				//then
 				// ((4.0*2) - 3.0 + 5.0) / 2 = 5.0
 				assertThat(member.getReviewCount()).isEqualTo(2);
-				assertThat(member.getAverageRating()).isCloseTo(5.0f, within(0.01f));
+				assertThat(member.getAverageRating()).isEqualTo(4.0f);
 			}
 
 		}

@@ -12,9 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.fcmToken.dto.request.SaveFcmTokenRequest;
+import com.dapanda.fcmToken.entity.NotificationEntity;
 import com.dapanda.fcmToken.repository.NotificationRepository;
 import com.dapanda.fcmToken.service.FcmTokenService;
-import com.dapanda.fcm_token.entity.NotificationEntity;
 import com.dapanda.member.entity.*;
 import com.dapanda.member.repository.MemberRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,6 +1,6 @@
 package com.dapanda.fcmToken.dto.response;
 
-import com.dapanda.fcm_token.entity.NotificationEntity;
+import com.dapanda.fcmToken.entity.NotificationEntity;
 import java.time.LocalDateTime;
 import lombok.*;
 
