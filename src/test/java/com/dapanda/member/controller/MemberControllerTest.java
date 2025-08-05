@@ -229,11 +229,12 @@ class MemberControllerTest extends BaseIntegrationTest {
 			void getMyMemberInfo() throws Exception {
 
 				// given
-				Member member = memberRepository.save(MemberFixture.createMember1());
+				Member member = MemberFixture.createMember1();
+
 				ReflectionTestUtils.setField(member, "profileImageUrl",
 						"https://dapanda.org/profile/test2.jpg");
-				CustomUserDetails userDetails = CustomUserDetails.from(member);
 				memberRepository.save(member);
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
 				// when & then
 				mockMvc.perform(get("/api/members/info")
 								.contentType(MediaType.APPLICATION_JSON)
@@ -368,9 +369,12 @@ class MemberControllerTest extends BaseIntegrationTest {
 
 				// given
 				Member member = memberRepository.save(MemberFixture.createMember1());
+
 				CustomUserDetails userDetails = CustomUserDetails.from(member);
-				String imageUrl = "https://dapanda.org/profile/test.jpg"; // 유효한 확장자
-				var request = new UpdateProfileImageRequest(imageUrl);
+
+				String imageUrl = "https://dapanda.org/profile/test.jpg";
+
+				UpdateProfileImageRequest request = new UpdateProfileImageRequest(imageUrl);
 
 				// when & then
 				mockMvc.perform(
@@ -408,7 +412,7 @@ class MemberControllerTest extends BaseIntegrationTest {
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				CustomUserDetails userDetails = CustomUserDetails.from(member);
 				String imageUrl = "https://dapanda.org/profile/invalid.bmp"; // 지원하지 않는 확장자
-				var request = new UpdateProfileImageRequest(imageUrl);
+				UpdateProfileImageRequest request = new UpdateProfileImageRequest(imageUrl);
 
 				// when & then
 				mockMvc.perform(
@@ -442,7 +446,7 @@ class MemberControllerTest extends BaseIntegrationTest {
 				// given
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				CustomUserDetails userDetails = CustomUserDetails.from(member);
-				var request = new UpdateProfileImageRequest("");
+				UpdateProfileImageRequest request = new UpdateProfileImageRequest("");
 
 				// when & then
 				mockMvc.perform(

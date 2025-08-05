@@ -3,10 +3,10 @@ package com.dapanda.fcm.controller;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.base.BaseIntegrationTest;
 import com.dapanda.fcmToken.dto.request.SaveFcmTokenRequest;
+import com.dapanda.fcmToken.entity.NotificationEntity;
 import com.dapanda.fcmToken.repository.NotificationRepository;
-import com.dapanda.fcmToken.service.FcmTokenService;
-import com.dapanda.fcm_token.entity.NotificationEntity;
-import com.dapanda.member.entity.*;
+import com.dapanda.member.entity.Member;
+import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class FcmTokenControllerTest extends BaseIntegrationTest {
 
 	@Autowired
-	private FcmTokenService fcmTokenService;
-
-	@Autowired
 	private MemberRepository memberRepository;
 
 	@Autowired
@@ -45,15 +42,16 @@ class FcmTokenControllerTest extends BaseIntegrationTest {
 
 			@Test
 			@DisplayName("FCM 토큰을 받아서 서버에 성공적으로 저장한다.")
-			void saveFcmToken_success() throws Exception {
+			void saveFcmTokenSuccess() throws Exception {
 
-				// given
+				//given
 				SaveFcmTokenRequest request = new SaveFcmTokenRequest("valid_token");
 
-				Member member = MemberFixture.createMember1();
-				memberRepository.save(member);
+				Member member = memberRepository.save(MemberFixture.createMember1());
 
 				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
+				//when & then
 				mockMvc.perform(post("/api/fcm/save")
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, userDetails.getAuthorities()
@@ -83,22 +81,23 @@ class FcmTokenControllerTest extends BaseIntegrationTest {
 		class Fail {
 
 			@Test
-			void token이_null인_경우() throws Exception {
+			@DisplayName("토큰이 null 일 경우 예외가 발생한다")
+			void nullTokenTest() throws Exception {
 
 				// given
-				String requestBody = """
-						{
-							"token": null
-						}
-						""";
+				SaveFcmTokenRequest request = new SaveFcmTokenRequest(null);
 
-				MemberFixture.setAuthentication(1L, "test@example.com", "KAKAO",
-						MemberRole.ROLE_MEMBER);
+				Member member = memberRepository.save(MemberFixture.createMember1());
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
 
 				// when & then
 				mockMvc.perform(post("/api/fcm/save")
 								.contentType("application/json")
-								.content(requestBody))
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
 						.andExpect(status().isBadRequest())
 						.andDo(document("fcm-token-save-invalid-null",
 								preprocessRequest(prettyPrint()),
@@ -114,22 +113,23 @@ class FcmTokenControllerTest extends BaseIntegrationTest {
 			}
 
 			@Test
-			void token이_빈문자열인_경우() throws Exception {
+			@DisplayName("토큰이 비었을 경우 에외가 발생한다")
+			void emptyTokenTest() throws Exception {
 
 				// given
-				String requestBody = """
-						{
-							"token": ""
-						}
-						""";
+				Member member = memberRepository.save(MemberFixture.createMember1());
 
-				MemberFixture.setAuthentication(1L, "test@example.com", "KAKAO",
-						MemberRole.ROLE_MEMBER);
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
+				SaveFcmTokenRequest request = new SaveFcmTokenRequest(null);
 
 				// when & then
 				mockMvc.perform(post("/api/fcm/save")
 								.contentType("application/json")
-								.content(requestBody))
+								.content(objectMapper.writeValueAsString(request))
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								))))
 						.andExpect(status().isBadRequest())
 						.andDo(document("fcm-token-save-invalid-blank",
 								preprocessRequest(prettyPrint()),
@@ -157,17 +157,15 @@ class FcmTokenControllerTest extends BaseIntegrationTest {
 
 			@Test
 			@DisplayName("회원의 알림 목록을 최신순으로 성공적으로 조회한다.")
-			void getMyNotifications_success() throws Exception {
+			void getMyNotificationsSuccess() throws Exception {
+
 				// given
-				Member member = MemberFixture.createMember1();
-				Member savedMember = memberRepository.save(member);
+				Member member = memberRepository.save(MemberFixture.createMember1());
 
-				NotificationEntity notification1 = NotificationEntity.of("제목1", "본문1", savedMember);
-				NotificationEntity notification2 = NotificationEntity.of("제목2", "본문2", savedMember);
-				notificationRepository.save(notification1);
-				notificationRepository.save(notification2);
+				notificationRepository.save(NotificationEntity.of("제목1", "본문1", member));
+				notificationRepository.save(NotificationEntity.of("제목2", "본문2", member));
 
-				CustomUserDetails userDetails = CustomUserDetails.from(savedMember);
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
 
 				// when & then
 				mockMvc.perform(get("/api/notifications")
@@ -177,8 +175,6 @@ class FcmTokenControllerTest extends BaseIntegrationTest {
 								.accept(MediaType.APPLICATION_JSON))
 						.andExpect(status().isOk())
 						.andDo(document("get-my-notifications",
-								preprocessRequest(prettyPrint()),
-								preprocessResponse(prettyPrint()),
 								responseFields(
 										fieldWithPath("code").type(JsonFieldType.NUMBER)
 												.description("응답 코드"),
@@ -211,17 +207,16 @@ class FcmTokenControllerTest extends BaseIntegrationTest {
 			@Test
 			@DisplayName("본인의 알림을 성공적으로 삭제한다.")
 			void deleteNotification_success() throws Exception {
+
 				// given
-				Member member = MemberFixture.createMember1();
-				Member savedMember = memberRepository.save(member);
+				Member member = memberRepository.save(MemberFixture.createMember1());
 
-				NotificationEntity notification = NotificationEntity.of("제목", "본문", savedMember);
-				notificationRepository.save(notification);
+				NotificationEntity notificationEntity = notificationRepository.save(NotificationEntity.of("제목", "본문", member));
 
-				CustomUserDetails userDetails = CustomUserDetails.from(savedMember);
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
 
 				// when & then
-				mockMvc.perform(delete("/api/notifications/{notificationId}", notification.getId())
+				mockMvc.perform(delete("/api/notifications/{notificationId}", notificationEntity.getId())
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, userDetails.getAuthorities()
 								)))
@@ -256,13 +251,13 @@ class FcmTokenControllerTest extends BaseIntegrationTest {
 				memberRepository.save(member1);
 				Member savedMember2 = memberRepository.save(member2);
 
-				NotificationEntity notification = NotificationEntity.of("제목", "본문", savedMember2);
-				notificationRepository.save(notification);
+				NotificationEntity notificationEntity = notificationRepository.save(
+						NotificationEntity.of("제목", "본문", savedMember2));
 
 				CustomUserDetails userDetails = CustomUserDetails.from(member1);
 
 				// when & then
-				mockMvc.perform(delete("/api/notifications/{notificationId}", notification.getId())
+				mockMvc.perform(delete("/api/notifications/{notificationId}", notificationEntity.getId())
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, userDetails.getAuthorities()
 								)))
@@ -286,8 +281,8 @@ class FcmTokenControllerTest extends BaseIntegrationTest {
 			@DisplayName("존재하지 않는 알림 ID인 경우 400 Bad Request 응답이 반환된다.")
 			void deleteNotification_notFound() throws Exception {
 				// given
-				Member member = MemberFixture.createMember1();
-				memberRepository.save(member);
+				Member member = memberRepository.save(MemberFixture.createMember1());
+
 				CustomUserDetails userDetails = CustomUserDetails.from(member);
 
 				// when & then
