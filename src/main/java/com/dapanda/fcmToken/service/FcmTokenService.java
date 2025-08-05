@@ -4,19 +4,20 @@ import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.fcmToken.dto.response.NotificationResponse;
 import com.dapanda.fcmToken.entity.FcmToken;
+import com.dapanda.fcmToken.entity.NotificationEntity;
 import com.dapanda.fcmToken.repository.FcmTokenRepository;
 import com.dapanda.fcmToken.repository.NotificationRepository;
-import com.dapanda.fcm_token.entity.NotificationEntity;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.entity.ItemType;
 import com.google.firebase.messaging.*;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service

@@ -1,8 +1,9 @@
 package com.dapanda.fcmToken.dto.response;
 
-import com.dapanda.fcm_token.entity.NotificationEntity;
-import java.time.LocalDateTime;
+import com.dapanda.fcmToken.entity.NotificationEntity;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
