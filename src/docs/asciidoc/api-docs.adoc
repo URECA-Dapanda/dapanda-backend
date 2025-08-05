@@ -47,20 +47,23 @@ DaPanda 서비스의 REST API 문서입니다.
 | `200 OK`
 | 요청을 성공적으로 처리함
 
-| `201 Created`
-| 새 리소스를 성공적으로 생성함. 응답의 `Location` 헤더에 해당 리소스의 URI가 담겨있다.
-
-| `204 No Content`
-| 기존 리소스를 성공적으로 수정함.
-
 | `400 Bad Request`
-| 잘못된 요청을 보낸 경우. 응답 본문에 더 오류에 대한 정보가 담겨있다.
+| 잘못된 요청을 보낸 경우. 유효하지 않은 입력값, 파라미터, 비즈니스 로직 위반 등
+
+| `401 Unauthorized`
+| 인증이 필요하거나 토큰이 유효하지 않은 경우
+
+| `403 Forbidden`
+| 인증은 되었으나 해당 리소스에 대한 권한이 없는 경우
 
 | `404 Not Found`
-| 요청한 리소스가 존재하지 않음.
+| 요청한 리소스가 존재하지 않음
 
 | `409 Conflict`
-| 서버의 규칙에 의해 해당 요청을 완료할 수 없음.
+| 리소스의 현재 상태와 충돌하여 요청을 완료할 수 없음 (중복 이메일, 사용자명 등)
+
+| `500 Internal Server Error`
+| 서버 내부 오류가 발생한 경우
 |===
 
 [[overview-errors]]
@@ -183,6 +186,27 @@ include::{snippets}/member/get-selling-data-total/response-fields.adoc[]
 `/pub/{chatRoomId}` : chatRoomId 로 채팅 메시지 발행(pub)
 
 `/sub/{chatRoomId}` : chatRoomId 로 채팅 메시지 구독(sub)
+
+`/sub/alarm/{memberId}` : memberId 로 타이머 알림 구독(sub)
+
+|===
+| 응답 필드 | 설명
+
+| tradeId
+| 거래 아이디
+
+| eventState
+| 알림 상태 (START,END)
+
+| memberId
+| 알림받는 회원 아이디
+
+| startTime
+| 와이파이 시작 시간
+
+| endTime
+| 와이파이 종료 시간
+|===
 
 ==== 마지막으로 읽은 채팅 메시지 업데이트
 

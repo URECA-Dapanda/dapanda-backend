@@ -25,8 +25,7 @@ public class WebSocketEventListener {
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 		sessions.add(accessor.getSessionId());
 
-		log.info("[WebSocketEventListener] Connect Session ID = {}", accessor.getSessionId());
-		log.info("[WebSocketEventListener] Total Session = {}", sessions.size());
+		createLog(accessor);
 	}
 
 	@EventListener
@@ -34,6 +33,11 @@ public class WebSocketEventListener {
 
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 		sessions.remove(accessor.getSessionId());
+
+		createLog(accessor);
+	}
+
+	private void createLog(StompHeaderAccessor accessor) {
 
 		log.info("[WebSocketEventListener] Disconnect Session ID = {}", accessor.getSessionId());
 		log.info("[WebSocketEventListener] Total Session = {}", sessions.size());
