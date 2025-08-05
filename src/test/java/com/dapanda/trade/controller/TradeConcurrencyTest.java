@@ -1,11 +1,7 @@
 package com.dapanda.trade.controller;
 
-import static com.dapanda.TestConstants.Member.CASH_5000;
-import static com.dapanda.TestConstants.MobileData.*;
-import static com.dapanda.TestConstants.Product.PRICE_3000;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.dapanda.auth.entity.OAuthProvider;
+import com.dapanda.base.BaseIntegrationTest;
 import com.dapanda.member.entity.*;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.plan.entity.Plan;
@@ -21,27 +17,27 @@ import com.dapanda.trade.entity.TradeFixture;
 import com.dapanda.trade.repository.TradeRepository;
 import com.dapanda.trade.service.TradeService;
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.util.ReflectionTestUtils;
+
+import static com.dapanda.TestConstants.Member.CASH_5000;
+import static com.dapanda.TestConstants.MobileData.*;
+import static com.dapanda.TestConstants.Product.PRICE_3000;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("performance")
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)  // 순서 보장
-@Execution(ExecutionMode.SAME_THREAD)  // 병렬 실행 막기
-@SpringBootTest
-@ActiveProfiles("test")
+//@TestMethodOrder(MethodOrderer.OrderAnnotation.class)  // 순서 보장
+//@Execution(ExecutionMode.SAME_THREAD)  // 병렬 실행 막기
 @DisplayName("상품 거래 동시성 테스트")
-public class TradeConcurrencyTest {
+public class TradeConcurrencyTest extends BaseIntegrationTest {
 
 	private static final int THREAD_COUNT = 1000;
 	private static final int THREAD_POOL_SIZE = 32;

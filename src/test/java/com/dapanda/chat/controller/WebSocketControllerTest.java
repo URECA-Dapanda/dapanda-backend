@@ -1,7 +1,6 @@
 package com.dapanda.chat.controller;
 
-import com.dapanda.RedisTestContainerConfig;
-import com.dapanda.TestConfig;
+import com.dapanda.base.BaseIntegrationTest;
 import com.dapanda.chat.config.WebSocketPath;
 import com.dapanda.chat.dto.request.CreateChatMessageRequest;
 import com.dapanda.chat.dto.response.CreateMessageResponse;
@@ -19,16 +18,10 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.*;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
@@ -41,13 +34,9 @@ import java.util.concurrent.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
 @TestMethodOrder(OrderAnnotation.class)
-@Import({TestConfig.class, RedisTestContainerConfig.class})
-@AutoConfigureTestDatabase(replace = Replace.NONE)
 @DisplayName("채팅 시스템 테스트")
-class WebSocketControllerTest {
+class WebSocketControllerTest extends BaseIntegrationTest {
 
 	@LocalServerPort
 	private int port;
