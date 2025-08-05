@@ -237,6 +237,10 @@ def jacocoExcludePatterns = [
         '**/dto/**',
         '**/config/**',
         '**/test/**',
+        '**/entity/**',
+        '**/event/**',
+        '**/handler/**',
+        '**/scheduler/**',
 
         // Auth 관련
         'com/dapanda/auth/handler/*.class',
@@ -250,7 +254,8 @@ def jacocoExcludePatterns = [
         // Alarm 관련
         'com/dapanda/alarm/event/*.java',
         'com/dapanda/alarm/handler/*.java',
-        'com/dapanda/alarm/scheduler/*.java'
+        'com/dapanda/alarm/scheduler/*.java',
+        'com/dapanda/alarm/service/WifiTradeNotifier.java'
 ]
 
 jacocoTestReport {

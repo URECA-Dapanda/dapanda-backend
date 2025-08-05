@@ -1,9 +1,5 @@
 package com.dapanda.auth.controller;
 
-import com.dapanda.auth.dto.request.LoginRequest;
-import com.dapanda.auth.dto.request.SignupRequest;
-import com.dapanda.auth.dto.response.LoginResponse;
-import com.dapanda.auth.dto.response.SignupResponse;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.common.exception.*;
 import com.dapanda.jwt.JwtPrinciple;
@@ -26,26 +22,6 @@ public class AuthController {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RefreshTokenService refreshTokenService;
 	private final MemberService memberService;
-
-	@PostMapping("/auth/signup")
-	public CommonResponse<SignupResponse> signup(
-			@RequestBody SignupRequest request) {
-
-		SignupResponse result = memberService.registerUser(request);
-
-		return CommonResponse.success(result);
-	}
-
-	@PostMapping("/auth/login")
-	public CommonResponse<LoginResponse> login(
-			@RequestBody LoginRequest request,
-			HttpServletResponse response
-	) {
-
-		LoginResponse result = memberService.login(request, response);
-
-		return CommonResponse.success(result);
-	}
 
 	@PostMapping("/auth/logout")
 	public CommonResponse<Void> logout(HttpServletRequest request,
