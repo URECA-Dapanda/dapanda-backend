@@ -21,15 +21,10 @@ public class WifiTradeEndEventHandler {
 	@Async
 	@EventListener
 	public void handleWifiTradeEnd(WifiTradeEvent event) {
-		log.info("WIFI 사용 종료 이벤트 tradeId : {}, memberId : {}", event.tradeId(),
-				event.memberId());
 
-		messagingTemplate.convertAndSend(
-				WebSocketPath.SUB.getPath() + "/" +
-						WebSocketPath.ALARM.getPath() + "/" +
-						event.memberId(),
-				event
-		);
+		log.info("WIFI 사용 종료 이벤트 tradeId : {}, memberId : {}", event.tradeId(), event.memberId());
+
+		messagingTemplate.convertAndSend(WebSocketPath.getAlarmPath(event.memberId()), event);
 
 		fcmTokenService.notifyWifiEnd(event.memberId());
 	}

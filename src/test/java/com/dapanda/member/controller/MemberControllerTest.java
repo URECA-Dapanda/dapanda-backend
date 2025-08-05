@@ -1,7 +1,7 @@
 package com.dapanda.member.controller;
 
-import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.base.BaseIntegrationTest;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.dto.request.UpdateProfileImageRequest;
 import com.dapanda.member.entity.Member;
@@ -10,23 +10,12 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.math.BigDecimal;
 
@@ -39,48 +28,15 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@Import(TestConfig.class)
-@ActiveProfiles("test")
-@ExtendWith(RestDocumentationExtension.class)
 @DisplayName("회원 컨트롤러 테스트")
-class MemberControllerTest {
+class MemberControllerTest extends BaseIntegrationTest {
 
-	@Autowired
-	private WebApplicationContext context;
-	@Autowired
-	private ObjectMapper objectMapper;
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-	@Autowired
-	private EntityManager entityManager;
 	@Autowired
 	private MemberRepository memberRepository;
 	@Autowired
 	private MobileDataRepository mobileDataRepository;
 	@Autowired
 	private ProductRepository productRepository;
-
-	private MockMvc mockMvc;
-
-	@BeforeEach
-	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
-
-		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
-
-		cleanupDatabase();
-	}
-
-	private void cleanupDatabase() {
-
-		entityManager.clear();
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-
-		jdbcTemplate.execute("TRUNCATE TABLE member");
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
-	}
 
 	@Nested
 	@DisplayName("캐시 조회 API")
@@ -273,11 +229,12 @@ class MemberControllerTest {
 			void getMyMemberInfo() throws Exception {
 
 				// given
-				Member member = memberRepository.save(MemberFixture.createMember1());
+				Member member = MemberFixture.createMember1();
+
 				ReflectionTestUtils.setField(member, "profileImageUrl",
 						"https://dapanda.org/profile/test2.jpg");
-				CustomUserDetails userDetails = CustomUserDetails.from(member);
 				memberRepository.save(member);
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
 				// when & then
 				mockMvc.perform(get("/api/members/info")
 								.contentType(MediaType.APPLICATION_JSON)
@@ -412,9 +369,12 @@ class MemberControllerTest {
 
 				// given
 				Member member = memberRepository.save(MemberFixture.createMember1());
+
 				CustomUserDetails userDetails = CustomUserDetails.from(member);
-				String imageUrl = "https://dapanda.org/profile/test.jpg"; // 유효한 확장자
-				var request = new UpdateProfileImageRequest(imageUrl);
+
+				String imageUrl = "https://dapanda.org/profile/test.jpg";
+
+				UpdateProfileImageRequest request = new UpdateProfileImageRequest(imageUrl);
 
 				// when & then
 				mockMvc.perform(
@@ -452,7 +412,7 @@ class MemberControllerTest {
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				CustomUserDetails userDetails = CustomUserDetails.from(member);
 				String imageUrl = "https://dapanda.org/profile/invalid.bmp"; // 지원하지 않는 확장자
-				var request = new UpdateProfileImageRequest(imageUrl);
+				UpdateProfileImageRequest request = new UpdateProfileImageRequest(imageUrl);
 
 				// when & then
 				mockMvc.perform(
@@ -486,7 +446,7 @@ class MemberControllerTest {
 				// given
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				CustomUserDetails userDetails = CustomUserDetails.from(member);
-				var request = new UpdateProfileImageRequest("");
+				UpdateProfileImageRequest request = new UpdateProfileImageRequest("");
 
 				// when & then
 				mockMvc.perform(

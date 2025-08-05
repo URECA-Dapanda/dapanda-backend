@@ -1,5 +1,25 @@
 package com.dapanda.chat.controller;
 
+import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.base.BaseIntegrationTest;
+import com.dapanda.chat.entity.*;
+import com.dapanda.chat.repository.*;
+import com.dapanda.common.exception.ResultCode;
+import com.dapanda.member.entity.Member;
+import com.dapanda.member.entity.MemberFixture;
+import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.*;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
+import java.util.Comparator;
+import java.util.List;
+
 import static com.dapanda.TestConstants.Pagination.CHAT_MESSAGE_HISTORY_DEFAULT_SIZE;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,54 +33,9 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.dapanda.RedisTestContainerConfig;
-import com.dapanda.TestConfig;
-import com.dapanda.auth.entity.CustomUserDetails;
-import com.dapanda.chat.entity.*;
-import com.dapanda.chat.repository.*;
-import com.dapanda.common.exception.ResultCode;
-import com.dapanda.member.entity.Member;
-import com.dapanda.member.entity.MemberFixture;
-import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.product.entity.*;
-import com.dapanda.product.repository.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import java.util.Comparator;
-import java.util.List;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
-
-@SpringBootTest
-@Import({TestConfig.class, RedisTestContainerConfig.class})
-@ActiveProfiles("test")
-@ExtendWith(RestDocumentationExtension.class)
 @DisplayName("채팅 컨트롤러 테스트")
-class ChatControllerTest {
+class ChatControllerTest extends BaseIntegrationTest {
 
-	@Autowired
-	private WebApplicationContext context;
-
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-
-	@Autowired
-	private EntityManager entityManager;
-
-	private MockMvc mockMvc;
 	@Autowired
 	private MemberRepository memberRepository;
 	@Autowired
@@ -76,33 +51,7 @@ class ChatControllerTest {
 	@Autowired
 	private WifiRepository wifiRepository;
 	@Autowired
-	private ObjectMapper objectMapper;
-	@Autowired
 	private ChatMessageReadStatusRepository chatMessageReadStatusRepository;
-
-	@BeforeEach
-	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
-
-		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
-
-		cleanupDatabase();
-	}
-
-	private void cleanupDatabase() {
-
-		entityManager.clear();
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-
-		jdbcTemplate.execute("TRUNCATE TABLE chat_room");
-		jdbcTemplate.execute("TRUNCATE TABLE chat_participant");
-		jdbcTemplate.execute("TRUNCATE TABLE chat_message");
-		jdbcTemplate.execute("TRUNCATE TABLE chat_message_read_status");
-		jdbcTemplate.execute("TRUNCATE TABLE product");
-		jdbcTemplate.execute("TRUNCATE TABLE member");
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
-	}
 
 	@Nested
 	@DisplayName("채팅방 생성 API")

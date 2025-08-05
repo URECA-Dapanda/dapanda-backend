@@ -1,5 +1,30 @@
 package com.dapanda.review.controller;
 
+import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.base.BaseIntegrationTest;
+import com.dapanda.common.exception.ResultCode;
+import com.dapanda.member.entity.Member;
+import com.dapanda.member.entity.MemberFixture;
+import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.ProductRepository;
+import com.dapanda.product.repository.WifiRepository;
+import com.dapanda.review.dto.request.CreateReviewRequest;
+import com.dapanda.review.dto.request.UpdateReviewRequest;
+import com.dapanda.review.entity.Review;
+import com.dapanda.review.entity.ReviewFixture;
+import com.dapanda.review.repository.ReviewRepository;
+import com.dapanda.trade.entity.*;
+import com.dapanda.trade.repository.TradeDetailsRepository;
+import com.dapanda.trade.repository.TradeRepository;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
+import java.util.*;
+
 import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_REVIEW_SORT_OPTION;
 import static com.dapanda.TestConstants.Pagination.DEFAULT_SIZE_2;
@@ -16,64 +41,11 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.dapanda.TestConfig;
-import com.dapanda.auth.entity.CustomUserDetails;
-import com.dapanda.common.exception.ResultCode;
-import com.dapanda.member.entity.Member;
-import com.dapanda.member.entity.MemberFixture;
-import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.product.entity.*;
-import com.dapanda.product.repository.ProductRepository;
-import com.dapanda.product.repository.WifiRepository;
-import com.dapanda.review.dto.request.CreateReviewRequest;
-import com.dapanda.review.dto.request.UpdateReviewRequest;
-import com.dapanda.review.entity.Review;
-import com.dapanda.review.entity.ReviewFixture;
-import com.dapanda.review.repository.ReviewRepository;
-import com.dapanda.trade.entity.*;
-import com.dapanda.trade.repository.TradeDetailsRepository;
-import com.dapanda.trade.repository.TradeRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import java.util.*;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
-
-@SpringBootTest
-@Import(TestConfig.class)
-@ActiveProfiles("test")
-@ExtendWith(RestDocumentationExtension.class)
 @DisplayName("리뷰 컨트롤러 테스트")
-class ReviewControllerTest {
-
-	@Autowired
-	private WebApplicationContext context;
-
-	@Autowired
-	private ObjectMapper objectMapper;
+class ReviewControllerTest extends BaseIntegrationTest {
 
 	@Autowired
 	private ReviewRepository reviewRepository;
-
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-
-	@Autowired
-	private EntityManager entityManager;
-
-	private MockMvc mockMvc;
 
 	@Autowired
 	private MemberRepository memberRepository;
@@ -89,30 +61,6 @@ class ReviewControllerTest {
 
 	@Autowired
 	private WifiRepository wifiRepository;
-
-	@BeforeEach
-	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
-
-		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
-
-		cleanupDatabase();
-	}
-
-	private void cleanupDatabase() {
-
-		entityManager.clear();
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-
-		jdbcTemplate.execute("DELETE FROM review");
-		jdbcTemplate.execute("DELETE FROM trade_details");
-		jdbcTemplate.execute("DELETE FROM trade");
-		jdbcTemplate.execute("DELETE FROM product");
-		jdbcTemplate.execute("DELETE FROM wifi");
-		jdbcTemplate.execute("DELETE FROM member");
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
-	}
 
 	@Nested
 	@DisplayName("리뷰 등록 API")

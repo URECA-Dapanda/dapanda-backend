@@ -14,6 +14,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("거래 알림 스케줄러 테스트")
 class WifiTradeNotificationSchedulerTest {
 
 	@Mock

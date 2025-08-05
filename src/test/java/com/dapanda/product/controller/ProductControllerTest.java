@@ -1,5 +1,30 @@
 package com.dapanda.product.controller;
 
+import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.auth.entity.OAuthProvider;
+import com.dapanda.base.BaseIntegrationTest;
+import com.dapanda.common.exception.ResultCode;
+import com.dapanda.member.entity.*;
+import com.dapanda.member.repository.MemberRepository;
+import com.dapanda.plan.entity.*;
+import com.dapanda.plan.repository.PlanRepository;
+import com.dapanda.product.dto.request.*;
+import com.dapanda.product.dto.response.*;
+import com.dapanda.product.entity.*;
+import com.dapanda.product.repository.*;
+import com.dapanda.product.service.ProductService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
+
 import static com.dapanda.TestConstants.Member.USER_DETAILS_MEMBER_ID;
 import static com.dapanda.TestConstants.MobileData.*;
 import static com.dapanda.TestConstants.Product.*;
@@ -18,55 +43,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.dapanda.TestConfig;
-import com.dapanda.auth.entity.CustomUserDetails;
-import com.dapanda.auth.entity.OAuthProvider;
-import com.dapanda.common.exception.ResultCode;
-import com.dapanda.member.entity.*;
-import com.dapanda.member.repository.MemberRepository;
-import com.dapanda.plan.entity.*;
-import com.dapanda.plan.repository.PlanRepository;
-import com.dapanda.product.dto.request.*;
-import com.dapanda.product.dto.response.*;
-import com.dapanda.product.entity.*;
-import com.dapanda.product.repository.*;
-import com.dapanda.product.service.ProductService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.*;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
-@SpringBootTest
-@Import(TestConfig.class)
-@ActiveProfiles("test")
-@ExtendWith(RestDocumentationExtension.class)
 @DisplayName("상품 컨트롤러 테스트")
-class ProductControllerTest {
+class ProductControllerTest extends BaseIntegrationTest {
 
-	@Autowired
-	private WebApplicationContext context;
-	@Autowired
-	private ObjectMapper objectMapper;
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-	@Autowired
-	private EntityManager entityManager;
 	@Autowired
 	private ProductRepository productRepository;
 	@Autowired
@@ -79,40 +58,8 @@ class ProductControllerTest {
 	private ProductImageRepository productImageRepository;
 	@Autowired
 	private PlanRepository planRepository;
-	private MockMvc mockMvc;
 	@Autowired
 	private ProductService productService;
-
-	@BeforeEach
-	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
-
-		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
-
-		cleanupDatabase();
-	}
-
-	@AfterEach
-	void tearDown() {
-
-		planRepository.deleteAll();
-		productRepository.deleteAll();
-		mobileDataRepository.deleteAll();
-		memberRepository.deleteAll();
-	}
-
-	private void cleanupDatabase() {
-
-		entityManager.clear();
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-
-		jdbcTemplate.execute("TRUNCATE TABLE wifi");
-		jdbcTemplate.execute("TRUNCATE TABLE mobile_data");
-		jdbcTemplate.execute("DELETE FROM product");
-		jdbcTemplate.execute("DELETE FROM member");
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
-	}
 
 	@Nested
 	@DisplayName("상품 등록 API")

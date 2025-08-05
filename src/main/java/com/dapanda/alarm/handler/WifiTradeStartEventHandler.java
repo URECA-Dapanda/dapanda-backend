@@ -21,15 +21,10 @@ public class WifiTradeStartEventHandler {
 	@Async
 	@EventListener
 	public void handleWifiTradeStart(WifiTradeEvent event) {
-		log.info("WIFI 사용 시작 이벤트 tradeId : {}, memberId : {}", event.tradeId(),
-				event.memberId());
 
-		messagingTemplate.convertAndSend(
-				WebSocketPath.SUB.getPath() + "/" +
-						WebSocketPath.ALARM.getPath() + "/" +
-						event.memberId(),
-				event
-		);
+		log.info("WIFI 사용 시작 이벤트 tradeId : {}, memberId : {}", event.tradeId(), event.memberId());
+
+		messagingTemplate.convertAndSend(WebSocketPath.getAlarmPath(event.memberId()), event);
 
 		fcmTokenService.notifyWifiStart(event.memberId());
 	}

@@ -1,19 +1,7 @@
 package com.dapanda.payment.controller;
 
-import static com.dapanda.TestConstants.Member.CASH_0;
-import static com.dapanda.TestConstants.Member.CASH_5000;
-import static com.dapanda.TestConstants.Payment.*;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.dapanda.RedisTestContainerConfig;
-import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
+import com.dapanda.base.BaseIntegrationTest;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.*;
@@ -22,78 +10,42 @@ import com.dapanda.payment.dto.request.*;
 import com.dapanda.payment.dto.response.RefundCashResponse;
 import com.dapanda.payment.dto.response.TossConfirmResponse;
 import com.dapanda.payment.service.TossPaymentService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.reactive.function.client.WebClient;
 
-@SpringBootTest
-@Import({TestConfig.class, RedisTestContainerConfig.class})
-@ActiveProfiles("test")
-@ExtendWith(RestDocumentationExtension.class)
-@DisplayName("결제 컨트롤러 테스트")
-class PaymentControllerTest {
+import static com.dapanda.TestConstants.Member.CASH_0;
+import static com.dapanda.TestConstants.Member.CASH_5000;
+import static com.dapanda.TestConstants.Payment.*;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-	@Autowired
-	private WebApplicationContext context;
-	@Autowired
-	private ObjectMapper objectMapper;
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-	@Autowired
-	private EntityManager entityManager;
+@DisplayName("결제 컨트롤러 테스트")
+class PaymentControllerTest extends BaseIntegrationTest {
+
 	@Autowired
 	private MemberRepository memberRepository;
 	@Autowired
 	@Qualifier("chatPubSub")
 	private RedisTemplate<String, String> redisTemplate;
-
-	private MockMvc mockMvc;
 	@MockitoBean
 	private WebClient tossWebClient;
 	@MockitoBean
 	private TossPaymentService tossPaymentService;
-
-	@BeforeEach
-	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
-
-		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
-	}
-
-	@BeforeEach
-	void cleanupDatabase() {
-
-		entityManager.clear();
-
-		// MySQL 초기화
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-		jdbcTemplate.execute("TRUNCATE TABLE member");
-		jdbcTemplate.execute("TRUNCATE TABLE trade");
-		jdbcTemplate.execute("TRUNCATE TABLE product");
-		jdbcTemplate.execute("TRUNCATE TABLE payment");
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
-
-		// Redis 초기화
-		redisTemplate.delete(redisTemplate.keys("*"));
-	}
 
 	@BeforeEach
 	void setUpSecurityContext() {
@@ -396,6 +348,7 @@ class PaymentControllerTest {
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, userDetails.getAuthorities()
 								))))
+						.andDo(print())
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
 						.andExpect(jsonPath("$.message").value(ResultCode.SUCCESS.getMessage()))
