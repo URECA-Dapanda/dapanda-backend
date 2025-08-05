@@ -16,8 +16,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 
+import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -50,19 +50,11 @@ class S3ControllerTest extends BaseIntegrationTest {
 				Member member = memberRepository.save(MemberFixture.createMember1());
 				CustomUserDetails userDetails = CustomUserDetails.from(member);
 
-				String filename = "sample.jpg";
-//				String bucket = "dpd-bucket";
-				String presignedUrl = "https://example.com/presigned-url";
-				String key = "images/1/uuid-sample.jpg";
-//				String publicUrl = "https://dpd-bucket.s3.ap-northeast-2.amazonaws.com/" + key;
+				String fileName = "sample.jpg";
+				String preSignedUrl = "https://example.com/presigned-url";
 
-				// S3 Mocking
-				Mockito.when(
-								amazonS3.generatePresignedUrl(
-										Mockito.any(GeneratePresignedUrlRequest.class)))
-						.thenReturn(new URL(presignedUrl));
-				// body 생성
-//				PreSignRequest requestDto = new PreSignRequest(List.of("sample.jpg"));
+				given(amazonS3.generatePresignedUrl(Mockito.any(GeneratePresignedUrlRequest.class)))
+						.willReturn(new URL(preSignedUrl));
 
 				mockMvc.perform(post("/api/images/presign")
 								.with(authentication(new UsernamePasswordAuthenticationToken(
@@ -70,13 +62,13 @@ class S3ControllerTest extends BaseIntegrationTest {
 								)))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(
-										new PreSignRequest(List.of(filename)))))
+										new PreSignRequest(List.of(fileName)))))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").exists())
 						.andExpect(jsonPath("$.message").exists())
 						.andExpect(jsonPath("$.data").isArray())
-						.andExpect(jsonPath("$.data[0].filename").value(filename))
-						.andExpect(jsonPath("$.data[0].url").value(presignedUrl))
+						.andExpect(jsonPath("$.data[0].filename").value(fileName))
+						.andExpect(jsonPath("$.data[0].url").value(preSignedUrl))
 						.andExpect(jsonPath("$.data[0].publicUrl").exists())
 						.andExpect(jsonPath("$.data[0].key").exists())
 						.andDo(document("s3/post-presigned-url",
@@ -105,22 +97,20 @@ class S3ControllerTest extends BaseIntegrationTest {
 
 				CustomUserDetails userDetails = CustomUserDetails.from(member);
 
-				var filenames = List.of("a.jpg", "b.png", "c.jpeg");
-				PreSignRequest requestDto = new PreSignRequest(filenames);
-				var bucket = "dpd-bucket";
-				var basePresignedUrl = "https://example.com/presigned-url";
-				var userId = userDetails.getId();
+				List<String> fileNames = List.of("a.jpg", "b.png", "c.jpeg");
+
+				PreSignRequest requestDto = new PreSignRequest(fileNames);
+
+				String basePreSignedUrl = "https://example.com/presigned-url";
 
 				// S3 Mocking: 여러 번 호출될 때마다 presignedUrl을 반환
 				Mockito.when(amazonS3.generatePresignedUrl(
 								Mockito.any(GeneratePresignedUrlRequest.class)))
 						.thenReturn(
-								new URL(basePresignedUrl + "?1"),
-								new URL(basePresignedUrl + "?2"),
-								new URL(basePresignedUrl + "?3")
+								new URL(basePreSignedUrl + "?1"),
+								new URL(basePreSignedUrl + "?2"),
+								new URL(basePreSignedUrl + "?3")
 						);
-
-				var requestBody = Map.of("filenames", filenames);
 
 				mockMvc.perform(post("/api/images/presign")
 								.with(authentication(new UsernamePasswordAuthenticationToken(
@@ -134,11 +124,11 @@ class S3ControllerTest extends BaseIntegrationTest {
 						.andExpect(jsonPath("$.data").isArray())
 						.andExpect(jsonPath("$.data.length()").value(3))
 						.andExpect(jsonPath("$.data[0].filename").value("a.jpg"))
-						.andExpect(jsonPath("$.data[0].url").value(basePresignedUrl + "?1"))
+						.andExpect(jsonPath("$.data[0].url").value(basePreSignedUrl + "?1"))
 						.andExpect(jsonPath("$.data[1].filename").value("b.png"))
-						.andExpect(jsonPath("$.data[1].url").value(basePresignedUrl + "?2"))
+						.andExpect(jsonPath("$.data[1].url").value(basePreSignedUrl + "?2"))
 						.andExpect(jsonPath("$.data[2].filename").value("c.jpeg"))
-						.andExpect(jsonPath("$.data[2].url").value(basePresignedUrl + "?3"))
+						.andExpect(jsonPath("$.data[2].url").value(basePreSignedUrl + "?3"))
 						.andDo(document("s3/post-presigned-url-bulk",
 								requestFields(
 										fieldWithPath("filenames[]").description(
@@ -180,8 +170,7 @@ class S3ControllerTest extends BaseIntegrationTest {
 								.with(authentication(new UsernamePasswordAuthenticationToken(
 										userDetails, null, userDetails.getAuthorities()
 								)))
-								.contentType(MediaType.APPLICATION_JSON)
-								.content("{}"))
+								.contentType(MediaType.APPLICATION_JSON))
 						.andExpect(status().isBadRequest())
 						.andDo(document("s3/post-presigned-url/validation-error"));
 			}
