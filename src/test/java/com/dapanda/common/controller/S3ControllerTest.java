@@ -2,22 +2,17 @@ package com.dapanda.common.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.base.BaseIntegrationTest;
 import com.dapanda.common.dto.request.PreSignRequest;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.net.URL;
 import java.util.List;
@@ -34,41 +29,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class S3ControllerTest extends BaseIntegrationTest {
 
 	@Autowired
-	private WebApplicationContext context;
-
-	@Autowired
-	private ObjectMapper objectMapper;
-
-	@Autowired
 	private AmazonS3 amazonS3;
 
 	@Autowired
 	private MemberRepository memberRepository;
 
-	private MockMvc mockMvc;
-	private CustomUserDetails userDetails;
-
-	@BeforeEach
-	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
-
-		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
-	}
-
-	@BeforeEach
-	void cleanUp() {
-		memberRepository.deleteAll();
-	}
-
-	@BeforeEach
-	void setUp() {
-
-		Member member = memberRepository.save(MemberFixture.createMember1());
-		userDetails = CustomUserDetails.from(member);
-	}
-
 	@Nested
-	@DisplayName("S3 PresignedUrl 발급 API")
-	class GetPresignedUrl {
+	@DisplayName("S3 PreSignedUrl 발급 API")
+	class GetPreSignedUrl {
 
 		@Nested
 		@DisplayName("성공 케이스")
@@ -76,14 +44,17 @@ class S3ControllerTest extends BaseIntegrationTest {
 
 			@Test
 			@DisplayName("성공적으로 presignedUrl을 발급받는다")
-			void getPresignedUrl_success() throws Exception {
+			void getPreSignedUrlSuccess() throws Exception {
 
 				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
 				String filename = "sample.jpg";
-				String bucket = "dpd-bucket";
+//				String bucket = "dpd-bucket";
 				String presignedUrl = "https://example.com/presigned-url";
 				String key = "images/1/uuid-sample.jpg";
-				String publicUrl = "https://dpd-bucket.s3.ap-northeast-2.amazonaws.com/" + key;
+//				String publicUrl = "https://dpd-bucket.s3.ap-northeast-2.amazonaws.com/" + key;
 
 				// S3 Mocking
 				Mockito.when(
@@ -91,7 +62,7 @@ class S3ControllerTest extends BaseIntegrationTest {
 										Mockito.any(GeneratePresignedUrlRequest.class)))
 						.thenReturn(new URL(presignedUrl));
 				// body 생성
-				PreSignRequest requestDto = new PreSignRequest(List.of("sample.jpg"));
+//				PreSignRequest requestDto = new PreSignRequest(List.of("sample.jpg"));
 
 				mockMvc.perform(post("/api/images/presign")
 								.with(authentication(new UsernamePasswordAuthenticationToken(
@@ -127,9 +98,13 @@ class S3ControllerTest extends BaseIntegrationTest {
 
 			@Test
 			@DisplayName("여러 개 presignedUrl을 한 번에 발급받는다")
-			void getPresignedUrls_success() throws Exception {
+			void getPreSignedUrlsSuccess() throws Exception {
 
 				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
 				var filenames = List.of("a.jpg", "b.png", "c.jpeg");
 				PreSignRequest requestDto = new PreSignRequest(filenames);
 				var bucket = "dpd-bucket";
@@ -194,7 +169,11 @@ class S3ControllerTest extends BaseIntegrationTest {
 
 			@Test
 			@DisplayName("필수 입력값이 누락되면 BadRequest를 반환한다")
-			void getPresignedUrl_fail_missingParam() throws Exception {
+			void getPreSignedUrlFailMissingParam() throws Exception {
+
+				Member member = memberRepository.save(MemberFixture.createMember1());
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
 
 				// filename 없는 케이스
 				mockMvc.perform(post("/api/images/presign")

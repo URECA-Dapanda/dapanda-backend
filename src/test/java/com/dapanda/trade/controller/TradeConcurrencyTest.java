@@ -16,10 +16,8 @@ import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeFixture;
 import com.dapanda.trade.repository.TradeRepository;
 import com.dapanda.trade.service.TradeService;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
@@ -34,8 +32,6 @@ import static com.dapanda.TestConstants.Product.PRICE_3000;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("performance")
-//@TestMethodOrder(MethodOrderer.OrderAnnotation.class)  // 순서 보장
-//@Execution(ExecutionMode.SAME_THREAD)  // 병렬 실행 막기
 @DisplayName("상품 거래 동시성 테스트")
 public class TradeConcurrencyTest extends BaseIntegrationTest {
 
@@ -43,10 +39,6 @@ public class TradeConcurrencyTest extends BaseIntegrationTest {
 	private static final int THREAD_POOL_SIZE = 32;
 	private static final CountDownLatch setupLatch = new CountDownLatch(1);
 
-	@Autowired
-	private EntityManager entityManager;
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
 	@Autowired
 	private TradeService tradeService;
 	@Autowired
@@ -66,8 +58,6 @@ public class TradeConcurrencyTest extends BaseIntegrationTest {
 
 	@BeforeEach
 	void setup() {
-
-		cleanupDatabase();
 
 		// 상품 1개 생성
 		Member seller = MemberFixture.createMember1();
@@ -100,23 +90,6 @@ public class TradeConcurrencyTest extends BaseIntegrationTest {
 				.collect(Collectors.toList());
 
 		setupLatch.countDown();
-		System.out.println("setup 종료");
-	}
-
-	private void cleanupDatabase() {
-
-		entityManager.clear();
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-
-		jdbcTemplate.execute("TRUNCATE TABLE member");
-		jdbcTemplate.execute("TRUNCATE TABLE mobile_data");
-		jdbcTemplate.execute("TRUNCATE TABLE product");
-		jdbcTemplate.execute("TRUNCATE TABLE trade");
-		jdbcTemplate.execute("TRUNCATE TABLE trade_details");
-		jdbcTemplate.execute("TRUNCATE TABLE plan");
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
 
 	@Test

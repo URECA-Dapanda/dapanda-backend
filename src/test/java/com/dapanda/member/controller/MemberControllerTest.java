@@ -1,6 +1,5 @@
 package com.dapanda.member.controller;
 
-import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.base.BaseIntegrationTest;
 import com.dapanda.common.exception.ResultCode;
@@ -11,18 +10,12 @@ import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.MobileDataRepository;
 import com.dapanda.product.repository.ProductRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.math.BigDecimal;
 
@@ -39,40 +32,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class MemberControllerTest extends BaseIntegrationTest {
 
 	@Autowired
-	private WebApplicationContext context;
-	@Autowired
-	private ObjectMapper objectMapper;
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-	@Autowired
-	private EntityManager entityManager;
-	@Autowired
 	private MemberRepository memberRepository;
 	@Autowired
 	private MobileDataRepository mobileDataRepository;
 	@Autowired
 	private ProductRepository productRepository;
-
-	private MockMvc mockMvc;
-
-	@BeforeEach
-	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
-
-		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
-
-		cleanupDatabase();
-	}
-
-	private void cleanupDatabase() {
-
-		entityManager.clear();
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-
-		jdbcTemplate.execute("TRUNCATE TABLE member");
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
-	}
 
 	@Nested
 	@DisplayName("캐시 조회 API")

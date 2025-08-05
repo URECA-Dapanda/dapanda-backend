@@ -1,6 +1,5 @@
 package com.dapanda.fcm.controller;
 
-import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.base.BaseIntegrationTest;
 import com.dapanda.fcmToken.dto.request.SaveFcmTokenRequest;
@@ -9,18 +8,11 @@ import com.dapanda.fcmToken.service.FcmTokenService;
 import com.dapanda.fcm_token.entity.NotificationEntity;
 import com.dapanda.member.entity.*;
 import com.dapanda.member.repository.MemberRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
@@ -35,20 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class FcmTokenControllerTest extends BaseIntegrationTest {
 
 	@Autowired
-	private WebApplicationContext context;
-
-	private MockMvc mockMvc;
-
-	@Autowired
-	private ObjectMapper objectMapper;
-
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-
-	@Autowired
-	private EntityManager entityManager;
-
-	@Autowired
 	private FcmTokenService fcmTokenService;
 
 	@Autowired
@@ -56,33 +34,6 @@ class FcmTokenControllerTest extends BaseIntegrationTest {
 
 	@Autowired
 	private NotificationRepository notificationRepository;
-
-	@BeforeEach
-	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
-
-		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
-
-		cleanupDatabase();
-	}
-
-	@AfterEach
-	void clearSecurityContext() {
-
-		SecurityContextHolder.clearContext();
-	}
-
-	private void cleanupDatabase() {
-
-		entityManager.clear();
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-
-		jdbcTemplate.execute("TRUNCATE TABLE fcm_token");
-
-		jdbcTemplate.execute("TRUNCATE TABLE member");
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
-	}
 
 	@Nested
 	@DisplayName("FCM 토큰 저장 API")

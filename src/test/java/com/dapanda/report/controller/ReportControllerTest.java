@@ -1,6 +1,5 @@
 package com.dapanda.report.controller;
 
-import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.base.BaseIntegrationTest;
 import com.dapanda.common.exception.ResultCode;
@@ -14,16 +13,10 @@ import com.dapanda.report.dto.request.CreateReportRequest;
 import com.dapanda.report.entity.Report;
 import com.dapanda.report.entity.ReportFixture;
 import com.dapanda.report.repository.ReportRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
 
 import static com.dapanda.TestConstants.Report.REASON;
 import static com.dapanda.TestConstants.Report.REPORT_TARGET_CATEGORY_PRODUCT;
@@ -40,48 +33,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ReportControllerTest extends BaseIntegrationTest {
 
 	@Autowired
-	private WebApplicationContext context;
-
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-
-	@Autowired
-	private ObjectMapper objectMapper;
-
-	@Autowired
-	private EntityManager entityManager;
-
-	private MockMvc mockMvc;
-
-	@Autowired
 	private MemberRepository memberRepository;
-
 	@Autowired
 	private ProductRepository productRepository;
 	@Autowired
 	private ReportRepository reportRepository;
-
-
-	@BeforeEach
-	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
-
-		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
-
-		cleanupDatabase();
-	}
-
-	private void cleanupDatabase() {
-
-		entityManager.clear();
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-
-		jdbcTemplate.execute("DELETE FROM member");
-		jdbcTemplate.execute("DELETE FROM product");
-		jdbcTemplate.execute("DELETE FROM report");
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
-	}
 
 	@Nested
 	@DisplayName("신고 생성 API")

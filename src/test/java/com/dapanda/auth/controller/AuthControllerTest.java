@@ -1,12 +1,7 @@
 package com.dapanda.auth.controller;
 
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.dapanda.RedisTestContainerConfig;
-import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.OAuthProvider;
+import com.dapanda.base.BaseIntegrationTest;
 import com.dapanda.jwt.JwtTokenProvider;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberRole;
@@ -16,24 +11,16 @@ import com.dapanda.refreshToken.entity.TokenState;
 import com.dapanda.refreshToken.repository.RefreshTokenRepository;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import({TestConfig.class, RedisTestContainerConfig.class})
-@ActiveProfiles("test")
-@ExtendWith(RestDocumentationExtension.class)
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @DisplayName("인증/인가 컨트롤러 통합 테스트")
-class AuthControllerTest {
+class AuthControllerTest extends BaseIntegrationTest {
 
 	static final String BASE_EMAIL = "test@example.com";
 	static final String BASE_PASSWORD = "P@ssword1";
@@ -41,7 +28,6 @@ class AuthControllerTest {
 	static final OAuthProvider BASE_PROVIDER = OAuthProvider.LOCAL;
 	static final MemberRole BASE_ROLE = MemberRole.ROLE_MEMBER;
 
-	MockMvc mockMvc;
 	@Autowired
 	MemberRepository memberRepository;
 	@Autowired
@@ -50,15 +36,8 @@ class AuthControllerTest {
 	JwtTokenProvider jwtTokenProvider;
 	@Autowired
 	PasswordEncoder passwordEncoder;
+
 	Member savedMember;
-	@Autowired
-	private WebApplicationContext context;
-
-	@BeforeEach
-	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
-
-		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
-	}
 
 	@BeforeEach
 	void setUp() {

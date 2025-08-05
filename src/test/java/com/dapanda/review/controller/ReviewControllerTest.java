@@ -1,6 +1,5 @@
 package com.dapanda.review.controller;
 
-import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.base.BaseIntegrationTest;
 import com.dapanda.common.exception.ResultCode;
@@ -18,17 +17,11 @@ import com.dapanda.review.repository.ReviewRepository;
 import com.dapanda.trade.entity.*;
 import com.dapanda.trade.repository.TradeDetailsRepository;
 import com.dapanda.trade.repository.TradeRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.util.*;
 
@@ -52,21 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ReviewControllerTest extends BaseIntegrationTest {
 
 	@Autowired
-	private WebApplicationContext context;
-
-	@Autowired
-	private ObjectMapper objectMapper;
-
-	@Autowired
 	private ReviewRepository reviewRepository;
-
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-
-	@Autowired
-	private EntityManager entityManager;
-
-	private MockMvc mockMvc;
 
 	@Autowired
 	private MemberRepository memberRepository;
@@ -82,30 +61,6 @@ class ReviewControllerTest extends BaseIntegrationTest {
 
 	@Autowired
 	private WifiRepository wifiRepository;
-
-	@BeforeEach
-	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
-
-		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
-
-		cleanupDatabase();
-	}
-
-	private void cleanupDatabase() {
-
-		entityManager.clear();
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-
-		jdbcTemplate.execute("DELETE FROM review");
-		jdbcTemplate.execute("DELETE FROM trade_details");
-		jdbcTemplate.execute("DELETE FROM trade");
-		jdbcTemplate.execute("DELETE FROM product");
-		jdbcTemplate.execute("DELETE FROM wifi");
-		jdbcTemplate.execute("DELETE FROM member");
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
-	}
 
 	@Nested
 	@DisplayName("리뷰 등록 API")

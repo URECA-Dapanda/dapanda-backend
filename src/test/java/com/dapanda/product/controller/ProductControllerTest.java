@@ -1,6 +1,5 @@
 package com.dapanda.product.controller;
 
-import com.dapanda.TestConfig;
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.base.BaseIntegrationTest;
@@ -15,17 +14,12 @@ import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
 import com.dapanda.product.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -53,14 +47,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ProductControllerTest extends BaseIntegrationTest {
 
 	@Autowired
-	private WebApplicationContext context;
-	@Autowired
-	private ObjectMapper objectMapper;
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-	@Autowired
-	private EntityManager entityManager;
-	@Autowired
 	private ProductRepository productRepository;
 	@Autowired
 	private MemberRepository memberRepository;
@@ -72,40 +58,8 @@ class ProductControllerTest extends BaseIntegrationTest {
 	private ProductImageRepository productImageRepository;
 	@Autowired
 	private PlanRepository planRepository;
-	private MockMvc mockMvc;
 	@Autowired
 	private ProductService productService;
-
-	@BeforeEach
-	void restDocsSetUp(RestDocumentationContextProvider restDocumentation) {
-
-		this.mockMvc = TestConfig.createMockMvc(context, restDocumentation);
-
-		cleanupDatabase();
-	}
-
-	@AfterEach
-	void tearDown() {
-
-		planRepository.deleteAll();
-		productRepository.deleteAll();
-		mobileDataRepository.deleteAll();
-		memberRepository.deleteAll();
-	}
-
-	private void cleanupDatabase() {
-
-		entityManager.clear();
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-
-		jdbcTemplate.execute("TRUNCATE TABLE wifi");
-		jdbcTemplate.execute("TRUNCATE TABLE mobile_data");
-		jdbcTemplate.execute("DELETE FROM product");
-		jdbcTemplate.execute("DELETE FROM member");
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
-	}
 
 	@Nested
 	@DisplayName("상품 등록 API")

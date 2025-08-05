@@ -13,13 +13,10 @@ import com.dapanda.member.entity.MemberFixture;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.ProductRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.*;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -40,15 +37,6 @@ class WebSocketControllerTest extends BaseIntegrationTest {
 
 	@LocalServerPort
 	private int port;
-
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-
-	@Autowired
-	private EntityManager entityManager;
-
-	@Autowired
-	private ObjectMapper objectMapper;
 
 	@Autowired
 	private MemberRepository memberRepository;
@@ -79,7 +67,6 @@ class WebSocketControllerTest extends BaseIntegrationTest {
 	@BeforeEach
 	void setUp() throws ExecutionException, InterruptedException, TimeoutException {
 
-		cleanupDatabase();
 		setupTestData();
 		buyerStompSession = setupWebSocketClient(buyerToken);
 	}
@@ -108,22 +95,6 @@ class WebSocketControllerTest extends BaseIntegrationTest {
 					}
 				}
 		).get(10, TimeUnit.SECONDS);
-	}
-
-	private void cleanupDatabase() {
-
-		entityManager.clear();
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-
-		jdbcTemplate.execute("TRUNCATE TABLE chat_room");
-		jdbcTemplate.execute("TRUNCATE TABLE chat_participant");
-		jdbcTemplate.execute("TRUNCATE TABLE chat_message");
-		jdbcTemplate.execute("TRUNCATE TABLE chat_message_read_status");
-		jdbcTemplate.execute("TRUNCATE TABLE product");
-		jdbcTemplate.execute("TRUNCATE TABLE member");
-
-		jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 	}
 
 	private void setupTestData() {
