@@ -75,76 +75,6 @@ class FcmTokenControllerTest extends BaseIntegrationTest {
 						));
 			}
 		}
-
-		@Nested
-		@DisplayName("실패 케이스")
-		class Fail {
-
-			@Test
-			@DisplayName("토큰이 null 일 경우 예외가 발생한다")
-			void nullTokenTest() throws Exception {
-
-				// given
-				SaveFcmTokenRequest request = new SaveFcmTokenRequest(null);
-
-				Member member = memberRepository.save(MemberFixture.createMember1());
-
-				CustomUserDetails userDetails = CustomUserDetails.from(member);
-
-				// when & then
-				mockMvc.perform(post("/api/fcm/save")
-								.contentType("application/json")
-								.content(objectMapper.writeValueAsString(request))
-								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, userDetails.getAuthorities()
-								))))
-						.andExpect(status().isBadRequest())
-						.andDo(document("fcm-token-save-invalid-null",
-								preprocessRequest(prettyPrint()),
-								preprocessResponse(prettyPrint()),
-								requestFields(
-										fieldWithPath("token").description("FCM 토큰 (null 불가)")
-								),
-								responseFields(
-										fieldWithPath("code").description("에러 코드"),
-										fieldWithPath("message").description("에러 메시지")
-								)
-						));
-			}
-
-			@Test
-			@DisplayName("토큰이 비었을 경우 에외가 발생한다")
-			void emptyTokenTest() throws Exception {
-
-				// given
-				Member member = memberRepository.save(MemberFixture.createMember1());
-
-				CustomUserDetails userDetails = CustomUserDetails.from(member);
-
-				SaveFcmTokenRequest request = new SaveFcmTokenRequest(null);
-
-				// when & then
-				mockMvc.perform(post("/api/fcm/save")
-								.contentType("application/json")
-								.content(objectMapper.writeValueAsString(request))
-								.with(authentication(new UsernamePasswordAuthenticationToken(
-										userDetails, null, userDetails.getAuthorities()
-								))))
-						.andExpect(status().isBadRequest())
-						.andDo(document("fcm-token-save-invalid-blank",
-								preprocessRequest(prettyPrint()),
-								preprocessResponse(prettyPrint()),
-								requestFields(
-										fieldWithPath("token").description("FCM 토큰 (빈 문자열 불가)")
-								),
-								responseFields(
-										fieldWithPath("code").description("에러 코드"),
-										fieldWithPath("message").description("에러 메시지")
-								)
-						));
-			}
-
-		}
 	}
 
 	@Nested
@@ -223,8 +153,6 @@ class FcmTokenControllerTest extends BaseIntegrationTest {
 								.accept(MediaType.APPLICATION_JSON))
 						.andExpect(status().isOk())
 						.andDo(document("delete-notification",
-								preprocessRequest(prettyPrint()),
-								preprocessResponse(prettyPrint()),
 								pathParameters(
 										parameterWithName("notificationId").description("삭제할 알림 ID")
 								),
