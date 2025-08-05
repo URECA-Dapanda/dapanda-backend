@@ -46,6 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestMethodOrder(OrderAnnotation.class)
 @Import({TestConfig.class, RedisTestContainerConfig.class})
 @AutoConfigureTestDatabase(replace = Replace.NONE)
+@DisplayName("채팅 시스템 테스트")
 class WebSocketControllerTest {
 
 	@LocalServerPort
