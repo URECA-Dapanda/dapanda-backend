@@ -1,5 +1,6 @@
 package com.dapanda.auth.service;
 
+import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.auth.info.OAuth2UserInfo;
 import com.dapanda.auth.info.OAuth2UserInfoFactory;
@@ -10,6 +11,7 @@ import java.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -69,5 +71,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		member.resetDataAmount();
 
 		return memberRepository.save(member);
+	}
+
+	public CustomUserDetails loadUserByEmailAndProvider(String email, OAuthProvider provider) {
+
+		Member member = memberRepository.findByEmailAndProvider(email, provider)
+				.orElseThrow(() -> new UsernameNotFoundException(
+						"사용자를 찾을 수 없습니다: email = " + email + ", provider = " + provider));
+
+		return CustomUserDetails.from(member);
 	}
 }
