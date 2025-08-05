@@ -1,19 +1,20 @@
 package com.dapanda.alarm.service;
 
-import com.dapanda.alarm.event.WifiTradeStartEvent;
+import com.dapanda.alarm.event.WifiTradeEvent;
 import com.dapanda.member.entity.Member;
 import com.dapanda.product.entity.Wifi;
 import com.dapanda.product.repository.ProductRepository;
 import com.dapanda.trade.entity.Trade;
 import com.dapanda.trade.entity.TradeDetails;
 import com.dapanda.trade.repository.TradeDetailsRepository;
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -32,6 +33,7 @@ public class WifiTradeNotifier {
 
 		if (tradeDetailsList.isEmpty()) {
 			log.info("❌ 진행 중인 와이파이 거래 없음 → memberId={}", member.getId());
+
 			return;
 		}
 
@@ -42,6 +44,7 @@ public class WifiTradeNotifier {
 		HashSet<String> published = new HashSet<>();
 
 		for (TradeDetails tradeDetails : tradeDetailsList) {
+
 			Trade trade = tradeDetails.getTrade();
 			com.dapanda.product.entity.Product product = tradeDetails.getProduct();
 
@@ -53,6 +56,7 @@ public class WifiTradeNotifier {
 			);
 
 			if (wifi == null || wifi.getStartTime() == null || wifi.getEndTime() == null) {
+
 				continue;
 			}
 
@@ -62,20 +66,25 @@ public class WifiTradeNotifier {
 			// 진짜 '진행 중'인지: startTime <= now < endTime
 			boolean isOngoing =
 					!now.isBefore(wifi.getStartTime()) && wifi.getEndTime().isAfter(now);
+
 			log.info("⏰ 현재 시간={}, startTime={}, endTime={}, isOngoing={}",
 					now, wifi.getStartTime(), wifi.getEndTime(), isOngoing);
+
 			if (!isOngoing) {
+
 				continue;
 			}
 
 			String key = trade.getId() + ":" + wifi.getId();
 			if (!published.add(key)) {
+
 				continue; // 이미 보낸 조합이면 스킵
 			}
 
 			log.info("🚨 진행 중 와이파이 거래 알림 발송 → memberId={}, tradeId={}, wifiId={}",
 					member.getId(), trade.getId(), wifi.getId());
-			eventPublisher.publishEvent(WifiTradeStartEvent.of(
+
+			eventPublisher.publishEvent(WifiTradeEvent.createStartEvent(
 					trade.getId(),
 					member.getId(),
 					wifi.getStartTime().toLocalTime(),
