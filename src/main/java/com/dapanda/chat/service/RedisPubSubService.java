@@ -5,12 +5,14 @@ import com.dapanda.chat.dto.response.CreateMessageResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RedisPubSubService implements MessageListener {
@@ -29,12 +31,12 @@ public class RedisPubSubService implements MessageListener {
 		try {
 			response = objectMapper.readValue(payload, CreateMessageResponse.class);
 
-			messageTemplate.convertAndSend(
-					WebSocketPath.SUB.getPath() + WebSocketPath.SLASH.getPath() + response.getChatRoomId(),
-					response);
+			String destination = WebSocketPath.getChatRoomSubscribePath(response.getChatRoomId());
+
+			messageTemplate.convertAndSend(destination, response);
 		} catch (JsonProcessingException e) {
 
-			throw new RuntimeException(e);
+			log.error("Redis Pub/Sub 받는 메시지 파싱 에러");
 		}
 	}
 
