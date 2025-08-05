@@ -23,4 +23,9 @@ public enum WebSocketPath {
 
 		return PUB.getPath() + "/" + chatRoomId;
 	}
+
+	public static String getAlarmPath(Long memberId) {
+
+		return SUB.getPath() + ALARM.getPath() + "/" + memberId;
+	}
 }
