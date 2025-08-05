@@ -104,9 +104,8 @@ public class ReviewService {
 
 		Member member = product.getMember();
 
-		ReviewStatsResponse stats = findReviewStatsByMember(member);
-		int prevReviewCount = stats.reviewCount();
-		float prevAverageRating = stats.averageRating();
+		int prevReviewCount = member.getReviewCount();
+		float prevAverageRating = member.getAverageRating();
 		float newRating = request.rating();
 
 		int newReviewCount = prevReviewCount + 1;
@@ -134,15 +133,8 @@ public class ReviewService {
 
 		Member member = savedReview.getTrade().getMember();
 
-		List<Review> reviews = reviewRepository.findByTradeMember(member);
-
-		int reviewCount = reviews.size();
-		float averageRating = reviews.isEmpty()
-				? 0.0f
-				: (float) reviews.stream()
-						.mapToDouble(Review::getRating)
-						.average()
-						.orElse(0.0);
+		int reviewCount = member.getReviewCount();
+		float averageRating = member.getAverageRating();
 
 		member.updateReviewInfo(reviewCount, averageRating);
 		memberRepository.save(member);
@@ -201,23 +193,10 @@ public class ReviewService {
 		}
 	}
 
-	public ReviewStatsResponse findReviewStatsByMember(Member member) {
-		List<Review> reviews = reviewRepository.findByTradeMember(member);
 
-		int reviewCount = reviews.size();
-		float averageRating = reviews.isEmpty()
-				? 0.0f
-				: (float) reviews.stream()
-						.mapToDouble(Review::getRating)
-						.average()
-						.orElse(0.0);
-
-		return new ReviewStatsResponse(reviewCount, averageRating);
-	}
-
-	public Long findMemberIdByReviewId(Long reviewId){
+	public Long findMemberIdByReviewId(Long reviewId) {
 
 		return reviewRepository.findMemberIdByReviewId(reviewId)
-				.orElseThrow(()->new GlobalException(ResultCode.REVIEW_NOT_FOUND));
+				.orElseThrow(() -> new GlobalException(ResultCode.REVIEW_NOT_FOUND));
 	}
 }
