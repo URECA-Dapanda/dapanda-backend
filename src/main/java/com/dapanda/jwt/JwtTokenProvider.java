@@ -2,7 +2,7 @@ package com.dapanda.jwt;
 
 import com.dapanda.auth.entity.CustomUserDetails;
 import com.dapanda.auth.entity.OAuthProvider;
-import com.dapanda.auth.service.CustomUserDetailsService;
+import com.dapanda.auth.service.CustomOAuth2UserService;
 import com.dapanda.member.entity.Member;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -10,12 +10,11 @@ import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import java.security.Key;
+import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import java.security.Key;
-import java.util.Date;
 
 @Slf4j
 @Component
@@ -23,7 +22,7 @@ import java.util.Date;
 public class JwtTokenProvider {
 
 	private final JwtProperties jwtProperties;
-	private final CustomUserDetailsService userDetailsService;
+	private final CustomOAuth2UserService customOAuth2UserService;
 	private Key secretKey;
 
 	@PostConstruct
@@ -93,7 +92,7 @@ public class JwtTokenProvider {
 
 	public CustomUserDetails getAuthentication(String email, OAuthProvider provider) {
 
-		return userDetailsService.loadUserByEmailAndProvider(email, provider);
+		return customOAuth2UserService.loadUserByEmailAndProvider(email, provider);
 	}
 
 	public String getUserEmailFromToken(String token) {
