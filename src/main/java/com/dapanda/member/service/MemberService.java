@@ -119,6 +119,7 @@ public class MemberService {
 		memberRepository.resetAllDataAmounts();
 	}
 
+	@Transactional
 	public void updateMemberRole(Long memberId) {
 
 		Member member = memberRepository.findById(memberId)
