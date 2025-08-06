@@ -1,17 +1,17 @@
 package com.dapanda.alarm.scheduler;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.dapanda.alarm.event.WifiTradeEvent;
+import com.dapanda.trade.repository.TradeRepository;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
-
-import java.time.LocalTime;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("거래 알림 스케줄러 테스트")
@@ -19,12 +19,14 @@ class WifiTradeNotificationSchedulerTest {
 
 	@Mock
 	ApplicationEventPublisher eventPublisher;
+	@Mock
+	TradeRepository tradeRepository;
 
 	WifiTradeNotificationScheduler scheduler;
 
 	@BeforeEach
 	void setUp() {
-		scheduler = new WifiTradeNotificationScheduler(eventPublisher);
+		scheduler = new WifiTradeNotificationScheduler(eventPublisher, tradeRepository);
 	}
 
 	@Test
@@ -38,7 +40,9 @@ class WifiTradeNotificationSchedulerTest {
 		LocalTime endTime = startTime.plusMinutes(30);
 
 		// when
-		scheduler.scheduleNotification(memberId, tradeId, startTime, endTime);
+		when(tradeRepository.findTradeDateById(tradeId))
+				.thenReturn(LocalDate.now());
+		scheduler.scheduleNotification(tradeId, memberId, startTime, endTime);
 
 		// then: delay 이후에 이벤트가 발행됐는지 확인
 		Thread.sleep(1500); // 1.5초 기다림
