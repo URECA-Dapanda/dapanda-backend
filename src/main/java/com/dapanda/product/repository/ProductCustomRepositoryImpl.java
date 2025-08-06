@@ -379,7 +379,6 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		return sum != null ? sum : new BigDecimal("0");
 	}
 
-
 	private BooleanExpression mobileDataCondition(Long cursorId,
 			ProductSortOption productSortOption) {
 

@@ -23,6 +23,10 @@ spring:
         shutdown-timeout: 100ms
       ssl:
         enabled: false
+  cache:
+    type: none
+    redis:
+      time-to-live: 0ms
 
   sql:
     init:
