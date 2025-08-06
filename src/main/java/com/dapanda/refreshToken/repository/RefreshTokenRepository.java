@@ -15,4 +15,7 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 
 	Optional<RefreshToken> findByMemberAndState(Member member, TokenState state);
 
+	Optional<RefreshToken> findByTokenAndState(String token, TokenState state);
+
+	boolean existsByTokenAndState(String token, TokenState state);
 }

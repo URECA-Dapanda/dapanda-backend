@@ -1,12 +1,16 @@
 package com.dapanda.refreshToken.service;
 
+import com.dapanda.common.exception.GlobalException;
+import com.dapanda.common.exception.ResultCode;
 import com.dapanda.member.entity.Member;
 import com.dapanda.refreshToken.entity.RefreshToken;
 import com.dapanda.refreshToken.entity.TokenState;
 import com.dapanda.refreshToken.repository.RefreshTokenRepository;
-import java.util.Optional;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,22 +32,26 @@ public class RefreshTokenService {
 		);
 	}
 
+	@Transactional
+	public void deactivateRefreshToken(String token) {
 
-	public void invalidateRefreshToken(Member member) {
+		RefreshToken refreshToken = refreshTokenRepository.findByTokenAndState(token, TokenState.VALID)
+				.orElseThrow(() -> new GlobalException(ResultCode.REFRESH_TOKEN_NOT_FOUND));
 
-		refreshTokenRepository.findByMemberAndState(member, TokenState.VALID)
-				.ifPresent(token -> {
-					token.setState(TokenState.INVALID);
-					refreshTokenRepository.save(token);
-				});
+		refreshToken.deactivateToken();
+	}
+
+	public boolean isExistingRefreshToken(String token) {
+
+		return refreshTokenRepository.existsByTokenAndState(token, TokenState.VALID);
 	}
 
 	public void issueRefreshToken(Member member, String newTokenValue) {
 
 		refreshTokenRepository.findByMemberAndState(member, TokenState.VALID)
-				.ifPresent(token -> {
-					token.setState(TokenState.INVALID);
-					refreshTokenRepository.save(token);
+				.ifPresent(refreshToken -> {
+					refreshToken.deactivateToken();
+					refreshTokenRepository.save(refreshToken);
 				});
 
 		refreshTokenRepository.save(
