@@ -27,6 +27,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'gradle'
 
       - name: application-prod.properties 파일 주입
         run: |
@@ -42,7 +43,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Gradle 빌드 실행
-        run: ./gradlew clean build asciidoctor bootJar --stacktrace
+        run: ./gradlew clean build asciidoctor bootJar --stacktrace --build-cache --no-daemon
 
       - name: fat jar만 복사하여 app.jar로 이름 변경
         run: |
