@@ -7,36 +7,10 @@
 :sectlinks:
 :docinfo: shared-head
 
-[[overview]]
 == 개요
 
 DaPanda 서비스의 REST API 문서입니다.
 
-[[overview-http-verbs]]
-=== HTTP 동사
-
-본 REST API에서 사용하는 HTTP 동사(verbs)는 가능한한 표준 HTTP와 REST 규약을 따릅니다.
-
-|===
-| 동사 | 용례
-
-| `GET`
-| 리소스를 가져올 때 사용
-
-| `POST`
-| 새 리소스를 만들 때 사용
-
-| `PUT`
-| 기존 리소스를 수정할 때 사용
-
-| `PATCH`
-| 기존 리소스의 일부를 수정할 때 사용
-
-| `DELETE`
-| 기존 리소스를 삭제할 때 사용
-|===
-
-[[overview-http-status-codes]]
 === HTTP 상태 코드
 
 본 REST API에서 사용하는 HTTP 상태 코드는 성공일 경우 200응답, 실패일 경우 내부 규약을 따릅니다.
@@ -66,10 +40,9 @@ DaPanda 서비스의 REST API 문서입니다.
 | 서버 내부 오류가 발생한 경우
 |===
 
-[[overview-errors]]
 === 오류
 
-에러 응답이 발생했을 때 (커스텀 상태 코드 >= 1000), 본문에 해당 문제를 기술한 메시지가 담겨있다.
+에러 응답이 발생했을 때, 본문에 해당 문제를 기술한 메시지가 담겨있다.
 
 ==== 에러 응답 구조
 
@@ -89,13 +62,13 @@ DaPanda 서비스의 REST API 문서입니다.
 }
 ```
 
-[[resources]]
 == API 목록
 
-[[resources-member]]
 === 회원
 
 ==== 회원 역할 변경
+
+`PATCH /api/members/role`
 
 ===== 요청
 
@@ -111,7 +84,9 @@ include::{snippets}/member/update-member-role/response-fields.adoc[]
 
 ==== 캐시 조회
 
-`GET` 회원이 보유한 캐시 조회
+`GET /api/members/cash`
+
+회원이 보유한 캐시를 조회합니다.
 
 ===== 요청
 
@@ -127,7 +102,9 @@ include::{snippets}/member/get-cash/response-fields.adoc[]
 
 ==== 구매 데이터양 조회
 
-`GET` 회원이 구매한 데이터양 조회
+`GET /api/members/buying-data`
+
+회원이 구매한 데이터양을 조회합니다.
 
 ===== 요청
 
@@ -143,7 +120,9 @@ include::{snippets}/member/get-buying-data/response-fields.adoc[]
 
 ==== 판매 데이터양 조회
 
-`GET` 회원이 올린 상품 중 실제로 판매된 데이터양 조회
+`GET /api/members/sold-data`
+
+회원이 올린 상품 중 실제로 판매된 데이터양을 조회합니다.
 
 ===== 요청
 
@@ -157,9 +136,11 @@ include::{snippets}/member/get-sold-data/http-response.adoc[]
 
 include::{snippets}/member/get-sold-data/response-fields.adoc[]
 
-==== 판매 데이터양 조회
+==== 등록 데이터양 조회
 
-`GET` 회원이 상품 등록한 총 데이터양 조회
+`GET /api/members/selling-data-total`
+
+회원이 상품 등록한 총 데이터양을 조회합니다.
 
 ===== 요청
 
@@ -173,6 +154,83 @@ include::{snippets}/member/get-selling-data-total/http-response.adoc[]
 
 include::{snippets}/member/get-selling-data-total/response-fields.adoc[]
 
+==== 회원 정보 조회
+
+`GET /api/members/info`
+
+회원의 기본 정보를 조회합니다.
+
+===== 내 정보 조회
+
+====== 요청
+
+include::{snippets}/member/get-my-info/http-request.adoc[]
+
+====== 응답
+
+include::{snippets}/member/get-my-info/http-response.adoc[]
+
+====== 응답 필드
+
+include::{snippets}/member/get-my-info/response-fields.adoc[]
+
+===== 타인 정보 조회
+
+====== 요청
+
+include::{snippets}/member/get-other-info/http-request.adoc[]
+
+====== 응답
+
+include::{snippets}/member/get-other-info/http-response.adoc[]
+
+====== 응답 필드
+
+include::{snippets}/member/get-other-info/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 존재하지 않는 회원
+
+include::{snippets}/member/get-member-info-notfound/http-request.adoc[]
+
+include::{snippets}/member/get-member-info-notfound/http-response.adoc[]
+
+==== 프로필 이미지 변경
+
+`POST /api/members/profile-image`
+
+회원의 프로필 이미지를 변경합니다.
+
+===== 요청
+
+include::{snippets}/member/post-profile-image-success/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/member/post-profile-image-success/request-fields.adoc[]
+
+===== 응답
+
+include::{snippets}/member/post-profile-image-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/member/post-profile-image-success/response-fields.adoc[]
+
+===== 실패 요청
+
+====== 지원하지 않는 확장자
+
+include::{snippets}/member/post-profile-image-invalid-extension-error/http-request.adoc[]
+
+include::{snippets}/member/post-profile-image-invalid-extension-error/http-response.adoc[]
+
+====== 빈 이미지 URL
+
+include::{snippets}/member/post-profile-image-blank-url-error/http-request.adoc[]
+
+include::{snippets}/member/post-profile-image-blank-url-error/http-response.adoc[]
 
 ---
 
@@ -183,11 +241,11 @@ include::{snippets}/member/get-selling-data-total/response-fields.adoc[]
 
 `/conn` : 연결
 
-`/pub/{chatRoomId}` : chatRoomId 로 채팅 메시지 발행(pub)
+`/pub/{chatRoomId}` : chatRoomId로 채팅 메시지 발행(pub)
 
-`/sub/{chatRoomId}` : chatRoomId 로 채팅 메시지 구독(sub)
+`/sub/{chatRoomId}` : chatRoomId로 채팅 메시지 구독(sub)
 
-`/sub/alarm/{memberId}` : memberId 로 타이머 알림 구독(sub)
+`/sub/alarm/{memberId}` : memberId로 타이머 알림 구독(sub)
 
 |===
 | 응답 필드 | 설명
@@ -210,7 +268,7 @@ include::{snippets}/member/get-selling-data-total/response-fields.adoc[]
 
 ==== 마지막으로 읽은 채팅 메시지 업데이트
 
-`GET /api/chat-message/{chatMessageId}/read-status`
+`PATCH /api/chat-message/{chatMessageId}/read-status`
 
 ===== 요청 파라미터
 
@@ -244,25 +302,25 @@ include::{snippets}/chat/read-chat-room/response-fields.adoc[]
 
 `GET /api/chat-room/{chatRoomId}/history`
 
-===== PathParameter
+===== 요청 파라미터
 
 include::{snippets}/chat/read-chat-message-history/path-parameters.adoc[]
 
-===== QueryParameter
-
 include::{snippets}/chat/read-chat-message-history/query-parameters.adoc[]
 
-===== Response
+===== 응답
 
 include::{snippets}/chat/read-chat-message-history/http-response.adoc[]
 
-===== Response Field
+===== 응답 필드
 
 include::{snippets}/chat/read-chat-message-history/response-fields.adoc[]
 
 ==== 채팅방 생성
 
-`POST` 요청으로 채팅방을 생성할 수 있습니다.
+`POST /api/chat-room/{productId}`
+
+채팅방을 생성합니다.
 
 ===== 요청 파라미터
 
@@ -295,7 +353,11 @@ include::{snippets}/chat/chat-room-already-exist/response-fields.adoc[]
 
 ==== 신고 생성
 
-`POST` 요청으로 리뷰, 상품, 회원, 채팅에 대해 신고할 수 있습니다.
+`POST /api/reports/{targetType}`
+
+리뷰, 상품, 회원, 채팅에 대해 신고할 수 있습니다.
+
+===== 요청 파라미터
 
 include::{snippets}/report/create-report/path-parameters.adoc[]
 
@@ -315,7 +377,7 @@ include::{snippets}/report/create-report/http-response.adoc[]
 
 include::{snippets}/report/create-report/response-fields.adoc[]
 
-===== 실패 응답
+===== 실패 요청
 
 ====== 중복 신고
 
@@ -329,15 +391,16 @@ include::{snippets}/report/create-report/validation-error/http-request.adoc[]
 
 include::{snippets}/report/create-report/validation-error/http-response.adoc[]
 
+---
+
 === 결제
 
-[[resources-payment]]
 결제 리소스는 사용자가 캐시를 충전하는 데 사용됩니다.
 
-[[resources-payment-save-amount]]
 ==== 결제 금액 임시 저장
 
 `POST /api/payments/save-amount`
+
 주문 아이디와 결제 금액을 세션에 임시 저장합니다.
 
 ===== 요청
@@ -356,10 +419,10 @@ include::{snippets}/payments/save-amount/http-response.adoc[]
 
 include::{snippets}/payments/save-amount/response-fields.adoc[]
 
-[[resources-payment-verify-amount]]
 ==== 결제 금액 검증
 
 `POST /api/payments/verify-amount`
+
 세션에 저장된 금액과 실제 결제 금액을 비교하여 검증합니다.
 
 ===== 요청
@@ -386,10 +449,10 @@ include::{snippets}/payments/verify-amount-mismatch-error/http-request.adoc[]
 
 include::{snippets}/payments/verify-amount-mismatch-error/http-response.adoc[]
 
-[[resources-payment-confirm]]
 ==== 캐시 충전
 
 `POST /api/payments/charge`
+
 토스 결제 승인 요청을 수행하고, 승인 결과와 결제 정보를 반환합니다.
 
 ===== 요청
@@ -425,6 +488,7 @@ include::{snippets}/payments/charge-cash-payment-invalid-amount-error/http-respo
 ==== 캐시 환불
 
 `POST /api/payments/refund`
+
 캐시 환불을 합니다.
 
 ===== 요청
@@ -476,9 +540,9 @@ include::{snippets}/payments/refund-cash-invalid-cash-amount-error/http-response
 
 `GET /api/members/{memberId}/reviews/received`
 
-include::{snippets}/review/read-received-review/path-parameters.adoc[]
-
 ====== 요청 파라미터
+
+include::{snippets}/review/read-received-review/path-parameters.adoc[]
 
 include::{snippets}/review/read-received-review/query-parameters.adoc[]
 
@@ -524,9 +588,9 @@ include::{snippets}/review/read-my-received-review/response-fields.adoc[]
 
 ==== 리뷰 등록
 
-===== 요청
-
 `POST /api/trades/{tradeId}/reviews`
+
+===== 요청
 
 include::{snippets}/review/create-review/http-request.adoc[]
 
@@ -556,9 +620,9 @@ include::{snippets}/review/create-review/validation-error/http-response.adoc[]
 
 ==== 리뷰 수정
 
-===== 요청
-
 `PATCH /api/reviews/{reviewId}`
+
+===== 요청
 
 include::{snippets}/review/update-review/http-request.adoc[]
 
@@ -588,9 +652,9 @@ include::{snippets}/review/update-review/validation-error/http-response.adoc[]
 
 ==== 리뷰 삭제
 
-===== 요청
-
 `DELETE /api/reviews/{reviewId}`
+
+===== 요청
 
 include::{snippets}/review/delete-review/http-request.adoc[]
 
@@ -616,15 +680,14 @@ include::{snippets}/review/delete-review/validation-error/http-response.adoc[]
 
 ---
 
-[[resources-auth]]
 === 인증/인가
 
 인증/인가(Auth) 리소스는 회원가입, 로그인, 토큰 재발급, 로그아웃 등의 인증 관련 기능을 제공합니다.
 
-[[resources-auth-logout]]
 ==== 로그아웃
 
 `POST /api/auth/logout`
+
 로그아웃 및 토큰 무효화를 수행합니다.
 
 ===== 요청
@@ -649,87 +712,8 @@ include::{snippets}/auth-logout-invalid-token/http-request.adoc[]
 
 include::{snippets}/auth-logout-invalid-token/http-response.adoc[]
 
-==== 회원 정보 조회
-
-`GET /api/members/info`
-
-회원의 기본 정보를 조회합니다.
-
-===== 요청
-
-====== 내 정보 조회
-
-include::{snippets}/member/get-my-info/http-request.adoc[]
-
-====== 타인 정보 조회
-
-include::{snippets}/member/get-other-info/http-request.adoc[]
-
-===== 응답
-
-===== 내 정보 조회
-
-include::{snippets}/member/get-my-info/http-response.adoc[]
-
-====== 타인 정보 조회
-
-include::{snippets}/member/get-other-info/http-response.adoc[]
-
-===== 응답 필드
-
-===== 내 정보
-
-include::{snippets}/member/get-my-info/response-fields.adoc[]
-
-====== 타인 정보
-
-include::{snippets}/member/get-other-info/response-fields.adoc[]
-
-===== 실패 요청
-
-====== 존재하지 않는 회원
-
-include::{snippets}/member/get-member-info-notfound/http-request.adoc[]
-include::{snippets}/member/get-member-info-notfound/http-response.adoc[]
-
-==== 프로필 이미지 변경
-
-`POST /api/members/profile-image`
-
-회원의 프로필 이미지를 변경합니다.
-
-===== 요청
-
-include::{snippets}/member/post-profile-image-success/http-request.adoc[]
-
-===== 요청 필드
-
-include::{snippets}/member/post-profile-image-success/request-fields.adoc[]
-
-===== 응답
-
-include::{snippets}/member/post-profile-image-success/http-response.adoc[]
-
-===== 응답 필드
-
-include::{snippets}/member/post-profile-image-success/response-fields.adoc[]
-
-===== 실패 요청
-
-====== 지원하지 않는 확장자
-
-include::{snippets}/member/post-profile-image-invalid-extension-error/http-request.adoc[]
-include::{snippets}/member/post-profile-image-invalid-extension-error/http-response.adoc[]
-
-====== 빈 이미지 URL
-
-include::{snippets}/member/post-profile-image-blank-url-error/http-request.adoc[]
-include::{snippets}/member/post-profile-image-blank-url-error/http-response.adoc[]
-
-
 ---
 
-[[resources-product]]
 === 상품
 
 ==== 모바일 데이터 상품 등록
@@ -759,11 +743,13 @@ include::{snippets}/product/post-mobile-data-success/response-fields.adoc[]
 ====== 데이터 전송량 초과
 
 include::{snippets}/product/post-mobile-data-over-limit-error/http-request.adoc[]
+
 include::{snippets}/product/post-mobile-data-over-limit-error/http-response.adoc[]
 
 ====== 필수 입력값 누락
 
 include::{snippets}/product/post-mobile-data-missing-field-error/http-request.adoc[]
+
 include::{snippets}/product/post-mobile-data-missing-field-error/http-response.adoc[]
 
 ==== 와이파이 상품 등록
@@ -793,18 +779,14 @@ include::{snippets}/product/post-wifi-success/response-fields.adoc[]
 ====== 필수 입력값 누락
 
 include::{snippets}/product/post-wifi-missing-field-error/http-request.adoc[]
+
 include::{snippets}/product/post-wifi-missing-field-error/http-response.adoc[]
 
-===== 파일 업로드 Presigned URL 발급
-
-S3 Presigned URL을 발급받아 클라이언트가 직접 S3로 파일을 업로드할 수 있도록 합니다.
-
-====== Presigned URL 단건/복수 발급
+==== PreSigned URL 발급
 
 `POST /api/images/presign`
 
-클라이언트가 파일 업로드를 위해 미리 S3 Presigned URL을 요청할 수 있습니다.
-복수 파일 요청 시 여러 Presigned URL을 한 번에 발급받을 수 있습니다.
+S3 PreSigned URL을 발급받아 클라이언트가 직접 S3로 파일을 업로드할 수 있도록 합니다.
 
 ===== 요청
 
@@ -832,6 +814,8 @@ include::{snippets}/s3/post-presigned-url/validation-error/http-response.adoc[]
 
 ==== 판매 시세 조회
 
+`GET /api/products/market-price`
+
 판매 시세를 조회합니다.
 
 ===== 요청 파라미터
@@ -857,6 +841,7 @@ include::{snippets}/product/market-price/response-fields.adoc[]
 ===== 요청 파라미터
 
 include::{snippets}/product/read-selling-product/path-parameters.adoc[]
+
 include::{snippets}/product/read-selling-product/query-parameters.adoc[]
 
 ===== 요청
@@ -927,7 +912,6 @@ include::{snippets}/product/get-products-mobile-data-plan-sort-option-validation
 
 include::{snippets}/product/get-products-mobile-data-plan-sort-option-validation-error/http-response.adoc[]
 
-[[resources-product-get-wifi]]
 ==== 와이파이 상품 목록 조회
 
 `GET /api/products/wifi`
@@ -964,7 +948,6 @@ include::{snippets}/product/get-products-wifi-plan-sort-option-validation-error/
 
 include::{snippets}/product/get-products-wifi-plan-sort-option-validation-error/http-response.adoc[]
 
-[[resources-product-get-mobile-data-info]]
 ==== 데이터 상품 상세 조회
 
 `GET /api/products/mobile-data/{productId}`
@@ -987,17 +970,8 @@ include::{snippets}/product/get-mobile-data-info/response-fields.adoc[]
 
 ====== 존재하지 않는 상품 아이디
 
-include::{snippets}/product/get-mobile-data-info-not-exist-product-id-error/http-request.adoc[]
-
-include::{snippets}/product/get-mobile-data-info-not-exist-product-id-error/http-response.adoc[]
-
-====== 조회 결과 없음
-
-include::{snippets}/product/get-mobile-data-info-invalid-product-error/http-request.adoc[]
-
 include::{snippets}/product/get-mobile-data-info-invalid-product-error/http-response.adoc[]
 
-[[resources-product-get-wifi-info]]
 ==== 와이파이 상품 상세 조회
 
 `GET /api/products/wifi/{productId}`
@@ -1030,7 +1004,6 @@ include::{snippets}/product/get-wifi-info-invalid-product-error/http-request.ado
 
 include::{snippets}/product/get-wifi-info-invalid-product-error/http-response.adoc[]
 
-[[resources-product-put-mobile-data]]
 ==== 데이터 상품 수정
 
 `PUT /api/products/mobile-data`
@@ -1073,7 +1046,6 @@ include::{snippets}/product/put-mobile-data-exceed-data-amount-error/http-reques
 
 include::{snippets}/product/put-mobile-data-exceed-data-amount-error/http-response.adoc[]
 
-[[resources-product-put-wifi]]
 ==== 와이파이 상품 수정
 
 `PUT /api/products/wifi`
@@ -1100,13 +1072,12 @@ include::{snippets}/product/put-wifi-invalid-member-error/http-request.adoc[]
 
 include::{snippets}/product/put-wifi-invalid-member-error/http-response.adoc[]
 
-====== 종료 시간이 시작 시간보다 늦을 떄
+====== 종료 시간이 시작 시간보다 늦을 때
 
 include::{snippets}/product/put-wifi-invalid-time-error/http-request.adoc[]
 
 include::{snippets}/product/put-wifi-invalid-time-error/http-response.adoc[]
 
-[[resources-product-delete-product]]
 ==== 상품 삭제
 
 `DELETE /api/products`
@@ -1137,7 +1108,6 @@ include::{snippets}/product/delete-product-already-deleted-error/http-response.a
 
 ---
 
-[[resources-trade]]
 === 거래
 
 ==== 데이터 통합 상품 일반 구매
@@ -1154,7 +1124,7 @@ include::{snippets}/trade/post-mobile-data-full-default/http-request.adoc[]
 
 include::{snippets}/trade/post-mobile-data-full-default/request-fields.adoc[]
 
-====== 응답
+===== 응답
 
 include::{snippets}/trade/post-mobile-data-full-default/http-response.adoc[]
 
@@ -1176,7 +1146,7 @@ include::{snippets}/trade/post-mobile-data-partial-default/http-request.adoc[]
 
 include::{snippets}/trade/post-mobile-data-partial-default/request-fields.adoc[]
 
-====== 응답
+===== 응답
 
 include::{snippets}/trade/post-mobile-data-partial-default/http-response.adoc[]
 
@@ -1224,7 +1194,7 @@ include::{snippets}/trade/get-mobile-data-scrap-exist/http-request.adoc[]
 
 include::{snippets}/trade/get-mobile-data-scrap-exist/query-parameters.adoc[]
 
-====== 응답
+===== 응답
 
 include::{snippets}/trade/get-mobile-data-scrap-exist/http-response.adoc[]
 
@@ -1246,7 +1216,7 @@ include::{snippets}/trade/get-mobile-data-scrap-not-exist/http-request.adoc[]
 
 include::{snippets}/trade/get-mobile-data-scrap-not-exist/query-parameters.adoc[]
 
-====== 응답
+===== 응답
 
 include::{snippets}/trade/get-mobile-data-scrap-not-exist/http-response.adoc[]
 
@@ -1268,7 +1238,7 @@ include::{snippets}/trade/post-mobile-data-scrap/http-request.adoc[]
 
 include::{snippets}/trade/post-mobile-data-scrap/request-fields.adoc[]
 
-====== 응답
+===== 응답
 
 include::{snippets}/trade/post-mobile-data-scrap/http-response.adoc[]
 
@@ -1304,7 +1274,7 @@ include::{snippets}/trade/post-wifi/http-request.adoc[]
 
 include::{snippets}/trade/post-wifi/request-fields.adoc[]
 
-====== 응답
+===== 응답
 
 include::{snippets}/trade/post-wifi/http-response.adoc[]
 
@@ -1343,7 +1313,7 @@ include::{snippets}/trade/get-trade-purchase-history/http-request.adoc[]
 
 include::{snippets}/trade/get-trade-purchase-history/query-parameters.adoc[]
 
-====== 응답
+===== 응답
 
 include::{snippets}/trade/get-trade-purchase-history/http-response.adoc[]
 
@@ -1365,7 +1335,7 @@ include::{snippets}/trade/get-cash-history/http-request.adoc[]
 
 include::{snippets}/trade/get-cash-history/query-parameters.adoc[]
 
-====== 응답
+===== 응답
 
 include::{snippets}/trade/get-cash-history/http-response.adoc[]
 
@@ -1373,7 +1343,8 @@ include::{snippets}/trade/get-cash-history/http-response.adoc[]
 
 include::{snippets}/trade/get-cash-history/response-fields.adoc[]
 
-[[resources-plan]]
+---
+
 === 요금제
 
 ==== 나의 플랜 조회
@@ -1404,8 +1375,9 @@ include::{snippets}/plan/get-my-plan-info-no-plan-error/http-response.adoc[]
 
 include::{snippets}/plan/get-my-plan-info-no-plan-error/response-fields.adoc[]
 
-[[resources-fcm-token]]
-=== FCM 토큰
+---
+
+=== FCM 토큰 & 알림
 
 ==== FCM 토큰 저장
 
@@ -1417,6 +1389,10 @@ include::{snippets}/plan/get-my-plan-info-no-plan-error/response-fields.adoc[]
 
 include::{snippets}/fcm-token-save/http-request.adoc[]
 
+===== 요청 필드
+
+include::{snippets}/fcm-token-save/request-fields.adoc[]
+
 ===== 응답
 
 include::{snippets}/fcm-token-save/http-response.adoc[]
@@ -1425,29 +1401,15 @@ include::{snippets}/fcm-token-save/http-response.adoc[]
 
 include::{snippets}/fcm-token-save/response-fields.adoc[]
 
-===== 실패 요청
-
-====== 토큰이 `null`인 경우
-
-include::{snippets}/fcm-token-save-invalid-null/http-request.adoc[]
-
-include::{snippets}/fcm-token-save-invalid-null/http-response.adoc[]
-
-include::{snippets}/fcm-token-save-invalid-null/response-fields.adoc[]
-
-====== 토큰이 빈 문자열인 경우
-
-include::{snippets}/fcm-token-save-invalid-blank/http-request.adoc[]
-
-include::{snippets}/fcm-token-save-invalid-blank/http-response.adoc[]
-
-include::{snippets}/fcm-token-save-invalid-blank/response-fields.adoc[]
-
 ==== 알림 조회
 
 `GET /api/notifications`
 
 회원 본인의 알림 목록을 최신순으로 조회합니다.
+
+===== 요청
+
+include::{snippets}/get-my-notifications/http-request.adoc[]
 
 ===== 응답
 
@@ -1463,7 +1425,7 @@ include::{snippets}/get-my-notifications/response-fields.adoc[]
 
 회원 본인의 알림을 삭제합니다.
 
-===== 요청 경로 변수
+===== 요청 파라미터
 
 include::{snippets}/delete-notification/path-parameters.adoc[]
 
@@ -1471,22 +1433,20 @@ include::{snippets}/delete-notification/path-parameters.adoc[]
 
 include::{snippets}/delete-notification/http-response.adoc[]
 
+===== 응답 필드
+
 include::{snippets}/delete-notification/response-fields.adoc[]
 
 ===== 실패 요청
 
 ====== 다른 사용자의 알림을 삭제하려는 경우
 
-include::{snippets}/delete-notification-forbidden/path-parameters.adoc[]
+include::{snippets}/delete-notification-forbidden/http-request.adoc[]
 
 include::{snippets}/delete-notification-forbidden/http-response.adoc[]
 
-include::{snippets}/delete-notification-forbidden/response-fields.adoc[]
-
 ====== 존재하지 않는 알림 ID로 삭제 시도한 경우
 
-include::{snippets}/delete-notification-not-found/path-parameters.adoc[]
+include::{snippets}/delete-notification-not-found/http-request.adoc[]
 
 include::{snippets}/delete-notification-not-found/http-response.adoc[]
-
-include::{snippets}/delete-notification-not-found/response-fields.adoc[]
