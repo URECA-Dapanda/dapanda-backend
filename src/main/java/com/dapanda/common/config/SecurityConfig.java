@@ -1,23 +1,15 @@
 package com.dapanda.common.config;
 
-import com.dapanda.auth.handler.OAuth2FailureHandler;
-import com.dapanda.auth.handler.OAuth2SuccessHandler;
+import com.dapanda.auth.handler.*;
 import com.dapanda.auth.service.CustomOAuth2UserService;
 import com.dapanda.jwt.JwtAuthenticationFilter;
-import com.dapanda.jwt.JwtTokenProvider;
-import com.dapanda.member.service.MemberService;
-import com.dapanda.refreshToken.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.*;
@@ -26,22 +18,14 @@ import org.springframework.web.cors.*;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+	private final CustomAccessDeniedHandler customAccessDeniedHandler;
+	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
-	private final OAuth2FailureHandler oAuth2FailureHandler;
+	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	@Bean
-	public JwtAuthenticationFilter jwtAuthenticationFilter(
-			JwtTokenProvider jwtTokenProvider,
-			MemberService memberService,
-			RefreshTokenService refreshTokenService
-	) {
-		return new JwtAuthenticationFilter(jwtTokenProvider, memberService, refreshTokenService);
-	}
-
-	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http,
-			JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
 		http
 				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -55,17 +39,17 @@ public class SecurityConfig {
 				.sessionManagement(
 						sess -> sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/", "/api/**", "/api-docs.html", "/docs/**",
-								"/oauth2/**", "error", "/actuator/**", "/default-ui.css",
-								"/api/auth/**", "/conn/**", "/grafana/**").permitAll()
-						.anyRequest().authenticated()
+						.requestMatchers("/docs/**", "/oauth2/**", "/actuator/**", "/default-ui.css",
+								"/api/auth/logout", "/grafana/**").permitAll()
+						.requestMatchers("/api/**").authenticated()
+						.requestMatchers("/conn/**").authenticated()
+						.anyRequest().denyAll()
 				)
 				.oauth2Login(oauth2 -> oauth2
 						.userInfoEndpoint(userInfo -> userInfo
 								.userService(customOAuth2UserService)
 						)
 						.successHandler(oAuth2SuccessHandler)
-						.failureHandler(oAuth2FailureHandler)
 				);
 
 		http.addFilterBefore(
@@ -73,20 +57,12 @@ public class SecurityConfig {
 				UsernamePasswordAuthenticationFilter.class
 		);
 
+		http
+				.exceptionHandling(ex -> ex
+						.authenticationEntryPoint(customAuthenticationEntryPoint)
+						.accessDeniedHandler(customAccessDeniedHandler));
+
 		return http.build();
-	}
-
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-
-		return new BCryptPasswordEncoder();
-	}
-
-	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
-			throws Exception {
-
-		return configuration.getAuthenticationManager();
 	}
 
 	@Bean

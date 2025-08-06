@@ -135,8 +135,15 @@ class ReviewControllerTest extends BaseIntegrationTest {
 				// given
 				CreateReviewRequest request = new CreateReviewRequest(null, null);
 
+				Member member = memberRepository.save(MemberFixture.createMember1());
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
 				// when & then
 				mockMvc.perform(post("/api/trades/{tradeId}/reviews", TRADE_ID_1)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 						)
@@ -160,6 +167,8 @@ class ReviewControllerTest extends BaseIntegrationTest {
 
 				//given
 				Member seller = memberRepository.save(MemberFixture.createMember1());
+
+				CustomUserDetails userDetails = CustomUserDetails.from(seller);
 
 				List<Member> members = memberRepository.saveAll(List.of(
 						MemberFixture.createMember2(),
@@ -199,6 +208,9 @@ class ReviewControllerTest extends BaseIntegrationTest {
 
 				//when & then
 				mockMvc.perform(get("/api/members/{memberId}/reviews/received", seller.getId())
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
 								.param("size", String.valueOf(DEFAULT_SIZE_2))
 								.param("reviewSortOption", DEFAULT_REVIEW_SORT_OPTION))
 						.andExpect(status().isOk())
@@ -712,8 +724,15 @@ class ReviewControllerTest extends BaseIntegrationTest {
 				//given
 				UpdateReviewRequest request = new UpdateReviewRequest(null, null);
 
+				Member member = memberRepository.save(MemberFixture.createMember1());
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
 				//when & then
 				mockMvc.perform(patch("/api/reviews/{reviewId}", REVIEW_ID)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()))
+								)
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 						)
