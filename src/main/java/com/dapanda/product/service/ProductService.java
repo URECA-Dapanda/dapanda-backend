@@ -80,9 +80,9 @@ public class ProductService {
 	}
 
 	@Cacheable(
-			value = "wifiByCursor",
+			cacheNames = "#{'wifiByCursor' + (#productSortOption == 'DISTANCE_ASC' ? 'Geo' : '')}",
 			key = "'cursor=' + #cursorId + ':sort=' + #productSortOption + ':open=' + #open",
-			condition = "#productSortOption == 'PRICE_ASC' or #productSortOption == 'AVERAGE_RATE_DESC'"
+			condition = "#productSortOption == 'PRICE_ASC' or #productSortOption == 'AVERAGE_RATE_DESC' or #productSortOption == 'DISTANCE_ASC'"
 	)
 	public CursorPageResponse<WifiSummary> findWifiByCursor(Long cursorId, Integer size,
 			String productSortOption, boolean open, Double latitude, Double longitude) {
