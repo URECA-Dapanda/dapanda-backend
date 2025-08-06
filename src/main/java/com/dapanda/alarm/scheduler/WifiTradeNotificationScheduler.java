@@ -1,14 +1,13 @@
 package com.dapanda.alarm.scheduler;
 
 import com.dapanda.alarm.event.WifiTradeEvent;
+import com.dapanda.trade.repository.TradeRepository;
+import java.time.*;
+import java.util.concurrent.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
-import java.time.LocalTime;
-import java.util.concurrent.*;
 
 @Slf4j
 @Service
@@ -17,6 +16,7 @@ public class WifiTradeNotificationScheduler {
 
 	private final ApplicationEventPublisher eventPublisher;
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
+	private final TradeRepository tradeRepository;
 
 	public void scheduleNotification(Long tradeId, Long memberId, LocalTime startTime,
 			LocalTime endTime) {
@@ -48,15 +48,32 @@ public class WifiTradeNotificationScheduler {
 	private void publishStartNow(Long tradeId, Long memberId, LocalTime startTime,
 			LocalTime endTime) {
 
-		log.info("와이파이 시작 알림 발행 -> memberId: {}, tradeId: {}", memberId, tradeId);
-		eventPublisher.publishEvent(WifiTradeEvent.createStartEvent(tradeId, memberId, startTime, endTime));
+		if (isTodayTrade(tradeId)) {
+			log.info("와이파이 시작 알림 발행 -> memberId: {}, tradeId: {}", memberId, tradeId);
+			eventPublisher.publishEvent(
+					WifiTradeEvent.createStartEvent(tradeId, memberId, startTime, endTime));
+		} else {
+			log.info("유효하지 않은(오늘이 아닌) 거래 시작 알림입니다. tradeId={}", tradeId);
+		}
 	}
 
 	private void publishEndNow(Long tradeId, Long memberId, LocalTime startTime,
 			LocalTime endTime) {
 
-		log.info("와이파이 종료 알림 발행 -> memberId: {}, tradeId: {}", memberId, tradeId);
-		eventPublisher.publishEvent(WifiTradeEvent.createEndEvent(tradeId, memberId, startTime, endTime));
+		if (isTodayTrade(tradeId)) {
+			log.info("와이파이 종료 알림 발행 -> memberId: {}, tradeId: {}", memberId, tradeId);
+			eventPublisher.publishEvent(
+					WifiTradeEvent.createEndEvent(tradeId, memberId, startTime, endTime));
+		} else {
+			log.info("유효하지 않은(오늘이 아닌) 거래 알림입니다. tradeId={}", tradeId);
+		}
+	}
+
+	private boolean isTodayTrade(Long tradeId) {
+
+		LocalDate tradeDate = tradeRepository.findTradeDateById(tradeId);
+
+		return tradeDate != null && tradeDate.equals(LocalDate.now());
 	}
 
 }
