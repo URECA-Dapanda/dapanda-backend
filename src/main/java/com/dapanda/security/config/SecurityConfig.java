@@ -1,8 +1,10 @@
-package com.dapanda.common.config;
+package com.dapanda.security.config;
 
 import com.dapanda.auth.handler.*;
 import com.dapanda.auth.service.CustomOAuth2UserService;
+import com.dapanda.common.config.AllowedOriginPath;
 import com.dapanda.jwt.JwtAuthenticationFilter;
+import com.dapanda.security.filter.CustomLogoutFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,12 +14,14 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.*;
 
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+	private final CustomLogoutFilter customLogoutFilter;
 	private final CustomAccessDeniedHandler customAccessDeniedHandler;
 	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 	private final CustomOAuth2UserService customOAuth2UserService;
@@ -53,10 +57,8 @@ public class SecurityConfig {
 						.successHandler(oAuth2SuccessHandler)
 				);
 
-		http.addFilterBefore(
-				jwtAuthenticationFilter,
-				UsernamePasswordAuthenticationFilter.class
-		);
+		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+		http.addFilterBefore(customLogoutFilter, LogoutFilter.class);
 
 		http
 				.exceptionHandling(ex -> ex

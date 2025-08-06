@@ -9,7 +9,6 @@ import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Getter
-@Setter
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
@@ -38,6 +37,11 @@ public class RefreshToken extends CreatedAtEntity {
 				.state(state)
 				.member(member)
 				.build();
+	}
+
+	public void deactivateToken(){
+
+		this.state = TokenState.INVALID;
 	}
 
 }
