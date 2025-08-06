@@ -11,32 +11,12 @@ public enum ResultCode {
 	SUCCESS(HttpStatus.OK, 0, "정상 처리 되었습니다."),
 
 	// 글로벌 1000번대
-	INVALID_INPUT(HttpStatus.BAD_REQUEST, 1000, "잘못된 입력값입니다."),
-	MISSING_REQUIRED_FIELD(HttpStatus.BAD_REQUEST, 1001, "필수 입력값이 누락되었습니다."),
-	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, 1002, "인증이 필요합니다."),
 	FORBIDDEN(HttpStatus.FORBIDDEN, 1003, "권한이 없습니다."),
-	RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, 1004, "요청한 리소스를 찾을 수 없습니다."),
-	INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 1005, "서버 내부 오류가 발생했습니다."),
 	INVALID_PARAMETER(HttpStatus.BAD_REQUEST, 1006, "유효하지 않은 파라미터입니다."),
 
 	// 회원 2000번대
-	DUPLICATE_EMAIL(HttpStatus.CONFLICT, 2000, "이미 가입된 이메일입니다."),
-	DUPLICATE_USERNAME(HttpStatus.CONFLICT, 2001, "이미 사용 중인 사용자명입니다."),
-	WEAK_PASSWORD(HttpStatus.BAD_REQUEST, 2002, "비밀번호가 보안 기준에 맞지 않습니다."),
-	INVALID_EMAIL_FORMAT(HttpStatus.BAD_REQUEST, 2003, "이메일 형식이 올바르지 않습니다."),
-	INVALID_MEMBERNAME_FORMAT(HttpStatus.BAD_REQUEST, 2004, "아이디 형식이 올바르지 않습니다."),
-
 	MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, 2005, "존재하지 않는 사용자입니다."),
-	INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, 2006, "비밀번호가 일치하지 않습니다."),
-	ACCOUNT_LOCKED(HttpStatus.FORBIDDEN, 2007, "잠긴 계정입니다. 관리자에게 문의하세요."),
-
-	NOT_LOGGED_IN(HttpStatus.UNAUTHORIZED, 2008, "로그인 상태가 아닙니다."),
-	ALREADY_LOGGED_OUT(HttpStatus.BAD_REQUEST, 2009, "이미 로그아웃된 상태입니다."),
-
-	INVALID_TOKEN(HttpStatus.UNAUTHORIZED, 2010, "유효하지 않은 토큰입니다."),
-	EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, 2011, "토큰이 만료되었습니다."),
-	MISSING_TOKEN(HttpStatus.UNAUTHORIZED, 2012, "토큰이 제공되지 않았습니다."),
-	TOKEN_REISSUE_FAILED(HttpStatus.UNAUTHORIZED, 2013, "토큰 재발급에 실패했습니다."),
+	REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, 2014, "유효한 리프레쉬 토큰을 찾을 수 없습니다."),
 
 	// 상품 3000번대
 	INVALID_PRODUCT_SORT_OPTION(HttpStatus.BAD_REQUEST, 3000, "유효하지 않은 상품 정렬 조건입니다"),
@@ -51,7 +31,6 @@ public enum ResultCode {
 	MOBILE_DATA_NOT_FOUND(HttpStatus.BAD_REQUEST, 3009, "존재하지 않는 데이터 상품입니다."),
 	WIFI_NOT_FOUND(HttpStatus.BAD_REQUEST, 3010, "존재하지 않는 와이파이 상품입니다."),
 	NOT_FOUND_PLAN(HttpStatus.BAD_REQUEST, 3011, "회원의 요금제 정보가 존재하지 않습니다."),
-	START_TIME_BEFORE_NOW(HttpStatus.BAD_REQUEST, 3012, "현재보다 더 일찍 시작할 수 없습니다."),
 	INVALID_IMAGE_FORMAT(HttpStatus.BAD_REQUEST, 3013, "허용되지 않은 이미지 형식입니다."),
 	NOT_ENOUGH_DATA(HttpStatus.BAD_REQUEST, 3014, "현재 보유한 데이터 양보다 많은 양을 판매할 수 없습니다."),
 	PRODUCT_CANNOT_TRADE(HttpStatus.BAD_REQUEST, 3015, "다른 회원이 이미 구매한 분할 판매 상품은 변경할 수 없습니다."),
@@ -67,7 +46,6 @@ public enum ResultCode {
 	EXCEEDED_PURCHASE_LIMIT(HttpStatus.BAD_REQUEST, 4007, "구매 가능한 데이터양을 초과했습니다."),
 
 	// 결제 5000번대
-	FAIL_PAYMENT_PROCESSING(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "내부 오류로 결제 처리에 실패했습니다."),
 	FAIL_PAYMENT_APPROVAL(HttpStatus.BAD_REQUEST, 5001, "결제 승인에 실패했습니다."),
 	INVALID_PAYMENT_AMOUNT(HttpStatus.BAD_REQUEST, 5002, "결제 금액이 유효하지 않습니다."),
 	PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, 5003, "결제 요청 금액과 일치하지 않습니다."),
@@ -89,11 +67,9 @@ public enum ResultCode {
 	CHAT_OWN_PRODUCT(HttpStatus.BAD_REQUEST, 8000, "자기 상품의 채팅방은 생성할 수 없습니다."),
 	CHAT_ROOM_NOT_FOUND(HttpStatus.BAD_REQUEST, 8001, "채팅방을 찾을 수 없습니다."),
 	CHAT_ROOM_ACCESS_DENIED(HttpStatus.BAD_REQUEST, 8002, "해당 채팅방의 참가자가 아닙니다."),
-	STOMP_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, 8003, "인증되지 않은 사용자 입니다."),
 	CHAT_MESSAGE_NOT_FOUND(HttpStatus.BAD_REQUEST, 8004, "채팅 메시지를 찾을 수 없습니다."),
 
 	// 알림 9000번대
-	FCM_NOT_FOUND(HttpStatus.BAD_REQUEST, 9000, "FCM 토큰이 존재하지 않습니다."),
 	NOTIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST, 9001, "해당 알림이 존재하지 않습니다.");
 
 	private final HttpStatus status;
