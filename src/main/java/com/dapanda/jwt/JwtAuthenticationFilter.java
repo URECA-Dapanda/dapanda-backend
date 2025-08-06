@@ -12,6 +12,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -19,13 +21,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+	@Value("${cookie.domain}")
+	private String domain;
 	private static final int MAX_REPORT_COUNT = 5;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final MemberService memberService;
@@ -82,8 +85,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 						String newAccessToken = jwtTokenProvider.generateAccessToken(member);
 
 						// 쿠키에 새 토큰 세팅
-						setJwtCookie(request, response, JwtPrinciple.ACCESS_TOKEN.getKey(),
-								newAccessToken,
+						setJwtCookie(response, JwtPrinciple.ACCESS_TOKEN.getKey(), newAccessToken,
 								jwtTokenProvider.getAccessTokenExpirationSec());
 
 						// (Refresh Token은 만료 전이면 그대로 둠, 만료 시 재발급 로직 추가 가능)
@@ -116,32 +118,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		SecurityContextHolder.getContext().setAuthentication(auth);
 	}
 
-	private void setJwtCookie(HttpServletRequest request, HttpServletResponse response, String name,
-			String token, int maxAgeSec) {
-		String origin = request.getHeader("Origin");
-		String host = request.getHeader("Host");
-
-		boolean isLocal = (origin != null && origin.contains("localhost")) ||
-				(host != null && host.contains("localhost"));
+	private void setJwtCookie(HttpServletResponse response, String name, String token, int maxAgeSec) {
 
 		Cookie cookie = new Cookie(name, token);
 		cookie.setHttpOnly(true);
 		cookie.setSecure(true);
 		cookie.setPath("/");
 		cookie.setMaxAge(maxAgeSec);
-
-		if (!isLocal) {
-			cookie.setDomain("dapanda.org");
-		}
+		cookie.setDomain(domain);
 
 		response.addCookie(cookie);
 	}
 
-	private void validateBlockedMember(Member member) throws AccessDeniedException {
+	private void validateBlockedMember(Member member) {
 
 		if (member.isBlocked() || member.getReportedCount() >= MAX_REPORT_COUNT) {
 
-			throw new AccessDeniedException("차단된 사용자 입니다");
+			throw new AuthenticationServiceException("차단된 사용자 입니다");
 		}
 	}
 

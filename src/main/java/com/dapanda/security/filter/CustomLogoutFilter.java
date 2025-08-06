@@ -5,6 +5,7 @@ import com.dapanda.refreshToken.service.RefreshTokenService;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
@@ -14,6 +15,9 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class CustomLogoutFilter extends GenericFilterBean {
+
+	@Value("${cookie.domain}")
+	private String domain;
 
 	private final RefreshTokenService refreshTokenService;
 
@@ -73,12 +77,14 @@ public class CustomLogoutFilter extends GenericFilterBean {
 		accessCookie.setSecure(true);
 		accessCookie.setMaxAge(0);
 		accessCookie.setPath("/");
+		accessCookie.setDomain(domain);
 
 		Cookie refreshCookie = new Cookie(JwtPrinciple.REFRESH_TOKEN.getKey(), null);
 		refreshCookie.setHttpOnly(true);
 		refreshCookie.setSecure(true);
 		refreshCookie.setMaxAge(0);
 		refreshCookie.setPath("/");
+		refreshCookie.setDomain(domain);
 
 		SecurityContextHolder.clearContext();
 
