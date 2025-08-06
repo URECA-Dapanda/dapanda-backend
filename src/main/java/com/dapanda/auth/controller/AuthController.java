@@ -28,7 +28,7 @@ public class AuthController {
 
 	@PostMapping("/auth/logout")
 	public void logout(HttpServletRequest request,
-					   HttpServletResponse response) throws IOException {
+					   HttpServletResponse response) {
 
 		String token = jwtTokenProvider.resolveTokenFromCookie(request, "accessToken");
 
@@ -70,7 +70,5 @@ public class AuthController {
 		response.addCookie(refreshCookie);
 
 		request.getSession().invalidate();
-
-		response.sendRedirect("http://localhost:3000");
 	}
 }

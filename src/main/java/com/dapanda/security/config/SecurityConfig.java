@@ -1,7 +1,8 @@
-package com.dapanda.common.config;
+package com.dapanda.security.config;
 
 import com.dapanda.auth.handler.*;
 import com.dapanda.auth.service.CustomOAuth2UserService;
+import com.dapanda.common.config.AllowedOriginPath;
 import com.dapanda.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
