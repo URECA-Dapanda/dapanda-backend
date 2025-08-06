@@ -9,8 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.*;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -18,6 +17,7 @@ import org.springframework.data.redis.serializer.*;
 
 @Configuration
 @EnableCaching
+@Profile("!test")
 public class CacheConfig {
 
 	@Value("${REDIS_TTL}")
