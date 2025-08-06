@@ -55,4 +55,7 @@ jwt:
 toss:
   secret-key: test-secret-key
 
+cookie:
+  domain: test.org
+
 AWS_REGION: KOREA
