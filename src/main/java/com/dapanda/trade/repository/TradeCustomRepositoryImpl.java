@@ -270,4 +270,17 @@ public class TradeCustomRepositoryImpl implements TradeCustomRepository {
 
 		return count != null;
 	}
+
+	@Override
+	public LocalDate findTradeDateById(Long tradeId) {
+
+		LocalDateTime createdAt = queryFactory
+				.select(trade.createdAt)
+				.from(trade)
+				.where(trade.id.eq(tradeId))
+				.fetchOne();
+
+		return createdAt != null ? createdAt.toLocalDate() : null;
+	}
+
 }
