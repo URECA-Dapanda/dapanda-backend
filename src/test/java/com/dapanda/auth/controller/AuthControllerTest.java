@@ -49,7 +49,7 @@ class AuthControllerTest extends BaseIntegrationTest {
 				//when & then
 				mockMvc.perform(post("/api/auth/logout")
 								.cookie(new Cookie(JwtPrinciple.ACCESS_TOKEN.getKey(), jwt)))
-						.andExpect(status().isOk())
+						.andExpect(status().is3xxRedirection())
 						.andDo(document("auth-logout-success"));
 			}
 		}

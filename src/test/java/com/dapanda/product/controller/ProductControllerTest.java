@@ -334,6 +334,8 @@ class ProductControllerTest extends BaseIntegrationTest {
 
 				Member member = memberRepository.save(MemberFixture.createMember1());
 
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
 				MobileData mobileData1 = MobileDataFixture.createMobileData(BigDecimal.valueOf(2.0),
 						BigDecimal.valueOf(2.0), 500);
 				MobileData mobileData2 = MobileDataFixture.createMobileData(BigDecimal.valueOf(2.0),
@@ -354,6 +356,9 @@ class ProductControllerTest extends BaseIntegrationTest {
 				mockMvc.perform(
 								MockMvcRequestBuilders.get(
 												"/api/products/mobile-data")
+										.with(authentication(new UsernamePasswordAuthenticationToken(
+												userDetails, null, userDetails.getAuthorities()
+										)))
 										.param("size", String.valueOf(size))
 										.param("productSortOption", productSortOption)
 										.param("dataAmount", String.valueOf(dataAmount))
@@ -414,8 +419,16 @@ class ProductControllerTest extends BaseIntegrationTest {
 				@DisplayName("데이터 상품 목록 조회 시 size가 null이거나 1 미만이면 예외를 던진다")
 				void throwExceptionWhenSizeIsNullOrLessThan1() throws Exception {
 
-					// given & when & then
+					// given
+					Member member = memberRepository.save(MemberFixture.createMember1());
+
+					CustomUserDetails userDetails = CustomUserDetails.from(member);
+
+					// when & then
 					mockMvc.perform(MockMvcRequestBuilders.get("/api/products/mobile-data")
+									.with(authentication(new UsernamePasswordAuthenticationToken(
+											userDetails, null, userDetails.getAuthorities()
+									)))
 									.param("cursorId", "3")
 									.param("size", "0")
 									.param("productSortOption", "RECENT")
@@ -431,9 +444,17 @@ class ProductControllerTest extends BaseIntegrationTest {
 				@DisplayName("데이터 상품 목록 조회 시 상품 정렬 조건이 유효하지 않으면 예외를 던진다")
 				void throwExceptionWhenProductSortOptionIsInvalid() throws Exception {
 
+					// given
+					Member member = memberRepository.save(MemberFixture.createMember1());
+
+					CustomUserDetails userDetails = CustomUserDetails.from(member);
+
 					// given & when & then
 					mockMvc.perform(MockMvcRequestBuilders.get(
 											"/api/products/mobile-data")
+									.with(authentication(new UsernamePasswordAuthenticationToken(
+											userDetails, null, userDetails.getAuthorities()
+									)))
 									.param("cursorId", "3")
 									.param("size", String.valueOf(2))
 									.param("productSortOption", "RECENT123")
@@ -575,8 +596,16 @@ class ProductControllerTest extends BaseIntegrationTest {
 			@DisplayName("와이파이 상품 목록 조회 시 size가 null이거나 1 미만이면 예외를 던진다")
 			void throwExceptionWhenSizeIsNullOrLessThan1() throws Exception {
 
-				// given & when & then
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
+				// when & then
 				mockMvc.perform(MockMvcRequestBuilders.get("/api/products/wifi")
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
 								.param("cursorId", "3")
 								.param("size", String.valueOf(0))
 								.param("productSortOption", "RECENT123")
@@ -594,9 +623,17 @@ class ProductControllerTest extends BaseIntegrationTest {
 			@DisplayName("와이파이 상품 목록 조회 시 위도, 경도 값이 유효하지 않으면 예외를 던진다")
 			void throwExceptionWhenProductSortOptionIsInvalid() throws Exception {
 
-				// given & when & then
+				// given
+				Member member = memberRepository.save(MemberFixture.createMember1());
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
+
+				// when & then
 				mockMvc.perform(MockMvcRequestBuilders.get("/api/products/wifi")
 								.contentType(MediaType.APPLICATION_JSON)
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
 								.param("cursorId", "3")
 								.param("size", String.valueOf(2))
 								.param("productSortOption", "RECENT123")
@@ -1549,7 +1586,9 @@ class ProductControllerTest extends BaseIntegrationTest {
 
 				// given
 				Member seller = MemberFixture.createMember1();
-				memberRepository.save(seller);
+				Member member = memberRepository.save(seller);
+
+				CustomUserDetails userDetails = CustomUserDetails.from(member);
 
 				MobileData mobile1 = MobileDataFixture.createMobileData(DATA_AMOUNT_1,
 						REMAIN_AMOUNT_1, PRICE_PER_100MB_300);
@@ -1565,6 +1604,9 @@ class ProductControllerTest extends BaseIntegrationTest {
 
 				// when & then
 				mockMvc.perform(get("/api/products/market-price")
+								.with(authentication(new UsernamePasswordAuthenticationToken(
+										userDetails, null, userDetails.getAuthorities()
+								)))
 								.param("productType", "MOBILE_DATA"))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$.code").value(ResultCode.SUCCESS.getCode()))
