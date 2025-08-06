@@ -17,9 +17,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 
 		registry.addEndpoint(WebSocketPath.CONN.getPath())
-				.setAllowedOrigins(AllowedOriginPath.LOCAL.getPath(), AllowedOriginPath.PROD.getPath())
-				.withSockJS()
-				.setSessionCookieNeeded(false);
+				.setAllowedOrigins(AllowedOriginPath.LOCAL.getPath(), AllowedOriginPath.PROD.getPath());
 	}
 
 	@Override

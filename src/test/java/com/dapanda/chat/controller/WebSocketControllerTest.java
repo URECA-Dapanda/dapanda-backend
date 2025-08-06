@@ -22,8 +22,6 @@ import org.springframework.messaging.simp.stomp.*;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
-import org.springframework.web.socket.sockjs.client.SockJsClient;
-import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -76,10 +74,8 @@ class WebSocketControllerTest extends BaseIntegrationTest {
 		WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
 		headers.add("Cookie", "accessToken=" + token);
 
-		WebSocketStompClient stompClient = new WebSocketStompClient(
-				new SockJsClient(List.of(new WebSocketTransport(new StandardWebSocketClient()))));
+		WebSocketStompClient stompClient = new WebSocketStompClient((new StandardWebSocketClient()));
 
-		// 메시지 컨버터를 다시 추가
 		stompClient.setMessageConverter(new MappingJackson2MessageConverter());
 
 		return stompClient.connectAsync(
