@@ -37,7 +37,8 @@ public class SecurityConfig {
 						FrameOptionsConfig::disable
 				))
 				.sessionManagement(
-						sess -> sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+						sess ->
+								sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/docs/**", "/oauth2/**", "/actuator/**", "/default-ui.css",
 								"/api/auth/logout", "/grafana/**").permitAll()
