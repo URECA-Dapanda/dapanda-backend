@@ -70,7 +70,8 @@ public class ProductService {
 
 	@Cacheable(
 			value = "mobileDataByCursor",
-			key = "'cursor=' + #cursorId + ':sort=' + #productSortOption"
+			key = "'cursor=' + #cursorId + ':sort=' + #productSortOption",
+			condition = "#dataAmount == null"
 	)
 	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, Integer size,
 			String productSortOption, BigDecimal dataAmount) {
