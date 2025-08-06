@@ -2,6 +2,7 @@ package com.dapanda.trade.repository;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
 import com.dapanda.trade.dto.*;
+import java.time.LocalDate;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -18,5 +19,7 @@ public interface TradeCustomRepository {
 	public CashHistoryMonthlySummary calculateMonthlySummary(Long memberId, int year, int month);
 
 	boolean existsByProductId(Long productId);
+
+	LocalDate findTradeDateById(Long tradeId);
 
 }
