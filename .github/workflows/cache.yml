@@ -1,0 +1,51 @@
+name: Gradle Cache Benchmark
+
+on:
+  workflow_dispatch:        # 수동 트리거 (원하면 push 등으로 변경)
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cache: [ false, true ]    # 캐시 사용 여부(전후)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 캐시 복원 (matrix.cache==true일 때만)
+      - name: Restore Gradle Cache
+        if: matrix.cache
+        uses: actions/setup-java@v4
+        with:
+          cache: 'gradle'
+          distribution: ''
+
+      - name: Measure build duration
+        id: measure
+        shell: bash
+        run: |
+          echo "Cache enabled? ${{ matrix.cache }}"
+          START=$(date +%s)
+          ./gradlew clean build --no-daemon --build-cache
+          END=$(date +%s)
+          DURATION=$((END-START))
+          echo "duration=${DURATION}" >> $GITHUB_OUTPUT
+
+      - name: Save duration to file
+        run: |
+          echo "${{ steps.measure.outputs.duration }}s" \
+            > duration-${{ matrix.cache }}.txt
+
+      - name: Upload duration artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-duration-cache-${{ matrix.cache }}
+          path: duration-${{ matrix.cache }}.txt

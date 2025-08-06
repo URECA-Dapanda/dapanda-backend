@@ -8,6 +8,7 @@ import static com.dapanda.product.entity.QWifi.wifi;
 import static com.dapanda.trade.entity.QTrade.trade;
 
 import com.dapanda.common.dto.response.CursorPageResponse;
+import com.dapanda.common.dto.response.CursorPageResponse.PageInfo;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.QMember;
 import com.dapanda.product.dto.MobileDataSummary;
@@ -88,7 +89,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		Long nextCursorId = hasNext ? content.get(content.size() - 1).getProductId() : null;
 
 		return CursorPageResponse.of(content,
-				CursorPageResponse.PageInfo.of(nextCursorId, hasNext, content.size()));
+				PageInfo.of(nextCursorId, hasNext, content.size()));
 	}
 
 	@Override
@@ -101,8 +102,13 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		LocalDateTime now = LocalDateTime.now();
 
 		// 거리 계산
-		NumberExpression<Double> distance = Expressions.numberTemplate(Double.class,
-				DISTANCE_TEMPLATE, longitude, latitude, wifi.longitude, wifi.latitude);
+		NumberExpression<Double> distance = Expressions.numberTemplate(Double.class, "0.0");
+
+		if (productSortOption == ProductSortOption.DISTANCE_ASC) {
+			distance = Expressions.numberTemplate(Double.class,
+							DISTANCE_TEMPLATE, longitude, latitude, wifi.longitude, wifi.latitude)
+					.divide(METER_TO_KILOMETER);
+		}
 
 		List<WifiSummary> content = queryFactory
 				.select(Projections.constructor(WifiSummary.class,
@@ -117,7 +123,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 						wifi.longitude,
 						wifi.address,
 						member.averageRating,
-						distance.divide(METER_TO_KILOMETER),
+						distance.coalesce(0.0),
 						isCurrentTimeWithinTimeRange(),
 						wifi.startTime,
 						wifi.endTime
@@ -156,7 +162,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 		Long nextCursorId = hasNext ? content.get(content.size() - 1).getProductId() : null;
 
 		return CursorPageResponse.of(content,
-				CursorPageResponse.PageInfo.of(nextCursorId, hasNext, content.size()));
+				PageInfo.of(nextCursorId, hasNext, content.size()));
 	}
 
 	@Override
