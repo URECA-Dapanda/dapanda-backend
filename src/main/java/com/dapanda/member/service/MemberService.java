@@ -4,36 +4,27 @@ import com.dapanda.auth.entity.OAuthProvider;
 import com.dapanda.common.exception.GlobalException;
 import com.dapanda.common.exception.ResultCode;
 import com.dapanda.common.service.S3Service;
-import com.dapanda.jwt.JwtTokenProvider;
 import com.dapanda.member.dto.request.UpdateProfileImageRequest;
 import com.dapanda.member.dto.response.*;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.entity.MemberRole;
 import com.dapanda.member.repository.MemberRepository;
 import com.dapanda.product.repository.ProductRepository;
-import com.dapanda.product.service.ProductService;
-import com.dapanda.refreshToken.service.RefreshTokenService;
 import com.dapanda.trade.repository.TradeRepository;
 import jakarta.transaction.Transactional;
-import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
-	private static final String EMAIL_REGEX =
-			"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 	private final MemberRepository memberRepository;
 	private final TradeRepository tradeRepository;
 	private final ProductRepository productRepository;
-	private final PasswordEncoder passwordEncoder;
-	private final JwtTokenProvider jwtTokenProvider;
-	private final RefreshTokenService refreshTokenService;
 	private final S3Service s3Service;
-	private final ProductService productService;
 
 	public Member findById(Long memberId) {
 
