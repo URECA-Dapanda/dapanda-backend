@@ -1,17 +1,20 @@
 package com.dapanda.auth.controller;
 
 import com.dapanda.auth.entity.OAuthProvider;
-import com.dapanda.common.exception.*;
+import com.dapanda.common.exception.GlobalException;
+import com.dapanda.common.exception.ResultCode;
 import com.dapanda.jwt.JwtPrinciple;
 import com.dapanda.jwt.JwtTokenProvider;
 import com.dapanda.member.entity.Member;
 import com.dapanda.member.service.MemberService;
 import com.dapanda.refreshToken.service.RefreshTokenService;
 import jakarta.servlet.http.*;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -24,8 +27,8 @@ public class AuthController {
 	private final MemberService memberService;
 
 	@PostMapping("/auth/logout")
-	public CommonResponse<Void> logout(HttpServletRequest request,
-			HttpServletResponse response) {
+	public void logout(HttpServletRequest request,
+					   HttpServletResponse response) throws IOException {
 
 		String token = jwtTokenProvider.resolveTokenFromCookie(request, "accessToken");
 
@@ -68,6 +71,6 @@ public class AuthController {
 
 		request.getSession().invalidate();
 
-		return CommonResponse.success(null);
+		response.sendRedirect("http://localhost:3000");
 	}
 }
