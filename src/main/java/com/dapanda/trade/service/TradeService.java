@@ -24,6 +24,8 @@ import java.time.Duration;
 import java.time.LocalTime;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -49,6 +51,10 @@ public class TradeService {
 	 * 데이터양, 내 총 데이터양
 	 */
 	@Transactional
+	@CacheEvict(
+			value = "mobileDataByCursor",
+			allEntries = true
+	)
 	public TradeProductResponse defaultPurchaseMobileData(Long buyerId,
 			DefaultPurchaseMobileDataRequest request) {
 
@@ -111,6 +117,10 @@ public class TradeService {
 		return TradeProductResponse.of(trade.getId());
 	}
 
+	@Cacheable(
+			value = "mobileDataScrap",
+			key = "'dataAmount=' + #dataAmount"
+	)
 	public FindMobileDataScrapResponse findMobileDataScrap(BigDecimal dataAmount, Long memberId) {
 
 		// 1. 정렬된 상품 목록 조회 (단가 낮은순, 용량 많은순, 일반우선)
@@ -213,6 +223,10 @@ public class TradeService {
 	 * 데이터 상품 자투리 구매
 	 */
 	@Transactional
+	@CacheEvict(
+			value = "mobileDataByCursor",
+			allEntries = true
+	)
 	public TradeProductResponse scrapPurchaseMobileData(Long buyerId,
 			ScrapPurchaseMobileDataRequest request) {
 
@@ -272,6 +286,10 @@ public class TradeService {
 	 * 와이파이 상품 구매
 	 */
 	@Transactional
+	@CacheEvict(
+			value = "wifiByCursor",
+			allEntries = true
+	)
 	public TradeProductResponse purchaseWifi(Long buyerId, PurchaseWifiRequest request) {
 
 		// 1. 상품 조회

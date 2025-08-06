@@ -17,13 +17,14 @@ import com.dapanda.product.entity.*;
 import com.dapanda.product.repository.*;
 import com.dapanda.trade.repository.TradeRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -31,15 +32,10 @@ import java.util.List;
 public class ProductService {
 
 	private final ProductRepository productRepository;
-
 	private final ProductImageRepository productImageRepository;
-
 	private final MobileDataRepository mobileDataRepository;
-
 	private final WifiRepository wifiRepository;
-
 	private final MemberRepository memberRepository;
-
 	private final S3Service s3Service;
 	private final PlanRepository planRepository;
 	private final TradeRepository tradeRepository;
@@ -72,6 +68,10 @@ public class ProductService {
 		return CountCursorPageResponse.of(response, pageInfo, count);
 	}
 
+	@Cacheable(
+			value = "mobileDataByCursor",
+			key = "'cursor=' + #cursorId + ':sort=' + #productSortOption"
+	)
 	public CursorPageResponse<MobileDataSummary> findMobileDataByCursor(Long cursorId, Integer size,
 			String productSortOption, BigDecimal dataAmount) {
 
@@ -79,6 +79,11 @@ public class ProductService {
 				ProductSortOption.from(productSortOption), dataAmount);
 	}
 
+	@Cacheable(
+			value = "wifiByCursor",
+			key = "'cursor=' + #cursorId + ':sort=' + #productSortOption + ':open=' + #open",
+			condition = "#productSortOption == 'PRICE_ASC' or #productSortOption == 'AVERAGE_RATE_DESC'"
+	)
 	public CursorPageResponse<WifiSummary> findWifiByCursor(Long cursorId, Integer size,
 			String productSortOption, boolean open, Double latitude, Double longitude) {
 
@@ -119,6 +124,10 @@ public class ProductService {
 	}
 
 	@Transactional
+	@CacheEvict(
+			value = "mobileDataByCursor",
+			allEntries = true
+	)
 	public void createMobileData(CreateMobileDataRequest request, Long memberId) {
 
 		Member member = memberRepository.findById(memberId)
@@ -160,6 +169,10 @@ public class ProductService {
 	}
 
 	@Transactional
+	@CacheEvict(
+			value = "wifiByCursor",
+			allEntries = true
+	)
 	public void createWifi(CreateWifiRequest request, Long memberId) {
 
 		Member member = memberRepository.findById(memberId)
@@ -209,6 +222,10 @@ public class ProductService {
 
 
 	@Transactional
+	@CacheEvict(
+			value = "mobileDataByCursor",
+			allEntries = true
+	)
 	public UpdateMobileDataResponse updateMobileData(UpdateMobileDataRequest request,
 			Long memberId) {
 
@@ -246,6 +263,10 @@ public class ProductService {
 	}
 
 	@Transactional
+	@CacheEvict(
+			value = "wifiByCursor",
+			allEntries = true
+	)
 	public UpdateWifiResponse updateWifi(UpdateWifiRequest request,
 			Long memberId) {
 
@@ -287,6 +308,10 @@ public class ProductService {
 	}
 
 	@Transactional
+	@CacheEvict(
+			value = "mobileDataByCursor",
+			allEntries = true
+	)
 	public void deleteProduct(Long productId, Long memberId) {
 
 		Product savedProduct = productRepository.findById(productId)

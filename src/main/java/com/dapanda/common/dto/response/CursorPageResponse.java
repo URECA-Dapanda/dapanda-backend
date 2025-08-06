@@ -1,11 +1,9 @@
 package com.dapanda.common.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -26,15 +24,23 @@ public class CursorPageResponse<T> {
 
 	@Getter
 	@Builder(access = AccessLevel.PRIVATE)
-	@AllArgsConstructor(access = AccessLevel.PROTECTED)
 	public static class PageInfo {
 
 		private final Long nextCursorId;
 		private final boolean hasNext;
 		private final int size;
 
-		public static PageInfo of(Long nextCursorId, boolean hasNext, int size) {
+		@JsonCreator
+		public PageInfo(
+				@JsonProperty("nextCursorId") Long nextCursorId,
+				@JsonProperty("hasNext") boolean hasNext,
+				@JsonProperty("size") int size) {
+			this.nextCursorId = nextCursorId;
+			this.hasNext = hasNext;
+			this.size = size;
+		}
 
+		public static PageInfo of(Long nextCursorId, boolean hasNext, int size) {
 			return PageInfo.builder()
 					.nextCursorId(nextCursorId)
 					.hasNext(hasNext)
