@@ -119,7 +119,7 @@ public class TradeService {
 
 	@Cacheable(
 			value = "mobileDataScrap",
-			key = "'dataAmount=' + #dataAmount"
+			key = "'dataAmount=' + #dataAmount + ':memberId=' + #memberId"
 	)
 	public FindMobileDataScrapResponse findMobileDataScrap(BigDecimal dataAmount, Long memberId) {
 
