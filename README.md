@@ -26,6 +26,8 @@
 - **리뷰 등록 / 신고 접수**
 - **시스템 모니터링**
 
+> 기획에 대한 자세한 내용은 [팀 README.md](https://github.com/URECA-Dapanda)를 확인해주세요 😊
+
 ## ⚙️ 기술 스택
 
 | Category           | Technologies                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
