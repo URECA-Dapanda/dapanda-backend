@@ -52,7 +52,7 @@ public class TradeService {
 	 */
 	@Transactional
 	@CacheEvict(
-			value = "mobileDataByCursor",
+			value = {"mobileDataByCursor", "mobileDataScrap"},
 			allEntries = true
 	)
 	public TradeProductResponse defaultPurchaseMobileData(Long buyerId,
@@ -224,7 +224,7 @@ public class TradeService {
 	 */
 	@Transactional
 	@CacheEvict(
-			value = "mobileDataByCursor",
+			value = {"mobileDataByCursor", "mobileDataScrap"},
 			allEntries = true
 	)
 	public TradeProductResponse scrapPurchaseMobileData(Long buyerId,

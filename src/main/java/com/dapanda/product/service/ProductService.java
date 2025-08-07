@@ -130,7 +130,7 @@ public class ProductService {
 
 	@Transactional
 	@CacheEvict(
-			value = "mobileDataByCursor",
+			value = {"mobileDataByCursor", "mobileDataScrap"},
 			allEntries = true
 	)
 	public void createMobileData(CreateMobileDataRequest request, Long memberId) {
@@ -228,7 +228,7 @@ public class ProductService {
 
 	@Transactional
 	@CacheEvict(
-			value = "mobileDataByCursor",
+			value = {"mobileDataByCursor", "mobileDataScrap"},
 			allEntries = true
 	)
 	public UpdateMobileDataResponse updateMobileData(UpdateMobileDataRequest request,
@@ -314,7 +314,7 @@ public class ProductService {
 
 	@Transactional
 	@CacheEvict(
-			value = "mobileDataByCursor",
+			value = {"mobileDataByCursor", "mobileDataScrap"},
 			allEntries = true
 	)
 	public void deleteProduct(Long productId, Long memberId) {
